@@ -1,0 +1,135 @@
+{{ $image := partialCached "helper/image" (dict "Context" .context "Type" .Type) .context.RelPermalink .Type }}
+<article class="article-card {{ if $image.exists }}has-image{{ else }}no-image{{ end }}">
+    <a href="{{ .context.RelPermalink }}">
+        {{ if $image.exists }}
+        <div class="article-image">
+            {{ if $image.resource }}
+                {{- $imageRaw := $image.resource | resources.Fingerprint "md5" -}}
+                {{- $Permalink := $imageRaw.RelPermalink -}}
+                {{- $Width := $imageRaw.Width -}}
+                {{- $Height := $imageRaw.Height -}}
+
+                {{- if .context.Site.Params.imageProcessing.cover.enabled -}}
+                    {{- $thumbnail := $imageRaw.Fill .size -}}
+                    {{- $Permalink = $thumbnail.RelPermalink -}}
+                    {{- $Width = $thumbnail.Width -}}
+                    {{- $Height = $thumbnail.Height -}}
+                {{- end -}}
+                
+                <img src="{{ $Permalink }}" 
+                    width="{{ $Width }}" 
+                    height="{{ $Height }}" 
+                    loading="lazy"
+                    alt="Featured image of post {{ .context.Title }}"
+                    {{ with .context.Slug }}data-key="{{ . }}" {{ end }}
+                    data-hash="{{ $imageRaw.Data.Integrity }}">
+            {{ else }}
+                <img src="{{ $image.permalink }}" loading="lazy" data-key="{{ .context.Slug }}" data-hash="{{ $image.permalink }}"/>
+            {{ end }}
+
+            <!-- 标题覆盖在图片上 -->
+            <div class="article-overlay">
+                <h2 class="article-title">{{- .context.Title -}}</h2>
+            </div>
+        </div>
+        {{ else }}
+        <!-- 无图片的卡片 -->
+        <div class="article-details">
+            <h2 class="article-title">{{- .context.Title -}}</h2>
+        </div>
+        {{ end }}
+    </a>
+
+    <style>
+    /* 毛玻璃卡片容器 */
+    .article-card {
+        background: rgba(255, 255, 255, 0.25);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        margin: 10px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .article-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    }
+
+    .article-card a {
+        display: flex;
+        flex-direction: column;
+        text-decoration: none;
+        color: inherit;
+        height: 100%;
+    }
+
+    /* 图片区域 */
+    .article-image {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        overflow: hidden;
+    }
+    .article-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+    .article-image:hover img {
+        transform: scale(1.05);
+    }
+
+    /* 标题覆盖在图片上 */
+    .article-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: rgba(0,0,0,0.3); /* 半透明背景 */
+        padding: 10px;
+        box-sizing: border-box;
+        text-align: center;
+    }
+    .article-overlay .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #fff;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+    /* 无图片卡片，标题居中 */
+    .article-card.no-image .article-details {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 15px;
+    }
+    .article-card.no-image .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #222;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+    /* 网格布局 */
+    .articles-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 20px;
+    }
+    </style>
+</article>
