@@ -1,5 +1,6 @@
-name: Deploy Hugo Site to GitHub Pages
+name: 部署博客网站
 
+# 表示什么时候触发部署
 on:
   push:
     branches: [ main ]
@@ -11,22 +12,22 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
+      - name: 拉取代码
         uses: actions/checkout@v4
         with:
           submodules: true
           fetch-depth: 0
 
-      - name: Setup Hugo
+      - name: 安装Hugo
         uses: peaceiris/actions-hugo@v2
         with:
           hugo-version: '0.151.2'
           extended: true
 
-      - name: Build Hugo Site
+      - name: 生成public文件夹
         run: hugo
 
-      - name: Deploy to GitHub Pages
+      - name: 部署到GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
