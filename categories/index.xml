@@ -6,45 +6,68 @@
         <description>Recent content in Categories on wanfeng</description>
         <generator>Hugo -- gohugo.io</generator>
         <language>zh-cn</language>
-        <copyright>爱喝东方树叶</copyright>
-        <lastBuildDate>Wed, 09 Sep 2020 00:00:00 +0000</lastBuildDate><atom:link href="https://sdpyy1.github.io/categories/index.xml" rel="self" type="application/rss+xml" /><item>
-        <title>Test</title>
-        <link>https://sdpyy1.github.io/categories/test/</link>
-        <pubDate>Wed, 09 Sep 2020 00:00:00 +0000</pubDate>
+        <copyright>爱喝东方树叶</copyright><atom:link href="https://sdpyy1.github.io/categories/index.xml" rel="self" type="application/rss+xml" /><item>
+        <title>Courses</title>
+        <link>https://sdpyy1.github.io/categories/course/</link>
+        <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
         
-        <guid>https://sdpyy1.github.io/categories/test/</guid>
-        <description>&lt;img src="https://sdpyy1.github.io/categories/test/hutomo-abrianto-l2jk-uxb1BY-unsplash.jpg" alt="Featured image of post Test" /&gt;</description>
-        </item>
-        <item>
-        <title>测试</title>
-        <link>https://sdpyy1.github.io/categories/%E6%B5%8B%E8%AF%95/</link>
-        <pubDate>Wed, 09 Sep 2020 00:00:00 +0000</pubDate>
-        
-        <guid>https://sdpyy1.github.io/categories/%E6%B5%8B%E8%AF%95/</guid>
+        <guid>https://sdpyy1.github.io/categories/course/</guid>
         <description></description>
         </item>
         <item>
-        <title>Syntax</title>
-        <link>https://sdpyy1.github.io/categories/syntax/</link>
-        <pubDate>Mon, 11 Mar 2019 00:00:00 +0000</pubDate>
+        <title>Engines</title>
+        <link>https://sdpyy1.github.io/categories/engines/</link>
+        <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
         
-        <guid>https://sdpyy1.github.io/categories/syntax/</guid>
+        <guid>https://sdpyy1.github.io/categories/engines/</guid>
         <description></description>
         </item>
         <item>
-        <title>Themes</title>
-        <link>https://sdpyy1.github.io/categories/themes/</link>
-        <pubDate>Mon, 11 Mar 2019 00:00:00 +0000</pubDate>
+        <title>Games101</title>
+        <link>https://sdpyy1.github.io/categories/course/games101/</link>
+        <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
         
-        <guid>https://sdpyy1.github.io/categories/themes/</guid>
+        <guid>https://sdpyy1.github.io/categories/course/games101/</guid>
         <description></description>
         </item>
         <item>
-        <title>Test With Whitespaces</title>
-        <link>https://sdpyy1.github.io/categories/test-with-whitespaces/</link>
-        <pubDate>Sat, 09 Mar 2019 00:00:00 +0000</pubDate>
+        <title>Games104</title>
+        <link>https://sdpyy1.github.io/categories/course/games104/</link>
+        <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
         
-        <guid>https://sdpyy1.github.io/categories/test-with-whitespaces/</guid>
+        <guid>https://sdpyy1.github.io/categories/course/games104/</guid>
+        <description></description>
+        </item>
+        <item>
+        <title>Games202</title>
+        <link>https://sdpyy1.github.io/categories/course/games202/</link>
+        <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+        
+        <guid>https://sdpyy1.github.io/categories/course/games202/</guid>
+        <description></description>
+        </item>
+        <item>
+        <title>Notes</title>
+        <link>https://sdpyy1.github.io/categories/notes/</link>
+        <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+        
+        <guid>https://sdpyy1.github.io/categories/notes/</guid>
+        <description></description>
+        </item>
+        <item>
+        <title>Projects</title>
+        <link>https://sdpyy1.github.io/categories/projects/</link>
+        <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+        
+        <guid>https://sdpyy1.github.io/categories/projects/</guid>
+        <description></description>
+        </item>
+        <item>
+        <title>Rendering</title>
+        <link>https://sdpyy1.github.io/categories/rendering/</link>
+        <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+        
+        <guid>https://sdpyy1.github.io/categories/rendering/</guid>
         <description></description>
         </item>
         
