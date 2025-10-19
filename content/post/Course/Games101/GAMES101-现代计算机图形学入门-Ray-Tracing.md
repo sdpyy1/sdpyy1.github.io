@@ -6,28 +6,28 @@ categories = ["Course/Games101"]
 tags = ["课程笔记"]
 +++
 # Shadow Mapping
-如果使用光栅化，对一个像素shading时考虑光源，考虑摄影机位置，但是没有考虑模型其他位置对该位置的影响，因为在光源与该像素点之间有别的东西挡住，那光源就会被挡住，形成阴影。shading解决不了阴影问题![请添加图片描述](https://i-blog.csdnimg.cn/direct/070b07cef83249b58bc9e15c0ecad44f.png)
+如果使用光栅化，对一个像素shading时考虑光源，考虑摄影机位置，但是没有考虑模型其他位置对该位置的影响，因为在光源与该像素点之间有别的东西挡住，那光源就会被挡住，形成阴影。shading解决不了阴影问题![请添加图片描述](070b07cef83249b58bc9e15c0ecad44f.png)
 该算法为图像空间算法。生成阴影并不需要模型的几何位置信息，当前该算法还是存在走样现象
 该算法的关键思想是：一个点不在阴影的前提是摄像机能看见这个点，并且光源能看见这个点
 算法步骤：
-1. Render from Light：把光源当作摄像机，做一遍光栅化，从而得到光源会看到什么东西，只需要记录看到点的深度![请添加图片描述](https://i-blog.csdnimg.cn/direct/9f10d04ef11e4a32b576c3a930e46306.png)
+1. Render from Light：把光源当作摄像机，做一遍光栅化，从而得到光源会看到什么东西，只需要记录看到点的深度![请添加图片描述](9f10d04ef11e4a32b576c3a930e46306.png)
 
 2. 从设定好的摄像机位置去真正的渲染场景得到摄像机视角的深度Buffer，如下图橙线下的点两次都看见了，而红线上的点只有光源嫩看见，摄像机是看不见的
 
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/06a0886a48024e748254c75b69294dde.png)
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/6c4150bdd8654ce98bad8f50e399a8a1.png)
-举一个实际的例子![请添加图片描述](https://i-blog.csdnimg.cn/direct/b354e3a4f7d24f11ab9c769a08a3798e.png)
+![请添加图片描述](06a0886a48024e748254c75b69294dde.png)
+![请添加图片描述](6c4150bdd8654ce98bad8f50e399a8a1.png)
+举一个实际的例子![请添加图片描述](b354e3a4f7d24f11ab9c769a08a3798e.png)
 上图左上角有一个点光源，下图则展示了从点光源看向模型的样子
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/95dc6014690643119b5184237977dbaa.png)
+![请添加图片描述](95dc6014690643119b5184237977dbaa.png)
 当然这一步只需要记录每个点的深度
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/14bd8c040528438980b8204b68355808.png)
+![请添加图片描述](14bd8c040528438980b8204b68355808.png)
 最终再回到摄像机的视角，绿色就是摄像机和光源都能看见的位置，不是绿色的位置就是阴影的位置 
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/b2a879aef32d4a5fa398e658c97d364e.png)
+![请添加图片描述](b2a879aef32d4a5fa398e658c97d364e.png)
  shadow maps的问题
  首先解释一下硬软阴影区别，看两幅图就能理解
-  * 硬阴影 ：![请添加图片描述](https://i-blog.csdnimg.cn/direct/9cee7031eb6c4771bd2917356df07717.png)
- * 软阴影： 产生软阴影是因为光源具有体积，导致，有的地方完全看不到光源（本影, Umbra）， 有的地方能看到一部分光源（半影，Penumbra）。所以阴影的边缘会有过渡的情况，从而产生软阴影，就像上图中太阳与地球的示意一样（全日食与半日食）。![请添加图片描述](https://i-blog.csdnimg.cn/direct/80801ad9fed748809c1f8746872b87de.png)
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/ef8690c0e727412da5f47f3f2614948d.png)
+  * 硬阴影 ：![请添加图片描述](9cee7031eb6c4771bd2917356df07717.png)
+ * 软阴影： 产生软阴影是因为光源具有体积，导致，有的地方完全看不到光源（本影, Umbra）， 有的地方能看到一部分光源（半影，Penumbra）。所以阴影的边缘会有过渡的情况，从而产生软阴影，就像上图中太阳与地球的示意一样（全日食与半日食）。![请添加图片描述](80801ad9fed748809c1f8746872b87de.png)
+![请添加图片描述](ef8690c0e727412da5f47f3f2614948d.png)
 # Ray Tracing
 ## Why Ray Tracing
 为什么需要光线追踪？
@@ -40,53 +40,53 @@ tags = ["课程笔记"]
 * 光线和光线不会碰撞
 * 光线从光源出发经过各种反射到达人眼（光路可逆，光线追踪利用的就是光路的可逆性）
 ## Ray Casting 光线投射
-如下图所示，摄像机连出一根线到屏幕的一个像素点，点到达物体表面时，该点也能连接到光源，就可以计算出这一点的光的强度来进行着色![请添加图片描述](https://i-blog.csdnimg.cn/direct/778ae350cfad46c895f14ee6896469c8.png)
+如下图所示，摄像机连出一根线到屏幕的一个像素点，点到达物体表面时，该点也能连接到光源，就可以计算出这一点的光的强度来进行着色![请添加图片描述](778ae350cfad46c895f14ee6896469c8.png)
  具体例子如下图
  从眼睛发出线打到一个像素，紧接着达到场景中的某个位置上（eye ray），只考虑与场景最近的一个交点，所以后边的虚线就不考虑了（**在作业5中可知，生成eve ray的流程：屏幕是Raster Space（光栅空间），为了找到摄像机到每个栅格真正代表的空间坐标，需要将Raster Space还原成NDC space再进一步还原成**）
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/7695f1443239413d928c0d6902098c6a.png)
+![请添加图片描述](7695f1443239413d928c0d6902098c6a.png)
 紧接着连接一条线到光源位置（shadow ray），有了法线、入射方向、观察方向，就可以利用光照模型来计算着色了（例如 Blinn Phong model）
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/ba3a58d920ad4b41bf423b128a3c8700.png)
+![请添加图片描述](ba3a58d920ad4b41bf423b128a3c8700.png)
 ## Recursive Ray Tracing（Whitted风格）
 上一节的模型仍然只考虑了光线只反射一次的情况，还是从上一节的图开始，假设eye ray打到的是一个玻璃球，可能会发生折射和反射，每一个弹射点都进行着色计算（都连接到光源），每个着色都会被加到这个像素点的着色上去。
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/3f16764a19d34cc0a22858445d980b95.png)
+![请添加图片描述](3f16764a19d34cc0a22858445d980b95.png)
 里边具体的技术点会在后边讲到
 ### Ray-Surface Intersection （隐式几何与光线求交）
-首先用数学定义一下光线：光线被定义为由起点和方向的向量，点光源的描述如下，这样定义的目的是将光线与物体求交点的问题转化为求t值的问题![请添加图片描述](https://i-blog.csdnimg.cn/direct/21d57cd70e7a418988bcfbaa6e80b9a2.png)
+首先用数学定义一下光线：光线被定义为由起点和方向的向量，点光源的描述如下，这样定义的目的是将光线与物体求交点的问题转化为求t值的问题![请添加图片描述](21d57cd70e7a418988bcfbaa6e80b9a2.png)
 从简单的开始，光线如何与球求交点，其实就是点P在球面上，也在光线上，联立即可
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/4fc1a32d8fc740099ff75ec4aa6da3e6.png)
+![请添加图片描述](4fc1a32d8fc740099ff75ec4aa6da3e6.png)
 最终可以解出来t的大小，t取小的一个，表示第一个交点
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/d3f943f286b64f469b3218b89894d12b.png)
+![请添加图片描述](d3f943f286b64f469b3218b89894d12b.png)
 ### Ray Intersection With Triangle Mesh（显示几何与光线求交）
-由上边内容可知，给出一个隐式的几何，求光线与几何的交点，就是联立后求t的值，那显式的表达呢？如下图，如何判断光线与mesh有交点呢？一个一个三角形求光线与三角形的交点么？太慢了![请添加图片描述](https://i-blog.csdnimg.cn/direct/a6d366b54c3a45b38beb9e550a1ea53b.png)
+由上边内容可知，给出一个隐式的几何，求光线与几何的交点，就是联立后求t的值，那显式的表达呢？如下图，如何判断光线与mesh有交点呢？一个一个三角形求光线与三角形的交点么？太慢了![请添加图片描述](a6d366b54c3a45b38beb9e550a1ea53b.png)
 虽然太慢了，但是还是要先学习一下怎么求一个光线与三角形的交点。 基本思路就是先找出光线与三角形所在平面的交点，之后判断这个交点是不是在三角形内部。
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/f856d53bbdd740dc8b7b47b179dd3665.png)
+![请添加图片描述](f856d53bbdd740dc8b7b47b179dd3665.png)
 首先来看一下平面如何定义，一个向量和一个点就可以定义一个平面 
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/c663ec0e99194ff682d187e5e7f71c7e.png)
+![请添加图片描述](c663ec0e99194ff682d187e5e7f71c7e.png)
 如何判断一个点P是否在平面上呢？只要下图两点形成的向量与平面法向量垂直即可
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/42537bef31f14ce1be0be6bccdb11bfd.png)
+![请添加图片描述](42537bef31f14ce1be0be6bccdb11bfd.png)
 所以又回到了上一节的联立，点P在平面上，也在光线上，进行联立求解，最后得到光线与平面的交点，再判断点是否在三角形内，就可以得到光线与三角形的交点。
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/0f382f822e5043c8af6653a2966f4db2.png)
+![请添加图片描述](0f382f822e5043c8af6653a2966f4db2.png)
 **Möller Trumbore Algorithm**
-那有没有方法直接判断呢？如果光线与三角形有交点，那这个交点就可以用重心坐标表示，直接建立如下等式，用克莱默法则求解方程组就可以直接求出来（三个未知数，三个方程，所以是可以解出来的）![请添加图片描述](https://i-blog.csdnimg.cn/direct/0d9b97e41094499aa8462e282d491ec1.png)
+那有没有方法直接判断呢？如果光线与三角形有交点，那这个交点就可以用重心坐标表示，直接建立如下等式，用克莱默法则求解方程组就可以直接求出来（三个未知数，三个方程，所以是可以解出来的）![请添加图片描述](0d9b97e41094499aa8462e282d491ec1.png)
 ### Accelerating Ray-Surface  Intersection（加速求交方法）
-现在已经知道了光线与三角形求交，那如何判断光线与mesh的交点呢。一个一个三角形遍历太慢了。如下图三角形实在太多了。这就引入了Accelerating Ray-Surface  Intersection![请添加图片描述](https://i-blog.csdnimg.cn/direct/5d5da1bf07f1420bac89e3a912684d22.png)
-先介绍一个概念 Bounding Volumes，如果光线都打不到包围盒，更打不到mesh了![请添加图片描述](https://i-blog.csdnimg.cn/direct/3c6503a6f4e84e15aa70c4acd8204fa5.png)
+现在已经知道了光线与三角形求交，那如何判断光线与mesh的交点呢。一个一个三角形遍历太慢了。如下图三角形实在太多了。这就引入了Accelerating Ray-Surface  Intersection![请添加图片描述](5d5da1bf07f1420bac89e3a912684d22.png)
+先介绍一个概念 Bounding Volumes，如果光线都打不到包围盒，更打不到mesh了![请添加图片描述](3c6503a6f4e84e15aa70c4acd8204fa5.png)
 想象一下一个box相对的两个面是一个无限大的平面（称为对面），box就是三个对面的交集，通常使用的是Axis-Aligned Bounding Box (AABB) (轴对⻬包围盒)，这个东西就是这个盒子的边都是和坐标轴对齐的，简化计算。
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/1dd9a009f90a44b8a804b987a130f349.png)
+![请添加图片描述](1dd9a009f90a44b8a804b987a130f349.png)
 下面就来看下光线与包围盒的求交问题（与包围盒有交点，才去考虑与包围盒内部的Mesh求交）
 先从二维平面情况下看, $x_0$和$x_1$是一个对面，$y_0$和$y_1$是一个对面
 从$x_0$和$x_1$对面上看可以求出两个交点
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/d0d9fd7184004d178696c26dbe881598.png)
+![请添加图片描述](d0d9fd7184004d178696c26dbe881598.png)
 从$y_0$和$y_1$对面上看也可以求出两个交点
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/9a17787f7af8484684a375329e8db255.png)
+![请添加图片描述](9a17787f7af8484684a375329e8db255.png)
 求交集后，就求出光线进入和出去盒子的时间
 
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/0d37d16853c54e308d2e801265ca5bc2.png)
-从三维情况下开，3组对面的时间t进行求交集，当进入时间小于离开时间，就是有交点![请添加图片描述](https://i-blog.csdnimg.cn/direct/f106c53781c14b0081a51dd2c4a1d23b.png)
+![请添加图片描述](0d37d16853c54e308d2e801265ca5bc2.png)
+从三维情况下开，3组对面的时间t进行求交集，当进入时间小于离开时间，就是有交点![请添加图片描述](f106c53781c14b0081a51dd2c4a1d23b.png)
 另外，用上诉算法算出来的t可能是负数，用下图进行处理，总结来说，进入小于退出，退出大于0即可
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/d60850637708462a994fe1641df721a0.png)
+![请添加图片描述](d60850637708462a994fe1641df721a0.png)
 最后解释一下为什么要用AABB盒，光线与平面求交点是有公式的，如下图General。对准坐标轴后计算更容易，下图为计算量对比。
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/fe49a66e725e40439ea07f5759905032.png)
+![请添加图片描述](fe49a66e725e40439ea07f5759905032.png)
 ### Uniform Spatial Partitions (Grids) 均匀网格
  通过上节的加速算法，我们已经知道如果把物体包在盒子里，先判断与盒子求交，再考虑与盒子内物体求交，但采用包围盒并不一定会提升性能，例如下面两种情况
  1. 整个场景只有一个极其复杂的单一人物模型，那么只对这一个物体做包围盒的话，相当于对效率没有任何提升
@@ -97,11 +97,11 @@ tags = ["课程笔记"]
 4. 找到包围盒
 5. 画出格子（盒子内部再分成很多的格子）
 6. 标记有物体的格子
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/ae7b2fd3892542ff9be22f0ca1bca9ee.png)
+![请添加图片描述](ae7b2fd3892542ff9be22f0ca1bca9ee.png)
 预处理完成后，光线从一侧打进来，只会处理被标记的格子，如果有标记，就算一下是否有交点，这就避免了和包围盒中所有的物体求交，这种方法主要就是解决了，包围盒中有多个物体，只要光线打到了具体一个范围时，才判断是否有交点。
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/fe124cfa32d343688877915adbcae356.png)
+![请添加图片描述](fe124cfa32d343688877915adbcae356.png)
 Uniform Grids表现比较好的场景如下
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/187554f07ea44471a4ecd2fb4e2dc1e9.png)但分布特别不均匀的场景，就不适合用上述方法
+![请添加图片描述](187554f07ea44471a4ecd2fb4e2dc1e9.png)但分布特别不均匀的场景，就不适合用上述方法
 ### Spatial Partitions 不均匀的网格
 在物体比较少地方没必要用统一大小的格子，那如何进行场景划分呢，有如下3中方式
 第一种Oct-Tree，也就是八叉树，每次将空间分为8个相等的部分，再递归的对子空间进行划分。因为图中是2维例子，所以只划分了4部分。当划分的子空间足够小或是空间中三角形面的数量很少的时候会停止划分。这种方法的显著缺点是，随着维度的上升划分的空间数量会呈指数级增长。
@@ -111,39 +111,39 @@ Uniform Grids表现比较好的场景如下
 第三种BSP-Tree，其与KD-Tree类似，唯一不同的是划分不再沿着固定一轴，可以任意方向划分，缺点自然是划分的空间没有规则性，求交困难。在与轴对齐更好计算的场景下不适用
 
 本节知识主要以KD-Tree来建立
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/60c2a05bc417414ea85e271a5010a697.png)
+![请添加图片描述](60c2a05bc417414ea85e271a5010a697.png)
 给定一个场景，先建立KD-Tree，做好加速结构，再进行光线求交。
 下面从预处理开始介绍，竖直先来一刀
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/14997e1e389d435ea294c327edfad63a.png)
+![请添加图片描述](14997e1e389d435ea294c327edfad63a.png)
 水平再来一刀，蓝绿都需要做，这里演示只砍绿色
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/2cd1b75040684c07b44060b058bdf346.png)
+![请添加图片描述](2cd1b75040684c07b44060b058bdf346.png)
 再来两刀
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/a4280856cb9d420580159f3b76694775.png)
+![请添加图片描述](a4280856cb9d420580159f3b76694775.png)
 明白了KD-Tree的流程之后，介绍一下KD-Tree的数据结构
 实际的三角形object只存在叶子结点上
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/201a0395e12f4d60b250a10209e88883.png)
+![请添加图片描述](201a0395e12f4d60b250a10209e88883.png)
 下一步介绍光线来了之后如何与KD-Tree交互，如下图的这条光线
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/9d2835ca8d6b40ad85b408bf31515780.png)
-首先判断与最大的盒子是否有交点，如下图所示是有的![请添加图片描述](https://i-blog.csdnimg.cn/direct/bff09c35aad543ef8e35474acf094d32.png)
+![请添加图片描述](9d2835ca8d6b40ad85b408bf31515780.png)
+首先判断与最大的盒子是否有交点，如下图所示是有的![请添加图片描述](bff09c35aad543ef8e35474acf094d32.png)
 紧接着判断A结点的子结点1是否有交点，此时发现确实有交点，1是叶子结点，那光线就必须和这个盒子里的物体进行计算求交
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/bd664ac5779647f6a3327d2bdaf66aed.png)
+![请添加图片描述](bd664ac5779647f6a3327d2bdaf66aed.png)
 之后又发现与右边也有交点，那么就需要继续看子结点
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/7ff651b4921b47748c84ae5e56375149.png)
+![请添加图片描述](7ff651b4921b47748c84ae5e56375149.png)
 子结点2也有交点，是叶子结点，那就得和2中所有物体求交，后续流程一样
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/9a31bdf5fd8d46ba9a4bdec01908c4b5.png)
+![请添加图片描述](9a31bdf5fd8d46ba9a4bdec01908c4b5.png)
 ### Bounding Volume Hierarchy（BVH）
 KD-Tree并不完美，缺点是判断包围盒与三角面的是否相交较难，因此划分的过程不是那么想象的简单，其次同一个三角面可能被不同的包围盒同时占有，这两个不同包围盒内的叶节点会同时存储这一个三角形面。
 BVH不再通过场景进行划分，而是通过物体来划分，得到了广泛应用。
 首先把一个包围盒内的三角形组织成两部分，并对两部分三角形重新求包围盒，如下图
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/bd18e938e6bf45e9b3ec6f8b2c482ce4.png)
+![请添加图片描述](bd18e938e6bf45e9b3ec6f8b2c482ce4.png)
 之后重复操作，划分到一个叶子结点只有比如5个三角形就停止，这样一个三角形只会出现在一个包围盒里。避免了KD-Tree一个三角形可能出现在不同的叶子结点里的问题
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/ad6eb2fd3d394d83b014dd2c8fcae7e2.png)
+![请添加图片描述](ad6eb2fd3d394d83b014dd2c8fcae7e2.png)
 那如何进行结点划分呢？首先向KD-Tree学习，每次选一个x、y、z其中一个轴进行划分。技巧：每次都找最长的轴进行划分，例如场景在x轴上是一个长条，就利用x轴划分。如何分成两半呢（如何保证划分后两部分三角形数量差不多呢）？通过三角形的重心坐标，在x轴上排序（其实不用排序，有更好的找中位数算法叫快速旋转算法，可以在O(n)时间内找到中位数），就知道中间那个三角形是哪个了，这样就进行了划分。
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/eea3ae716eef4e8c9bdc0d33b222e28b.png)
+![请添加图片描述](eea3ae716eef4e8c9bdc0d33b222e28b.png)
 下来介绍光线与BVH求交的过程，用代码演示
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/9620275ad19f414a959695cb3775b424.png)
+![请添加图片描述](9620275ad19f414a959695cb3775b424.png)
 划分空间vs划分物体
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/a1ead06dbdb74b018ca9a1db54034269.png)
+![请添加图片描述](a1ead06dbdb74b018ca9a1db54034269.png)
 到这里，求交的内容就结束了
 ## Basic Radiometry（辐射度量学）
 在之前实现 Blinn-Phong模型时，光照强度I设置为10，但是10是什么呢？
@@ -155,138 +155,138 @@ BVH不再通过场景进行划分，而是通过物体来划分，得到了广�
 ### 引入定义
 #### Radiant Energy and Flux (Power) 辐射能量和辐射通量/功率
 辐射能量就是光源射出来的电磁能量，单位为焦耳   （功）
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/730c220ea2044eb0a383d685b9c37c75.png)
+![请添加图片描述](730c220ea2044eb0a383d685b9c37c75.png)
 Radiant flux(power) 辐射能量的基础之上除以时间，也就是单位时间的能量（功率、流明）
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/40b80f5686794616ac812da10f358407.png)
+![请添加图片描述](40b80f5686794616ac812da10f358407.png)
 在计算机图形学来看，主要关注一下三个东西
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/c0c1c954d7f241468741251dd1e2ee0f.png)
+![请添加图片描述](c0c1c954d7f241468741251dd1e2ee0f.png)
 #### Radiant Intensity 辐射强度
 从一个点光源发射的每单位立体角下的功率，光源向四面八方辐射能量，在单位立体角上的功率就是辐射强度
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/598f799b2a644a65b3e75335454d9952.png)
+![请添加图片描述](598f799b2a644a65b3e75335454d9952.png)
 那什么是立体角呢？
 首先2维下的角度就是弧度/半径，3维空间中立体角就是一块面积/半径的平方，立体角就是用来描述空间中角有多大，一个球体总的立体角就是4pi
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/4c371678d35e4824a436e76db36c52a4.png)
+![请添加图片描述](4c371678d35e4824a436e76db36c52a4.png)
 下图描述了单位立体角。在微分下，形成的一个很小的面积的立体角，是一个微分立体角dw，计算公式如下
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/dc876a9c2730410f9dfa5f1d5a26b16d.png)
+![请添加图片描述](dc876a9c2730410f9dfa5f1d5a26b16d.png)
 最终可以得到 辐射强度 = 辐射功率/4pi
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/d8e6ed8ccd8f44978d0205d5f1d2571a.png)
+![请添加图片描述](d8e6ed8ccd8f44978d0205d5f1d2571a.png)
 #### Irradiance
 每单位照射面积dA所接收到的power/flux
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/45cc11dddbed48aea7bd0ffdcbf832e8.png)
+![请添加图片描述](45cc11dddbed48aea7bd0ffdcbf832e8.png)
 光源能量在距离上有r平方的衰减，可以用irradiance来解释，远处单位面积更大，按r平方衰减，Intensity并没有变化，单位角也没有变化，变化的是单位面积，进而影响了Irradiance
 
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/677134988a10429aa5c3f843f85ea424.png)
+![请添加图片描述](677134988a10429aa5c3f843f85ea424.png)
 #### Radiance 
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/29b0c3b5fed74a8a8cb26b7339d1d91b.png)
+![请添加图片描述](29b0c3b5fed74a8a8cb26b7339d1d91b.png)
 Radiance是 单位立体角、单位面积上的power
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/c787e8ad444046758171c11a07588335.png)
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/1c8db947cdc94c51ac7c1baa934a9dc3.png)
+![请添加图片描述](c787e8ad444046758171c11a07588335.png)
+![请添加图片描述](1c8db947cdc94c51ac7c1baa934a9dc3.png)
 Incident Radiance是到达表面的irradiance 在 per 立体角下
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/e492bf0a506f485eb17163e667af97cd.png)
-Exiting Radiance 是 开表面辐射强度在per单位面积上![请添加图片描述](https://i-blog.csdnimg.cn/direct/81a491efec804d158be94079f61a6c31.png)
+![请添加图片描述](e492bf0a506f485eb17163e667af97cd.png)
+Exiting Radiance 是 开表面辐射强度在per单位面积上![请添加图片描述](81a491efec804d158be94079f61a6c31.png)
 最后看一下Irradiance和Radiance的关系
 * Irradiance是单位面积上的总能量
 * Radiance是总能量在单位立体角上的大小，就是在Irradiance上增加了方向性（radiance在方向上积分就是Irradiance）
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/06d90287db5e41248b4a39ba59975bbb.png)
+![请添加图片描述](06d90287db5e41248b4a39ba59975bbb.png)
 ### BRDF
 Bidirectional Reflectance Distribute Function 双向反射分布函数，在介绍完上边概念的定义后，可以这样理解光线的反射，一个微分面积元在接受到一定方向上的亮度后，再向不同方向把能量辐射出去，所谓BRDF就是描述一个从不同方向入射之后，反射光线分布情况的函数
 
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/33fd1bfcb40d466f821b852a5a03ad34.png)
+![请添加图片描述](33fd1bfcb40d466f821b852a5a03ad34.png)
 下图为BRDF的方程，只需要两个参数入射光方向 ωi，反射光方向 ωr，函数值为反射光的radiance与入射光的irradiance的比值
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/ece69c53fd0b48c4b63640326280bd7a.png)
+![请添加图片描述](ece69c53fd0b48c4b63640326280bd7a.png)
 摄像机所在方向上的反射光，是由来自不同方向入射光线的irradiance经过反射得到的，不同方向上的入射光线的irradiance的贡献由BRDF函数决定
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/3b0a4643e1fd45a1be6bbfc31accd825.png)
+![请添加图片描述](3b0a4643e1fd45a1be6bbfc31accd825.png)
 但是入射光的radiance不仅仅来自光源，也可能是其他物体的反射光恰好反射到了该点，这是一个递归的过程
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/474c15de3c4c4180954115688e5c2bb7.png)进一步，如果这个点本身就会发光，需要额外加上这部分，最终的渲染方程为下图
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/4360789f62274e29b3aabdfd7a0a1f6a.png)
+![请添加图片描述](474c15de3c4c4180954115688e5c2bb7.png)进一步，如果这个点本身就会发光，需要额外加上这部分，最终的渲染方程为下图
+![请添加图片描述](4360789f62274e29b3aabdfd7a0a1f6a.png)
 如何理解渲染方程呢？
 从反射方程来看，如果有多个光源，就把这些radiance进行累加
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/182c0b02b941422dae4c9a73b617b018.png)
+![请添加图片描述](182c0b02b941422dae4c9a73b617b018.png)
 如果有一个面光源，对这个面对应的立体角进行积分
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/e03e5ea0150043dda842e9ec47bdb131.png)
+![请添加图片描述](e03e5ea0150043dda842e9ec47bdb131.png)
 那么更进一步再在场景当中加入其它物体，使得物体之间发生光线交互之后是什么情况呢。如下图所示，可以把其它物体同样考虑成面光源，对其所占立体角进行积分即可，只不过对其它物体的立体角积分不像是面光源所有入射方向都有radiance，物体的立体角可能只有个别几个方向有入射的radiance（即多次物体间光线反射之后才恰好照射到着色点），其它方向没有，但本质上都可以视作是面光源。
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/c8505b098d7f4eea96af9b1e7518cded.png)
+![请添加图片描述](c8505b098d7f4eea96af9b1e7518cded.png)
 最终整理方程，只有入射和反射的radiance不知道，其他项都是知道的
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/7cf912c3e771476d82d478af5325f43b.png)
+![请添加图片描述](7cf912c3e771476d82d478af5325f43b.png)
 简化形式
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/299297279df044b082c1cc6b51e45660.png)
+![请添加图片描述](299297279df044b082c1cc6b51e45660.png)
 经过一系列变化后得到，L是所要求的反射光，E是自己的发光，K是一个算子
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/f2882cfc2b75493f8262e0abc17386bc.png)
+![请添加图片描述](f2882cfc2b75493f8262e0abc17386bc.png)
 最终可以得到
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/03581f587bcd4f0ea2102d0e5ee77bef.png)
+![请添加图片描述](03581f587bcd4f0ea2102d0e5ee77bef.png)
 最终最终整理成如下形式，E是自身发光，KE是光源反射一次结果（光源直接照射），Blinn-phong模型就只考虑到这一层，K2E是弹射一次的光照.....
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/50da0733963b4e259c18f0646f22038d.png)下图展示了处理弹射次数变多时的变化，场景越来越亮并且逐渐收敛
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/af40e90ef0f94acf8b26241897aadb07.png)![请添加图片描述](https://i-blog.csdnimg.cn/direct/b4fe2f603f504a51842d83e722f53384.png)
+![请添加图片描述](50da0733963b4e259c18f0646f22038d.png)下图展示了处理弹射次数变多时的变化，场景越来越亮并且逐渐收敛
+![请添加图片描述](af40e90ef0f94acf8b26241897aadb07.png)![请添加图片描述](b4fe2f603f504a51842d83e722f53384.png)
 
 
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/fdbadc2e48894517aa4e52729c38fdbd.png)
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/64173e8c85444a19bbd65438af052815.png)
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/5f23c3cf279f4e8687d3fc40dddbb1aa.png)
+![请添加图片描述](fdbadc2e48894517aa4e52729c38fdbd.png)
+![请添加图片描述](64173e8c85444a19bbd65438af052815.png)
+![请添加图片描述](5f23c3cf279f4e8687d3fc40dddbb1aa.png)
 这一部分就结束了，主要就是从辐射度量学角度来计算光照。直接光照和弹射后的光照混合就形成了全局光照
 # Monte carlo Path Tracing 蒙特卡洛路径追踪
 ## Monte Carlo Integration 蒙特卡洛积分
 蒙特卡洛是用来解一个原函数不好解析的定积分计算
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/0a45824c28574d719b2530e9d819d801.png)
+![请添加图片描述](0a45824c28574d719b2530e9d819d801.png)
 它的基本思想就是通过随机采样获得很多f(x)来进行估计
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/62b60924d1c14380a4a226b8e0ca72c7.png)更一般情况下，概率函数取任意一个，用下边公式就可以求一个定积分
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/e2eff3901d754a2b8e597a6b07ca2a69.png)
+![请添加图片描述](62b60924d1c14380a4a226b8e0ca72c7.png)更一般情况下，概率函数取任意一个，用下边公式就可以求一个定积分
+![请添加图片描述](e2eff3901d754a2b8e597a6b07ca2a69.png)
 ## Path Tracing 路径追踪  
 之前已经学习了Whitted-Style Ray Tracing，从摄像机射出光线遇到物体进行镜面反射或折射，每次弹射都与光源连线，但这里面有一些不符合物理的情况
 问题一： Whitted-Style假设反射时完美的，没有任何模糊或扩散，但是对于Glossy表面，现实中光线会在一个范围内散射，而不是单一方向的镜面反射
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/4338829c85734a12ae7d2bb2d9a083f6.png)
- 问题二：光的漫反射应该真正的向四面八方反射开，例如下边右图柱子被墙壁的红色光反射到而呈现了红色![请添加图片描述](https://i-blog.csdnimg.cn/direct/9c960ae7b18945b3a616d60d27f93e6d.png)
+![请添加图片描述](4338829c85734a12ae7d2bb2d9a083f6.png)
+ 问题二：光的漫反射应该真正的向四面八方反射开，例如下边右图柱子被墙壁的红色光反射到而呈现了红色![请添加图片描述](9c960ae7b18945b3a616d60d27f93e6d.png)
  所以最终得到Whitted-Style Ray Tracing是错的
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/70c9dc705b6747a8ac797c04d6c92e75.png)
+![请添加图片描述](70c9dc705b6747a8ac797c04d6c92e75.png)
 ## 用蒙特卡洛积分解渲染方程
 
  考虑下图场景
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/bdd4d8060b5f4fe88ad58f880baf4985.png)
+![请添加图片描述](bdd4d8060b5f4fe88ad58f880baf4985.png)
 解渲染方程，就是求在半球上的积分，所以可以用蒙特卡洛来解
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/ea6589a50c1346bf965ab494279bb2da.png)
+![请添加图片描述](ea6589a50c1346bf965ab494279bb2da.png)
 被积函数如下，在立体角上积分，整体为半球
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/606ec211c32d4747a659e980c61c5050.png)
+![请添加图片描述](606ec211c32d4747a659e980c61c5050.png)
 选择概率密度函数如下
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/311ae8c88724440892f91b6238116be3.png)
-最终要求的就是 ，在不同的立体角上进行采样，最终利用蒙特卡洛公式来估计积分值![请添加图片描述](https://i-blog.csdnimg.cn/direct/a37a4598d6734cd593b5030de93b891f.png)
+![请添加图片描述](311ae8c88724440892f91b6238116be3.png)
+最终要求的就是 ，在不同的立体角上进行采样，最终利用蒙特卡洛公式来估计积分值![请添加图片描述](a37a4598d6734cd593b5030de93b891f.png)
 用算法描述就是要求p点向wo方向的辐射，首先通过概率密度函数随机选择N个样本，对于每个选中的方向wi，从p点连接到wi形成一条光线，如果这个方向打到了光源，就用公式进行累加 （这里的描述只考虑直接光照），如果没打到就是采样结果为0
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/629ef596da0843eebbf849b79a4aa0c0.png)
+![请添加图片描述](629ef596da0843eebbf849b79a4aa0c0.png)
 上边已经解决了直接光照问题，下来再解决全局光照，p点在wi方向上并没有看到光源，但是看到了Q点，这时候把P点当作摄像机，Q点当作要处理的点，对Q点进行上边介绍的处理，就能算出Q点对P点的贡献
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/3c62fa5dca7e47e9a154f6e100afac5b.png)
+![请添加图片描述](3c62fa5dca7e47e9a154f6e100afac5b.png)
 全局光照的算法描述如下，注意红色位置	
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/0a490a506c644b6b9180318d5f1e3aa5.png)
+![请添加图片描述](0a490a506c644b6b9180318d5f1e3aa5.png)
 到这里还是有问题
 问题一： 点越打越多，比如采样10次，如果10次采样都打到了物体上，那每个采样点又会采样10次
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/ab7d37b6111140b3b2d5eca3c9700613.png)问题一的解决就是只采样一次![请添加图片描述](https://i-blog.csdnimg.cn/direct/37b205c4ff294d4d89535e0c55863a69.png)
+![请添加图片描述](ab7d37b6111140b3b2d5eca3c9700613.png)问题一的解决就是只采样一次![请添加图片描述](37b205c4ff294d4d89535e0c55863a69.png)
 用N=1来进行积分就叫做Path Tracing，虽然在一个点位只会采样一次，但是整体路径可以进行多次，也就是从像素出发的线不只一条，但接触到物体时只采样一次
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/787e797befa74737b629822e7fae947c.png)
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/fd3cdb70f7c8475f91b554f0296ee673.png)
+![请添加图片描述](787e797befa74737b629822e7fae947c.png)
+![请添加图片描述](fd3cdb70f7c8475f91b554f0296ee673.png)
 问题二：没有设置递归出口，可是真实情况光就是会弹射无数次，引入俄罗斯轮盘赌来解决，以一定的概率停止递归
 
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/397ae528cc02439f831a6b1ab18d2a65.png)
+![请添加图片描述](397ae528cc02439f831a6b1ab18d2a65.png)
 根据期望，这种概率性做法最终的期望还是Lo
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/678ab7367b744b90be189b6d6066bccf.png)
+![请添加图片描述](678ab7367b744b90be189b6d6066bccf.png)
 最终最终的算法步骤如下：
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/d0bed5e1f2f743d896fd66b4661c427b.png)
+![请添加图片描述](d0bed5e1f2f743d896fd66b4661c427b.png)
 下面看一下用这个算法生成的图，算法是正确的，但是像素采样点设置很少时（low SPP）效果并不好，在High SPP下速度又太慢
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/203edee284d74b27bbb7a2c2be464dc9.png)
+![请添加图片描述](203edee284d74b27bbb7a2c2be464dc9.png)
   ## Sampling the Light 光源采样
   需要的采样数与光源大小有关系，如果射出的采样光没有打到光源，贡献就是0
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/ee91f491b6d54b738037b4f8bb621022.png)
+![请添加图片描述](ee91f491b6d54b738037b4f8bb621022.png)
 解决效率问题思想就是在点P不再四面八方采样，而是在光源上进行采样，现在存在的问题蒙特卡洛积分的采样概率密度函数是在P点半球面的采样，需要把公式转换成在光源上采样的形式
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/c6a2858a8a334778a183207fbaf98afa.png)
+![请添加图片描述](c6a2858a8a334778a183207fbaf98afa.png)
 从数学上说就是dw的积分改为dA积分，需要先研究dw和dA的关系，就是用两者的关系进行换元
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/1b22925b0d0b4691bc634834c658cba4.png)
+![请添加图片描述](1b22925b0d0b4691bc634834c658cba4.png)
 最终重写渲染方程，就是把在立体角上的采样换成了在光源面积上采样
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/e4d819262b9b489aabe66a0d969e20d2.png)
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/27d10f5d879a441199c1cd8582ccca65.png)
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/eb44d23a5084430eaa717bf58848e2fd.png)
+![请添加图片描述](e4d819262b9b489aabe66a0d969e20d2.png)
+![请添加图片描述](27d10f5d879a441199c1cd8582ccca65.png)
+![请添加图片描述](eb44d23a5084430eaa717bf58848e2fd.png)
 到这还有一个小小问题
 如果光源被挡住呢？
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/8f17ee61a00e4d4facb344a444ff403d.png)
+![请添加图片描述](8f17ee61a00e4d4facb344a444ff403d.png)
 点光源路径追踪不好处理，建议改成小面积的面光源 
 
 # 最后来感受一下Path Tracing的强大
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/0e44c9ef6ebe4770914347ddd318ee85.png)
+![请添加图片描述](0e44c9ef6ebe4770914347ddd318ee85.png)
 如何渲染一张图：要么光栅化要么光线追踪
 
 
