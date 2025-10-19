@@ -1,3 +1,13 @@
+name: 部署博客网站
+
+# 表示什么时候触发部署
+on:
+  push:
+    branches: [ main ]
+
+permissions:
+  contents: write
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
