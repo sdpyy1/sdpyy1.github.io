@@ -7,7 +7,7 @@ tags = ["课程作业","Games101"]
 +++
 # 作业介绍
 本期作业将在新的代码上完成，就是绘制四个控制点表示的贝塞尔曲线，本次作业的原理很简单，另外我目前并不想把时间花费到写出实现代码上，所以本次代码来自网络，会标明出处
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/8a2feb71ac974759bebe37b6dba03b4c.png)
+![请添加图片描述](8a2feb71ac974759bebe37b6dba03b4c.png)
 # cv::Point2f recursive_bezier(const std::vector<cv::Point2f> &control_points, float t) 
 > 参考https://blog.csdn.net/ycrsw/article/details/124117190?ops_request_misc=%257B%2522request%255Fid%2522%253A%2522409267016115dce86afca8873f30f1ba%2522%252C%2522scm%2522%253A%252220140713.130102334..%2522%257D&request_id=409267016115dce86afca8873f30f1ba&biz_id=0&utm_medium=distribute.pc_search_result.none-task-blog-2~all~top_positive~default-1-124117190-null-null.142^v102^pc_search_result_base4&utm_term=games101%E4%BD%9C%E4%B8%9A4&spm=1018.2226.3001.4187
 

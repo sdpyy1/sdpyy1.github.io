@@ -7,7 +7,7 @@ tags = ["课程作业","Games101"]
 +++
 # 作业介绍
 在上次作业中，每一次计算光线交点时，都需要与场景中所有的物体进行求交运行，这显然是不合理的，这次作业用BVH划分后进行加速
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/bace7e32a04640d08dbcb3b7ba95b6d5.png)
+![在这里插入图片描述](bace7e32a04640d08dbcb3b7ba95b6d5.png)
 # 预处理
 需要根据上次作业的内容以及这次作业对代码结构的调整，写入eye ray计算方法和三角形与光线求交，下面给出具体代码
 `void Renderer::Render(const Scene& scene)`中，光线被定义成了一个类，填入参数
@@ -152,7 +152,7 @@ Intersection BVHAccel::getIntersection(BVHBuildNode* node, const Ray& ray) const
 }
 ```
 最终运行代码得到如图结果
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/7685e3c05ceb40d686c8997f9b6dab10.png)
+![在这里插入图片描述](7685e3c05ceb40d686c8997f9b6dab10.png)
 # 其他代码
 ## BVH树的构造
 BVH在分叉中点选取时，参考的是物体包围盒质心（Centroid）在质心包围盒（Centroid Bounds）最大延伸轴上的排序位置

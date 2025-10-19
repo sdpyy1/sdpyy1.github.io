@@ -6,7 +6,7 @@ categories = ["Course/Games101","Assignment"]
 tags = ["课程作业","Games101"]
 +++
 # 作业介绍
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/d4bca87d0cc845e78962e550baedf970.png)
+![在这里插入图片描述](d4bca87d0cc845e78962e550baedf970.png)
 # eye ray（计算像素坐标实际对应的空间坐标）
 这里首先需要回顾一下光栅化过程中的各种space转换
 1. Model Space 模型自身的局部坐标系，类如.obj文件中定义的顶点位置，并不会随着在空间中移动而修改
@@ -24,7 +24,7 @@ tags = ["课程作业","Games101"]
 4. 因为原来屏幕不一定是正方形，需要给x*宽高比（此时已经在NDC坐标下）
 5. 最后将NDC坐标转换为摄像机视角下的坐标（给了fov，就是给了znear的位置），给x、y乘以tan(deg2rad(scene.fov * 0.5f)），这样就得到了当眼睛看向一个像素时，它实际上在znear上的位置
 6. 确实没有必要继续逆转换了，因为znear上的坐标在透视投影过程中并不会变化
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/cdd4afd4f01c403baebd748d025ad72b.png)
+![在这里插入图片描述](cdd4afd4f01c403baebd748d025ad72b.png)
 给出这部分的完整代码
 
 ```cpp
@@ -54,7 +54,7 @@ tags = ["课程作业","Games101"]
 ```
 # rayTriangleIntersect 三角形与光线求交
 这里比较容易，因为有现成的公式，如果有交点，那这个交点可以用重心坐标表示，所以可以得出图中的等式，直接代码实现即可，最后记得判断结果的合理性（t要大于0，重心坐标三个分量都要大于0，等式已经限定了三者相加为1）
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/0d9b97e41094499aa8462e282d491ec1.png)
+![请添加图片描述](0d9b97e41094499aa8462e282d491ec1.png)
 完整代码
 
 ```cpp
@@ -78,7 +78,7 @@ bool rayTriangleIntersect(const Vector3f& v0, const Vector3f& v1, const Vector3f
 }
 ```
 上边两步做完后，作业就结束了，输出的图如下
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/596150ce910e433694d4bb76ebe253f6.png)
+![在这里插入图片描述](596150ce910e433694d4bb76ebe253f6.png)
 # 其他代码
 ## Object及其派生
 ```cpp
@@ -158,7 +158,7 @@ public:
 };
 ```
 其中求交问题参考下图，就是联立求解，`solveQuadratic`用来求二次方程的根
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/4fc1a32d8fc740099ff75ec4aa6da3e6.png)
+![请添加图片描述](4fc1a32d8fc740099ff75ec4aa6da3e6.png)
 紧接着看一下MeshTriangle
 
 ```cpp
