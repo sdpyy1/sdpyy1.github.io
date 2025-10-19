@@ -6,7 +6,7 @@ categories = ["Course/Games101","Assignment"]
 tags = ["课程作业"]
 +++
 # 作业描述
-上节课已经对光栅化的操作有了了解，这节课直接引入了模型和纹理，其实本质就是引入了很多的顶点，操作其实没什么变化![请添加图片描述](https://i-blog.csdnimg.cn/direct/23b1962b67c04c8a914553728140a155.png)
+上节课已经对光栅化的操作有了了解，这节课直接引入了模型和纹理，其实本质就是引入了很多的顶点，操作其实没什么变化![请添加图片描述](23b1962b67c04c8a914553728140a155.png)
 1. 和上次一样，只不过要插值更多的东西
 2. copy以前的投影矩阵即可
 3. 实现Blinn-Phong的光照模型，本质就是对每个像素的颜色值进行处理，把插值出来的颜色作为了漫反射的系数，另外还需要考虑高光反射和环境光
@@ -15,7 +15,7 @@ tags = ["课程作业"]
 6. 待学习
 # 法向量、纹理颜色插值
 通过重心坐标进行插值,每个像素点的重心坐标计算公式如下，$A_A$是面积
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/9f827fde268a47c4bc84ea6b54573ca1.png)
+![请添加图片描述](9f827fde268a47c4bc84ea6b54573ca1.png)
 重心坐标计算代码如下
 
 ```cpp
@@ -48,7 +48,7 @@ auto interpolated_shadingcoords = interpolate(alpha,beta,gamma,view_pos[0],view_
 ```
 # Blinn-Phong的光照模型
 听过课肯定都懂了，直接写进代码即可
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/6218a369afe94437bb81dfb0420e1b39.png)
+![请添加图片描述](6218a369afe94437bb81dfb0420e1b39.png)
 
 ```cpp
 Eigen::Vector3f phong_fragment_shader(const fragment_shader_payload& payload)
@@ -168,7 +168,7 @@ Eigen::Vector3f texture_fragment_shader(const fragment_shader_payload& payload)
 ```
 # Bump mapping
 源码给了一个示例来参考 通过扰动表面法线方向‌（而非实际修改几何形状）来制造光照上的明暗变化
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/92cd011da35a45a1afd9cd26691e0f94.png)
+![请添加图片描述](92cd011da35a45a1afd9cd26691e0f94.png)
 按照上述代码对传进来的像素的法线进行处理，最后的颜色就是法线值
 ```cpp
     float x = normal.x();
