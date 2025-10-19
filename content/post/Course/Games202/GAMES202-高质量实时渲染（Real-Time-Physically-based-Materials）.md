@@ -4,6 +4,7 @@ draft = false
 title = 'GAMES202 高质量实时渲染（Real-Time Physically Based Materials）'
 categories = ["Course/Games202"]
 tags = ["课程笔记","Games202"]
+image = 'a798b632f6bc41f9b3e68453c8445fb7.png'
 +++
 # Micorfacet BRDF
 ![在这里插入图片描述](c1dccc9561914ba7b95432dc6463973e.png)

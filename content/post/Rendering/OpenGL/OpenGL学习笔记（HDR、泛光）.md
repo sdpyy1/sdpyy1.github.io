@@ -4,6 +4,7 @@ draft = false
 title = 'OpenGL学习笔记（HDR、泛光）'
 categories = ["Rendering/OpenGL"]
 tags = ["API学习","OpenGL"]
+image = '3f35480e680a4948bb8b80386c384e22.png'
 +++
 # HDR
 **一句话理解就是不要让颜色限制到0-1.先拓展到很大的范围，最后再通过某种映射回到0-1，这样不同颜色的区分度就会变大。**

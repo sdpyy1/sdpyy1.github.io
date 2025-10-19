@@ -4,6 +4,7 @@ draft = false
 title = 'GAMES101 现代计算机图形学入门 Animation/Simulation'
 categories = ["Course/Games101"]
 tags = ["课程笔记","Games101"]
+image = '49ba0bbdd1d24a848de86f532c675a7e.png'
 +++
 # 一些科普
 ## Keyframe Animator

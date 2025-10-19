@@ -4,6 +4,7 @@ draft = false
 title = 'OpenGLRender开发记录（3）：后处理Pass（大气渲染）'
 categories = ["Projects/OpenGLRender"]
 tags = ["渲染器开发","OpenGLRender","OpenGL"]
+image = '025e7da8dd62453095a4739f7c3d15ed.png'
 +++
 # 大气渲染
 ## 渲染方法分析

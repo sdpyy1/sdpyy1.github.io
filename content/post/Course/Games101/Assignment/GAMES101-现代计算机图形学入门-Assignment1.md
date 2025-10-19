@@ -4,6 +4,7 @@ draft = false
 title = 'GAMES101 现代计算机图形学入门 Assignment1'
 categories = ["Course/Games101","Assignment"]
 tags = ["课程作业","Games101"]
+image = '594b42fc6200482991a2c402f81c52d1.png'
 +++
 # 作业介绍
 给出三个点的空间坐标，通过MVP矩阵将点投影到平面上，并绘制出三角形

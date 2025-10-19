@@ -1,7 +1,7 @@
 ---
 title: About
-description: Hugo, the world's fastest framework for building websites
-date: '2019-02-28'
+description: 爱喝东方树叶
+date: '2025-10-19'
 aliases:
   - about-us
   - about-hugo
@@ -15,4 +15,4 @@ menu:
             icon: user
 ---
 
-  
+用了两天终于把搭建完了网站，并且把博客全部搬过来了

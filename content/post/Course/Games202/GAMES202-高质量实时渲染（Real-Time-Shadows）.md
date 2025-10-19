@@ -4,6 +4,7 @@ draft = false
 title = 'GAMES202 高质量实时渲染（Real Time Shadows）'
 categories = ["Course/Games202"]
 tags = ["课程笔记","Games202"]
+image = '7d064c8a32bd4ca48f6dc45c082cf7c4.png'
 +++
 # Shadow Mapping
 这块东西在我OpenGL学习笔记中有详细介绍

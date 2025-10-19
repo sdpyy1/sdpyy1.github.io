@@ -4,6 +4,7 @@ draft = false
 title = 'GAMES101 现代计算机图形学入门 Assignment0'
 categories = ["Course/Games101","Assignment"]
 tags = ["课程作业","Games101"]
+image = '2703bfe2cee44ac4b97c54c3d8b35851.png'
 +++
 # Assignment0
 前边一大半主要是安装虚拟机保证运行一致，这里就跳过了，到实际的问题：点旋转和平移

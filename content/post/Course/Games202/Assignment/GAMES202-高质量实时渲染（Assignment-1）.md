@@ -4,6 +4,7 @@ draft = false
 title = 'GAMES202 高质量实时渲染（Assignment 1）'
 categories = ["Course/Games202","Assignment"]
 tags = ["课程作业","Games202"]
+image = '531daca67f0242c6abba44c1e5a88603.png'
 +++
 # Homework1
 ## shadow Map

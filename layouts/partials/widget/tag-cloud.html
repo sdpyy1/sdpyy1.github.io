@@ -1,34 +1,29 @@
 {{- $context := .Context -}}
 {{- $limit := default 10 .Params.limit -}}
+{{- $displayed := slice -}}
+{{- $count := 0 -}}
 
 <section class="widget tagCloud">
     <div class="widget-icon">
-        {{ partial "helper/icon" "tag" }}
+        {{ partial "helper/icon" "categories" }}
     </div>
-    <h2 class="widget-title section-title">{{ T "widget.tagCloud.title" }}</h2>
+    <h2 class="widget-title section-title">{{ T "widget.categoriesCloud.title" }}</h2>
 
     <div class="tagCloud-tags">
-        {{ range first $limit $context.Site.Taxonomies.tags.ByCount }}
-            {{/* 按标签文章数量计算色彩渐变 */}}
-            {{- $maxCount := 0 -}}
-            {{- $minCount := 1000 -}}
-            {{ range $context.Site.Taxonomies.tags.ByCount }}
-                {{ if gt .Count $maxCount }}{{ $maxCount = .Count }}{{ end }}
-                {{ if lt .Count $minCount }}{{ $minCount = .Count }}{{ end }}
-            {{ end }}
-            {{ if eq $maxCount $minCount }}{{ $maxCount = add $minCount 1 }}{{ end }}
-            {{- $ratio := div (sub .Count $minCount) (sub $maxCount $minCount) -}}
-            {{- $hue := add 180 (mul $ratio 120) | int -}} {{/* 青→紫渐变，与分类云统一 */}}
-
-            <a 
-                href="{{ .Page.RelPermalink }}" 
-                class="tag-cloud-item"
-                style="color: hsl({{ $hue }}, 70%, 60%);"
-                title="{{ .Page.Title }}（{{ .Count }}篇文章）"
-            >
-                {{ .Page.Title }}
-                <span class="tag-count">{{ .Count }}</span>
-            </a>
+        {{ range $context.Site.Taxonomies.categories.ByCount }}
+            {{- $categoryKey := .Page.File.Path -}}
+            {{- if and (not (in $displayed $categoryKey)) (lt $count $limit) -}}
+                {{- $displayed = $displayed | append $categoryKey -}}
+                {{- $count = add $count 1 -}}
+                
+                <a 
+                    href="{{ .Page.RelPermalink }}" 
+                    class="tag-cloud-item"
+                    title="{{ .Page.Title }}"
+                >
+                    {{ .Page.Title }}
+                </a>
+            {{- end -}}
         {{ end }}
     </div>
 </section>
@@ -38,9 +33,9 @@
     display: flex;
     flex-wrap: wrap;
     gap: 10px; /* 标签间距 */
-    padding: 15px 0; /* 无左右内边距，确保靠左对齐 */
-    justify-content: flex-start; /* 强制靠左对齐 */
-    align-items: center; /* 垂直居中避免错位 */
+    padding: 15px 0; /* 取消左右内边距，避免挤压 */
+    justify-content: flex-start; /* 关键：强制靠左对齐 */
+    align-items: center; /* 垂直方向居中，避免标签上下错位 */
 }
 
 .tag-cloud-item {
@@ -50,29 +45,20 @@
     border-radius: 20px;
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #ccc; /* 统一固定颜色 */
     transition: all 0.3s ease;
-    white-space: nowrap; /* 防止标签换行 */
+    white-space: nowrap;
 }
 
 .tag-cloud-item:hover {
-    transform: translateY(-2px); /* 悬停上浮效果 */
+    transform: translateY(-2px);
     box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
     background: rgba(255, 255, 255, 0.1);
-    border-color: currentColor; /* 边框随文字颜色变化 */
+    color: #fff; /* 悬停时文字变白 */
+    border-color: rgba(255, 255, 255, 0.3); /* 悬停时边框变浅 */
 }
 
-/* 标签文章数量徽章 */
-.tag-count {
-    display: inline-block;
-    margin-left: 6px;
-    font-size: 11px;
-    background: rgba(0, 0, 0, 0.1);
-    padding: 0 5px;
-    border-radius: 8px;
-    opacity: 0.7;
-}
-
-/* 响应式适配手机端 */
+/* 响应式调整 */
 @media (max-width: 768px) {
     .tagCloud-tags {
         gap: 6px;

@@ -4,6 +4,7 @@ draft = false
 title = 'GAMES101 现代计算机图形学入门 Shading'
 categories = ["Course/Games101"]
 tags = ["课程笔记","Games101"]
+image = '8794c0d329d24aca97c68998d2945da5.png'  
 +++
 # 什么是shading？
 shading 负责计算物体表面每个采样点的颜色，具体考虑光照、材质属性、观察角度等因素，生成具有真实感的视觉效果（如漫反射、镜面高光、环境光等）‌，之前的光栅化将是几何图元（如三角形）转换为屏幕上的像素，确定哪些像素被图元覆盖，是几何层面的处理

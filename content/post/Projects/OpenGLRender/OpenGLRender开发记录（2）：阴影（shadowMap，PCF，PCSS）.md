@@ -4,6 +4,7 @@ draft = false
 title = 'OpenGLRender开发记录（2）：阴影（shadowMap，PCF，PCSS）'
 categories = ["Projects/OpenGLRender"]
 tags = ["渲染器开发","OpenGLRender","OpenGL"]
+image = '976b5ef841fd4cda9621c4812dd3dba4.png'
 +++
 # 已实现功能
 除了上次实现IBL之外，项目目前新增了imGUI的渲染，更方便地进行调试

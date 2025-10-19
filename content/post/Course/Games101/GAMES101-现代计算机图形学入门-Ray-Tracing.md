@@ -4,6 +4,7 @@ draft = false
 title = 'GAMES101 现代计算机图形学入门 Ray Tracing'
 categories = ["Course/Games101"]
 tags = ["课程笔记","Games101"]
+image = 'a6d366b54c3a45b38beb9e550a1ea53b.png'
 +++
 # Shadow Mapping
 如果使用光栅化，对一个像素shading时考虑光源，考虑摄影机位置，但是没有考虑模型其他位置对该位置的影响，因为在光源与该像素点之间有别的东西挡住，那光源就会被挡住，形成阴影。shading解决不了阴影问题![请添加图片描述](070b07cef83249b58bc9e15c0ecad44f.png)

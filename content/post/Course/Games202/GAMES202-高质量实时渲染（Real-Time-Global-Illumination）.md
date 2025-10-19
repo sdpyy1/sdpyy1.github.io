@@ -4,6 +4,7 @@ draft = false
 title = 'GAMES202 高质量实时渲染（Real-Time Global Illumination）'
 categories = ["Course/Games202"]
 tags = ["课程笔记","Games202"]
+image = 'aa2c09da489f4288808aa9af1f4fc213.png'
 +++
 ![请添加图片描述](78996c31c1b04f5eae5269c1d6756086.png)
  简单理解就是已经被照亮的点作为光源再去照亮别的点

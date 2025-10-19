@@ -4,6 +4,7 @@ draft = false
 title = 'GAMES202 高质量实时渲染（Real-Time Environment Mapping）'
 categories = ["Course/Games202"]
 tags = ["课程笔记","Games202"]
+image = '787b8e5bfbd6453bad3b4faab67d12d9.png'
 +++
 # Shading from Environment Lighting
 使用环境光计算shading的操作叫做IBL(Image based lighting)  ，光照不是来自光源，而是环境贴图

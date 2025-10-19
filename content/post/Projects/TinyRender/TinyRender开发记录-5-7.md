@@ -4,6 +4,7 @@ draft = false
 title = 'TinyRender开发记录 5-7'
 categories = ["Projects/TinyRender"]
 tags = ["渲染器开发","TinyRender"]
+image = '23afe9a8003a44a788f6448c182b6b68.png'
 +++
 # Lesson 5:  Gouraud shading
 本节课实现了 Gouraud shading，对三角形每个顶点用法线求光照，进一步插值到内部像素，相比于phong，phong是要对每个内部像素都需要计算光照，这里简单处理就是默认为255，255，255的白光，计算顶点法线和光照方向的夹角（注意单位化和钝角处理)，得到cos直接乘以光照，就得到了每个顶点的变暗比例，之后再插值到各个像素，关键代码如下

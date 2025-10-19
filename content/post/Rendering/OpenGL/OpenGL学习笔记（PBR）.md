@@ -4,6 +4,7 @@ draft = false
 title = 'OpenGL学习笔记（PBR）'
 categories = ["Rendering/OpenGL"]
 tags = ["API学习","OpenGL"]
+image = 'f9c17e0cf6ff46a7a63a8f8199cf48b0.png'
 +++
 # 微平面模型
 所有的PBR技术都基于微平面理论。这项理论认为，达到微观尺度之后任何平面都可以用被称为微平面(Microfacets)的细小镜面来进行描绘。根据平面粗糙程度的不同，这些细小镜面的取向排列可以相当不一致：

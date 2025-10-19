@@ -4,6 +4,7 @@ draft = false
 title = 'GAMES105 计算机角色动画基础（数学基础）'
 categories = ["Course/Games105"]
 tags = ["课程笔记","Games105"]
+image = '697bf32a43404daeadb64e6c91c121f0.png'
 +++
 # 线性代数
 ## 向量

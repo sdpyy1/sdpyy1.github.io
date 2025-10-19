@@ -4,6 +4,7 @@ draft = false
 title = 'GAMES202 高质量实时渲染（Assignment 2）'
 categories = ["Course/Games202","Assignment"]
 tags = ["课程作业","Games202"]
+image = '1e99f72904054ad5bbfe172340ccd69e.png'
 +++
 # 作业介绍
 物体在不同光照下的表现不同，PRT(Precomputed Radiance Transfer) 是一个计算物体在不同光照下表现的方法。光线在一个环境中，会经历反射，折射，散射，甚至还会物体的内部进行散射。为了模拟具有真实感的渲染结果，传统的Path Tracing 方法需要考虑来自各个方向的光线、所有可能的传播形式并且收敛速度极慢。PRT 通过一种预计算方法，该方法在离线渲染的 Path Tracing 工具链中预计算 lighting 以及 light transport 并将它们用球谐函数拟合后储存，这样就将时间开销转移到了离线中。最后通过使用这些预计算好的数据，我们可以轻松达到实时渲染严苛的时间要求，同时渲染结果可以呈现出全局光照的效果。

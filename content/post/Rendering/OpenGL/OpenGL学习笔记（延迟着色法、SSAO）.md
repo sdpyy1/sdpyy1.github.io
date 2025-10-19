@@ -4,6 +4,7 @@ draft = false
 title = 'OpenGL学习笔记（延迟着色法、SSAO）'
 categories = ["Rendering/OpenGL"]
 tags = ["API学习","OpenGL"]
+image = '5d72ce7b8a844d10a11dbfa6f72f7733.png'
 +++
 # 延迟着色法
 我们现在一直使用的光照方式叫做正向渲染(Forward Rendering)或者正向着色法(Forward Shading)

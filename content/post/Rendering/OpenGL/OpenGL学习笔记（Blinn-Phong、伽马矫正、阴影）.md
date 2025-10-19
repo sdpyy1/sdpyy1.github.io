@@ -4,6 +4,7 @@ draft = false
 title = 'OpenGL学习笔记（Blinn Phong、伽马矫正、阴影）'
 categories = ["Rendering/OpenGL"]
 tags = ["API学习","OpenGL"]
+image = 'e876017653874542a3d6dcca727f0a04.png'
 +++
 # Blinn-Phong
 PhongShading不仅对真实光照有很好的近似，而且性能也很高。但是它的镜面反射会在一些情况下出现问题，特别是物体反光度很低时，会导致大片（粗糙的）高光区域。下面这张图展示了当p为1.0时地板会出现的效果：

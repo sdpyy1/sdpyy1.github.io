@@ -4,6 +4,7 @@ draft = false
 title = 'OpenGL学习笔记（简介、三角形、着色器、纹理、坐标系统、摄像机）'
 categories = ["Rendering/OpenGL"]
 tags = ["API学习","OpenGL"]
+image = '3779db9d1ff84e66b075f0dd6d1edb90.png'
 +++
 # 简介
 在学习完Games101，以及手撸一个软光栅之后，来学习一下OpenGL~
