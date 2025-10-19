@@ -7,29 +7,29 @@ tags = ["API学习","OpenGL"]
 +++
 # Blinn-Phong
 PhongShading不仅对真实光照有很好的近似，而且性能也很高。但是它的镜面反射会在一些情况下出现问题，特别是物体反光度很低时，会导致大片（粗糙的）高光区域。下面这张图展示了当p为1.0时地板会出现的效果：
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/80b55f8646e1467b93cff1b9ecd6641f.png)
+![在这里插入图片描述](80b55f8646e1467b93cff1b9ecd6641f.png)
 上图高光区域的边缘有明显的断层，出现这个问题的原因是观察向量和反射向量间的夹角不能大于90度。如果点积的结果为负数，镜面光分量会变为0.0。所以90°的地方明显的断层
 下图就是这个角度大于90°的情况
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/17f69751f1204ff794a2dca51ed20f25.png)
+![在这里插入图片描述](17f69751f1204ff794a2dca51ed20f25.png)
 1977年，James F. Blinn在风氏着色模型上加以拓展，引入了Blinn-Phong着色模型。Blinn-Phong模型与风氏模型非常相似，但是它对镜面光模型的处理上有一些不同，让我们能够解决之前提到的问题。Blinn-Phong模型不再依赖于反射向量，而是采用了所谓的半程向量(Halfway Vector)，即光线与视线夹角一半方向上的一个单位向量。当半程向量与法线向量越接近时，镜面光分量就越大。
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/398be4c82dcc40c3ac582bff364dcc7b.png)
+![在这里插入图片描述](398be4c82dcc40c3ac582bff364dcc7b.png)
 用光线与实现夹角的半程向量与法线夹角来表示镜面光强度。当视线正好与（现在不需要的）反射向量对齐时，半程向量就会与法线完美契合。所以当观察者视线越接近于原本反射光线的方向时，镜面高光就会越强。现在，不论观察者向哪个方向看，半程向量与表面法线之间的夹角都不会超过90度（除非光源在表面以下）。
 
 **Blinn-Phong与风氏模型唯一的区别就是，Blinn-Phong测量的是法线与半程向量之间的夹角，而风氏模型测量的是观察方向与反射向量间的夹角。**
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/7ddd6ea90d13401ab06f552c82d0fe6a.png)
+![在这里插入图片描述](7ddd6ea90d13401ab06f552c82d0fe6a.png)
 除此之外还有一个小区别，就是半程向量与表面法线的夹角通常会小于观察与反射向量的夹角。所以，如果你想获得和风氏着色类似的效果，就必须在使用Blinn-Phong模型时将镜面反光度设置更高一点。通常我们会选择风氏着色时反光度分量的2到4倍。
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/70d5962e69104f79b5e52d6fef8ad105.png)
+![在这里插入图片描述](70d5962e69104f79b5e52d6fef8ad105.png)
 Blinn-Phong着色的一个附加好处是，它比Phong着色性能更高，因为我们不必计算更加复杂的反射向量了。
 # Gamma矫正
 ## Gamma
 设备输出亮度 = 输入电压的Gamma次幂
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/bf6ee5e130a444f8a4a063e839d1a8ef.png)
+![在这里插入图片描述](bf6ee5e130a444f8a4a063e839d1a8ef.png)
 第一行表示人眼感知色阶，第二行是物理的色阶。
 人眼对暗色的分辨能力远超亮色，那么在有限的计算机颜色中（256个色阶），亮色和暗色均匀分布的话，那亮色部分就会精度过剩而暗色部分就会精度不足。如何解决这个问题？进行 Gamma 矫正。 
 
 人的视觉系统对光照强度的反应并不是线性的，这意味着一个线性变化的光强，人眼感知起来却并非如此。
 
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/1d50ec9cae5d4c4e8d01ed8dcf3d1709.png)
+![在这里插入图片描述](1d50ec9cae5d4c4e8d01ed8dcf3d1709.png)
 y=x的电线表示Gamma为1的理想状态，当我们输出一个值为(0.5,0.0,0.0)的颜色时，显示器输出的实际颜色为(0.218,0.0,0.0)  就是0.5的2.2次幂。如果我们把设置的颜色翻倍变为（1，0，0）实际上显示器的输出翻了4.5倍不止。
 
 这块我感觉他解释的很乱，不如直接说人眼的gamma是1/2.2，显示器的gamma是2.2，刚好抵消了
@@ -40,7 +40,7 @@ y=x的电线表示Gamma为1的理想状态，当我们输出一个值为(0.5,0.0
 最终达到"所见即所得"的效果
 
 因为颜色是根据显示器的输出配置的，所以线性空间中的所有中间(照明)计算在物理上都是不正确的。随着更多先进的照明算法的引入，这一点变得更加明显，如下图所示：
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/96a5a493dfe64ebda901f9fb55096ddb.png)
+![在这里插入图片描述](96a5a493dfe64ebda901f9fb55096ddb.png)
 如果没有适当地纠正这个显示器伽马，照明看起来是错误的，艺术家将很难获得逼真和好看的结果。解决方案正是应用伽马校正。
 
 ## Gamma矫正
@@ -58,9 +58,9 @@ Gamma校正(Gamma Correction)的思路是在最终的颜色输出到显示器之
 glEnable(GL_FRAMEBUFFER_SRGB);
 ```
 不开矫正效果
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/14ab11ba1f9e43658f14890c44421222.png)
+![在这里插入图片描述](14ab11ba1f9e43658f14890c44421222.png)
 开启矫正
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/7de60a5b6a2e42248ba6f0d61815deb4.png)
+![在这里插入图片描述](7de60a5b6a2e42248ba6f0d61815deb4.png)
 明显亮了很多，这也就是在抵消显示器让颜色变暗的情况。
 使用这种方法要注意，他是输出到屏幕之前进行的矫正，如果你提前进行了矫正，那后续操作就全错了。
 
@@ -78,7 +78,7 @@ void main()
 ```
 ## sRGB纹理
 显示器显示颜色时使用了gamma曲线（约2.2），这意味着：你看到的颜色 ≠ 内存中的数值
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/6af533da32a246499c36ad61e5de058e.png)
+![在这里插入图片描述](6af533da32a246499c36ad61e5de058e.png)
 典型错误场景：
 当你在渲染管线中：
 ① 加载sRGB纹理（已经gamma校正）
@@ -281,7 +281,7 @@ void renderCube()
 }
 
 ```
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/eb3e4fd9b21c4d4aa5681c401566dd8d.png)
+![在这里插入图片描述](eb3e4fd9b21c4d4aa5681c401566dd8d.png)
 下来就是生成阴影贴图了
 
 第一步需要使用自定义帧缓冲生成深度贴图
@@ -382,7 +382,7 @@ void main()
         renderCube();
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 ```
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/e876017653874542a3d6dcca727f0a04.png)
+![在这里插入图片描述](e876017653874542a3d6dcca727f0a04.png)
 ## 渲染阴影
 首先在顶点着色器，我们要记录每个顶点在光源视角下的位置FragPosLightSpace 
 
@@ -485,16 +485,16 @@ float ShadowCalculation(vec4 fragPosLightSpace)
 }
 ```
 最终渲染出来为
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/ec23146a7988471eac1562ab0f3a55ea.png)
+![在这里插入图片描述](ec23146a7988471eac1562ab0f3a55ea.png)
 ## 改进阴影贴图
 目前的渲染是有问题的
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/9b67b4e4af314ddcbb4731c8bc394490.png)
+![在这里插入图片描述](9b67b4e4af314ddcbb4731c8bc394490.png)
 地板四边形渲染出一大块交替黑线。这种阴影贴图的不真实感叫做阴影失真(Shadow Acne)，下图解释了成因：
 
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/f30bde087beb4cdd8f3eccbe48e731ae.png)
+![在这里插入图片描述](f30bde087beb4cdd8f3eccbe48e731ae.png)
 阴影贴图受限于分辨率，在离光源很远的情况下，多个片段在深度贴图的同一个位置进行了采样。
 我们可以用一个叫做阴影偏移（shadow bias）的技巧来解决这个问题，我们简单的对表面的深度（或深度贴图）应用一个偏移量，这样片段就不会被错误地认为在表面之下了。
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/4c0f83e599714eb480a6cb62aee55f36.png)
+![在这里插入图片描述](4c0f83e599714eb480a6cb62aee55f36.png)
 
 ```bash
     float bias = 0.005;
@@ -505,9 +505,9 @@ float ShadowCalculation(vec4 fragPosLightSpace)
 float bias = max(0.05 * (1.0 - dot(normal, lightDir)), 0.005);
 ```
 但是当偏移量过大时，也会出现悬浮效果。这个阴影失真叫做悬浮(Peter Panning)，因为物体看起来轻轻悬浮在表面之上
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/b58afd2b109f4069968b3a00e8976841.png)
+![在这里插入图片描述](b58afd2b109f4069968b3a00e8976841.png)
 下边这幅是正常的，很明显能感觉到上图的错误
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/17998b82d1fa42cfabb958e8eac56982.png)
+![在这里插入图片描述](17998b82d1fa42cfabb958e8eac56982.png)
 
 
 我们可以使用一个叫技巧解决大部分的Peter panning问题：当渲染深度贴图时候使用正面剔除（front face culling）你也许记得在面剔除教程中OpenGL默认是背面剔除。我们要告诉OpenGL我们要剔除正面。
@@ -520,7 +520,7 @@ RenderSceneToDepthMap();
 glCullFace(GL_BACK); // 不要忘记设回原先的culling face
 ```
 另外还有一个问题是光锥不可见的区域一律被任务处于阴影中了
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/9eaddf39f05c4518b56315e998a87144.png)
+![在这里插入图片描述](9eaddf39f05c4518b56315e998a87144.png)
 
 也就是说有些纹理坐标超出了深度贴图的范围，我们可以修改贴图的环绕参数，将超出部分的深度值全部设置为1，这样，贴图外永远都不在阴影中
 
@@ -532,17 +532,17 @@ glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
 ```
 但这样处理只解决了一块阴影
 
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/5a705f04981c468f9c299d0b080855e3.png)
+![在这里插入图片描述](5a705f04981c468f9c299d0b080855e3.png)
 
 仍有一部分是黑暗区域。那里的坐标超出了光的正交视锥的远平面。你可以看到这片黑色区域总是出现在光源视锥的极远处。
 
 当一个点比光的远平面还要远时，它的投影坐标的z坐标大于1.0。这种情况下，GL_CLAMP_TO_BORDER环绕方式不起作用，因为我们把坐标的z元素和深度贴图的值进行了对比；它总是为大于1.0的z返回true。
 
 直接强制让z值大于1的位置（在远平面外的点）设置不在阴影中
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/c9c42b30315549b2a66f3386bb802aca.png)
+![在这里插入图片描述](c9c42b30315549b2a66f3386bb802aca.png)
 ## PCF
 目前的阴影表面仍有锯齿
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/a03bd6a415e343c894a7ffa0bf416d51.png)
+![在这里插入图片描述](a03bd6a415e343c894a7ffa0bf416d51.png)
 
 因为深度贴图有一个固定的分辨率，多个片段对应于一个纹理像素。结果就是多个片段会从深度贴图的同一个深度值进行采样，这几个片段便得到的是同一个阴影，这就会产生锯齿边。
 
@@ -587,10 +587,10 @@ float ShadowCalculation(vec4 fragPosLightSpace)
     return shadow;
 }
 ```
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/7e6a7ecf9ce3475084c2aa30ba876d8a.png)
+![在这里插入图片描述](7e6a7ecf9ce3475084c2aa30ba876d8a.png)
 正交 vs 投影
 在渲染深度贴图的时候，正交(Orthographic)和投影(Projection)矩阵之间有所不同。正交投影矩阵并不会将场景用透视图进行变形，所有视线/光线都是平行的，这使它对于定向光来说是个很好的投影矩阵。然而透视投影矩阵，会将所有顶点根据透视关系进行变形，结果因此而不同。下图展示了两种投影方式所产生的不同阴影区域：
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/29e896e7050e488b89c89191c59d0711.png)
+![在这里插入图片描述](29e896e7050e488b89c89191c59d0711.png)
 如果使用的是透视投影，在使用深度贴图时，需要先将深度转为线性深度
 
 ```bash

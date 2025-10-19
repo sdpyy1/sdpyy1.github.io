@@ -7,7 +7,7 @@ tags = ["API学习","OpenGL"]
 +++
 # 简介
 在学习完Games101，以及手撸一个软光栅之后，来学习一下OpenGL~
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/f9253537c2ef440cabb73becf31daebf.png)
+![请添加图片描述](f9253537c2ef440cabb73becf31daebf.png)
 OpenGL常被视作提供图形操作函数的API，但其本质是由Khronos制定的规范（Specification），仅严格定义函数行为及输出标准，具体实现（如底层优化、硬件适配）由开发者（如显卡厂商）自行完成。
 ## 核心模式与立即渲染模式
 OpenGL早期采用立即渲染模式（固定管线），简化了图形绘制但效率低且控制受限。随着版本迭代，OpenGL 3.2起废弃此模式，转向‌核心模式‌，强制使用现代函数并移除旧特性。核心模式虽需深入理解图形编程（如手动管理渲染流程），但显著提升了灵活性与性能，同时迫使开发者掌握底层细节，牺牲易用性换取更高效的硬件控制能力。
@@ -160,7 +160,7 @@ int main()
 }
 ```
 运行结果如下图
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/9da5745e7ea240c19847acfe15e4defe.png)
+![请添加图片描述](9da5745e7ea240c19847acfe15e4defe.png)
 # Triangle 三角形
 首先了解三个概念
 顶点数组对象：Vertex Array Object，VAO
@@ -271,7 +271,7 @@ glUseProgram(shaderProgram);
 ```
 ## 顶点数组对象 VAO
 顶点着色器允许我们指定任何以顶点属性为形式的输入。这使其具有很强的灵活性的同时，它还的确意味着我们必须手动指定输入数据的哪一个部分对应顶点着色器的哪一个顶点属性。所以，我们必须在渲染前指定OpenGL该如何解释顶点数据。顶点数据的解析方式如下
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/a8f469ff544a410ebb439bf4007e898b.png)
+![在这里插入图片描述](a8f469ff544a410ebb439bf4007e898b.png)
 我们需要告诉OpenGL如何解析顶点数据，比如紧密的字节序列的一段代表一个顶点的数据，但数据中可能不止顶点的位置，可能还有顶点的颜色之类的，需要告诉OpenGL一个顶点数据有多大，顶点位置的偏移量是多少（因为不一定一开始就是位置信息）
 
 ```cpp
@@ -281,7 +281,7 @@ glEnableVertexAttribArray(0);
 上边代码中的0就是之前写顶点着色器代码中的`(location=0)`
 如果把这些状态配置存储在一个对象中，通过绑定他来启动该状态，这就是VAO。
 顶点数组对象(Vertex Array Object, VAO)可以像顶点缓冲对象那样被绑定。VAO中存储的内容如下
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/9700b335725f4e23888e3e6b77e2ea15.png)
+![在这里插入图片描述](9700b335725f4e23888e3e6b77e2ea15.png)
 VAO创建过程与VBO类似
 
 ```cpp
@@ -352,7 +352,7 @@ glDrawElements绘制的时候就不是直接绘制了，而是使用EBO获取索
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
 ```
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/11134fc29a754f1389844b984de9c27d.png)
+![在这里插入图片描述](11134fc29a754f1389844b984de9c27d.png)
 # 着色器
 在Hello Triangle教程中提到，着色器(Shader)是运行在GPU上的小程序。这些小程序为图形渲染管线的某个特定部分而运行。从基本意义上来说，着色器只是一种把输入转化为输出的程序。着色器也是一种非常独立的程序，因为它们之间不能相互通信；**它们之间唯一的沟通只有通过输入和输出**。
 ## GLSL
@@ -380,7 +380,7 @@ void main()
 ## 数据类型
 基础数据类型有：int、float、double、uint、bool
 另外还有向量
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/20c34cd41a85478abebbfc402b9999ba.png)
+![在这里插入图片描述](20c34cd41a85478abebbfc402b9999ba.png)
 向量可以有一些有趣的重组操作
 
 ```c
@@ -467,7 +467,7 @@ glUniform4f(vertexColorLocation, 0.0f, greenValue, 0.0f, 1.0f);
 ```
 
 最后提一点，如果在VBO中不止位置属性，还有颜色属性如下图
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/a52c8db1752f4ee5a85e0e34b2f6148b.png)
+![在这里插入图片描述](a52c8db1752f4ee5a85e0e34b2f6148b.png)
 可以这样设置
 ```cpp
 // 位置属性
@@ -779,8 +779,8 @@ float texCoords[] = {
 };
 ```
 纹理坐标的范围通常是从(0, 0)到(1, 1)，当我们设置成别的区域时，OpenGL通过参数调整有不同的表达方式
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/7707378cde59404cbbc069c690a01ef7.png)
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/407992d5f3524d3dbe8147d50ebb4da3.png)
+![在这里插入图片描述](7707378cde59404cbbc069c690a01ef7.png)
+![在这里插入图片描述](407992d5f3524d3dbe8147d50ebb4da3.png)
 可以对每个坐标轴的行为进行单独控制
 
 ```cpp
@@ -791,14 +791,14 @@ glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
 首先介绍一个概念：纹理像素，打开一张图片的每个像素就是纹理像素。OpenGL以一个顶点设置的纹理坐标数据去查找纹理图像上的像素，然后进行采样提取纹理像素的颜色。当我需要渲染到一片很大的光栅时，每个像素点插值出来的纹理坐标没法直接对应纹理图片的一个像素（即纹理像素），比如纹理坐标为(0.1,0.1)时，如果原纹理图片是10x10的，这就表示第一行第一列的那个纹理像素的颜色作为该像素点的颜色（当然真实情况是0+0.5才是一个纹理像素的中心，这里只是便于理解），但是如果纹理坐标插值出来是(0.11,0.11)那就没法直接对应了，就需要特殊处理了。
 OpenGL也有对于纹理过滤(Texture Filtering)的选项。纹理过滤有很多个选项，但是现在我们只讨论最重要的两种：GL_NEAREST和GL_LINEAR。
 
-- GL_NEAREST（也叫邻近过滤，Nearest Neighbor Filtering）是OpenGL默认的纹理过滤方式，即选择离纹理坐标最接近的纹理像素的颜色![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/5240a00c5441403ead9bc90f14393f0c.png)
-- GL_LINEAR（也叫线性过滤，(Bi)linear Filtering）它会基于纹理坐标附近的纹理像素，计算出一个插值，近似出这些纹理像素之间的颜色。一个纹理像素的中心距离纹理坐标越近，那么这个纹理像素的颜色对最终的样本颜色的贡献越大。下图中你可以看到返回的颜色是邻近像素的混合色![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/d0bfac55a4b0489da34e3ef6700441f7.png)
+- GL_NEAREST（也叫邻近过滤，Nearest Neighbor Filtering）是OpenGL默认的纹理过滤方式，即选择离纹理坐标最接近的纹理像素的颜色![在这里插入图片描述](5240a00c5441403ead9bc90f14393f0c.png)
+- GL_LINEAR（也叫线性过滤，(Bi)linear Filtering）它会基于纹理坐标附近的纹理像素，计算出一个插值，近似出这些纹理像素之间的颜色。一个纹理像素的中心距离纹理坐标越近，那么这个纹理像素的颜色对最终的样本颜色的贡献越大。下图中你可以看到返回的颜色是邻近像素的混合色![在这里插入图片描述](d0bfac55a4b0489da34e3ef6700441f7.png)
 ## Mipmap 多级渐远纹理
 有些物体会很远，但其纹理会拥有与近处物体同样高的分辨率。比如一个物体光栅化后只占了2x2的像素，但他的纹理图片有10x10，它需要对一个跨过纹理很大部分的片段只拾取一个纹理颜色。**在小物体上这会产生不真实的感觉，更不用说对它们使用高分辨率纹理浪费内存的问题了。**
 OpenGL使用一种叫做多级渐远纹理(Mipmap)的概念来解决这个问题，它简单来说就是一系列的纹理图像，后一个纹理图像是前一个的二分之一。多级渐远纹理背后的理念很简单：距观察者的距离超过一定的阈值，OpenGL会使用不同的多级渐远纹理，即最适合物体的距离的那个。由于距离远，解析度不高也不会被用户注意到。同时，多级渐远纹理另一加分之处是它的性能非常好。让我们看一下多级渐远纹理是什么样子的
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/50ec627221ab4a6ea1b899401df4a188.png)
+![在这里插入图片描述](50ec627221ab4a6ea1b899401df4a188.png)
 离摄像机距离较远的物体采样时，在小纹理上采样效果更好。对Mipmap的使用也有多种过滤方式
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/8562e1db7e9246ac8e142c728b2ccfd1.png)
+![在这里插入图片描述](8562e1db7e9246ac8e142c728b2ccfd1.png)
 最后一种参数额外介绍一下`GL_LINEAR_MIPMAP_LINEAR`（三线性过滤），在最接近的两个mipmap上进行线性插值，最后混合结果，计算量时最大的
 ```cpp
 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
@@ -852,7 +852,7 @@ float vertices[] = {
     -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f    // 左上
 };
 ```
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/0a221cd9d700401b983b1136b75ee4ff.png)
+![在这里插入图片描述](0a221cd9d700401b983b1136b75ee4ff.png)
 告诉VAO，纹理数据是如何存储的，即每个顶点数据站8个字节，纹理数据的偏移为6
 
 ```cpp
@@ -900,7 +900,7 @@ glBindVertexArray(VAO);
 glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 ```
 
-如果你的纹理代码不能正常工作或者显示是全黑，请继续阅读，并一直跟进我们的代码到最后的例子，它是应该能够工作的。在一些驱动中，必须要对每个采样器uniform都附加上纹理单元才可以，这个会在下面介绍。![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/6f714cdf11ce4b1493f3159dcbf25f13.png)
+如果你的纹理代码不能正常工作或者显示是全黑，请继续阅读，并一直跟进我们的代码到最后的例子，它是应该能够工作的。在一些驱动中，必须要对每个采样器uniform都附加上纹理单元才可以，这个会在下面介绍。![在这里插入图片描述](6f714cdf11ce4b1493f3159dcbf25f13.png)
 ## 纹理单元
 我们通过uniform设置的纹理，但是没有在代码中给他赋值呀。使用glUniform1i，我们可以给纹理采样器分配一个位置值，这样的话我们能够在一个片段着色器中设置多个纹理。一个纹理的默认纹理单元是0，它是默认的激活纹理单元，所以教程前面部分我们没有分配一个位置值。纹理单元的主要目的是让我们在着色器中可以使用多于一个的纹理。通过把纹理单元赋值给采样器，我们可以一次绑定多个纹理，只要我们首先激活对应的纹理单元。
 
@@ -1110,10 +1110,10 @@ int main()
 ```
 用Clion的一定要注意，要修改debug文件夹下的着色器代码才能生效。。。
 最终图片
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/dc5ed13b530e44679d80e4ca5ccd1ec7.png)
+![在这里插入图片描述](dc5ed13b530e44679d80e4ca5ccd1ec7.png)
 
 # 坐标系统
-GLM是OpenGL Mathematics的缩写，它是一个只有头文件的库，也就是说我们只需包含对应的头文件就行了，不用链接和编译。GLM可以在它们的网站上下载。把头文件的根目录复制到你的includes文件夹，然后你就可以使用这个库了。![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/fe23d8750d70407eb6dc115cff7e2857.png)
+GLM是OpenGL Mathematics的缩写，它是一个只有头文件的库，也就是说我们只需包含对应的头文件就行了，不用链接和编译。GLM可以在它们的网站上下载。把头文件的根目录复制到你的includes文件夹，然后你就可以使用这个库了。![在这里插入图片描述](fe23d8750d70407eb6dc115cff7e2857.png)
 OpenGL希望在每次顶点着色器运行后，我们可见的所有顶点都为标准化设备坐标(Normalized Device Coordinate, NDC)。也就是说，每个顶点的x，y，z坐标都应该在-1.0到1.0之间，超出这个坐标范围的顶点都将不可见。也就是说OpenGL顶点着色器执行完后，会对不在NDC范围内的点进行剔除。
 
 games101学过很多了，MVP+透视除法+视口变换，让一个三维物体转为二维坐标
@@ -1122,14 +1122,14 @@ games101学过很多了，MVP+透视除法+视口变换，让一个三维物体�
 观察空间(View Space，或者称为视觉空间(Eye Space))
 裁剪空间(Clip Space)
 屏幕空间(Screen Space)
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/b4b0c904a8fc4e50b53cbb92f0d7193c.png)
+![在这里插入图片描述](b4b0c904a8fc4e50b53cbb92f0d7193c.png)
 对于局部空间、世界空间、观察空间这里就不做解释了
 
 ## 裁剪空间
 在一个顶点着色器运行的最后，OpenGL期望所有的坐标都能落在一个特定的范围内，且任何在这个范围之外的点都应该被裁剪掉(Clipped)。被裁剪掉的坐标就会被忽略，所以剩下的坐标就将变为屏幕上可见的片段。这也就是裁剪空间(Clip Space)名字的由来。
 
 `如果只是图元(Primitive)，例如三角形，的一部分超出了裁剪体积(Clipping Volume)，则OpenGL会重新构建这个三角形为一个或多个三角形让其能够适合这个裁剪范围。`
-例如下图![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/b7d5175b000b4cd38003f482b4690d33.png)
+例如下图![在这里插入图片描述](b7d5175b000b4cd38003f482b4690d33.png)
 一旦所有顶点被变换到裁剪空间，最终的操作——透视除法(Perspective Division)将会执行，在这个过程中我们将位置向量的x，y，z分量分别除以向量的齐次w分量。`透视除法是将4D裁剪空间坐标变换为3D标准化设备坐标的过程。这一步会在每一个顶点着色器运行的最后被自动执行。`
 在OpenGL中只需要处理MVP矩阵，裁剪、透视除法和视口变换会自动处理。
 来直接开干把！
@@ -1194,7 +1194,7 @@ void Shader::setMat4(const std::string &name, const glm::mat4 &mat) const {
 }
 ```
 现在图片躺下了
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/3779db9d1ff84e66b075f0dd6d1edb90.png)
+![在这里插入图片描述](3779db9d1ff84e66b075f0dd6d1edb90.png)
 后边这个立方体就不做了，就是顶点都写进去，然后设置好VAO，之后在循环中修改MVP矩阵的M矩阵，他就转起来了，但目前还没有考虑Z-buffer。**GLFW会自动为你生成这样一个缓冲）**我们想要确定OpenGL真的执行了深度测试，首先我们要告诉OpenGL我们想要启用深度测试；它默认是关闭的。我们可以通过glEnable函数来开启深度测试。glEnable和glDisable函数允许我们启用或禁用某个OpenGL功能
 
 ```cpp
@@ -1232,7 +1232,7 @@ glm::vec3 cameraRight = glm::normalize(glm::cross(up, cameraDirection));
 glm::vec3 cameraUp = glm::cross(cameraDirection, cameraRight);
 ```
 使用上面得到的x\y\z向量可以构建lookAt矩阵，可以用这个矩阵乘以任何向量来将其变换到摄像机坐标空间
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/7624db84b8f64bb796dce3db216ecba2.png)
+![在这里插入图片描述](7624db84b8f64bb796dce3db216ecba2.png)
 
 其中`R`是右向量，`U`是上向量，`D`是方向向量,`P`是摄像机位置向量,可以直接通过GLM生成这个矩阵
 
@@ -1294,9 +1294,9 @@ void processInput(GLFWwindow *window)
 为了能够改变视角，我们需要根据鼠标的输入改变cameraFront向量。这里需要一点三角学的知识
 
 **欧拉角**：俯仰角(Pitch)、偏航角(Yaw)和滚转角(Roll)，每个欧拉角都有一个值来表示，把三个角结合起来我们就能够计算3D空间中任何的旋转向量了。
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/85618c60be234d378ff1a082524831e3.png)
+![在这里插入图片描述](85618c60be234d378ff1a082524831e3.png)
 假设我们现在在XZ屏幕，往Y偏移就是俯仰角
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/576a97d4b1ab4883bd1d505db7889e64.png)
+![在这里插入图片描述](576a97d4b1ab4883bd1d505db7889e64.png)
 假设俯仰角为pitch
 ```cpp
 direction.y = sin(glm::radians(pitch)); // 注意我们先把角度转为弧度
@@ -1305,7 +1305,7 @@ direction.z = cos(glm::radians(pitch));
 ```
 
 对偏航角的处理一个道理
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/7844b537be3f49abb8f38e7615bf9754.png)
+![在这里插入图片描述](7844b537be3f49abb8f38e7615bf9754.png)
 通过俯仰角的计算已经知道了斜边长是cos(pitch)，一结合，就得如果已知俯仰角和偏航角，就可以知道(x,y,z)坐标了
 ```cpp
 direction.x = cos(glm::radians(pitch)) * cos(glm::radians(yaw)); // 译注：direction代表摄像机的前轴(Front)，这个前轴是和本文第一幅图片的第二个摄像机的方向向量是相反的
