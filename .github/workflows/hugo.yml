@@ -1,6 +1,5 @@
 name: 部署博客网站
 
-# 触发部署的条件
 on:
   push:
     branches: [ main ]
@@ -18,13 +17,10 @@ jobs:
           submodules: true
           fetch-depth: 0
 
-      # 新增：处理 CSDN 图片链接（下载到 static 并修改 md 文件）
-      - name: 处理 CSDN 图片链接
+      - name: 处理 CSDN 图片链接（支持多格式）
         run: |
-          # 安装 Python 依赖
           pip install requests
 
-          # 创建 Python 处理脚本
           cat > process_images.py << 'EOF'
           import re
           import os
@@ -36,11 +32,15 @@ jobs:
               md_root = "./content/post"  # md文件根目录
               static_dir = "./static"     # 图片保存目录
 
-              # 创建static目录（如果不存在）
+              # 创建static目录
               os.makedirs(static_dir, exist_ok=True)
 
-              # 匹配CSDN图片链接的正则表达式
-              pattern = r'!\[(.*?)\]\(https://i-blog.csdnimg.cn/direct/(\w+)\.png\)'
+              # 匹配CSDN图片链接（支持png、jpeg、jpg格式）
+              # 正则说明：
+              # - (.*?) 匹配图片描述（非贪婪模式）
+              # - (\w+) 匹配图片唯一ID
+              # - (png|jpeg|jpg) 匹配图片后缀（可扩展其他格式）
+              pattern = r'!\[(.*?)\]\(https://i-blog.csdnimg.cn/direct/(\w+)\.(png|jpeg|jpg)\)'
 
               # 递归查找所有md文件
               md_files = list(Path(md_root).rglob("*.md"))
@@ -62,9 +62,9 @@ jobs:
                       print("  未找到CSDN图片链接")
                       continue
 
-                  # 处理每个图片
-                  for desc, img_id in matches:
-                      img_filename = f"{img_id}.png"
+                  # 处理每个图片（desc:描述, img_id:图片ID, ext:后缀）
+                  for desc, img_id, ext in matches:
+                      img_filename = f"{img_id}.{ext}"  # 拼接完整文件名（含后缀）
                       img_url = f"https://i-blog.csdnimg.cn/direct/{img_filename}"
                       local_path = os.path.join(static_dir, img_filename)
 
@@ -72,23 +72,24 @@ jobs:
                       if os.path.exists(local_path):
                           print(f"  图片已存在: {img_filename}")
                       else:
-                          # 下载图片
+                          # 下载图片（模拟浏览器请求头避免拦截）
                           try:
                               print(f"  下载图片: {img_url}")
-                              response = requests.get(img_url, timeout=10, headers={
-                                  "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
-                              })
-                              response.raise_for_status()
+                              headers = {
+                                  "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36"
+                              }
+                              response = requests.get(img_url, timeout=15, headers=headers)
+                              response.raise_for_status()  # 抛出HTTP错误（如403、404）
                               with open(local_path, 'wb') as f:
                                   f.write(response.content)
                               print(f"  下载成功: {img_filename}")
                           except Exception as e:
                               print(f"  下载失败: {img_url}，错误: {e}")
-                              continue
+                              continue  # 下载失败则不替换该链接
 
-                      # 替换md中的链接（Hugo中通常用/static/作为图片根路径）
+                      # 替换md中的链接为本地路径（适配Hugo）
                       old_link = f"![{desc}](https://i-blog.csdnimg.cn/direct/{img_filename})"
-                      new_link = f"![{desc}](/static/{img_filename})"  # 适配Hugo的静态文件路径
+                      new_link = f"![{desc}](/static/{img_filename})"
                       content = content.replace(old_link, new_link)
 
                   # 保存修改后的md文件
@@ -105,13 +106,13 @@ jobs:
           # 运行处理脚本
           python process_images.py
 
-      # 保留原有的复制png文件逻辑（处理已存在的本地图片）
-      - name: 复制 post 中的 png 图片到 static 目录
+      - name: 复制 post 中的图片到 static 目录
         run: |
           mkdir -p ./static
-          find ./content/post -type f -name "*.png" -exec cp {} ./static/ \;
+          # 复制所有图片格式（扩展常见格式）
+          find ./content/post -type f -name "*.png" -o -name "*.jpeg" -o -name "*.jpg" -o -name "*.gif" -o -name "*.webp" -exec cp {} ./static/ \;
           echo "已复制的图片文件："
-          ls -l ./static/*.png
+          ls -l ./static/*.png ./static/*.jpeg ./static/*.jpg 2>/dev/null
 
       - name: 安装Hugo
         uses: peaceiris/actions-hugo@v2
