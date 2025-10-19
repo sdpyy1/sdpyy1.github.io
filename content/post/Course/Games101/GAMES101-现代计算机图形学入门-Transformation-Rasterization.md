@@ -16,33 +16,33 @@ tags = ["笔记"]
 ## 向量
 
 首先介绍一下向量，有长度有方向，起始位置不固定
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/0cf789e58553444d93cff71c08defe69.png)
+![在这里插入图片描述](0cf789e58553444d93cff71c08defe69.png)
 向量归一化，就是获得向量方向上的单位向量，后续课程各种操作都是在单位向量上进行
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/3a1dbb53ecf24ac5a3a6924380cd0fce.png)
+![在这里插入图片描述](3a1dbb53ecf24ac5a3a6924380cd0fce.png)
 向量加法
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/16979f8f8e314502a50499e210cb1241.png)
+![在这里插入图片描述](16979f8f8e314502a50499e210cb1241.png)
 ## 点乘和叉乘
 向量点乘，在后续课程中用来计算cosθ，如果两个单位向量点乘结果就是cosθ
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/ba36e5f8d6774f52815e0b203a9eb3e2.png)
+![在这里插入图片描述](ba36e5f8d6774f52815e0b203a9eb3e2.png)
 在坐标系中的使用，就是对应坐标相乘再相加
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/a2583128ce874f96b266b4b1920dbb3d.png)
+![在这里插入图片描述](a2583128ce874f96b266b4b1920dbb3d.png)
 点乘可以用来投影
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/3eb2f75a0424479d842655c9586ae10b.png)
+![在这里插入图片描述](3eb2f75a0424479d842655c9586ae10b.png)
 向量叉乘
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/8de7a030c8074905a17feb911c59825d.png)
+![在这里插入图片描述](8de7a030c8074905a17feb911c59825d.png)
 在坐标系中的使用，有公式
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/3b45ea1aaf4f48c6b375f8a867929baf.png)
+![在这里插入图片描述](3b45ea1aaf4f48c6b375f8a867929baf.png)
 在图形中的使用是可以判断一个点是否在三角形内部，在光栅化时用来判断一个像素是否需要被渲染
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/416df626f00642e2917dc882af81999f.png)
+![在这里插入图片描述](416df626f00642e2917dc882af81999f.png)
 ## 矩阵
 矩阵就不说了，比较容易
 ## Transformation（变换）
 ### Model Transformation
 模型变换可以做缩放、旋转、平移
 通过矩阵计算实现的缩放
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/b6b20ba2d3684b0e8f80e27ea37c2de9.png)
+![在这里插入图片描述](b6b20ba2d3684b0e8f80e27ea37c2de9.png)
 旋转
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/3d23bd7f8fdc4adfa5ef11d68f2d98fd.png)
+![在这里插入图片描述](3d23bd7f8fdc4adfa5ef11d68f2d98fd.png)
 
 
 
