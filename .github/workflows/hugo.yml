@@ -83,9 +83,9 @@ jobs:
                               print(f"  下载失败: {img_url}，错误: {e}")
                               continue  # 下载失败则不替换该链接
 
-                      # 替换md中的链接为本地路径（适配Hugo）
+                      # 替换md中的链接为直接文件名（去掉/static/前缀）
                       old_link = f"![{desc}](https://i-blog.csdnimg.cn/direct/{img_filename})"
-                      new_link = f"![{desc}](/static/{img_filename})"
+                      new_link = f"![{desc}]({img_filename})"  # 仅保留图片文件名
                       content = content.replace(old_link, new_link)
 
                   # 保存修改后的md文件
@@ -105,10 +105,9 @@ jobs:
       - name: 复制 post 中的图片到 static 目录
         run: |
           mkdir -p ./static
-          # 复制所有常见图片格式（容错：即使无对应格式也不报错）
+          # 复制所有常见图片格式（容错处理）
           find ./content/post -type f \( -name "*.png" -o -name "*.jpeg" -o -name "*.jpg" -o -name "*.gif" -o -name "*.webp" \) -exec cp {} ./static/ 2>/dev/null \;
           echo -e "\n已复制到 static 目录的图片文件："
-          # 优化ls命令：用通配符匹配所有图片，不存在时不报错（2>/dev/null屏蔽错误）
           ls -l ./static/*.{png,jpeg,jpg,gif,webp} 2>/dev/null || echo "  无额外本地图片需要复制"
 
       - name: 安装Hugo
