@@ -3,7 +3,7 @@ date = '2025-10-19T13:22:24+08:00'
 draft = false
 title = 'GAMES101 现代计算机图形学入门 Assignment2'
 categories = ["Course/Games101","Assignment"]
-tags = ["课程作业"]
+tags = ["课程作业","Games101"]
 +++
 # 作业介绍
 上节课通过MVP+视口变换把三角形三个顶点从空间坐标转移到了屏幕上的坐标，并绘制三角形，这节课将通过光栅化技术，构造实心的三角形

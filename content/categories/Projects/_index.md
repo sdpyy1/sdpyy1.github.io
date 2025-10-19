@@ -1,4 +1,4 @@
 ---
-title: "Projects"
-description: "个人项目展示"
+title: "TinyRender"
+description: "CPU软光栅渲染"
 ---

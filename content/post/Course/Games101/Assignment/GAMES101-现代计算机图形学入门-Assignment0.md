@@ -3,7 +3,7 @@ date = '2025-10-19T13:14:45+08:00'
 draft = false
 title = 'GAMES101 现代计算机图形学入门 Assignment0'
 categories = ["Course/Games101","Assignment"]
-tags = ["课程作业"]
+tags = ["课程作业","Games101"]
 +++
 # Assignment0
 前边一大半主要是安装虚拟机保证运行一致，这里就跳过了，到实际的问题：点旋转和平移

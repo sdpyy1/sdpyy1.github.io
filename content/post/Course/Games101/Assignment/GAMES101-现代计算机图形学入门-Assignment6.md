@@ -3,7 +3,7 @@ date = '2025-10-19T13:24:41+08:00'
 draft = false
 title = 'GAMES101 现代计算机图形学入门 Assignment6'
 categories = ["Course/Games101","Assignment"]
-tags = ["课程作业"]
+tags = ["课程作业","Games101"]
 +++
 # 作业介绍
 在上次作业中，每一次计算光线交点时，都需要与场景中所有的物体进行求交运行，这显然是不合理的，这次作业用BVH划分后进行加速

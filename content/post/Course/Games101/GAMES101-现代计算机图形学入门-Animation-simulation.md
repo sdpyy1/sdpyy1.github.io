@@ -3,7 +3,7 @@ date = '2025-10-19T12:48:02+08:00'
 draft = false
 title = 'GAMES101 现代计算机图形学入门 Animation/Simulation'
 categories = ["Course/Games101"]
-tags = ["课程笔记"]
+tags = ["课程笔记","Games101"]
 +++
 # 一些科普
 ## Keyframe Animator

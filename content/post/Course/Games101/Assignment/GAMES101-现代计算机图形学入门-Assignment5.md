@@ -3,7 +3,7 @@ date = '2025-10-19T13:24:12+08:00'
 draft = false
 title = 'GAMES101 现代计算机图形学入门 Assignment5'
 categories = ["Course/Games101","Assignment"]
-tags = ["课程作业"]
+tags = ["课程作业","Games101"]
 +++
 # 作业介绍
 ![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/d4bca87d0cc845e78962e550baedf970.png)

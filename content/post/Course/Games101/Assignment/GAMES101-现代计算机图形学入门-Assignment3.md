@@ -3,7 +3,7 @@ date = '2025-10-19T13:22:54+08:00'
 draft = false
 title = 'GAMES101 现代计算机图形学入门 Assignment3'
 categories = ["Course/Games101","Assignment"]
-tags = ["课程作业"]
+tags = ["课程作业","Games101"]
 +++
 # 作业描述
 上节课已经对光栅化的操作有了了解，这节课直接引入了模型和纹理，其实本质就是引入了很多的顶点，操作其实没什么变化![请添加图片描述](https://i-blog.csdnimg.cn/direct/23b1962b67c04c8a914553728140a155.png)
