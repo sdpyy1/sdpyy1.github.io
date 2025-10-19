@@ -14,7 +14,13 @@ math = true
 shading 负责计算物体表面每个采样点的颜色，具体考虑光照、材质属性、观察角度等因素，生成具有真实感的视觉效果（如漫反射、镜面高光、环境光等）‌，之前的光栅化将是几何图元（如三角形）转换为屏幕上的像素，确定哪些像素被图元覆盖，是几何层面的处理
 # Blinn-Phong Reflectance Model(A Simple Shading Model)
 Blinn-Phong 反射模型（Blinn-Phong Reflectance Model）是一种用于计算机图形学中模拟物体表面光照效果的着色模型.该模型主要由**环境光(Ambient)、漫反射(Diffuse)和高光反射(Specular)**三部分组成。![请添加图片描述](https://i-blog.csdnimg.cn/direct/92975763af4c45deacbe6332c3f2d16b.png)
+
+
+
+![image-20251019112537042](image-20251019112537042.png)
+
 定义一些基本向量，默认为单位向量：
+
 - `Viewer Direction` ：观察方向,用`v`	表示
 - `Surface normal`：法线方向，使用`n`表示
 - `Light direction`：光线方向，用`l`表示

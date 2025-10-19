@@ -9,8 +9,14 @@ tags = ["笔记"]
 @[TOC](目录)
 >[GitHub主页](https://github.com/sdpyy1)：https://github.com/sdpyy
 [games101项目作业代码](https://github.com/sdpyy1/CppLearn/tree/main/games101)：https://github.com/sdpyy1/CppLearn/tree/main/games101
+
+
 # 线性代数复习
+
+![image-20251019112537042](./image-20251019112537042.png)
+
 ## 向量
+
 首先介绍一下向量，有长度有方向，起始位置不固定
 ![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/0cf789e58553444d93cff71c08defe69.png)
 向量归一化，就是获得向量方向上的单位向量，后续课程各种操作都是在单位向量上进行
