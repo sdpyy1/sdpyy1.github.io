@@ -38,7 +38,7 @@ services:
 
 # 一页展示多少文章
 pagination:
-    pagerSize: 5
+    pagerSize: 10
 
 permalinks:
     post: /p/:slug/
@@ -166,7 +166,7 @@ params:
             - type: search
             - type: archives
               params:
-                  limit: 5
+                  limit: 10
             - type: categories
               params:
                   limit: 10
