@@ -12,7 +12,7 @@ tags = ["渲染器开发","TinyRender"]
 So, the task is formulated as follows: using no third-party libraries (especially graphic ones), get something like this picture:
 
 所以学习最终目标是不使用第三方代码，得到下面这种图，建议学完games101后来复习，不过过程很详细，作为入门也是不错的
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/015e0f415d1c493db111695862b55bfe.png)
+![请添加图片描述](015e0f415d1c493db111695862b55bfe.png)
 # 环境搭建
 虽然项目旨在不使用第三方库，但提供了图片读取、保存、设置像素点颜色的代码
 tagimage.h
@@ -332,7 +332,7 @@ int main(int argc, char** argv) {
 }
 ```
 运行后图片如下
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/688a268895e54c2cba897784c8d8717d.png)
+![在这里插入图片描述](688a268895e54c2cba897784c8d8717d.png)
 # Lesson 1: Bresenham’s Line Drawing Algorithm（画线算法）
 首先进行初始化，在图上标记三个位置
 
@@ -358,7 +358,7 @@ int main(int argc, char** argv) {
 }
 ```
 得到结果如下
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/6e3c25d11b5d4a0bb5a8bb253aa08129.png)
+![请添加图片描述](6e3c25d11b5d4a0bb5a8bb253aa08129.png)
 首先来学习下如何在像素上画一条线
 第一次尝试：想象用参数t来表示的一个在$x_a和x_b$之间的点$(x(t),y(t))$
 $$
@@ -385,10 +385,10 @@ void drawLine_first(int x1,int y1,int x2,int y2,TGAImage &img,TGAColor color){
     }
 }
 ```
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/83e2a9f608014995bad864ce81613342.png)
+![请添加图片描述](83e2a9f608014995bad864ce81613342.png)
 
 考虑左下角的a点和右上角的c点，如果我从a向c绘制一次，再从c向a绘制一次，结果如下
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/4cd7b745f87a4d40ba33731bcf17bc71.png)
+![请添加图片描述](4cd7b745f87a4d40ba33731bcf17bc71.png)
 
 
 图中能明显看出问题，一是在x上有缝隙，二是不同的绘制方向结果是不同的，
@@ -410,7 +410,7 @@ void drawLine_Second(int ax, int ay, int bx, int by, TGAImage &img, TGAColor col
 显式转换（Explicit Conversion）：程序员‌主动指定‌的类型转换，通常通过语法或函数强制实现。
 static_cast是 C++ 中一种显式类型转换操作符，‌用于在编译时进行类型转换，‌适用场景‌：明确的、安全的类型转换（如基本类型转换、向上转换、void* 转换），不用c语言风格的强制转换是为了规避风险。
 从下图看到问题2，3已经解决了，原本有的问题1空隙也没有了，但是出现了新的很大的空隙，甚至一条线直接消失了
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/741bb0725cbb48a1bc6945f21685cd00.png)
+![请添加图片描述](741bb0725cbb48a1bc6945f21685cd00.png)
 线消失比较好解决，原因就是从右上角向左下角画线，if就进不去
 
 ```cpp
@@ -427,7 +427,7 @@ void drawLine_Second(int ax, int ay, int bx, int by, TGAImage &img, TGAColor col
     }
 }
 ```
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/b301f31203f1422699e3fd87d650b1c1.png)
+![请添加图片描述](b301f31203f1422699e3fd87d650b1c1.png)
 下面就要解决a->b这么大空隙了，这个问题就是斜率大的线段的采样不足，因为x只走了几步就到了，也就只会画出几个点
 接下来进行第三次尝试，解决思路就是如果斜率太大，就从y进行for，而不是x，教程中的解决思路十分巧妙，如果斜率太大，就交换x坐标和y坐标，同时绘制时绘制坐标变成$(y,x)$
 
@@ -456,7 +456,7 @@ void drawLine(int ax, int ay, int bx, int by, TGAImage &framebuffer, TGAColor co
     }
 }
 ```
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/b3d23e59f61744fcb488d9bef6bdef6b.png)
+![请添加图片描述](b3d23e59f61744fcb488d9bef6bdef6b.png)
 至此就完成了比较好的效果的直线绘制，第四次尝试是如何优化算法的运行速度，这里就不说了，直接上他最终的优化代码作为后续使用，但是走样（锯齿）问题没有解决，这里不详细说，后边课程肯定会涉及到。
 
 # Lesson 2: Triangle rasterization 三角形光栅化
@@ -481,7 +481,7 @@ int main(int argc, char** argv) {
     return 0;
 }
 ```
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/e5e498fd5c20484785954f568a17ac56.png)
+![请添加图片描述](e5e498fd5c20484785954f568a17ac56.png)
 
 填充三角形需要做的事情：
  - 它应该简单快捷
@@ -492,7 +492,7 @@ int main(int argc, char** argv) {
 > https://blog.csdn.net/qq_42987967/article/details/124831459
 
 思路就是先对顶点y坐标进行排序，并从中间顶点水平切一刀，这样扫描时比例变化是正常的不会突然反向，交点A沿t0到t2的主斜边移动，B沿t0到t1的侧边移动，移动过程中填充内部的像素
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/cda17b2f9bfd4d4eb451cf64a7745f1c.png)
+![请添加图片描述](cda17b2f9bfd4d4eb451cf64a7745f1c.png)
 ```cpp
 void triangle(Vec2i t0, Vec2i t1, Vec2i t2, TGAImage &image, TGAColor color) { 
     // sort the vertices, t0, t1, t2 lower−to−upper (bubblesort yay!) 
@@ -545,7 +545,7 @@ triangle(vec2 points[3]) {
     int bbmaxx = std::max(std::max(ax, bx), cx);
     int bbmaxy = std::max(std::max(ay, by), cy);
 ```
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/f25073c07e4b4d54b6e139f39cc31818.png)
+![请添加图片描述](f25073c07e4b4d54b6e139f39cc31818.png)
 之后就是剔除不在三角形内部的像素，在games101提供的方法是用像素坐标叉乘三条边顺序组成的向量，如果叉乘结果都在一个方向，那这个像素点就在三角形内部，在这个教程中并不是这样做的，它是利用重心坐标，计算出一个点对于这个三角形的重心坐标$(\alpha,\beta,\gamma)$，只要有一个是负数，就表示不再三角形内，那就用他这种方法吧。重心坐标反映的是划分为三个小三角形的面积比，如果点在三角形外，那面积算出来就成负数了。
 首先提供一个算三角形面积的函数
 
@@ -593,7 +593,7 @@ void drawTriangle(int ax, int ay, int bx, int by, int cx, int cy, TGAImage &fram
     }
 }
 ```
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/e5edfccf00004d379cb153925d59f177.png)
+![请添加图片描述](e5edfccf00004d379cb153925d59f177.png)
 ## back-face culling 背面剔除
 一般来说法线背对相机或光线方向的平面可认为是没用的，可以不用绘制将其剔除以减少运算量。原理是如果正面的三角形都是顺时针，那背面的都是逆时针，另外一种方法是计算三角形法向量与摄像机的点乘，小于0说明它是背对的。
 在第2课中使用的是计算三角形的面积，下面这个代码是带符号的，所以负的面积说明三角形是背对的。
@@ -607,7 +607,7 @@ double signed_triangle_area(int ax, int ay, int bx, int by, int cx, int cy) {
 vector.h
 
 生成下图，可以看出来把所有三角形全画出来，脸部轮廓都不见了
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/c3c69559df694b75a0c800d12967eba4.png)
+![请添加图片描述](c3c69559df694b75a0c800d12967eba4.png)
 修改三角形绘制函数，如果计算出来的三角形面积是负数，就直接不绘制了，这里设置小于1，是把面积太小的三角形直接省略了
 
 ```cpp
@@ -633,9 +633,9 @@ void drawTriangle(int ax, int ay, int bx, int by, int cx, int cy, TGAImage &fram
 ```
 修改后明显可以看出脸部轮廓出来了
 
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/3b95c96f682b4d93a042efade3acc9cb.png)
+![请添加图片描述](3b95c96f682b4d93a042efade3acc9cb.png)
 使用2k分辨率，效果更好了
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/363ae3b883b6477d806ea01bfb04d434.png)
+![请添加图片描述](363ae3b883b6477d806ea01bfb04d434.png)
 # Lesson 3: Hidden faces removal (z buffer)
 首先介绍一下代码变动
 模型获取使用开源库
@@ -2131,7 +2131,7 @@ public:
             }
 ```
 生成效果如下图所示
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/20299b964a794459b9696f742506670e.png)
+![请添加图片描述](20299b964a794459b9696f742506670e.png)
 到目前为止我自己的实现可以在github的分支结点中找到：https://github.com/sdpyy1/CppLearn/tree/56841b79fe7c74bce1d9210f1a42e2a3ca019768/tinyrenderer
 # Lesson 4: Perspective projection
 这里我不希望只完成他课程的简单情况，我直接把MVP矩阵+视口变换全部封装了，详情可查看我的仓库，下边是主要代码
