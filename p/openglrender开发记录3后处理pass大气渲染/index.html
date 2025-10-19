@@ -1,0 +1,1506 @@
+<!DOCTYPE html>
+<html lang="zh-cn" dir="ltr">
+    <head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'>
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+  <meta name="referrer" content="no-referrer-when-downgrade"><meta name='description' content="大气渲染 渲染方法分析 光如何与Participating Media Particles（包括小粒子（气体分子），大粒子（气溶胶、水滴、烟雾）） 交互？\n吸收 外散射 自发光 内散射 M点为着色点，那从P点看向M点时，需要计算两个值（1）Transmittance(透光度):有多少光能透过来(2) Scattering：粒子会把来自各个方向的光散射到观察方向 真实大气物理 太阳光由不同波长的光组成，人眼把这些波长光的组合定义成了白色而已 大气中包含两种粒子：气体分子一般小于这些光的波长，其他的气溶胶大于这些波长 有两种完全不同的散射模型来末说这两种粒子的散射 ">
+<title>OpenGLRender开发记录（3）：后处理Pass（大气渲染）</title>
+
+<link rel='canonical' href='https://sdpyy1.github.io/p/openglrender%E5%BC%80%E5%8F%91%E8%AE%B0%E5%BD%953%E5%90%8E%E5%A4%84%E7%90%86pass%E5%A4%A7%E6%B0%94%E6%B8%B2%E6%9F%93/'>
+
+<link rel="stylesheet" href="/scss/style.min.6a692fd055deae459f2a9767f57f3855ba80cafd5041317f24f7360f6ca47cdf.css"><meta property='og:title' content="OpenGLRender开发记录（3）：后处理Pass（大气渲染）">
+<meta property='og:description' content="大气渲染 渲染方法分析 光如何与Participating Media Particles（包括小粒子（气体分子），大粒子（气溶胶、水滴、烟雾）） 交互？\n吸收 外散射 自发光 内散射 M点为着色点，那从P点看向M点时，需要计算两个值（1）Transmittance(透光度):有多少光能透过来(2) Scattering：粒子会把来自各个方向的光散射到观察方向 真实大气物理 太阳光由不同波长的光组成，人眼把这些波长光的组合定义成了白色而已 大气中包含两种粒子：气体分子一般小于这些光的波长，其他的气溶胶大于这些波长 有两种完全不同的散射模型来末说这两种粒子的散射 ">
+<meta property='og:url' content='https://sdpyy1.github.io/p/openglrender%E5%BC%80%E5%8F%91%E8%AE%B0%E5%BD%953%E5%90%8E%E5%A4%84%E7%90%86pass%E5%A4%A7%E6%B0%94%E6%B8%B2%E6%9F%93/'>
+<meta property='og:site_name' content='wanfeng'>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='渲染器开发' /><meta property='article:tag' content='OpenGLRender' /><meta property='article:tag' content='OpenGL' /><meta property='article:published_time' content='2025-10-19T14:20:40&#43;08:00'/><meta property='article:modified_time' content='2025-10-19T14:20:40&#43;08:00'/>
+<meta name="twitter:title" content="OpenGLRender开发记录（3）：后处理Pass（大气渲染）">
+<meta name="twitter:description" content="大气渲染 渲染方法分析 光如何与Participating Media Particles（包括小粒子（气体分子），大粒子（气溶胶、水滴、烟雾）） 交互？\n吸收 外散射 自发光 内散射 M点为着色点，那从P点看向M点时，需要计算两个值（1）Transmittance(透光度):有多少光能透过来(2) Scattering：粒子会把来自各个方向的光散射到观察方向 真实大气物理 太阳光由不同波长的光组成，人眼把这些波长光的组合定义成了白色而已 大气中包含两种粒子：气体分子一般小于这些光的波长，其他的气溶胶大于这些波长 有两种完全不同的散射模型来末说这两种粒子的散射 ">
+    <link rel="shortcut icon" href="/favicon.ico" />
+
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="切换菜单">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        
+            
+            <figure class="site-avatar">
+                <a href="/">
+                
+                    
+                    
+                    
+                        
+                        <img src="/img/avatar_hu_f59158f730715054.png" width="300"
+                            height="300" class="site-logo" loading="lazy" alt="Avatar">
+                    
+                
+                </a>
+                
+                    <span class="emoji">🧐</span>
+                
+            </figure>
+            
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="/">wanfeng</a></h1>
+            <h2 class="site-description">Blog</h2>
+        </div>
+    </header><ol class="menu-social">
+            
+                <li>
+                    <a 
+                        href='https://space.bilibili.com/287473737'
+                        target="_blank"
+                        title="Bilibili"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-brand-bilibili"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 10a4 4 0 0 1 4 -4h10a4 4 0 0 1 4 4v6a4 4 0 0 1 -4 4h-10a4 4 0 0 1 -4 -4v-6z" /><path d="M8 3l2 3" /><path d="M16 3l-2 3" /><path d="M9 13v-2" /><path d="M15 11v2" /></svg>
+                        
+                    </a>
+                </li>
+            
+                <li>
+                    <a 
+                        href='https://github.com/sdpyy1'
+                        target="_blank"
+                        title="GitHub"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
+</svg>
+
+
+
+                        
+                    </a>
+                </li>
+            
+        </ol><ol class="menu" id="main-menu">
+        
+        
+        
+        <li >
+            <a href='/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>Home</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/about/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>About</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>Archives</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/search/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>Search</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/links/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5" />
+  <path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5" />
+</svg>
+
+
+
+                
+                <span>Links</span>
+            </a>
+        </li>
+        
+        <li class="menu-bottom-section">
+            <ol class="menu">
+                    
+                        <li id="i18n-switch">  
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-language" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M4 5h7" />
+  <path d="M9 3v2c0 4.418 -2.239 8 -5 8" />
+  <path d="M5 9c-.003 2.144 2.952 3.908 6.7 4" />
+  <path d="M12 20l4 -9l4 9" />
+  <path d="M19.1 18h-6.2" />
+</svg>
+
+
+
+                            <select name="language" title="language" onchange="window.location.href = this.selectedOptions[0].value">
+                                
+                                    <option value="https://sdpyy1.github.io/en/" >English</option>
+                                
+                                    <option value="https://sdpyy1.github.io/" selected>中文</option>
+                                
+                            </select>
+                        </li>
+                    
+                
+
+                
+                    <li id="dark-mode-toggle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <span>暗色模式</span>
+                    </li>
+                
+            </ol>
+        </li>
+    </ol>
+</aside>
+
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">目录</h2>
+        
+        <div class="widget--toc">
+            <nav id="TableOfContents">
+  <ol>
+    <li><a href="#大气渲染">大气渲染</a>
+      <ol>
+        <li><a href="#渲染方法分析">渲染方法分析</a></li>
+        <li><a href="#真实大气物理">真实大气物理</a>
+          <ol>
+            <li><a href="#瑞利散射-rayleigh-scattering-针对气体分子">瑞利散射 Rayleigh Scattering （针对气体分子）</a></li>
+            <li><a href="#米氏散射-mie-scattering-针对大分子">米氏散射 Mie scattering （针对大分子）</a></li>
+            <li><a href="#光的吸收">光的吸收</a></li>
+          </ol>
+        </li>
+        <li><a href="#单次散射和多次散射">单次散射和多次散射</a></li>
+        <li><a href="#大气渲染实践">大气渲染实践</a>
+          <ol>
+            <li><a href="#瑞利散射和米氏散射建模">瑞利散射和米氏散射建模</a></li>
+          </ol>
+        </li>
+        <li><a href="#吸收建模">吸收建模</a></li>
+        <li><a href="#透光率">透光率</a></li>
+        <li><a href="#单次散射">单次散射</a></li>
+        <li><a href="#透射率预计算">透射率预计算</a></li>
+        <li><a href="#展示">展示</a></li>
+        <li><a href="#多重散射">多重散射</a></li>
+      </ol>
+    </li>
+  </ol>
+</nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+            <main class="main full-width">
+    <article class="main-article">
+    <header class="article-header">
+
+    <div class="article-details">
+    
+    <header class="article-category">
+        
+        
+             
+            
+            
+            
+            <div class="category-hierarchy">
+                
+                    
+                    
+                    
+                        
+                    
+                     
+                    
+                    
+                    
+                    <a href="/categories/projects/" 
+                       >
+                        Projects
+                    </a>
+                    
+                    
+                    
+                        <span class="category-separator">/</span>
+                    
+                
+                    
+                    
+                    
+                        
+                    
+                        
+                    
+                     
+                    
+                    
+                    
+                    <a href="/categories/projects/openglrender/" 
+                       >
+                        OpenGLRender
+                    </a>
+                    
+                    
+                    
+                
+            </div>
+        
+    </header>
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="/p/openglrender%E5%BC%80%E5%8F%91%E8%AE%B0%E5%BD%953%E5%90%8E%E5%A4%84%E7%90%86pass%E5%A4%A7%E6%B0%94%E6%B8%B2%E6%9F%93/">OpenGLRender开发记录（3）：后处理Pass（大气渲染）</a>
+        </h2>
+    
+        
+    </div>
+
+    
+    
+    
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published">Oct 19, 2025</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-time--reading">
+                    阅读时长: 5 分钟
+                </time>
+            </div>
+        
+
+        
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+        <span id="busuanzi_container_page_pv">本文阅读量<span id="busuanzi_value_page_pv"></span>次</span>
+    </footer>
+    
+    
+</div>
+<style>
+    .category-hierarchy {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;  
+        margin-right: 12px;  
+        margin-bottom: 8px;  
+    }
+    
+    .category-separator {
+        color: #999;
+        user-select: none;
+        font-size: 1em;  
+    }
+    
+    .article-category a {
+        text-decoration: none;
+        padding: 6px 12px;  
+        border-radius: 6px;  
+        font-size: 0.95em;  
+        transition: all 0.2s ease;
+        line-height: 1.5;  
+    }
+    
+    .article-category a:hover {
+        opacity: 0.9;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 6px rgba(0,0,0,0.1);  
+    }
+</style>
+</header>
+
+    <section class="article-content">
+    
+    
+    <h1 id="大气渲染">大气渲染
+</h1><h2 id="渲染方法分析">渲染方法分析
+</h2><p><img src="/55e17d90959d44a9b5a55d89fb02d6a2.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+光如何与Participating Media Particles（包括小粒子（气体分子），大粒子（气溶胶、水滴、烟雾）） 交互？</p>
+<ul>
+<li>吸收</li>
+<li>外散射</li>
+<li>自发光</li>
+<li>内散射
+<img src="/ab8a5edb87fe46e8af1ba0222bed318a.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+M点为着色点，那从P点看向M点时，需要计算两个值（1）<strong>Transmittance</strong>(透光度):有多少光能透过来(2) <strong>Scattering</strong>：粒子会把来自各个方向的光散射到观察方向
+<img src="/f2ceb0e7af2248c1a21442839c4559b9.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+></li>
+</ul>
+<h2 id="真实大气物理">真实大气物理
+</h2><p>太阳光由不同波长的光组成，人眼把这些波长光的组合定义成了白色而已
+<img src="/6fde5a562a3240e4a7fdbcef10d7c62b.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+大气中包含两种粒子：气体分子一般小于这些光的波长，其他的气溶胶大于这些波长
+<img src="/6e6096be052e4f2485be21ea8ebcf5d2.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+有两种完全不同的散射模型来末说这两种粒子的散射
+<img src="/560c3a5ec0b644d3a48a06331a1f1ab0.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+></p>
+<h3 id="瑞利散射-rayleigh-scattering-针对气体分子">瑞利散射 Rayleigh Scattering （针对气体分子）
+</h3><p>散射特点：对波长敏感，短波长（蓝光）更容易被散射，所以天空是蓝色。
+各种波长光散射形状差不多，但是强度不同，各个方向上散射大致相同
+<img src="/d3afafea17f54e31861513b63192af3b.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+具体的模型公式有两部分，前半部分是各种系数、后半部分是模型形状（花生形状）。公式表达含义是在在散射方向 θ上的散射光强，它与光的波长、海拔高度有关
+<img src="/31f41d3de1e742e0965de3791e0f17fd.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+直观理解天空为什么是蓝色，太阳直射时，大量的蓝光被散射开来，红光散射比较弱。太阳落山时，大量的蓝光散射到了太空和地面，红光的散射效果体现了出来
+<img src="/cf3bc303c42b45088912b2448fac59c8.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+></p>
+<h3 id="米氏散射-mie-scattering-针对大分子">米氏散射 Mie scattering （针对大分子）
+</h3><p>米氏散射对波长依赖弱 → 散射几乎不偏色，所以雾和云看起来白色或灰色
+所有波长的光一视同仁，但是不同的散射方向能力有巨大差异
+奇怪的形状。
+<img src="/0c91ffff137b4299b4e6a89be0e0ff47.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+<img src="/d0bfdd32879246e6853957e43d733e9b.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+<img src="/255d8eedeeee4547b84758f97a4eea2d.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+></p>
+<h3 id="光的吸收">光的吸收
+</h3><p>这两种气体会吸收光，但模型过于复杂，在渲染中假设他们均匀分布
+<img src="/1d31945b45f846bb87737725157e3639.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+></p>
+<h2 id="单次散射和多次散射">单次散射和多次散射
+</h2><p>单次散射只考虑太阳光到一个粒子后散射到摄像机
+多次散射就是考虑一个粒子散射到另一个粒子这样不停散射最终到达摄像机
+<img src="/21e08dd48b654638a5d1e50058570a09.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+主要看山的背面，多次散射才能表达出这种感觉
+<img src="/9ba65d1cd6644e6ea8a76e85f023defc.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+></p>
+<h2 id="大气渲染实践">大气渲染实践
+</h2><h3 id="瑞利散射和米氏散射建模">瑞利散射和米氏散射建模
+</h3><p>参考别的论文，他们是用h = 0时求出的解作为基准，用一个高度衰减函数进行高度衰减。函数都有两部分，一部分求解散射系数一部分求解相函数
+瑞利散射：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="n">vec3</span> <span class="nf">RayleighCoefficient</span><span class="p">(</span><span class="n">in</span> <span class="n">AtmosphereParameter</span> <span class="n">param</span><span class="p">,</span> <span class="kt">float</span> <span class="n">h</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">const</span> <span class="n">vec3</span> <span class="n">sigma</span> <span class="o">=</span> <span class="n">vec3</span><span class="p">(</span><span class="mf">5.802</span><span class="p">,</span> <span class="mf">13.558</span><span class="p">,</span> <span class="mf">33.1</span><span class="p">)</span> <span class="o">*</span> <span class="mf">1e-6</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">float</span> <span class="n">H_R</span> <span class="o">=</span> <span class="n">param</span><span class="p">.</span><span class="n">RayleighScatteringScalarHeight</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">float</span> <span class="n">rho_h</span> <span class="o">=</span> <span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="p">(</span><span class="n">h</span> <span class="o">/</span> <span class="n">H_R</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">sigma</span> <span class="o">*</span> <span class="n">rho_h</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">float</span> <span class="nf">RayleighPhase</span><span class="p">(</span><span class="n">in</span> <span class="n">AtmosphereParameter</span> <span class="n">param</span><span class="p">,</span> <span class="kt">float</span> <span class="n">cos_theta</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="p">(</span><span class="mf">3.0</span> <span class="o">/</span> <span class="p">(</span><span class="mf">16.0</span> <span class="o">*</span> <span class="mf">3.14159265</span><span class="p">))</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">+</span> <span class="n">cos_theta</span> <span class="o">*</span> <span class="n">cos_theta</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>米氏散射多一个g，用来控制米氏散射的形状</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">vec3</span> <span class="nf">MieCoefficient</span><span class="p">(</span><span class="n">AtmosphereParameter</span> <span class="n">param</span><span class="p">,</span> <span class="kt">float</span> <span class="n">h</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">const</span> <span class="n">vec3</span> <span class="n">sigma</span> <span class="o">=</span> <span class="n">vec3</span><span class="p">(</span><span class="mf">3.996e-6</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">float</span> <span class="n">H_M</span> <span class="o">=</span> <span class="n">param</span><span class="p">.</span><span class="n">MieScatteringScalarHeight</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">float</span> <span class="n">rho_h</span> <span class="o">=</span> <span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="p">(</span><span class="n">h</span> <span class="o">/</span> <span class="n">H_M</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">sigma</span> <span class="o">*</span> <span class="n">rho_h</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">float</span> <span class="nf">MiePhase</span><span class="p">(</span><span class="n">AtmosphereParameter</span> <span class="n">param</span><span class="p">,</span> <span class="kt">float</span> <span class="n">cos_theta</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">float</span> <span class="n">g</span> <span class="o">=</span> <span class="n">param</span><span class="p">.</span><span class="n">MieAnisotropy</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kt">float</span> <span class="n">a</span> <span class="o">=</span> <span class="mf">3.0</span> <span class="o">/</span> <span class="p">(</span><span class="mf">8.0</span> <span class="o">*</span> <span class="mf">3.14159265</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">float</span> <span class="n">b</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">g</span> <span class="o">*</span> <span class="n">g</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mf">2.0</span> <span class="o">+</span> <span class="n">g</span> <span class="o">*</span> <span class="n">g</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">float</span> <span class="n">c</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">+</span> <span class="n">cos_theta</span> <span class="o">*</span> <span class="n">cos_theta</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">float</span> <span class="n">d</span> <span class="o">=</span> <span class="n">pow</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">+</span> <span class="n">g</span> <span class="o">*</span> <span class="n">g</span> <span class="o">-</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">g</span> <span class="o">*</span> <span class="n">cos_theta</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">a</span> <span class="o">*</span> <span class="n">b</span> <span class="o">*</span> <span class="p">(</span><span class="n">c</span> <span class="o">/</span> <span class="n">d</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>散射结果，将两种散射结果相加，得到太阳光被一个粒子散射到摄像机的三色比例</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="n">vec3</span> <span class="nf">Scattering</span><span class="p">(</span><span class="n">AtmosphereParameter</span> <span class="n">param</span><span class="p">,</span> <span class="n">vec3</span> <span class="n">p</span><span class="p">,</span> <span class="n">vec3</span> <span class="n">lightDir</span><span class="p">,</span> <span class="n">vec3</span> <span class="n">viewDir</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">float</span> <span class="n">cos_theta</span> <span class="o">=</span> <span class="n">dot</span><span class="p">(</span><span class="n">lightDir</span><span class="p">,</span> <span class="n">viewDir</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kt">float</span> <span class="n">h</span> <span class="o">=</span> <span class="n">length</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="o">-</span> <span class="n">param</span><span class="p">.</span><span class="n">PlanetRadius</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">vec3</span> <span class="n">rayleigh</span> <span class="o">=</span> <span class="n">RayleighCoefficient</span><span class="p">(</span><span class="n">param</span><span class="p">,</span> <span class="n">h</span><span class="p">)</span> <span class="o">*</span> <span class="n">RayleighPhase</span><span class="p">(</span><span class="n">param</span><span class="p">,</span> <span class="n">cos_theta</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">vec3</span> <span class="n">mie</span> <span class="o">=</span> <span class="n">MieCoefficient</span><span class="p">(</span><span class="n">param</span><span class="p">,</span> <span class="n">h</span><span class="p">)</span> <span class="o">*</span> <span class="n">MiePhase</span><span class="p">(</span><span class="n">param</span><span class="p">,</span> <span class="n">cos_theta</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">rayleigh</span> <span class="o">+</span> <span class="n">mie</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="吸收建模">吸收建模
+</h2><p>瑞利散射没有吸收，米氏有吸收，另外大气中的臭氧也有吸收效应</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="n">vec3</span> <span class="nf">MieAbsorption</span><span class="p">(</span><span class="n">AtmosphereParameter</span> <span class="n">param</span><span class="p">,</span> <span class="kt">float</span> <span class="n">h</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">const</span> <span class="n">vec3</span> <span class="n">sigma</span> <span class="o">=</span> <span class="n">vec3</span><span class="p">(</span><span class="mf">4.4e-6</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">float</span> <span class="n">H_M</span> <span class="o">=</span> <span class="n">param</span><span class="p">.</span><span class="n">MieScatteringScalarHeight</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">float</span> <span class="n">rho_h</span> <span class="o">=</span> <span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="p">(</span><span class="n">h</span> <span class="o">/</span> <span class="n">H_M</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">sigma</span> <span class="o">*</span> <span class="n">rho_h</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">vec3</span> <span class="nf">OzoneAbsorption</span><span class="p">(</span><span class="n">AtmosphereParameter</span> <span class="n">param</span><span class="p">,</span> <span class="kt">float</span> <span class="n">h</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">const</span> <span class="n">vec3</span> <span class="n">sigma_lambda</span> <span class="o">=</span> <span class="n">vec3</span><span class="p">(</span><span class="mf">0.650</span><span class="p">,</span> <span class="mf">1.881</span><span class="p">,</span> <span class="mf">0.085</span><span class="p">)</span> <span class="o">*</span> <span class="mf">1e-6</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">float</span> <span class="n">center</span> <span class="o">=</span> <span class="n">param</span><span class="p">.</span><span class="n">OzoneLevelCenterHeight</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">float</span> <span class="n">width</span> <span class="o">=</span> <span class="n">param</span><span class="p">.</span><span class="n">OzoneLevelWidth</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">float</span> <span class="n">rho</span> <span class="o">=</span> <span class="n">max</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span> <span class="o">-</span> <span class="n">abs</span><span class="p">(</span><span class="n">h</span> <span class="o">-</span> <span class="n">center</span><span class="p">)</span> <span class="o">/</span> <span class="n">width</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">sigma_lambda</span> <span class="o">*</span> <span class="n">rho</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="透光率">透光率
+</h2><p>透光率与经过的路径和吸收有关，由于每个点的吸收不同，所以采样处理
+<img src="/5e93becb036f43c69a7719acdcd1ae23.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="n">vec3</span> <span class="nf">Transmittance</span><span class="p">(</span><span class="n">in</span> <span class="n">AtmosphereParameter</span> <span class="n">param</span><span class="p">,</span> <span class="n">vec3</span> <span class="n">p1</span><span class="p">,</span> <span class="n">vec3</span> <span class="n">p2</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">const</span> <span class="kt">int</span> <span class="n">N_SAMPLE</span> <span class="o">=</span> <span class="mi">32</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">vec3</span> <span class="n">dir</span> <span class="o">=</span> <span class="n">normalize</span><span class="p">(</span><span class="n">p2</span> <span class="o">-</span> <span class="n">p1</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">float</span> <span class="n">distance</span> <span class="o">=</span> <span class="n">length</span><span class="p">(</span><span class="n">p2</span> <span class="o">-</span> <span class="n">p1</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">float</span> <span class="n">ds</span> <span class="o">=</span> <span class="n">distance</span> <span class="o">/</span> <span class="kt">float</span><span class="p">(</span><span class="n">N_SAMPLE</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">vec3</span> <span class="n">sum</span> <span class="o">=</span> <span class="n">vec3</span><span class="p">(</span><span class="mf">0.0</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">vec3</span> <span class="n">p</span> <span class="o">=</span> <span class="n">p1</span> <span class="o">+</span> <span class="n">dir</span> <span class="o">*</span> <span class="n">ds</span> <span class="o">*</span> <span class="mf">0.5</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">for</span><span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">N_SAMPLE</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">float</span> <span class="n">h</span> <span class="o">=</span> <span class="n">length</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="o">-</span> <span class="n">param</span><span class="p">.</span><span class="n">PlanetRadius</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="n">vec3</span> <span class="n">scattering</span> <span class="o">=</span> <span class="n">RayleighCoefficient</span><span class="p">(</span><span class="n">param</span><span class="p">,</span> <span class="n">h</span><span class="p">)</span> <span class="o">+</span> <span class="n">MieCoefficient</span><span class="p">(</span><span class="n">param</span><span class="p">,</span> <span class="n">h</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">vec3</span> <span class="n">absorption</span> <span class="o">=</span> <span class="n">OzoneAbsorption</span><span class="p">(</span><span class="n">param</span><span class="p">,</span> <span class="n">h</span><span class="p">)</span> <span class="o">+</span> <span class="n">MieAbsorption</span><span class="p">(</span><span class="n">param</span><span class="p">,</span> <span class="n">h</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">vec3</span> <span class="n">extinction</span> <span class="o">=</span> <span class="n">scattering</span> <span class="o">+</span> <span class="n">absorption</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="n">sum</span> <span class="o">+=</span> <span class="n">extinction</span> <span class="o">*</span> <span class="n">ds</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="n">p</span> <span class="o">+=</span> <span class="n">dir</span> <span class="o">*</span> <span class="n">ds</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// 计算透光率
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="k">return</span> <span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">sum</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="单次散射">单次散射
+</h2><p>首先要有一个光线与球体求交的计算</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="kt">float</span> <span class="nf">RayIntersectSphere</span><span class="p">(</span><span class="n">vec3</span> <span class="n">center</span><span class="p">,</span> <span class="kt">float</span> <span class="n">radius</span><span class="p">,</span> <span class="n">vec3</span> <span class="n">rayStart</span><span class="p">,</span> <span class="n">vec3</span> <span class="n">rayDir</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">float</span> <span class="n">OS</span> <span class="o">=</span> <span class="n">length</span><span class="p">(</span><span class="n">center</span> <span class="o">-</span> <span class="n">rayStart</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">float</span> <span class="n">SH</span> <span class="o">=</span> <span class="n">dot</span><span class="p">(</span><span class="n">center</span> <span class="o">-</span> <span class="n">rayStart</span><span class="p">,</span> <span class="n">rayDir</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">float</span> <span class="n">OH</span> <span class="o">=</span> <span class="n">sqrt</span><span class="p">(</span><span class="n">OS</span> <span class="o">*</span> <span class="n">OS</span> <span class="o">-</span> <span class="n">SH</span> <span class="o">*</span> <span class="n">SH</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// 射线未击中球体
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="k">if</span><span class="p">(</span><span class="n">OH</span> <span class="o">&gt;</span> <span class="n">radius</span><span class="p">)</span> <span class="k">return</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kt">float</span> <span class="n">PH</span> <span class="o">=</span> <span class="n">sqrt</span><span class="p">(</span><span class="n">radius</span> <span class="o">*</span> <span class="n">radius</span> <span class="o">-</span> <span class="n">OH</span> <span class="o">*</span> <span class="n">OH</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// 使用最小正距离
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="kt">float</span> <span class="n">t1</span> <span class="o">=</span> <span class="n">SH</span> <span class="o">-</span> <span class="n">PH</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">float</span> <span class="n">t2</span> <span class="o">=</span> <span class="n">SH</span> <span class="o">+</span> <span class="n">PH</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">float</span> <span class="n">t</span> <span class="o">=</span> <span class="p">(</span><span class="n">t1</span> <span class="o">&lt;</span> <span class="mf">0.0</span><span class="p">)</span> <span class="o">?</span> <span class="nl">t2</span> <span class="p">:</span> <span class="n">t1</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">t</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>对于单次散射而言，从摄像机位置RM获得每一个采样点，每一个采样点进行光照计算，最后汇总
+<img src="/09f8735a0ed04a82a164dfca191dc5c1.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="n">vec3</span> <span class="nf">singleScatterSkyColor</span><span class="p">(</span><span class="n">vec3</span> <span class="n">camPosInPlanet</span><span class="p">,</span> <span class="n">AtmosphereParameter</span> <span class="n">param</span><span class="p">,</span> <span class="n">vec3</span> <span class="n">viewDir</span><span class="p">){</span>
+</span></span><span class="line"><span class="cl">    <span class="n">vec3</span> <span class="n">lightDir</span> <span class="o">=</span> <span class="n">normalize</span><span class="p">(</span><span class="o">-</span><span class="n">lightPos</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">int</span> <span class="n">N_SAMPLE</span> <span class="o">=</span> <span class="mi">16</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">float</span> <span class="n">dstToPlanet</span> <span class="o">=</span> <span class="n">RayIntersectSphere</span><span class="p">(</span><span class="n">vec3</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="n">param</span><span class="p">.</span><span class="n">PlanetRadius</span><span class="p">,</span> <span class="n">camPosInPlanet</span><span class="p">,</span> <span class="n">viewDir</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">float</span> <span class="n">dstToAtmosphere</span> <span class="o">=</span> <span class="n">RayIntersectSphere</span><span class="p">(</span><span class="n">vec3</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="n">param</span><span class="p">.</span><span class="n">PlanetRadius</span> <span class="o">+</span> <span class="n">param</span><span class="p">.</span><span class="n">AtmosphereHeight</span><span class="p">,</span> <span class="n">camPosInPlanet</span><span class="p">,</span> <span class="n">viewDir</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 还没实现别的渲染，纯黑的，先不判断
+</span></span></span><span class="line"><span class="cl"><span class="c1">//    if(dstToPlanet &gt; 0.0 || dstToAtmosphere &lt; 0.0){
+</span></span></span><span class="line"><span class="cl"><span class="c1">//        return vec3(0);
+</span></span></span><span class="line"><span class="cl"><span class="c1">//    }
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="kt">float</span> <span class="n">stepSize</span> <span class="o">=</span> <span class="n">dstToAtmosphere</span> <span class="o">/</span> <span class="kt">float</span><span class="p">(</span><span class="n">N_SAMPLE</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">vec3</span> <span class="n">testPoint</span> <span class="o">=</span> <span class="n">camPosInPlanet</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">vec3</span> <span class="n">color</span> <span class="o">=</span> <span class="n">vec3</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span><span class="mi">0</span><span class="p">;</span> <span class="n">i</span><span class="o">&lt;</span><span class="n">N_SAMPLE</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// 太阳方向rayMarching的距离
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="kt">float</span> <span class="n">disToLight</span> <span class="o">=</span> <span class="n">RayIntersectSphere</span><span class="p">(</span><span class="n">vec3</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="n">param</span><span class="p">.</span><span class="n">PlanetRadius</span> <span class="o">+</span> <span class="n">param</span><span class="p">.</span><span class="n">AtmosphereHeight</span><span class="p">,</span> <span class="n">testPoint</span><span class="p">,</span> <span class="n">lightDir</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// 太阳到采样点之间的透光率
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">vec3</span> <span class="n">tramsmittanceLightToTest</span> <span class="o">=</span> <span class="n">Transmittance</span><span class="p">(</span><span class="n">param</span><span class="p">,</span><span class="n">testPoint</span> <span class="o">+</span> <span class="n">lightDir</span> <span class="o">*</span> <span class="n">disToLight</span><span class="p">,</span><span class="n">testPoint</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// 散射光比例
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">vec3</span> <span class="n">scattering</span> <span class="o">=</span> <span class="n">Scattering</span><span class="p">(</span><span class="n">param</span><span class="p">,</span> <span class="n">testPoint</span><span class="p">,</span> <span class="n">lightDir</span><span class="p">,</span> <span class="n">viewDir</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// 摄像机到采样点之间的透光度
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">vec3</span> <span class="n">tramsmittanceTestToCam</span> <span class="o">=</span> <span class="n">Transmittance</span><span class="p">(</span><span class="n">param</span><span class="p">,</span><span class="n">testPoint</span><span class="p">,</span><span class="n">camPosInPlanet</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// 采样点的光照计算。// TODO：需要把太阳光放大很多倍才有比较亮的效果（因为ToneMapping压黑的）
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">vec3</span> <span class="n">inScattering</span> <span class="o">=</span> <span class="n">tramsmittanceLightToTest</span> <span class="o">*</span> <span class="n">scattering</span> <span class="o">*</span> <span class="n">tramsmittanceTestToCam</span>  <span class="o">*</span> <span class="n">stepSize</span> <span class="o">*</span> <span class="n">lightColor</span> <span class="o">*</span> <span class="mi">4</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="n">testPoint</span> <span class="o">+=</span> <span class="n">viewDir</span> <span class="o">*</span> <span class="n">stepSize</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="n">color</span> <span class="o">+=</span> <span class="n">inScattering</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">float</span> <span class="n">cosAngle</span> <span class="o">=</span> <span class="n">dot</span><span class="p">(</span><span class="n">viewDir</span><span class="p">,</span> <span class="n">lightDir</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span><span class="p">(</span><span class="n">cosAngle</span> <span class="o">&gt;</span> <span class="n">cos</span><span class="p">(</span><span class="mf">0.02</span><span class="p">))</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// 视线指向太阳圆盘
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">color</span> <span class="o">+=</span> <span class="n">Transmittance</span><span class="p">(</span><span class="n">param</span><span class="p">,</span> <span class="n">lightPos</span> <span class="o">+</span> <span class="n">vec3</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">param</span><span class="p">.</span><span class="n">PlanetRadius</span> <span class="o">+</span> <span class="n">param</span><span class="p">.</span><span class="n">AtmosphereHeight</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="n">camPosInPlanet</span><span class="p">)</span> <span class="o">*</span> <span class="n">lightColor</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">color</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="透射率预计算">透射率预计算
+</h2><p>对于T2，因为每次都是固定在一个方向上进行透射率累加，所以一边计算一边缓存即可，不用每次都从头开始计算透射率，主要来看T1的预计算（因为每次计算太阳光到采样点的透射率都是一个全新的方向，不能利用之前的数据）
+地球是圆的，大气层具有对称性，所以左右晃动不会影响透射率
+<img src="/d876678d9886498c98e821aa14e3e99b.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+也就是说，对于某一高度的着色点，不同方向上的透射率只和天顶角有关。高度和天顶角两个参数就能确定透射率。（待实现，可参考https://zhuanlan.zhihu.com/p/595576594）</p>
+<h2 id="展示">展示
+</h2><p><img src="/d8f2037921a14f98b2f3349d4ea4d7aa.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+></p>
+<p><img src="/eccc71af70bb4589a8e954f8adcaf499.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+></p>
+<p><img src="/025e7da8dd62453095a4739f7c3d15ed.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+这里还有一点点遮挡关系没有出来，不过不是重点
+<img src="/2620c8616a784ec08d4b970669011ba4.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+></p>
+<h2 id="多重散射">多重散射
+</h2><p><img src="/9d7d4eb1114643fc8aeb6b856a534ad7.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+就像渲染方程，除了来自光源的直接光照+散射，场景中其他方向的粒子也会散射，也会对着色点有贡献，所以要积分获得整个球面上所有方向上的贡献之和，同时还有大量预计算这就做到了多重散射。这块的实现暂时放弃，同样可参考https://zhuanlan.zhihu.com/p/595576594
+<img src="/0a0ce02d672f445cb8ba76594ac0869a.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+></p>
+
+</section>
+
+
+    <footer class="article-footer">
+    
+    <section class="article-tags">
+        
+            <a href="/tags/%E6%B8%B2%E6%9F%93%E5%99%A8%E5%BC%80%E5%8F%91/">渲染器开发</a>
+        
+            <a href="/tags/openglrender/">OpenGLRender</a>
+        
+            <a href="/tags/opengl/">OpenGL</a>
+        
+    </section>
+
+
+    
+    <section class="article-copyright">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
+</svg>
+
+
+
+        <span>Licensed under CC BY-NC-SA 4.0</span>
+    </section>
+    </footer>
+
+
+    
+        <link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css"integrity="sha384-n8MVd4RsNIU0tAv4ct0nTaAbDJwPJzDEaqSD1odI&#43;WdtXRGWt2kTvGFasHpSy3SV"crossorigin="anonymous"
+            ><script 
+                src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"integrity="sha384-XjKyOOlGwcjNTAIQHIpgOno0Hl1YQqzUOEleOLALmuqehneUG&#43;vnGctmUb0ZY0l8"crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"integrity="sha384-&#43;VBxd3r6XgURycqtZ117nYw44OOcIax56Z4dCRWbxyPt0Koah1uHoK0o4&#43;/RRE05"crossorigin="anonymous"
+                defer
+                >
+            </script><script>
+    window.addEventListener("DOMContentLoaded", () => {
+	const mainArticleElement = document.querySelector(".main-article");
+        renderMathInElement(mainArticleElement, {
+            delimiters: [
+                { left: "$$", right: "$$", display: true },
+                { left: "$", right: "$", display: false },
+                { left: "\\(", right: "\\)", display: false },
+                { left: "\\[", right: "\\]", display: true }
+            ],
+            ignoredClasses: ["gist"]
+        });})
+</script>
+
+    
+</article>
+
+    
+
+    
+
+<aside class="related-content--wrapper">
+    <h2 class="section-title">相关文章</h2>
+    <div class="related-content">
+        <div class="flex article-list--tile">
+            
+                
+<article class="article-card no-image">
+    <a href="/p/openglrender%E5%BC%80%E5%8F%91%E8%AE%B0%E5%BD%952%E9%98%B4%E5%BD%B1shadowmappcfpcss/">
+        
+        
+        <div class="article-details">
+            <h2 class="article-title">OpenGLRender开发记录（2）：阴影（shadowMap，PCF，PCSS）</h2>
+        </div>
+        
+    </a>
+
+    <style>
+     
+    .article-card {
+        background: rgba(255, 255, 255, 0.25);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        margin: 10px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .article-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    }
+
+    .article-card a {
+        display: flex;
+        flex-direction: column;
+        text-decoration: none;
+        color: inherit;
+        height: 100%;
+    }
+
+     
+    .article-image {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        overflow: hidden;
+    }
+    .article-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+    .article-image:hover img {
+        transform: scale(1.05);
+    }
+
+     
+    .article-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: rgba(0,0,0,0.3);  
+        padding: 10px;
+        box-sizing: border-box;
+        text-align: center;
+    }
+    .article-overlay .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #fff;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .article-card.no-image .article-details {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 15px;
+    }
+    .article-card.no-image .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #222;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .articles-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 20px;
+    }
+    </style>
+</article>
+            
+        </div>
+    </div>
+</aside>
+
+     
+    
+        
+    <script
+    src="https://giscus.app/client.js"
+    data-repo="sdpyy1/sdpyy1.github.io"
+    data-repo-id="R_kgDOQEycpQ"
+    data-category="Announcements"
+    data-category-id="DIC_kwDOQEycpc4Cwz7v"
+    data-mapping="pathname"
+    data-strict="0"
+    data-reactions-enabled="1"
+    data-emit-metadata="0"
+    data-input-position="top"
+    data-theme="light"
+    data-lang="en"
+    data-loading=""
+    crossorigin="anonymous"
+    async
+></script>
+<script>
+    function setGiscusTheme(theme) {
+        let giscus = document.querySelector("iframe.giscus-frame");
+        if (giscus) {
+            giscus.contentWindow.postMessage(
+                {
+                    giscus: {
+                        setConfig: {
+                            theme: theme,
+                        },
+                    },
+                },
+                "https://giscus.app"
+            );
+        }
+    }
+
+    (function () {
+        addEventListener("message", (e) => {
+            if (event.origin !== "https://giscus.app") return;
+            handler();
+        });
+        window.addEventListener("onColorSchemeChange", handler);
+
+        function handler() {
+            if (document.documentElement.dataset.scheme === "light") {
+                setGiscusTheme('light');
+            } else {
+                setGiscusTheme('light');
+            }
+        }
+    })();
+</script>
+
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+            2020 - 
+        
+        2025 爱喝东方树叶
+    </section>
+    <section style="display: flex; gap: 30px; align-items: center;">
+      
+      
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+      <span>📚 文章数: 32</span>
+      <span>✍️ 总字数: 
+        
+        
+        97.83K
+      </span>
+    </section>
+
+    <section class="powerby">
+    
+    <div class="busuanzi-footer">
+        <span id="busuanzi_container_site_pv">
+          本站总访问量<span id="busuanzi_value_site_pv"></span>次
+        </span>
+        <span id="busuanzi_container_site_uv">
+          本站访客数<span id="busuanzi_value_site_uv"></span>人次
+        </span>
+      </div></section>
+
+</footer>
+
+
+    
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    
+    <div class="pswp__bg"></div>
+
+    
+    <div class="pswp__scroll-wrap">
+
+        
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                
+                
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                        <div class="pswp__preloader__cut">
+                            <div class="pswp__preloader__donut"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div>
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js"integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo="crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js"integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU="crossorigin="anonymous"
+                defer
+                >
+            </script><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css"crossorigin="anonymous"
+            ><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css"crossorigin="anonymous"
+            >
+
+            </main>
+        </div>
+        <script 
+                src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js"integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z&#43;KMkF24hUW8WePSA9HM="crossorigin="anonymous"
+                
+                >
+            </script><script type="text/javascript" src="/ts/main.1e9a3bafd846ced4c345d084b355fb8c7bae75701c338f8a1f8a82c780137826.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>

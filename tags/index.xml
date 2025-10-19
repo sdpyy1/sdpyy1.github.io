@@ -7,7 +7,31 @@
         <generator>Hugo -- gohugo.io</generator>
         <language>zh-cn</language>
         <copyright>爱喝东方树叶</copyright>
-        <lastBuildDate>Sun, 19 Oct 2025 14:05:15 +0800</lastBuildDate><atom:link href="https://sdpyy1.github.io/tags/index.xml" rel="self" type="application/rss+xml" /><item>
+        <lastBuildDate>Sun, 19 Oct 2025 14:20:40 +0800</lastBuildDate><atom:link href="https://sdpyy1.github.io/tags/index.xml" rel="self" type="application/rss+xml" /><item>
+        <title>OpenGL</title>
+        <link>https://sdpyy1.github.io/tags/opengl/</link>
+        <pubDate>Sun, 19 Oct 2025 14:20:40 +0800</pubDate>
+        
+        <guid>https://sdpyy1.github.io/tags/opengl/</guid>
+        <description></description>
+        </item>
+        <item>
+        <title>OpenGLRender</title>
+        <link>https://sdpyy1.github.io/tags/openglrender/</link>
+        <pubDate>Sun, 19 Oct 2025 14:20:40 +0800</pubDate>
+        
+        <guid>https://sdpyy1.github.io/tags/openglrender/</guid>
+        <description></description>
+        </item>
+        <item>
+        <title>渲染器开发</title>
+        <link>https://sdpyy1.github.io/tags/%E6%B8%B2%E6%9F%93%E5%99%A8%E5%BC%80%E5%8F%91/</link>
+        <pubDate>Sun, 19 Oct 2025 14:20:40 +0800</pubDate>
+        
+        <guid>https://sdpyy1.github.io/tags/%E6%B8%B2%E6%9F%93%E5%99%A8%E5%BC%80%E5%8F%91/</guid>
+        <description></description>
+        </item>
+        <item>
         <title>Games202</title>
         <link>https://sdpyy1.github.io/tags/games202/</link>
         <pubDate>Sun, 19 Oct 2025 14:05:15 +0800</pubDate>
@@ -40,27 +64,11 @@
         <description></description>
         </item>
         <item>
-        <title>OpenGL</title>
-        <link>https://sdpyy1.github.io/tags/opengl/</link>
-        <pubDate>Sun, 19 Oct 2025 13:53:52 +0800</pubDate>
-        
-        <guid>https://sdpyy1.github.io/tags/opengl/</guid>
-        <description></description>
-        </item>
-        <item>
         <title>TinyRender</title>
         <link>https://sdpyy1.github.io/tags/tinyrender/</link>
         <pubDate>Sun, 19 Oct 2025 13:42:48 +0800</pubDate>
         
         <guid>https://sdpyy1.github.io/tags/tinyrender/</guid>
-        <description></description>
-        </item>
-        <item>
-        <title>渲染器开发</title>
-        <link>https://sdpyy1.github.io/tags/%E6%B8%B2%E6%9F%93%E5%99%A8%E5%BC%80%E5%8F%91/</link>
-        <pubDate>Sun, 19 Oct 2025 13:42:48 +0800</pubDate>
-        
-        <guid>https://sdpyy1.github.io/tags/%E6%B8%B2%E6%9F%93%E5%99%A8%E5%BC%80%E5%8F%91/</guid>
         <description></description>
         </item>
         <item>
