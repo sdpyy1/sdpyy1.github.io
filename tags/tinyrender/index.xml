@@ -13,7 +13,7 @@
         <pubDate>Sun, 19 Oct 2025 13:42:48 +0800</pubDate>
         
         <guid>https://sdpyy1.github.io/p/tinyrender%E5%BC%80%E5%8F%91%E8%AE%B0%E5%BD%95-5-7/</guid>
-        <description>&lt;h1 id=&#34;lesson-5--gouraud-shading&#34;&gt;Lesson 5:  Gouraud shading
+        <description>&lt;img src="https://sdpyy1.github.io/23afe9a8003a44a788f6448c182b6b68.png" alt="Featured image of post TinyRender开发记录 5-7" /&gt;&lt;h1 id=&#34;lesson-5--gouraud-shading&#34;&gt;Lesson 5:  Gouraud shading
 &lt;/h1&gt;&lt;p&gt;本节课实现了 Gouraud shading，对三角形每个顶点用法线求光照，进一步插值到内部像素，相比于phong，phong是要对每个内部像素都需要计算光照，这里简单处理就是默认为255，255，255的白光，计算顶点法线和光照方向的夹角（注意单位化和钝角处理)，得到cos直接乘以光照，就得到了每个顶点的变暗比例，之后再插值到各个像素，关键代码如下&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
 &lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
@@ -982,7 +982,7 @@ ai给出的解释：这种现象叫做自阴影&lt;/p&gt;
         <pubDate>Sun, 19 Oct 2025 13:37:45 +0800</pubDate>
         
         <guid>https://sdpyy1.github.io/p/tinyrender%E5%BC%80%E5%8F%91%E8%AE%B0%E5%BD%95-1-4/</guid>
-        <description>&lt;h1 id=&#34;项目介绍&#34;&gt;项目介绍
+        <description>&lt;img src="https://sdpyy1.github.io/015e0f415d1c493db111695862b55bfe.png" alt="Featured image of post TinyRender开发记录 1-4" /&gt;&lt;h1 id=&#34;项目介绍&#34;&gt;项目介绍
 &lt;/h1&gt;&lt;blockquote&gt;
 &lt;p&gt;Tiny Renderer or how OpenGL works: software rendering in 500 lines of code
 项目地址：https://github.com/ssloy/tinyrenderer

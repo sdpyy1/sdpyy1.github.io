@@ -12,9 +12,10 @@
 <meta property='og:description' content="前向运动学 单链 每个关节的局部坐标系与全局坐标系重合\n父关节的旋转会让子关节也跟着旋转 子关节的朝向就是夫关节朝向乘以自身的旋转 只旋转R0时,Q1在Q0的局部坐标系下的坐标并不会变一直是l0,如果想求Q1的世界坐标,就是父关节的世界坐标加朝向*l0 这一套东西就是用传播来更新,比如Q4的局部坐标系的某一个点,可以算出他在Q3的局部坐标系的位置,Q3的位置又能计算出他在Q2的位置,最终得到这个点在Q0的位置,最终再换算到世界坐标系,就得到了Q4局部坐标系下某一点在全局坐标系下的位置 这块比较好理解 BVH文件,用欧拉角表示旋转 ">
 <meta property='og:url' content='https://sdpyy1.github.io/p/games105-%E8%AE%A1%E7%AE%97%E6%9C%BA%E8%A7%92%E8%89%B2%E5%8A%A8%E7%94%BB%E5%9F%BA%E7%A1%80%E5%89%8D%E5%90%91%E8%BF%90%E5%8A%A8%E5%AD%A6%E9%80%86%E5%90%91%E8%BF%90%E5%8A%A8%E5%AD%A6%E5%85%B3%E9%94%AE%E5%B8%A7%E5%8A%A8%E7%94%BB%E4%B8%8E%E6%8F%92%E5%80%BC/'>
 <meta property='og:site_name' content='wanfeng'>
-<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='课程笔记' /><meta property='article:tag' content='Games105' /><meta property='article:published_time' content='2025-10-19T14:25:28&#43;08:00'/><meta property='article:modified_time' content='2025-10-19T14:25:28&#43;08:00'/>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='课程笔记' /><meta property='article:tag' content='Games105' /><meta property='article:published_time' content='2025-10-19T14:25:28&#43;08:00'/><meta property='article:modified_time' content='2025-10-19T14:25:28&#43;08:00'/><meta property='og:image' content='https://sdpyy1.github.io/9cd6da17016c4d8bb0a71ba5e8f44d0c.png' />
 <meta name="twitter:title" content="GAMES105 计算机角色动画基础（前向运动学、逆向运动学、关键帧动画与插值）">
-<meta name="twitter:description" content="前向运动学 单链 每个关节的局部坐标系与全局坐标系重合\n父关节的旋转会让子关节也跟着旋转 子关节的朝向就是夫关节朝向乘以自身的旋转 只旋转R0时,Q1在Q0的局部坐标系下的坐标并不会变一直是l0,如果想求Q1的世界坐标,就是父关节的世界坐标加朝向*l0 这一套东西就是用传播来更新,比如Q4的局部坐标系的某一个点,可以算出他在Q3的局部坐标系的位置,Q3的位置又能计算出他在Q2的位置,最终得到这个点在Q0的位置,最终再换算到世界坐标系,就得到了Q4局部坐标系下某一点在全局坐标系下的位置 这块比较好理解 BVH文件,用欧拉角表示旋转 ">
+<meta name="twitter:description" content="前向运动学 单链 每个关节的局部坐标系与全局坐标系重合\n父关节的旋转会让子关节也跟着旋转 子关节的朝向就是夫关节朝向乘以自身的旋转 只旋转R0时,Q1在Q0的局部坐标系下的坐标并不会变一直是l0,如果想求Q1的世界坐标,就是父关节的世界坐标加朝向*l0 这一套东西就是用传播来更新,比如Q4的局部坐标系的某一个点,可以算出他在Q3的局部坐标系的位置,Q3的位置又能计算出他在Q2的位置,最终得到这个点在Q0的位置,最终再换算到世界坐标系,就得到了Q4局部坐标系下某一点在全局坐标系下的位置 这块比较好理解 BVH文件,用欧拉角表示旋转 "><meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content='https://sdpyy1.github.io/9cd6da17016c4d8bb0a71ba5e8f44d0c.png' />
     <link rel="shortcut icon" href="/favicon.ico" />
 
     </head>
@@ -342,8 +343,16 @@
 
 
             <main class="main full-width">
-    <article class="main-article">
+    <article class="has-image main-article">
     <header class="article-header">
+        <div class="article-image">
+            <a href="/p/games105-%E8%AE%A1%E7%AE%97%E6%9C%BA%E8%A7%92%E8%89%B2%E5%8A%A8%E7%94%BB%E5%9F%BA%E7%A1%80%E5%89%8D%E5%90%91%E8%BF%90%E5%8A%A8%E5%AD%A6%E9%80%86%E5%90%91%E8%BF%90%E5%8A%A8%E5%AD%A6%E5%85%B3%E9%94%AE%E5%B8%A7%E5%8A%A8%E7%94%BB%E4%B8%8E%E6%8F%92%E5%80%BC/">
+                
+                    <img src="/9cd6da17016c4d8bb0a71ba5e8f44d0c.png" loading="lazy" alt="Featured image of post GAMES105 计算机角色动画基础（前向运动学、逆向运动学、关键帧动画与插值）" />
+                
+            </a>
+        </div>
+    
 
     <div class="article-details">
     
@@ -444,15 +453,7 @@
         
 
         
-        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-  <path stroke="none" d="M0 0h24v24H0z"/>
-  <circle cx="12" cy="7" r="4" />
-  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
-</svg>
-
-
-
-        <span id="busuanzi_container_page_pv">本文阅读量<span id="busuanzi_value_page_pv"></span>次</span>
+            
     </footer>
     
     
@@ -1981,12 +1982,18 @@ return joint_positions, joint_orientations
         <div class="flex article-list--tile">
             
                 
-<article class="article-card no-image">
+<article class="article-card has-image">
     <a href="/p/games105-%E8%AE%A1%E7%AE%97%E6%9C%BA%E8%A7%92%E8%89%B2%E5%8A%A8%E7%94%BB%E5%9F%BA%E7%A1%80%E6%95%B0%E5%AD%A6%E5%9F%BA%E7%A1%80/">
         
-        
-        <div class="article-details">
-            <h2 class="article-title">GAMES105 计算机角色动画基础（数学基础）</h2>
+        <div class="article-image">
+            
+                <img src="/697bf32a43404daeadb64e6c91c121f0.png" loading="lazy" data-key="" data-hash="/697bf32a43404daeadb64e6c91c121f0.png"/>
+            
+
+            
+            <div class="article-overlay">
+                <h2 class="article-title">GAMES105 计算机角色动画基础（数学基础）</h2>
+            </div>
         </div>
         
     </a>

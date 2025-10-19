@@ -13,7 +13,7 @@
         <pubDate>Sun, 19 Oct 2025 14:20:40 +0800</pubDate>
         
         <guid>https://sdpyy1.github.io/p/openglrender%E5%BC%80%E5%8F%91%E8%AE%B0%E5%BD%953%E5%90%8E%E5%A4%84%E7%90%86pass%E5%A4%A7%E6%B0%94%E6%B8%B2%E6%9F%93/</guid>
-        <description>&lt;h1 id=&#34;大气渲染&#34;&gt;大气渲染
+        <description>&lt;img src="https://sdpyy1.github.io/025e7da8dd62453095a4739f7c3d15ed.png" alt="Featured image of post OpenGLRender开发记录（3）：后处理Pass（大气渲染）" /&gt;&lt;h1 id=&#34;大气渲染&#34;&gt;大气渲染
 &lt;/h1&gt;&lt;h2 id=&#34;渲染方法分析&#34;&gt;渲染方法分析
 &lt;/h2&gt;&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/55e17d90959d44a9b5a55d89fb02d6a2.png&#34;
 	
@@ -621,7 +621,7 @@ M点为着色点，那从P点看向M点时，需要计算两个值（1）&lt;str
         <pubDate>Sun, 19 Oct 2025 14:19:37 +0800</pubDate>
         
         <guid>https://sdpyy1.github.io/p/openglrender%E5%BC%80%E5%8F%91%E8%AE%B0%E5%BD%952%E9%98%B4%E5%BD%B1shadowmappcfpcss/</guid>
-        <description>&lt;h1 id=&#34;已实现功能&#34;&gt;已实现功能
+        <description>&lt;img src="https://sdpyy1.github.io/976b5ef841fd4cda9621c4812dd3dba4.png" alt="Featured image of post OpenGLRender开发记录（2）：阴影（shadowMap，PCF，PCSS）" /&gt;&lt;h1 id=&#34;已实现功能&#34;&gt;已实现功能
 &lt;/h1&gt;&lt;p&gt;除了上次实现IBL之外，项目目前新增了imGUI的渲染，更方便地进行调试
 &lt;img src=&#34;https://sdpyy1.github.io/43b440e64570447284673faa81f9d7c3.png&#34;
 	

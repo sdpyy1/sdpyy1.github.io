@@ -13,7 +13,7 @@
         <pubDate>Sun, 19 Oct 2025 14:05:15 +0800</pubDate>
         
         <guid>https://sdpyy1.github.io/p/games202-%E9%AB%98%E8%B4%A8%E9%87%8F%E5%AE%9E%E6%97%B6%E6%B8%B2%E6%9F%93assignment-3/</guid>
-        <description>&lt;h1 id=&#34;作业介绍&#34;&gt;作业介绍
+        <description>&lt;img src="https://sdpyy1.github.io/8a13212a6c85436f925ee5f06d474564.png" alt="Featured image of post GAMES202 高质量实时渲染（Assignment 3）" /&gt;&lt;h1 id=&#34;作业介绍&#34;&gt;作业介绍
 &lt;/h1&gt;&lt;p&gt;首先看一下整体渲染流程&lt;/p&gt;
 &lt;ol&gt;
 &lt;li&gt;绘制光源&lt;/li&gt;
@@ -534,7 +534,7 @@
         <pubDate>Sun, 19 Oct 2025 14:04:46 +0800</pubDate>
         
         <guid>https://sdpyy1.github.io/p/games202-%E9%AB%98%E8%B4%A8%E9%87%8F%E5%AE%9E%E6%97%B6%E6%B8%B2%E6%9F%93assignment-2/</guid>
-        <description>&lt;h1 id=&#34;作业介绍&#34;&gt;作业介绍
+        <description>&lt;img src="https://sdpyy1.github.io/1e99f72904054ad5bbfe172340ccd69e.png" alt="Featured image of post GAMES202 高质量实时渲染（Assignment 2）" /&gt;&lt;h1 id=&#34;作业介绍&#34;&gt;作业介绍
 &lt;/h1&gt;&lt;p&gt;物体在不同光照下的表现不同，PRT(Precomputed Radiance Transfer) 是一个计算物体在不同光照下表现的方法。光线在一个环境中，会经历反射，折射，散射，甚至还会物体的内部进行散射。为了模拟具有真实感的渲染结果，传统的Path Tracing 方法需要考虑来自各个方向的光线、所有可能的传播形式并且收敛速度极慢。PRT 通过一种预计算方法，该方法在离线渲染的 Path Tracing 工具链中预计算 lighting 以及 light transport 并将它们用球谐函数拟合后储存，这样就将时间开销转移到了离线中。最后通过使用这些预计算好的数据，我们可以轻松达到实时渲染严苛的时间要求，同时渲染结果可以呈现出全局光照的效果。&lt;/p&gt;
 &lt;p&gt;PRT 方法存在的限制包括：
 • 不能计算随机动态场景的全局光照
@@ -1194,7 +1194,7 @@ Li项已经处理掉了，就剩下max()项了
         <pubDate>Sun, 19 Oct 2025 14:03:49 +0800</pubDate>
         
         <guid>https://sdpyy1.github.io/p/games202-%E9%AB%98%E8%B4%A8%E9%87%8F%E5%AE%9E%E6%97%B6%E6%B8%B2%E6%9F%93assignment-1/</guid>
-        <description>&lt;h1 id=&#34;homework1&#34;&gt;Homework1
+        <description>&lt;img src="https://sdpyy1.github.io/531daca67f0242c6abba44c1e5a88603.png" alt="Featured image of post GAMES202 高质量实时渲染（Assignment 1）" /&gt;&lt;h1 id=&#34;homework1&#34;&gt;Homework1
 &lt;/h1&gt;&lt;h2 id=&#34;shadow-map&#34;&gt;shadow Map
 &lt;/h2&gt;&lt;p&gt;首先需要完成MVP矩阵的构造，在这里的mvp用来表示如果一个模型在shadowmap视角下的位置&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
@@ -1624,7 +1624,7 @@ Wlight = 100
         <pubDate>Sun, 19 Oct 2025 13:32:46 +0800</pubDate>
         
         <guid>https://sdpyy1.github.io/p/games101-%E7%8E%B0%E4%BB%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9B%BE%E5%BD%A2%E5%AD%A6%E5%85%A5%E9%97%A8-assignment7/</guid>
-        <description>&lt;h1 id=&#34;作业介绍&#34;&gt;作业介绍
+        <description>&lt;img src="https://sdpyy1.github.io/4360789f62274e29b3aabdfd7a0a1f6a.png" alt="Featured image of post GAMES101 现代计算机图形学入门 Assignment7" /&gt;&lt;h1 id=&#34;作业介绍&#34;&gt;作业介绍
 &lt;/h1&gt;&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/ef43e9abf6c7485d9bf566a59479ed6f.png&#34;
 	
 	
@@ -1830,7 +1830,7 @@ Wlight = 100
         <pubDate>Sun, 19 Oct 2025 13:24:41 +0800</pubDate>
         
         <guid>https://sdpyy1.github.io/p/games101-%E7%8E%B0%E4%BB%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9B%BE%E5%BD%A2%E5%AD%A6%E5%85%A5%E9%97%A8-assignment6/</guid>
-        <description>&lt;h1 id=&#34;作业介绍&#34;&gt;作业介绍
+        <description>&lt;img src="https://sdpyy1.github.io/7685e3c05ceb40d686c8997f9b6dab10.png" alt="Featured image of post GAMES101 现代计算机图形学入门 Assignment6" /&gt;&lt;h1 id=&#34;作业介绍&#34;&gt;作业介绍
 &lt;/h1&gt;&lt;p&gt;在上次作业中，每一次计算光线交点时，都需要与场景中所有的物体进行求交运行，这显然是不合理的，这次作业用BVH划分后进行加速
 &lt;img src=&#34;https://sdpyy1.github.io/bace7e32a04640d08dbcb3b7ba95b6d5.png&#34;
 	
@@ -2299,7 +2299,7 @@ Wlight = 100
         <pubDate>Sun, 19 Oct 2025 13:24:12 +0800</pubDate>
         
         <guid>https://sdpyy1.github.io/p/games101-%E7%8E%B0%E4%BB%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9B%BE%E5%BD%A2%E5%AD%A6%E5%85%A5%E9%97%A8-assignment5/</guid>
-        <description>&lt;h1 id=&#34;作业介绍&#34;&gt;作业介绍
+        <description>&lt;img src="https://sdpyy1.github.io/596150ce910e433694d4bb76ebe253f6.png" alt="Featured image of post GAMES101 现代计算机图形学入门 Assignment5" /&gt;&lt;h1 id=&#34;作业介绍&#34;&gt;作业介绍
 &lt;/h1&gt;&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/d4bca87d0cc845e78962e550baedf970.png&#34;
 	
 	
@@ -3138,7 +3138,7 @@ Wlight = 100
         <pubDate>Sun, 19 Oct 2025 13:22:54 +0800</pubDate>
         
         <guid>https://sdpyy1.github.io/p/games101-%E7%8E%B0%E4%BB%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9B%BE%E5%BD%A2%E5%AD%A6%E5%85%A5%E9%97%A8-assignment3/</guid>
-        <description>&lt;h1 id=&#34;作业描述&#34;&gt;作业描述
+        <description>&lt;img src="https://sdpyy1.github.io/6218a369afe94437bb81dfb0420e1b39.png" alt="Featured image of post GAMES101 现代计算机图形学入门 Assignment3" /&gt;&lt;h1 id=&#34;作业描述&#34;&gt;作业描述
 &lt;/h1&gt;&lt;p&gt;上节课已经对光栅化的操作有了了解，这节课直接引入了模型和纹理，其实本质就是引入了很多的顶点，操作其实没什么变化&lt;img src=&#34;https://sdpyy1.github.io/23b1962b67c04c8a914553728140a155.png&#34;
 	
 	
@@ -4057,7 +4057,7 @@ Wlight = 100
         <pubDate>Sun, 19 Oct 2025 13:21:54 +0800</pubDate>
         
         <guid>https://sdpyy1.github.io/p/games101-%E7%8E%B0%E4%BB%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9B%BE%E5%BD%A2%E5%AD%A6%E5%85%A5%E9%97%A8-assignment1/</guid>
-        <description>&lt;h1 id=&#34;作业介绍&#34;&gt;作业介绍
+        <description>&lt;img src="https://sdpyy1.github.io/594b42fc6200482991a2c402f81c52d1.png" alt="Featured image of post GAMES101 现代计算机图形学入门 Assignment1" /&gt;&lt;h1 id=&#34;作业介绍&#34;&gt;作业介绍
 &lt;/h1&gt;&lt;p&gt;给出三个点的空间坐标，通过MVP矩阵将点投影到平面上，并绘制出三角形
 &lt;img src=&#34;https://sdpyy1.github.io/4b699439c1a649679ce5aa97175af5ce.png&#34;
 	
@@ -4442,7 +4442,7 @@ $$&lt;p&gt;
         <pubDate>Sun, 19 Oct 2025 13:14:45 +0800</pubDate>
         
         <guid>https://sdpyy1.github.io/p/games101-%E7%8E%B0%E4%BB%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9B%BE%E5%BD%A2%E5%AD%A6%E5%85%A5%E9%97%A8-assignment0/</guid>
-        <description>&lt;h1 id=&#34;assignment0&#34;&gt;Assignment0
+        <description>&lt;img src="https://sdpyy1.github.io/2703bfe2cee44ac4b97c54c3d8b35851.png" alt="Featured image of post GAMES101 现代计算机图形学入门 Assignment0" /&gt;&lt;h1 id=&#34;assignment0&#34;&gt;Assignment0
 &lt;/h1&gt;&lt;p&gt;前边一大半主要是安装虚拟机保证运行一致，这里就跳过了，到实际的问题：点旋转和平移
 &lt;img src=&#34;https://sdpyy1.github.io/26aaf651fbad47eca926587f0581a4cc.png&#34;
 	

@@ -13,7 +13,7 @@
         <pubDate>Sun, 19 Oct 2025 14:25:28 +0800</pubDate>
         
         <guid>https://sdpyy1.github.io/p/games105-%E8%AE%A1%E7%AE%97%E6%9C%BA%E8%A7%92%E8%89%B2%E5%8A%A8%E7%94%BB%E5%9F%BA%E7%A1%80%E5%89%8D%E5%90%91%E8%BF%90%E5%8A%A8%E5%AD%A6%E9%80%86%E5%90%91%E8%BF%90%E5%8A%A8%E5%AD%A6%E5%85%B3%E9%94%AE%E5%B8%A7%E5%8A%A8%E7%94%BB%E4%B8%8E%E6%8F%92%E5%80%BC/</guid>
-        <description>&lt;h1 id=&#34;前向运动学&#34;&gt;前向运动学
+        <description>&lt;img src="https://sdpyy1.github.io/9cd6da17016c4d8bb0a71ba5e8f44d0c.png" alt="Featured image of post GAMES105 计算机角色动画基础（前向运动学、逆向运动学、关键帧动画与插值）" /&gt;&lt;h1 id=&#34;前向运动学&#34;&gt;前向运动学
 &lt;/h1&gt;&lt;h2 id=&#34;单链&#34;&gt;单链
 &lt;/h2&gt;&lt;p&gt;每个关节的局部坐标系与全局坐标系重合&lt;/p&gt;
 &lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/30420a057d4b48d1ac427d38c5392200.png&#34;
@@ -1441,7 +1441,7 @@ return joint_positions, joint_orientations
         <pubDate>Sun, 19 Oct 2025 14:24:24 +0800</pubDate>
         
         <guid>https://sdpyy1.github.io/p/games105-%E8%AE%A1%E7%AE%97%E6%9C%BA%E8%A7%92%E8%89%B2%E5%8A%A8%E7%94%BB%E5%9F%BA%E7%A1%80%E6%95%B0%E5%AD%A6%E5%9F%BA%E7%A1%80/</guid>
-        <description>&lt;h1 id=&#34;线性代数&#34;&gt;线性代数
+        <description>&lt;img src="https://sdpyy1.github.io/697bf32a43404daeadb64e6c91c121f0.png" alt="Featured image of post GAMES105 计算机角色动画基础（数学基础）" /&gt;&lt;h1 id=&#34;线性代数&#34;&gt;线性代数
 &lt;/h1&gt;&lt;h2 id=&#34;向量&#34;&gt;向量
 &lt;/h2&gt;&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/fb83138d7956486cb1748166b3de3f4d.png&#34;
 	
@@ -2438,7 +2438,7 @@ v方向是 UcrossA的方向(其实就是圆盘的切线方向,也就是说叉乘
         <pubDate>Sun, 19 Oct 2025 14:20:40 +0800</pubDate>
         
         <guid>https://sdpyy1.github.io/p/openglrender%E5%BC%80%E5%8F%91%E8%AE%B0%E5%BD%953%E5%90%8E%E5%A4%84%E7%90%86pass%E5%A4%A7%E6%B0%94%E6%B8%B2%E6%9F%93/</guid>
-        <description>&lt;h1 id=&#34;大气渲染&#34;&gt;大气渲染
+        <description>&lt;img src="https://sdpyy1.github.io/025e7da8dd62453095a4739f7c3d15ed.png" alt="Featured image of post OpenGLRender开发记录（3）：后处理Pass（大气渲染）" /&gt;&lt;h1 id=&#34;大气渲染&#34;&gt;大气渲染
 &lt;/h1&gt;&lt;h2 id=&#34;渲染方法分析&#34;&gt;渲染方法分析
 &lt;/h2&gt;&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/55e17d90959d44a9b5a55d89fb02d6a2.png&#34;
 	
@@ -3046,7 +3046,7 @@ M点为着色点，那从P点看向M点时，需要计算两个值（1）&lt;str
         <pubDate>Sun, 19 Oct 2025 14:19:37 +0800</pubDate>
         
         <guid>https://sdpyy1.github.io/p/openglrender%E5%BC%80%E5%8F%91%E8%AE%B0%E5%BD%952%E9%98%B4%E5%BD%B1shadowmappcfpcss/</guid>
-        <description>&lt;h1 id=&#34;已实现功能&#34;&gt;已实现功能
+        <description>&lt;img src="https://sdpyy1.github.io/976b5ef841fd4cda9621c4812dd3dba4.png" alt="Featured image of post OpenGLRender开发记录（2）：阴影（shadowMap，PCF，PCSS）" /&gt;&lt;h1 id=&#34;已实现功能&#34;&gt;已实现功能
 &lt;/h1&gt;&lt;p&gt;除了上次实现IBL之外，项目目前新增了imGUI的渲染，更方便地进行调试
 &lt;img src=&#34;https://sdpyy1.github.io/43b440e64570447284673faa81f9d7c3.png&#34;
 	
@@ -3677,7 +3677,7 @@ PCF思路就是取周围像素的shadow来取平均，柔化阴影边界&lt;/p&g
         <pubDate>Sun, 19 Oct 2025 14:05:15 +0800</pubDate>
         
         <guid>https://sdpyy1.github.io/p/games202-%E9%AB%98%E8%B4%A8%E9%87%8F%E5%AE%9E%E6%97%B6%E6%B8%B2%E6%9F%93assignment-3/</guid>
-        <description>&lt;h1 id=&#34;作业介绍&#34;&gt;作业介绍
+        <description>&lt;img src="https://sdpyy1.github.io/8a13212a6c85436f925ee5f06d474564.png" alt="Featured image of post GAMES202 高质量实时渲染（Assignment 3）" /&gt;&lt;h1 id=&#34;作业介绍&#34;&gt;作业介绍
 &lt;/h1&gt;&lt;p&gt;首先看一下整体渲染流程&lt;/p&gt;
 &lt;ol&gt;
 &lt;li&gt;绘制光源&lt;/li&gt;
@@ -4198,7 +4198,7 @@ PCF思路就是取周围像素的shadow来取平均，柔化阴影边界&lt;/p&g
         <pubDate>Sun, 19 Oct 2025 14:04:46 +0800</pubDate>
         
         <guid>https://sdpyy1.github.io/p/games202-%E9%AB%98%E8%B4%A8%E9%87%8F%E5%AE%9E%E6%97%B6%E6%B8%B2%E6%9F%93assignment-2/</guid>
-        <description>&lt;h1 id=&#34;作业介绍&#34;&gt;作业介绍
+        <description>&lt;img src="https://sdpyy1.github.io/1e99f72904054ad5bbfe172340ccd69e.png" alt="Featured image of post GAMES202 高质量实时渲染（Assignment 2）" /&gt;&lt;h1 id=&#34;作业介绍&#34;&gt;作业介绍
 &lt;/h1&gt;&lt;p&gt;物体在不同光照下的表现不同，PRT(Precomputed Radiance Transfer) 是一个计算物体在不同光照下表现的方法。光线在一个环境中，会经历反射，折射，散射，甚至还会物体的内部进行散射。为了模拟具有真实感的渲染结果，传统的Path Tracing 方法需要考虑来自各个方向的光线、所有可能的传播形式并且收敛速度极慢。PRT 通过一种预计算方法，该方法在离线渲染的 Path Tracing 工具链中预计算 lighting 以及 light transport 并将它们用球谐函数拟合后储存，这样就将时间开销转移到了离线中。最后通过使用这些预计算好的数据，我们可以轻松达到实时渲染严苛的时间要求，同时渲染结果可以呈现出全局光照的效果。&lt;/p&gt;
 &lt;p&gt;PRT 方法存在的限制包括：
 • 不能计算随机动态场景的全局光照
@@ -4858,7 +4858,7 @@ Li项已经处理掉了，就剩下max()项了
         <pubDate>Sun, 19 Oct 2025 14:03:49 +0800</pubDate>
         
         <guid>https://sdpyy1.github.io/p/games202-%E9%AB%98%E8%B4%A8%E9%87%8F%E5%AE%9E%E6%97%B6%E6%B8%B2%E6%9F%93assignment-1/</guid>
-        <description>&lt;h1 id=&#34;homework1&#34;&gt;Homework1
+        <description>&lt;img src="https://sdpyy1.github.io/531daca67f0242c6abba44c1e5a88603.png" alt="Featured image of post GAMES202 高质量实时渲染（Assignment 1）" /&gt;&lt;h1 id=&#34;homework1&#34;&gt;Homework1
 &lt;/h1&gt;&lt;h2 id=&#34;shadow-map&#34;&gt;shadow Map
 &lt;/h2&gt;&lt;p&gt;首先需要完成MVP矩阵的构造，在这里的mvp用来表示如果一个模型在shadowmap视角下的位置&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
@@ -5288,7 +5288,7 @@ Wlight = 100
         <pubDate>Sun, 19 Oct 2025 14:02:08 +0800</pubDate>
         
         <guid>https://sdpyy1.github.io/p/games202-games202-%E9%AB%98%E8%B4%A8%E9%87%8F%E5%AE%9E%E6%97%B6%E6%B8%B2%E6%9F%93real-time-ray-tracing/</guid>
-        <description>&lt;h1 id=&#34;rtx&#34;&gt;RTX
+        <description>&lt;img src="https://sdpyy1.github.io/39f6ae2e6aa04864b9165387c73282ae.png" alt="Featured image of post GAMES202 GAMES202 高质量实时渲染（Real-Time Ray-Tracing）" /&gt;&lt;h1 id=&#34;rtx&#34;&gt;RTX
 &lt;/h1&gt;&lt;p&gt;RTX实际做的事：
 一个像素用一个样本来采样SPP&lt;/p&gt;
 &lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/a76c532017ff4b1a99a8e89540ff0a1d.png&#34;
@@ -5725,7 +5725,7 @@ MSAA分辨率不变，在一个像素中采样多次，甚至可以在临近像�
         <pubDate>Sun, 19 Oct 2025 14:01:31 +0800</pubDate>
         
         <guid>https://sdpyy1.github.io/p/games202-%E9%AB%98%E8%B4%A8%E9%87%8F%E5%AE%9E%E6%97%B6%E6%B8%B2%E6%9F%93real-time-physically-based-materials/</guid>
-        <description>&lt;h1 id=&#34;micorfacet-brdf&#34;&gt;Micorfacet BRDF
+        <description>&lt;img src="https://sdpyy1.github.io/a798b632f6bc41f9b3e68453c8445fb7.png" alt="Featured image of post GAMES202 高质量实时渲染（Real-Time Physically Based Materials）" /&gt;&lt;h1 id=&#34;micorfacet-brdf&#34;&gt;Micorfacet BRDF
 &lt;/h1&gt;&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/c1dccc9561914ba7b95432dc6463973e.png&#34;
 	
 	
@@ -6176,7 +6176,7 @@ Fresnel项 和 法线分布函数（例如 GGX）是微面模型的关键组成�
         <pubDate>Sun, 19 Oct 2025 14:00:35 +0800</pubDate>
         
         <guid>https://sdpyy1.github.io/p/games202-%E9%AB%98%E8%B4%A8%E9%87%8F%E5%AE%9E%E6%97%B6%E6%B8%B2%E6%9F%93real-time-global-illumination/</guid>
-        <description>&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/78996c31c1b04f5eae5269c1d6756086.png&#34;
+        <description>&lt;img src="https://sdpyy1.github.io/aa2c09da489f4288808aa9af1f4fc213.png" alt="Featured image of post GAMES202 高质量实时渲染（Real-Time Global Illumination）" /&gt;&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/78996c31c1b04f5eae5269c1d6756086.png&#34;
 	
 	
 	
@@ -6835,7 +6835,7 @@ SSR也有问题，因为屏幕空间只有最前面的数据，所以藏在背�
         <pubDate>Sun, 19 Oct 2025 13:59:44 +0800</pubDate>
         
         <guid>https://sdpyy1.github.io/p/games202-%E9%AB%98%E8%B4%A8%E9%87%8F%E5%AE%9E%E6%97%B6%E6%B8%B2%E6%9F%93real-time-environment-mapping/</guid>
-        <description>&lt;h1 id=&#34;shading-from-environment-lighting&#34;&gt;Shading from Environment Lighting
+        <description>&lt;img src="https://sdpyy1.github.io/787b8e5bfbd6453bad3b4faab67d12d9.png" alt="Featured image of post GAMES202 高质量实时渲染（Real-Time Environment Mapping）" /&gt;&lt;h1 id=&#34;shading-from-environment-lighting&#34;&gt;Shading from Environment Lighting
 &lt;/h1&gt;&lt;p&gt;使用环境光计算shading的操作叫做IBL(Image based lighting)  ，光照不是来自光源，而是环境贴图
 下面在不考虑阴影的情况下来看渲染方程，接受来自整个半球面的光来进行渲染
 &lt;img src=&#34;https://sdpyy1.github.io/3ec446e25c5a4678a6fb753cbbc6d6f9.png&#34;
@@ -7222,7 +7222,7 @@ SH选择不同的阶的时间复杂度
         <pubDate>Sun, 19 Oct 2025 13:58:35 +0800</pubDate>
         
         <guid>https://sdpyy1.github.io/p/games202-%E9%AB%98%E8%B4%A8%E9%87%8F%E5%AE%9E%E6%97%B6%E6%B8%B2%E6%9F%93real-time-shadows/</guid>
-        <description>&lt;h1 id=&#34;shadow-mapping&#34;&gt;Shadow Mapping
+        <description>&lt;img src="https://sdpyy1.github.io/7d064c8a32bd4ca48f6dc45c082cf7c4.png" alt="Featured image of post GAMES202 高质量实时渲染（Real Time Shadows）" /&gt;&lt;h1 id=&#34;shadow-mapping&#34;&gt;Shadow Mapping
 &lt;/h1&gt;&lt;p&gt;这块东西在我OpenGL学习笔记中有详细介绍&lt;/p&gt;
 &lt;blockquote&gt;
 &lt;p&gt;&lt;a class=&#34;link&#34; href=&#34;https://blog.csdn.net/lzh804121985/article/details/147256140?spm=1001.2014.3001.5502&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
@@ -7766,7 +7766,7 @@ VSSM的效果&lt;img src=&#34;https://sdpyy1.github.io/74d05f7b9d7c414e86419b213
         <pubDate>Sun, 19 Oct 2025 13:53:52 +0800</pubDate>
         
         <guid>https://sdpyy1.github.io/p/opengl%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0pbr/</guid>
-        <description>&lt;h1 id=&#34;微平面模型&#34;&gt;微平面模型
+        <description>&lt;img src="https://sdpyy1.github.io/f9c17e0cf6ff46a7a63a8f8199cf48b0.png" alt="Featured image of post OpenGL学习笔记（PBR）" /&gt;&lt;h1 id=&#34;微平面模型&#34;&gt;微平面模型
 &lt;/h1&gt;&lt;p&gt;所有的PBR技术都基于微平面理论。这项理论认为，达到微观尺度之后任何平面都可以用被称为微平面(Microfacets)的细小镜面来进行描绘。根据平面粗糙程度的不同，这些细小镜面的取向排列可以相当不一致：
 下图展示了ROUGH和SMOOTH的微平面
 &lt;img src=&#34;https://sdpyy1.github.io/3e5dfa0281e1482db87633e865f83e85.png&#34;
@@ -7863,7 +7863,7 @@ $f_r = k_df_{lambert}+k_sf_{cook-torrance}$&lt;/p&gt;
         <pubDate>Sun, 19 Oct 2025 13:53:03 +0800</pubDate>
         
         <guid>https://sdpyy1.github.io/p/opengl%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0%E5%BB%B6%E8%BF%9F%E7%9D%80%E8%89%B2%E6%B3%95ssao/</guid>
-        <description>&lt;h1 id=&#34;延迟着色法&#34;&gt;延迟着色法
+        <description>&lt;img src="https://sdpyy1.github.io/5d72ce7b8a844d10a11dbfa6f72f7733.png" alt="Featured image of post OpenGL学习笔记（延迟着色法、SSAO）" /&gt;&lt;h1 id=&#34;延迟着色法&#34;&gt;延迟着色法
 &lt;/h1&gt;&lt;p&gt;我们现在一直使用的光照方式叫做正向渲染(Forward Rendering)或者正向着色法(Forward Shading)
 最简单理解就是片段着色器要完成所有物体的所有可见部分的光照计算，&lt;strong&gt;然而大部分着色器的输出都会被之后的输出覆盖&lt;/strong&gt;。&lt;/p&gt;
 &lt;p&gt;延迟着色法(Deferred Shading)，或者说是延迟渲染(Deferred Rendering)，为了解决上述问题而诞生了&lt;/p&gt;
@@ -8399,7 +8399,7 @@ Crytek公司开发的SSAO技术会产生一种特殊的视觉风格。因为使�
         <pubDate>Sun, 19 Oct 2025 13:52:28 +0800</pubDate>
         
         <guid>https://sdpyy1.github.io/p/opengl%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0hdr%E6%B3%9B%E5%85%89/</guid>
-        <description>&lt;h1 id=&#34;hdr&#34;&gt;HDR
+        <description>&lt;img src="https://sdpyy1.github.io/3f35480e680a4948bb8b80386c384e22.png" alt="Featured image of post OpenGL学习笔记（HDR、泛光）" /&gt;&lt;h1 id=&#34;hdr&#34;&gt;HDR
 &lt;/h1&gt;&lt;p&gt;&lt;strong&gt;一句话理解就是不要让颜色限制到0-1.先拓展到很大的范围，最后再通过某种映射回到0-1，这样不同颜色的区分度就会变大。&lt;/strong&gt;
 大量片段的颜色值都非常接近1.0，在很大一个区域内每一个亮的片段都有相同的白色。这损失了很多的细节，使场景看起来非常假。&lt;img src=&#34;https://sdpyy1.github.io/892e74f91617493388600ffd17eed15f.png&#34;
 	
@@ -8614,7 +8614,7 @@ Crytek公司开发的SSAO技术会产生一种特殊的视觉风格。因为使�
         <pubDate>Sun, 19 Oct 2025 13:51:43 +0800</pubDate>
         
         <guid>https://sdpyy1.github.io/p/opengl%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0%E6%B3%95%E7%BA%BF%E8%B4%B4%E5%9B%BE%E8%A7%86%E5%B7%AE%E8%B4%B4%E5%9B%BE/</guid>
-        <description>&lt;h1 id=&#34;法线贴图&#34;&gt;法线贴图
+        <description>&lt;img src="https://sdpyy1.github.io/b242fb1f71cf4c9ba9bab2585fce9b47.png" alt="Featured image of post OpenGL学习笔记（法线贴图、视差贴图）" /&gt;&lt;h1 id=&#34;法线贴图&#34;&gt;法线贴图
 &lt;/h1&gt;&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/7fb32f92e56a43c9a43cbdd213cb4384.png&#34;
 	
 	
@@ -8779,7 +8779,7 @@ N是法线方向，T是切线方向，B是副切线方向。
         <pubDate>Sun, 19 Oct 2025 13:50:26 +0800</pubDate>
         
         <guid>https://sdpyy1.github.io/p/opengl%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0blinn-phong%E4%BC%BD%E9%A9%AC%E7%9F%AB%E6%AD%A3%E9%98%B4%E5%BD%B1/</guid>
-        <description>&lt;h1 id=&#34;blinn-phong&#34;&gt;Blinn-Phong
+        <description>&lt;img src="https://sdpyy1.github.io/e876017653874542a3d6dcca727f0a04.png" alt="Featured image of post OpenGL学习笔记（Blinn Phong、伽马矫正、阴影）" /&gt;&lt;h1 id=&#34;blinn-phong&#34;&gt;Blinn-Phong
 &lt;/h1&gt;&lt;p&gt;PhongShading不仅对真实光照有很好的近似，而且性能也很高。但是它的镜面反射会在一些情况下出现问题，特别是物体反光度很低时，会导致大片（粗糙的）高光区域。下面这张图展示了当p为1.0时地板会出现的效果：
 &lt;img src=&#34;https://sdpyy1.github.io/80b55f8646e1467b93cff1b9ecd6641f.png&#34;
 	
@@ -10039,7 +10039,7 @@ y=x的电线表示Gamma为1的理想状态，当我们输出一个值为(0.5,0.0
         <pubDate>Sun, 19 Oct 2025 13:48:28 +0800</pubDate>
         
         <guid>https://sdpyy1.github.io/p/opengl%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0%E7%AE%80%E4%BB%8B%E4%B8%89%E8%A7%92%E5%BD%A2%E7%9D%80%E8%89%B2%E5%99%A8%E7%BA%B9%E7%90%86%E5%9D%90%E6%A0%87%E7%B3%BB%E7%BB%9F%E6%91%84%E5%83%8F%E6%9C%BA/</guid>
-        <description>&lt;h1 id=&#34;简介&#34;&gt;简介
+        <description>&lt;img src="https://sdpyy1.github.io/3779db9d1ff84e66b075f0dd6d1edb90.png" alt="Featured image of post OpenGL学习笔记（简介、三角形、着色器、纹理、坐标系统、摄像机）" /&gt;&lt;h1 id=&#34;简介&#34;&gt;简介
 &lt;/h1&gt;&lt;p&gt;在学习完Games101，以及手撸一个软光栅之后，来学习一下OpenGL~
 &lt;img src=&#34;https://sdpyy1.github.io/f9253537c2ef440cabb73becf31daebf.png&#34;
 	
@@ -13547,7 +13547,7 @@ OpenGL希望在每次顶点着色器运行后，我们可见的所有顶点都�
         <pubDate>Sun, 19 Oct 2025 13:42:48 +0800</pubDate>
         
         <guid>https://sdpyy1.github.io/p/tinyrender%E5%BC%80%E5%8F%91%E8%AE%B0%E5%BD%95-5-7/</guid>
-        <description>&lt;h1 id=&#34;lesson-5--gouraud-shading&#34;&gt;Lesson 5:  Gouraud shading
+        <description>&lt;img src="https://sdpyy1.github.io/23afe9a8003a44a788f6448c182b6b68.png" alt="Featured image of post TinyRender开发记录 5-7" /&gt;&lt;h1 id=&#34;lesson-5--gouraud-shading&#34;&gt;Lesson 5:  Gouraud shading
 &lt;/h1&gt;&lt;p&gt;本节课实现了 Gouraud shading，对三角形每个顶点用法线求光照，进一步插值到内部像素，相比于phong，phong是要对每个内部像素都需要计算光照，这里简单处理就是默认为255，255，255的白光，计算顶点法线和光照方向的夹角（注意单位化和钝角处理)，得到cos直接乘以光照，就得到了每个顶点的变暗比例，之后再插值到各个像素，关键代码如下&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
 &lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
@@ -14516,7 +14516,7 @@ ai给出的解释：这种现象叫做自阴影&lt;/p&gt;
         <pubDate>Sun, 19 Oct 2025 13:37:45 +0800</pubDate>
         
         <guid>https://sdpyy1.github.io/p/tinyrender%E5%BC%80%E5%8F%91%E8%AE%B0%E5%BD%95-1-4/</guid>
-        <description>&lt;h1 id=&#34;项目介绍&#34;&gt;项目介绍
+        <description>&lt;img src="https://sdpyy1.github.io/015e0f415d1c493db111695862b55bfe.png" alt="Featured image of post TinyRender开发记录 1-4" /&gt;&lt;h1 id=&#34;项目介绍&#34;&gt;项目介绍
 &lt;/h1&gt;&lt;blockquote&gt;
 &lt;p&gt;Tiny Renderer or how OpenGL works: software rendering in 500 lines of code
 项目地址：https://github.com/ssloy/tinyrenderer
@@ -19104,7 +19104,7 @@ vector.h&lt;/p&gt;
         <pubDate>Sun, 19 Oct 2025 13:32:46 +0800</pubDate>
         
         <guid>https://sdpyy1.github.io/p/games101-%E7%8E%B0%E4%BB%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9B%BE%E5%BD%A2%E5%AD%A6%E5%85%A5%E9%97%A8-assignment7/</guid>
-        <description>&lt;h1 id=&#34;作业介绍&#34;&gt;作业介绍
+        <description>&lt;img src="https://sdpyy1.github.io/4360789f62274e29b3aabdfd7a0a1f6a.png" alt="Featured image of post GAMES101 现代计算机图形学入门 Assignment7" /&gt;&lt;h1 id=&#34;作业介绍&#34;&gt;作业介绍
 &lt;/h1&gt;&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/ef43e9abf6c7485d9bf566a59479ed6f.png&#34;
 	
 	
@@ -19310,7 +19310,7 @@ vector.h&lt;/p&gt;
         <pubDate>Sun, 19 Oct 2025 13:24:41 +0800</pubDate>
         
         <guid>https://sdpyy1.github.io/p/games101-%E7%8E%B0%E4%BB%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9B%BE%E5%BD%A2%E5%AD%A6%E5%85%A5%E9%97%A8-assignment6/</guid>
-        <description>&lt;h1 id=&#34;作业介绍&#34;&gt;作业介绍
+        <description>&lt;img src="https://sdpyy1.github.io/7685e3c05ceb40d686c8997f9b6dab10.png" alt="Featured image of post GAMES101 现代计算机图形学入门 Assignment6" /&gt;&lt;h1 id=&#34;作业介绍&#34;&gt;作业介绍
 &lt;/h1&gt;&lt;p&gt;在上次作业中，每一次计算光线交点时，都需要与场景中所有的物体进行求交运行，这显然是不合理的，这次作业用BVH划分后进行加速
 &lt;img src=&#34;https://sdpyy1.github.io/bace7e32a04640d08dbcb3b7ba95b6d5.png&#34;
 	
@@ -19779,7 +19779,7 @@ vector.h&lt;/p&gt;
         <pubDate>Sun, 19 Oct 2025 13:24:12 +0800</pubDate>
         
         <guid>https://sdpyy1.github.io/p/games101-%E7%8E%B0%E4%BB%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9B%BE%E5%BD%A2%E5%AD%A6%E5%85%A5%E9%97%A8-assignment5/</guid>
-        <description>&lt;h1 id=&#34;作业介绍&#34;&gt;作业介绍
+        <description>&lt;img src="https://sdpyy1.github.io/596150ce910e433694d4bb76ebe253f6.png" alt="Featured image of post GAMES101 现代计算机图形学入门 Assignment5" /&gt;&lt;h1 id=&#34;作业介绍&#34;&gt;作业介绍
 &lt;/h1&gt;&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/d4bca87d0cc845e78962e550baedf970.png&#34;
 	
 	
@@ -20618,7 +20618,7 @@ vector.h&lt;/p&gt;
         <pubDate>Sun, 19 Oct 2025 13:22:54 +0800</pubDate>
         
         <guid>https://sdpyy1.github.io/p/games101-%E7%8E%B0%E4%BB%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9B%BE%E5%BD%A2%E5%AD%A6%E5%85%A5%E9%97%A8-assignment3/</guid>
-        <description>&lt;h1 id=&#34;作业描述&#34;&gt;作业描述
+        <description>&lt;img src="https://sdpyy1.github.io/6218a369afe94437bb81dfb0420e1b39.png" alt="Featured image of post GAMES101 现代计算机图形学入门 Assignment3" /&gt;&lt;h1 id=&#34;作业描述&#34;&gt;作业描述
 &lt;/h1&gt;&lt;p&gt;上节课已经对光栅化的操作有了了解，这节课直接引入了模型和纹理，其实本质就是引入了很多的顶点，操作其实没什么变化&lt;img src=&#34;https://sdpyy1.github.io/23b1962b67c04c8a914553728140a155.png&#34;
 	
 	
@@ -21537,7 +21537,7 @@ vector.h&lt;/p&gt;
         <pubDate>Sun, 19 Oct 2025 13:21:54 +0800</pubDate>
         
         <guid>https://sdpyy1.github.io/p/games101-%E7%8E%B0%E4%BB%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9B%BE%E5%BD%A2%E5%AD%A6%E5%85%A5%E9%97%A8-assignment1/</guid>
-        <description>&lt;h1 id=&#34;作业介绍&#34;&gt;作业介绍
+        <description>&lt;img src="https://sdpyy1.github.io/594b42fc6200482991a2c402f81c52d1.png" alt="Featured image of post GAMES101 现代计算机图形学入门 Assignment1" /&gt;&lt;h1 id=&#34;作业介绍&#34;&gt;作业介绍
 &lt;/h1&gt;&lt;p&gt;给出三个点的空间坐标，通过MVP矩阵将点投影到平面上，并绘制出三角形
 &lt;img src=&#34;https://sdpyy1.github.io/4b699439c1a649679ce5aa97175af5ce.png&#34;
 	
@@ -21922,7 +21922,7 @@ $$&lt;p&gt;
         <pubDate>Sun, 19 Oct 2025 13:14:45 +0800</pubDate>
         
         <guid>https://sdpyy1.github.io/p/games101-%E7%8E%B0%E4%BB%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9B%BE%E5%BD%A2%E5%AD%A6%E5%85%A5%E9%97%A8-assignment0/</guid>
-        <description>&lt;h1 id=&#34;assignment0&#34;&gt;Assignment0
+        <description>&lt;img src="https://sdpyy1.github.io/2703bfe2cee44ac4b97c54c3d8b35851.png" alt="Featured image of post GAMES101 现代计算机图形学入门 Assignment0" /&gt;&lt;h1 id=&#34;assignment0&#34;&gt;Assignment0
 &lt;/h1&gt;&lt;p&gt;前边一大半主要是安装虚拟机保证运行一致，这里就跳过了，到实际的问题：点旋转和平移
 &lt;img src=&#34;https://sdpyy1.github.io/26aaf651fbad47eca926587f0581a4cc.png&#34;
 	
@@ -22043,7 +22043,7 @@ $$&lt;p&gt;
         <pubDate>Sun, 19 Oct 2025 12:49:13 +0800</pubDate>
         
         <guid>https://sdpyy1.github.io/p/games101-%E7%8E%B0%E4%BB%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9B%BE%E5%BD%A2%E5%AD%A6%E5%85%A5%E9%97%A8-camera-lenses-light-fields-color-and-perception/</guid>
-        <description>&lt;h1 id=&#34;cameras&#34;&gt;Cameras
+        <description>&lt;img src="https://sdpyy1.github.io/05414f77c7904ed5851265148aa16f58.png" alt="Featured image of post GAMES101 现代计算机图形学入门 Camera Lenses Light Fields Color and Perception" /&gt;&lt;h1 id=&#34;cameras&#34;&gt;Cameras
 &lt;/h1&gt;&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/0212feac63754038823e0e1ee55c74c7.png&#34;
 	
 	
@@ -22403,7 +22403,7 @@ IOS的介绍
         <pubDate>Sun, 19 Oct 2025 12:48:02 +0800</pubDate>
         
         <guid>https://sdpyy1.github.io/p/games101-%E7%8E%B0%E4%BB%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9B%BE%E5%BD%A2%E5%AD%A6%E5%85%A5%E9%97%A8-animation/simulation/</guid>
-        <description>&lt;h1 id=&#34;一些科普&#34;&gt;一些科普
+        <description>&lt;img src="https://sdpyy1.github.io/49ba0bbdd1d24a848de86f532c675a7e.png" alt="Featured image of post GAMES101 现代计算机图形学入门 Animation/Simulation" /&gt;&lt;h1 id=&#34;一些科普&#34;&gt;一些科普
 &lt;/h1&gt;&lt;h2 id=&#34;keyframe-animator&#34;&gt;Keyframe Animator
 &lt;/h2&gt;&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/254f33ee74a74430a5be6baf38e5d1f5.png&#34;
 	
@@ -22786,7 +22786,7 @@ Position-Based / Verlet Integration
         <pubDate>Sun, 19 Oct 2025 12:43:12 +0800</pubDate>
         
         <guid>https://sdpyy1.github.io/p/games101-%E7%8E%B0%E4%BB%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9B%BE%E5%BD%A2%E5%AD%A6%E5%85%A5%E9%97%A8-ray-tracing/</guid>
-        <description>&lt;h1 id=&#34;shadow-mapping&#34;&gt;Shadow Mapping
+        <description>&lt;img src="https://sdpyy1.github.io/a6d366b54c3a45b38beb9e550a1ea53b.png" alt="Featured image of post GAMES101 现代计算机图形学入门 Ray Tracing" /&gt;&lt;h1 id=&#34;shadow-mapping&#34;&gt;Shadow Mapping
 &lt;/h1&gt;&lt;p&gt;如果使用光栅化，对一个像素shading时考虑光源，考虑摄影机位置，但是没有考虑模型其他位置对该位置的影响，因为在光源与该像素点之间有别的东西挡住，那光源就会被挡住，形成阴影。shading解决不了阴影问题&lt;img src=&#34;https://sdpyy1.github.io/070b07cef83249b58bc9e15c0ecad44f.png&#34;
 	
 	
@@ -24104,7 +24104,7 @@ Exiting Radiance 是 开表面辐射强度在per单位面积上&lt;img src=&#34;
         <pubDate>Sun, 19 Oct 2025 12:37:17 +0800</pubDate>
         
         <guid>https://sdpyy1.github.io/p/games101-%E7%8E%B0%E4%BB%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9B%BE%E5%BD%A2%E5%AD%A6%E5%85%A5%E9%97%A8-geometry/</guid>
-        <description>&lt;h1 id=&#34;implicit-and-explicit&#34;&gt;Implicit and explicit
+        <description>&lt;img src="https://sdpyy1.github.io/3b0a2bb693ef4b20a6ca0414d87ae566.png" alt="Featured image of post GAMES101 现代计算机图形学入门 Geometry" /&gt;&lt;h1 id=&#34;implicit-and-explicit&#34;&gt;Implicit and explicit
 &lt;/h1&gt;&lt;h2 id=&#34;implicit&#34;&gt;Implicit
 &lt;/h2&gt;&lt;p&gt;&lt;strong&gt;是并不会告诉任何点的信息，只会告诉该曲面上所有点满足的关系&lt;/strong&gt;
 &lt;/p&gt;
@@ -24595,12 +24595,21 @@ C1连续就是达到了曲面光滑，实现方法看下图红线
 </description>
         </item>
         <item>
+        <title>About</title>
+        <link>https://sdpyy1.github.io/about/</link>
+        <pubDate>Sun, 19 Oct 2025 00:00:00 +0000</pubDate>
+        
+        <guid>https://sdpyy1.github.io/about/</guid>
+        <description>&lt;p&gt;用了两天终于把搭建完了网站，并且把博客全部搬过来了&lt;/p&gt;
+</description>
+        </item>
+        <item>
         <title>GAMES101 现代计算机图形学入门 Shading</title>
         <link>https://sdpyy1.github.io/p/games101-%E7%8E%B0%E4%BB%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9B%BE%E5%BD%A2%E5%AD%A6%E5%85%A5%E9%97%A8-shading/</link>
         <pubDate>Sun, 19 Oct 2025 00:57:01 +0800</pubDate>
         
         <guid>https://sdpyy1.github.io/p/games101-%E7%8E%B0%E4%BB%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9B%BE%E5%BD%A2%E5%AD%A6%E5%85%A5%E9%97%A8-shading/</guid>
-        <description>&lt;h1 id=&#34;什么是shading&#34;&gt;什么是shading？
+        <description>&lt;img src="https://sdpyy1.github.io/8794c0d329d24aca97c68998d2945da5.png" alt="Featured image of post GAMES101 现代计算机图形学入门 Shading" /&gt;&lt;h1 id=&#34;什么是shading&#34;&gt;什么是shading？
 &lt;/h1&gt;&lt;p&gt;shading 负责计算物体表面每个采样点的颜色，具体考虑光照、材质属性、观察角度等因素，生成具有真实感的视觉效果（如漫反射、镜面高光、环境光等）‌，之前的光栅化将是几何图元（如三角形）转换为屏幕上的像素，确定哪些像素被图元覆盖，是几何层面的处理&lt;/p&gt;
 &lt;h1 id=&#34;blinn-phong-reflectance-modela-simple-shading-model&#34;&gt;Blinn-Phong Reflectance Model(A Simple Shading Model)
 &lt;/h1&gt;&lt;p&gt;Blinn-Phong 反射模型（Blinn-Phong Reflectance Model）是一种用于计算机图形学中模拟物体表面光照效果的着色模型.该模型主要由**环境光(Ambient)、漫反射(Diffuse)和高光反射(Specular)**三部分组成。&lt;img src=&#34;https://sdpyy1.github.io/92975763af4c45deacbe6332c3f2d16b.png&#34;
@@ -25105,7 +25114,7 @@ $$lerp(x,v_0,v_1) = v_0 + x(v_1 - v_0)$$&lt;p&gt;
         <pubDate>Sun, 19 Oct 2025 00:47:26 +0800</pubDate>
         
         <guid>https://sdpyy1.github.io/p/games101-%E7%8E%B0%E4%BB%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9B%BE%E5%BD%A2%E5%AD%A6%E5%85%A5%E9%97%A8-transformation-rasterization/</guid>
-        <description>&lt;h1 id=&#34;线性代数复习&#34;&gt;线性代数复习
+        <description>&lt;img src="https://sdpyy1.github.io/3d23bd7f8fdc4adfa5ef11d68f2d98fd.png" alt="Featured image of post GAMES101 现代计算机图形学入门 Transformation &amp; Rasterization" /&gt;&lt;h1 id=&#34;线性代数复习&#34;&gt;线性代数复习
 &lt;/h1&gt;&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/image-20251019121720334.png&#34;
 	
 	
@@ -25385,14 +25394,6 @@ $$lerp(x,v_0,v_1) = v_0 + x(v_1 - v_0)$$&lt;p&gt;
         <pubDate>Tue, 28 May 2019 00:00:00 +0000</pubDate>
         
         <guid>https://sdpyy1.github.io/archives/</guid>
-        <description></description>
-        </item>
-        <item>
-        <title>About</title>
-        <link>https://sdpyy1.github.io/about/</link>
-        <pubDate>Thu, 28 Feb 2019 00:00:00 +0000</pubDate>
-        
-        <guid>https://sdpyy1.github.io/about/</guid>
         <description></description>
         </item>
         <item>

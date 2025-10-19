@@ -13,7 +13,7 @@
         <pubDate>Sun, 19 Oct 2025 14:05:15 +0800</pubDate>
         
         <guid>https://sdpyy1.github.io/p/games202-%E9%AB%98%E8%B4%A8%E9%87%8F%E5%AE%9E%E6%97%B6%E6%B8%B2%E6%9F%93assignment-3/</guid>
-        <description>&lt;h1 id=&#34;作业介绍&#34;&gt;作业介绍
+        <description>&lt;img src="https://sdpyy1.github.io/8a13212a6c85436f925ee5f06d474564.png" alt="Featured image of post GAMES202 高质量实时渲染（Assignment 3）" /&gt;&lt;h1 id=&#34;作业介绍&#34;&gt;作业介绍
 &lt;/h1&gt;&lt;p&gt;首先看一下整体渲染流程&lt;/p&gt;
 &lt;ol&gt;
 &lt;li&gt;绘制光源&lt;/li&gt;
@@ -534,7 +534,7 @@
         <pubDate>Sun, 19 Oct 2025 14:04:46 +0800</pubDate>
         
         <guid>https://sdpyy1.github.io/p/games202-%E9%AB%98%E8%B4%A8%E9%87%8F%E5%AE%9E%E6%97%B6%E6%B8%B2%E6%9F%93assignment-2/</guid>
-        <description>&lt;h1 id=&#34;作业介绍&#34;&gt;作业介绍
+        <description>&lt;img src="https://sdpyy1.github.io/1e99f72904054ad5bbfe172340ccd69e.png" alt="Featured image of post GAMES202 高质量实时渲染（Assignment 2）" /&gt;&lt;h1 id=&#34;作业介绍&#34;&gt;作业介绍
 &lt;/h1&gt;&lt;p&gt;物体在不同光照下的表现不同，PRT(Precomputed Radiance Transfer) 是一个计算物体在不同光照下表现的方法。光线在一个环境中，会经历反射，折射，散射，甚至还会物体的内部进行散射。为了模拟具有真实感的渲染结果，传统的Path Tracing 方法需要考虑来自各个方向的光线、所有可能的传播形式并且收敛速度极慢。PRT 通过一种预计算方法，该方法在离线渲染的 Path Tracing 工具链中预计算 lighting 以及 light transport 并将它们用球谐函数拟合后储存，这样就将时间开销转移到了离线中。最后通过使用这些预计算好的数据，我们可以轻松达到实时渲染严苛的时间要求，同时渲染结果可以呈现出全局光照的效果。&lt;/p&gt;
 &lt;p&gt;PRT 方法存在的限制包括：
 • 不能计算随机动态场景的全局光照
@@ -1194,7 +1194,7 @@ Li项已经处理掉了，就剩下max()项了
         <pubDate>Sun, 19 Oct 2025 14:03:49 +0800</pubDate>
         
         <guid>https://sdpyy1.github.io/p/games202-%E9%AB%98%E8%B4%A8%E9%87%8F%E5%AE%9E%E6%97%B6%E6%B8%B2%E6%9F%93assignment-1/</guid>
-        <description>&lt;h1 id=&#34;homework1&#34;&gt;Homework1
+        <description>&lt;img src="https://sdpyy1.github.io/531daca67f0242c6abba44c1e5a88603.png" alt="Featured image of post GAMES202 高质量实时渲染（Assignment 1）" /&gt;&lt;h1 id=&#34;homework1&#34;&gt;Homework1
 &lt;/h1&gt;&lt;h2 id=&#34;shadow-map&#34;&gt;shadow Map
 &lt;/h2&gt;&lt;p&gt;首先需要完成MVP矩阵的构造，在这里的mvp用来表示如果一个模型在shadowmap视角下的位置&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
@@ -1624,7 +1624,7 @@ Wlight = 100
         <pubDate>Sun, 19 Oct 2025 14:02:08 +0800</pubDate>
         
         <guid>https://sdpyy1.github.io/p/games202-games202-%E9%AB%98%E8%B4%A8%E9%87%8F%E5%AE%9E%E6%97%B6%E6%B8%B2%E6%9F%93real-time-ray-tracing/</guid>
-        <description>&lt;h1 id=&#34;rtx&#34;&gt;RTX
+        <description>&lt;img src="https://sdpyy1.github.io/39f6ae2e6aa04864b9165387c73282ae.png" alt="Featured image of post GAMES202 GAMES202 高质量实时渲染（Real-Time Ray-Tracing）" /&gt;&lt;h1 id=&#34;rtx&#34;&gt;RTX
 &lt;/h1&gt;&lt;p&gt;RTX实际做的事：
 一个像素用一个样本来采样SPP&lt;/p&gt;
 &lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/a76c532017ff4b1a99a8e89540ff0a1d.png&#34;
@@ -2061,7 +2061,7 @@ MSAA分辨率不变，在一个像素中采样多次，甚至可以在临近像�
         <pubDate>Sun, 19 Oct 2025 14:01:31 +0800</pubDate>
         
         <guid>https://sdpyy1.github.io/p/games202-%E9%AB%98%E8%B4%A8%E9%87%8F%E5%AE%9E%E6%97%B6%E6%B8%B2%E6%9F%93real-time-physically-based-materials/</guid>
-        <description>&lt;h1 id=&#34;micorfacet-brdf&#34;&gt;Micorfacet BRDF
+        <description>&lt;img src="https://sdpyy1.github.io/a798b632f6bc41f9b3e68453c8445fb7.png" alt="Featured image of post GAMES202 高质量实时渲染（Real-Time Physically Based Materials）" /&gt;&lt;h1 id=&#34;micorfacet-brdf&#34;&gt;Micorfacet BRDF
 &lt;/h1&gt;&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/c1dccc9561914ba7b95432dc6463973e.png&#34;
 	
 	
@@ -2512,7 +2512,7 @@ Fresnel项 和 法线分布函数（例如 GGX）是微面模型的关键组成�
         <pubDate>Sun, 19 Oct 2025 14:00:35 +0800</pubDate>
         
         <guid>https://sdpyy1.github.io/p/games202-%E9%AB%98%E8%B4%A8%E9%87%8F%E5%AE%9E%E6%97%B6%E6%B8%B2%E6%9F%93real-time-global-illumination/</guid>
-        <description>&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/78996c31c1b04f5eae5269c1d6756086.png&#34;
+        <description>&lt;img src="https://sdpyy1.github.io/aa2c09da489f4288808aa9af1f4fc213.png" alt="Featured image of post GAMES202 高质量实时渲染（Real-Time Global Illumination）" /&gt;&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/78996c31c1b04f5eae5269c1d6756086.png&#34;
 	
 	
 	
@@ -3171,7 +3171,7 @@ SSR也有问题，因为屏幕空间只有最前面的数据，所以藏在背�
         <pubDate>Sun, 19 Oct 2025 13:59:44 +0800</pubDate>
         
         <guid>https://sdpyy1.github.io/p/games202-%E9%AB%98%E8%B4%A8%E9%87%8F%E5%AE%9E%E6%97%B6%E6%B8%B2%E6%9F%93real-time-environment-mapping/</guid>
-        <description>&lt;h1 id=&#34;shading-from-environment-lighting&#34;&gt;Shading from Environment Lighting
+        <description>&lt;img src="https://sdpyy1.github.io/787b8e5bfbd6453bad3b4faab67d12d9.png" alt="Featured image of post GAMES202 高质量实时渲染（Real-Time Environment Mapping）" /&gt;&lt;h1 id=&#34;shading-from-environment-lighting&#34;&gt;Shading from Environment Lighting
 &lt;/h1&gt;&lt;p&gt;使用环境光计算shading的操作叫做IBL(Image based lighting)  ，光照不是来自光源，而是环境贴图
 下面在不考虑阴影的情况下来看渲染方程，接受来自整个半球面的光来进行渲染
 &lt;img src=&#34;https://sdpyy1.github.io/3ec446e25c5a4678a6fb753cbbc6d6f9.png&#34;
@@ -3558,7 +3558,7 @@ SH选择不同的阶的时间复杂度
         <pubDate>Sun, 19 Oct 2025 13:58:35 +0800</pubDate>
         
         <guid>https://sdpyy1.github.io/p/games202-%E9%AB%98%E8%B4%A8%E9%87%8F%E5%AE%9E%E6%97%B6%E6%B8%B2%E6%9F%93real-time-shadows/</guid>
-        <description>&lt;h1 id=&#34;shadow-mapping&#34;&gt;Shadow Mapping
+        <description>&lt;img src="https://sdpyy1.github.io/7d064c8a32bd4ca48f6dc45c082cf7c4.png" alt="Featured image of post GAMES202 高质量实时渲染（Real Time Shadows）" /&gt;&lt;h1 id=&#34;shadow-mapping&#34;&gt;Shadow Mapping
 &lt;/h1&gt;&lt;p&gt;这块东西在我OpenGL学习笔记中有详细介绍&lt;/p&gt;
 &lt;blockquote&gt;
 &lt;p&gt;&lt;a class=&#34;link&#34; href=&#34;https://blog.csdn.net/lzh804121985/article/details/147256140?spm=1001.2014.3001.5502&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;

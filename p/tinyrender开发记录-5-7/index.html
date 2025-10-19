@@ -12,9 +12,10 @@
 <meta property='og:description' content="Lesson 5: Gouraud shading 本节课实现了 Gouraud shading，对三角形每个顶点用法线求光照，进一步插值到内部像素，相比于phong，phong是要对每个内部像素都需要计算光照，这里简单处理就是默认为255，255，255的白光，计算顶点法线和光照方向的夹角（注意单位化和钝角处理)，得到cos直接乘以光照，就得到了每个顶点的变暗比例，之后再插值到各个像素，关键代码如下\n">
 <meta property='og:url' content='https://sdpyy1.github.io/p/tinyrender%E5%BC%80%E5%8F%91%E8%AE%B0%E5%BD%95-5-7/'>
 <meta property='og:site_name' content='wanfeng'>
-<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='渲染器开发' /><meta property='article:tag' content='TinyRender' /><meta property='article:published_time' content='2025-10-19T13:42:48&#43;08:00'/><meta property='article:modified_time' content='2025-10-19T13:42:48&#43;08:00'/>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='渲染器开发' /><meta property='article:tag' content='TinyRender' /><meta property='article:published_time' content='2025-10-19T13:42:48&#43;08:00'/><meta property='article:modified_time' content='2025-10-19T13:42:48&#43;08:00'/><meta property='og:image' content='https://sdpyy1.github.io/23afe9a8003a44a788f6448c182b6b68.png' />
 <meta name="twitter:title" content="TinyRender开发记录 5-7">
-<meta name="twitter:description" content="Lesson 5: Gouraud shading 本节课实现了 Gouraud shading，对三角形每个顶点用法线求光照，进一步插值到内部像素，相比于phong，phong是要对每个内部像素都需要计算光照，这里简单处理就是默认为255，255，255的白光，计算顶点法线和光照方向的夹角（注意单位化和钝角处理)，得到cos直接乘以光照，就得到了每个顶点的变暗比例，之后再插值到各个像素，关键代码如下\n">
+<meta name="twitter:description" content="Lesson 5: Gouraud shading 本节课实现了 Gouraud shading，对三角形每个顶点用法线求光照，进一步插值到内部像素，相比于phong，phong是要对每个内部像素都需要计算光照，这里简单处理就是默认为255，255，255的白光，计算顶点法线和光照方向的夹角（注意单位化和钝角处理)，得到cos直接乘以光照，就得到了每个顶点的变暗比例，之后再插值到各个像素，关键代码如下\n"><meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content='https://sdpyy1.github.io/23afe9a8003a44a788f6448c182b6b68.png' />
     <link rel="shortcut icon" href="/favicon.ico" />
 
     </head>
@@ -307,8 +308,16 @@
 
 
             <main class="main full-width">
-    <article class="main-article">
+    <article class="has-image main-article">
     <header class="article-header">
+        <div class="article-image">
+            <a href="/p/tinyrender%E5%BC%80%E5%8F%91%E8%AE%B0%E5%BD%95-5-7/">
+                
+                    <img src="/23afe9a8003a44a788f6448c182b6b68.png" loading="lazy" alt="Featured image of post TinyRender开发记录 5-7" />
+                
+            </a>
+        </div>
+    
 
     <div class="article-details">
     
@@ -409,15 +418,7 @@
         
 
         
-        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-  <path stroke="none" d="M0 0h24v24H0z"/>
-  <circle cx="12" cy="7" r="4" />
-  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
-</svg>
-
-
-
-        <span id="busuanzi_container_page_pv">本文阅读量<span id="busuanzi_value_page_pv"></span>次</span>
+            
     </footer>
     
     
@@ -1487,12 +1488,18 @@ ai给出的解释：这种现象叫做自阴影</p>
         <div class="flex article-list--tile">
             
                 
-<article class="article-card no-image">
+<article class="article-card has-image">
     <a href="/p/tinyrender%E5%BC%80%E5%8F%91%E8%AE%B0%E5%BD%95-1-4/">
         
-        
-        <div class="article-details">
-            <h2 class="article-title">TinyRender开发记录 1-4</h2>
+        <div class="article-image">
+            
+                <img src="/015e0f415d1c493db111695862b55bfe.png" loading="lazy" data-key="" data-hash="/015e0f415d1c493db111695862b55bfe.png"/>
+            
+
+            
+            <div class="article-overlay">
+                <h2 class="article-title">TinyRender开发记录 1-4</h2>
+            </div>
         </div>
         
     </a>

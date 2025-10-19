@@ -13,7 +13,7 @@
         <pubDate>Sun, 19 Oct 2025 14:25:28 +0800</pubDate>
         
         <guid>https://sdpyy1.github.io/p/games105-%E8%AE%A1%E7%AE%97%E6%9C%BA%E8%A7%92%E8%89%B2%E5%8A%A8%E7%94%BB%E5%9F%BA%E7%A1%80%E5%89%8D%E5%90%91%E8%BF%90%E5%8A%A8%E5%AD%A6%E9%80%86%E5%90%91%E8%BF%90%E5%8A%A8%E5%AD%A6%E5%85%B3%E9%94%AE%E5%B8%A7%E5%8A%A8%E7%94%BB%E4%B8%8E%E6%8F%92%E5%80%BC/</guid>
-        <description>&lt;h1 id=&#34;前向运动学&#34;&gt;前向运动学
+        <description>&lt;img src="https://sdpyy1.github.io/9cd6da17016c4d8bb0a71ba5e8f44d0c.png" alt="Featured image of post GAMES105 计算机角色动画基础（前向运动学、逆向运动学、关键帧动画与插值）" /&gt;&lt;h1 id=&#34;前向运动学&#34;&gt;前向运动学
 &lt;/h1&gt;&lt;h2 id=&#34;单链&#34;&gt;单链
 &lt;/h2&gt;&lt;p&gt;每个关节的局部坐标系与全局坐标系重合&lt;/p&gt;
 &lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/30420a057d4b48d1ac427d38c5392200.png&#34;
@@ -1441,7 +1441,7 @@ return joint_positions, joint_orientations
         <pubDate>Sun, 19 Oct 2025 14:24:24 +0800</pubDate>
         
         <guid>https://sdpyy1.github.io/p/games105-%E8%AE%A1%E7%AE%97%E6%9C%BA%E8%A7%92%E8%89%B2%E5%8A%A8%E7%94%BB%E5%9F%BA%E7%A1%80%E6%95%B0%E5%AD%A6%E5%9F%BA%E7%A1%80/</guid>
-        <description>&lt;h1 id=&#34;线性代数&#34;&gt;线性代数
+        <description>&lt;img src="https://sdpyy1.github.io/697bf32a43404daeadb64e6c91c121f0.png" alt="Featured image of post GAMES105 计算机角色动画基础（数学基础）" /&gt;&lt;h1 id=&#34;线性代数&#34;&gt;线性代数
 &lt;/h1&gt;&lt;h2 id=&#34;向量&#34;&gt;向量
 &lt;/h2&gt;&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/fb83138d7956486cb1748166b3de3f4d.png&#34;
 	

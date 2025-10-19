@@ -13,7 +13,7 @@
         <pubDate>Sun, 19 Oct 2025 14:20:40 +0800</pubDate>
         
         <guid>https://sdpyy1.github.io/p/openglrender%E5%BC%80%E5%8F%91%E8%AE%B0%E5%BD%953%E5%90%8E%E5%A4%84%E7%90%86pass%E5%A4%A7%E6%B0%94%E6%B8%B2%E6%9F%93/</guid>
-        <description>&lt;h1 id=&#34;大气渲染&#34;&gt;大气渲染
+        <description>&lt;img src="https://sdpyy1.github.io/025e7da8dd62453095a4739f7c3d15ed.png" alt="Featured image of post OpenGLRender开发记录（3）：后处理Pass（大气渲染）" /&gt;&lt;h1 id=&#34;大气渲染&#34;&gt;大气渲染
 &lt;/h1&gt;&lt;h2 id=&#34;渲染方法分析&#34;&gt;渲染方法分析
 &lt;/h2&gt;&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/55e17d90959d44a9b5a55d89fb02d6a2.png&#34;
 	
@@ -621,7 +621,7 @@ M点为着色点，那从P点看向M点时，需要计算两个值（1）&lt;str
         <pubDate>Sun, 19 Oct 2025 14:19:37 +0800</pubDate>
         
         <guid>https://sdpyy1.github.io/p/openglrender%E5%BC%80%E5%8F%91%E8%AE%B0%E5%BD%952%E9%98%B4%E5%BD%B1shadowmappcfpcss/</guid>
-        <description>&lt;h1 id=&#34;已实现功能&#34;&gt;已实现功能
+        <description>&lt;img src="https://sdpyy1.github.io/976b5ef841fd4cda9621c4812dd3dba4.png" alt="Featured image of post OpenGLRender开发记录（2）：阴影（shadowMap，PCF，PCSS）" /&gt;&lt;h1 id=&#34;已实现功能&#34;&gt;已实现功能
 &lt;/h1&gt;&lt;p&gt;除了上次实现IBL之外，项目目前新增了imGUI的渲染，更方便地进行调试
 &lt;img src=&#34;https://sdpyy1.github.io/43b440e64570447284673faa81f9d7c3.png&#34;
 	
@@ -1252,7 +1252,7 @@ PCF思路就是取周围像素的shadow来取平均，柔化阴影边界&lt;/p&g
         <pubDate>Sun, 19 Oct 2025 13:42:48 +0800</pubDate>
         
         <guid>https://sdpyy1.github.io/p/tinyrender%E5%BC%80%E5%8F%91%E8%AE%B0%E5%BD%95-5-7/</guid>
-        <description>&lt;h1 id=&#34;lesson-5--gouraud-shading&#34;&gt;Lesson 5:  Gouraud shading
+        <description>&lt;img src="https://sdpyy1.github.io/23afe9a8003a44a788f6448c182b6b68.png" alt="Featured image of post TinyRender开发记录 5-7" /&gt;&lt;h1 id=&#34;lesson-5--gouraud-shading&#34;&gt;Lesson 5:  Gouraud shading
 &lt;/h1&gt;&lt;p&gt;本节课实现了 Gouraud shading，对三角形每个顶点用法线求光照，进一步插值到内部像素，相比于phong，phong是要对每个内部像素都需要计算光照，这里简单处理就是默认为255，255，255的白光，计算顶点法线和光照方向的夹角（注意单位化和钝角处理)，得到cos直接乘以光照，就得到了每个顶点的变暗比例，之后再插值到各个像素，关键代码如下&lt;/p&gt;
 &lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
 &lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
@@ -2221,7 +2221,7 @@ ai给出的解释：这种现象叫做自阴影&lt;/p&gt;
         <pubDate>Sun, 19 Oct 2025 13:37:45 +0800</pubDate>
         
         <guid>https://sdpyy1.github.io/p/tinyrender%E5%BC%80%E5%8F%91%E8%AE%B0%E5%BD%95-1-4/</guid>
-        <description>&lt;h1 id=&#34;项目介绍&#34;&gt;项目介绍
+        <description>&lt;img src="https://sdpyy1.github.io/015e0f415d1c493db111695862b55bfe.png" alt="Featured image of post TinyRender开发记录 1-4" /&gt;&lt;h1 id=&#34;项目介绍&#34;&gt;项目介绍
 &lt;/h1&gt;&lt;blockquote&gt;
 &lt;p&gt;Tiny Renderer or how OpenGL works: software rendering in 500 lines of code
 项目地址：https://github.com/ssloy/tinyrenderer

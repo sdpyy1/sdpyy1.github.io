@@ -12,9 +12,10 @@
 <meta property='og:description' content="一些科普 Keyframe Animator Physical Simulation 利用物理公式来模拟 质点弹簧系统 Mass Spring Rope 下面开始描述这个系统 胡克定律描述弹簧或弹性体所受的回复力 F 与形变量 x 成正比， $k_s$是劲度系数，但是弹簧本身也有长度 考虑弹簧原始长度 ，$\\frac{b - a}{|b - a|}$这个向量用来表示方向，但问题是这样写，弹簧一旦拉开就不会不停的运动下去（动能和势能相互转化），所以还需要引入摩擦力 引入摩擦力之前先引入一些符号表示位置、速度、加速度 给物体一个相反与速度方向的力，但还有问题，这样会导致所有的运动都停下来，假设AB两个物体同步向右走，他俩都有速度，但相对之间没有速度，所以应该没摩擦力，但是用下面的公式，只要物体有速度，就会受到摩擦力而停止 我们在逐渐完善弹簧系统，摩擦力应该跟着物体AB的相对运动而产生，下图用两个物体速度差来表示相对速度，另外还需要考虑这个速度差是沿着弹簧方向才行，所以点乘$\\frac{b - a}{|b - a|}$来投影到ba方向 下面看一些弹簧结构 模型的行为是由结构连接来决定的，下面看如果一块布这样设计，很明显是不合理的，图中展示了2种原因（布可以抵抗切变力但这个结构不行，布会对抗对折） 先来改进切变，加入蓝色弹簧来抵抗 再加另外一个方向，但不能解决第二个问题 最终版 ">
 <meta property='og:url' content='https://sdpyy1.github.io/p/games101-%E7%8E%B0%E4%BB%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9B%BE%E5%BD%A2%E5%AD%A6%E5%85%A5%E9%97%A8-animation/simulation/'>
 <meta property='og:site_name' content='wanfeng'>
-<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='课程笔记' /><meta property='article:tag' content='Games101' /><meta property='article:published_time' content='2025-10-19T12:48:02&#43;08:00'/><meta property='article:modified_time' content='2025-10-19T12:48:02&#43;08:00'/>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='课程笔记' /><meta property='article:tag' content='Games101' /><meta property='article:published_time' content='2025-10-19T12:48:02&#43;08:00'/><meta property='article:modified_time' content='2025-10-19T12:48:02&#43;08:00'/><meta property='og:image' content='https://sdpyy1.github.io/49ba0bbdd1d24a848de86f532c675a7e.png' />
 <meta name="twitter:title" content="GAMES101 现代计算机图形学入门 Animation/Simulation">
-<meta name="twitter:description" content="一些科普 Keyframe Animator Physical Simulation 利用物理公式来模拟 质点弹簧系统 Mass Spring Rope 下面开始描述这个系统 胡克定律描述弹簧或弹性体所受的回复力 F 与形变量 x 成正比， $k_s$是劲度系数，但是弹簧本身也有长度 考虑弹簧原始长度 ，$\\frac{b - a}{|b - a|}$这个向量用来表示方向，但问题是这样写，弹簧一旦拉开就不会不停的运动下去（动能和势能相互转化），所以还需要引入摩擦力 引入摩擦力之前先引入一些符号表示位置、速度、加速度 给物体一个相反与速度方向的力，但还有问题，这样会导致所有的运动都停下来，假设AB两个物体同步向右走，他俩都有速度，但相对之间没有速度，所以应该没摩擦力，但是用下面的公式，只要物体有速度，就会受到摩擦力而停止 我们在逐渐完善弹簧系统，摩擦力应该跟着物体AB的相对运动而产生，下图用两个物体速度差来表示相对速度，另外还需要考虑这个速度差是沿着弹簧方向才行，所以点乘$\\frac{b - a}{|b - a|}$来投影到ba方向 下面看一些弹簧结构 模型的行为是由结构连接来决定的，下面看如果一块布这样设计，很明显是不合理的，图中展示了2种原因（布可以抵抗切变力但这个结构不行，布会对抗对折） 先来改进切变，加入蓝色弹簧来抵抗 再加另外一个方向，但不能解决第二个问题 最终版 ">
+<meta name="twitter:description" content="一些科普 Keyframe Animator Physical Simulation 利用物理公式来模拟 质点弹簧系统 Mass Spring Rope 下面开始描述这个系统 胡克定律描述弹簧或弹性体所受的回复力 F 与形变量 x 成正比， $k_s$是劲度系数，但是弹簧本身也有长度 考虑弹簧原始长度 ，$\\frac{b - a}{|b - a|}$这个向量用来表示方向，但问题是这样写，弹簧一旦拉开就不会不停的运动下去（动能和势能相互转化），所以还需要引入摩擦力 引入摩擦力之前先引入一些符号表示位置、速度、加速度 给物体一个相反与速度方向的力，但还有问题，这样会导致所有的运动都停下来，假设AB两个物体同步向右走，他俩都有速度，但相对之间没有速度，所以应该没摩擦力，但是用下面的公式，只要物体有速度，就会受到摩擦力而停止 我们在逐渐完善弹簧系统，摩擦力应该跟着物体AB的相对运动而产生，下图用两个物体速度差来表示相对速度，另外还需要考虑这个速度差是沿着弹簧方向才行，所以点乘$\\frac{b - a}{|b - a|}$来投影到ba方向 下面看一些弹簧结构 模型的行为是由结构连接来决定的，下面看如果一块布这样设计，很明显是不合理的，图中展示了2种原因（布可以抵抗切变力但这个结构不行，布会对抗对折） 先来改进切变，加入蓝色弹簧来抵抗 再加另外一个方向，但不能解决第二个问题 最终版 "><meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content='https://sdpyy1.github.io/49ba0bbdd1d24a848de86f532c675a7e.png' />
     <link rel="shortcut icon" href="/favicon.ico" />
 
     </head>
@@ -315,8 +316,16 @@
 
 
             <main class="main full-width">
-    <article class="main-article">
+    <article class="has-image main-article">
     <header class="article-header">
+        <div class="article-image">
+            <a href="/p/games101-%E7%8E%B0%E4%BB%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9B%BE%E5%BD%A2%E5%AD%A6%E5%85%A5%E9%97%A8-animation/simulation/">
+                
+                    <img src="/49ba0bbdd1d24a848de86f532c675a7e.png" loading="lazy" alt="Featured image of post GAMES101 现代计算机图形学入门 Animation/Simulation" />
+                
+            </a>
+        </div>
+    
 
     <div class="article-details">
     
@@ -417,15 +426,7 @@
         
 
         
-        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-  <path stroke="none" d="M0 0h24v24H0z"/>
-  <circle cx="12" cy="7" r="4" />
-  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
-</svg>
-
-
-
-        <span id="busuanzi_container_page_pv">本文阅读量<span id="busuanzi_value_page_pv"></span>次</span>
+            
     </footer>
     
     
@@ -909,12 +910,18 @@ Position-Based / Verlet Integration
         <div class="flex article-list--tile">
             
                 
-<article class="article-card no-image">
+<article class="article-card has-image">
     <a href="/p/games101-%E7%8E%B0%E4%BB%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9B%BE%E5%BD%A2%E5%AD%A6%E5%85%A5%E9%97%A8-camera-lenses-light-fields-color-and-perception/">
         
-        
-        <div class="article-details">
-            <h2 class="article-title">GAMES101 现代计算机图形学入门 Camera Lenses Light Fields Color and Perception</h2>
+        <div class="article-image">
+            
+                <img src="/05414f77c7904ed5851265148aa16f58.png" loading="lazy" data-key="" data-hash="/05414f77c7904ed5851265148aa16f58.png"/>
+            
+
+            
+            <div class="article-overlay">
+                <h2 class="article-title">GAMES101 现代计算机图形学入门 Camera Lenses Light Fields Color and Perception</h2>
+            </div>
         </div>
         
     </a>
@@ -1014,12 +1021,18 @@ Position-Based / Verlet Integration
 </article>
             
                 
-<article class="article-card no-image">
+<article class="article-card has-image">
     <a href="/p/games101-%E7%8E%B0%E4%BB%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9B%BE%E5%BD%A2%E5%AD%A6%E5%85%A5%E9%97%A8-ray-tracing/">
         
-        
-        <div class="article-details">
-            <h2 class="article-title">GAMES101 现代计算机图形学入门 Ray Tracing</h2>
+        <div class="article-image">
+            
+                <img src="/a6d366b54c3a45b38beb9e550a1ea53b.png" loading="lazy" data-key="" data-hash="/a6d366b54c3a45b38beb9e550a1ea53b.png"/>
+            
+
+            
+            <div class="article-overlay">
+                <h2 class="article-title">GAMES101 现代计算机图形学入门 Ray Tracing</h2>
+            </div>
         </div>
         
     </a>
@@ -1119,12 +1132,18 @@ Position-Based / Verlet Integration
 </article>
             
                 
-<article class="article-card no-image">
+<article class="article-card has-image">
     <a href="/p/games101-%E7%8E%B0%E4%BB%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9B%BE%E5%BD%A2%E5%AD%A6%E5%85%A5%E9%97%A8-geometry/">
         
-        
-        <div class="article-details">
-            <h2 class="article-title">GAMES101 现代计算机图形学入门 Geometry</h2>
+        <div class="article-image">
+            
+                <img src="/3b0a2bb693ef4b20a6ca0414d87ae566.png" loading="lazy" data-key="" data-hash="/3b0a2bb693ef4b20a6ca0414d87ae566.png"/>
+            
+
+            
+            <div class="article-overlay">
+                <h2 class="article-title">GAMES101 现代计算机图形学入门 Geometry</h2>
+            </div>
         </div>
         
     </a>
@@ -1224,12 +1243,18 @@ Position-Based / Verlet Integration
 </article>
             
                 
-<article class="article-card no-image">
+<article class="article-card has-image">
     <a href="/p/games101-%E7%8E%B0%E4%BB%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9B%BE%E5%BD%A2%E5%AD%A6%E5%85%A5%E9%97%A8-shading/">
         
-        
-        <div class="article-details">
-            <h2 class="article-title">GAMES101 现代计算机图形学入门 Shading</h2>
+        <div class="article-image">
+            
+                <img src="/8794c0d329d24aca97c68998d2945da5.png" loading="lazy" data-key="" data-hash="/8794c0d329d24aca97c68998d2945da5.png"/>
+            
+
+            
+            <div class="article-overlay">
+                <h2 class="article-title">GAMES101 现代计算机图形学入门 Shading</h2>
+            </div>
         </div>
         
     </a>
@@ -1329,12 +1354,18 @@ Position-Based / Verlet Integration
 </article>
             
                 
-<article class="article-card no-image">
+<article class="article-card has-image">
     <a href="/p/games101-%E7%8E%B0%E4%BB%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9B%BE%E5%BD%A2%E5%AD%A6%E5%85%A5%E9%97%A8-transformation-rasterization/">
         
-        
-        <div class="article-details">
-            <h2 class="article-title">GAMES101 现代计算机图形学入门 Transformation &amp; Rasterization</h2>
+        <div class="article-image">
+            
+                <img src="/3d23bd7f8fdc4adfa5ef11d68f2d98fd.png" loading="lazy" data-key="" data-hash="/3d23bd7f8fdc4adfa5ef11d68f2d98fd.png"/>
+            
+
+            
+            <div class="article-overlay">
+                <h2 class="article-title">GAMES101 现代计算机图形学入门 Transformation &amp; Rasterization</h2>
+            </div>
         </div>
         
     </a>

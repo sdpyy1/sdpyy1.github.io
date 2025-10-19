@@ -13,7 +13,7 @@
         <pubDate>Sun, 19 Oct 2025 14:25:28 +0800</pubDate>
         
         <guid>https://sdpyy1.github.io/p/games105-%E8%AE%A1%E7%AE%97%E6%9C%BA%E8%A7%92%E8%89%B2%E5%8A%A8%E7%94%BB%E5%9F%BA%E7%A1%80%E5%89%8D%E5%90%91%E8%BF%90%E5%8A%A8%E5%AD%A6%E9%80%86%E5%90%91%E8%BF%90%E5%8A%A8%E5%AD%A6%E5%85%B3%E9%94%AE%E5%B8%A7%E5%8A%A8%E7%94%BB%E4%B8%8E%E6%8F%92%E5%80%BC/</guid>
-        <description>&lt;h1 id=&#34;前向运动学&#34;&gt;前向运动学
+        <description>&lt;img src="https://sdpyy1.github.io/9cd6da17016c4d8bb0a71ba5e8f44d0c.png" alt="Featured image of post GAMES105 计算机角色动画基础（前向运动学、逆向运动学、关键帧动画与插值）" /&gt;&lt;h1 id=&#34;前向运动学&#34;&gt;前向运动学
 &lt;/h1&gt;&lt;h2 id=&#34;单链&#34;&gt;单链
 &lt;/h2&gt;&lt;p&gt;每个关节的局部坐标系与全局坐标系重合&lt;/p&gt;
 &lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/30420a057d4b48d1ac427d38c5392200.png&#34;
@@ -1441,7 +1441,7 @@ return joint_positions, joint_orientations
         <pubDate>Sun, 19 Oct 2025 14:24:24 +0800</pubDate>
         
         <guid>https://sdpyy1.github.io/p/games105-%E8%AE%A1%E7%AE%97%E6%9C%BA%E8%A7%92%E8%89%B2%E5%8A%A8%E7%94%BB%E5%9F%BA%E7%A1%80%E6%95%B0%E5%AD%A6%E5%9F%BA%E7%A1%80/</guid>
-        <description>&lt;h1 id=&#34;线性代数&#34;&gt;线性代数
+        <description>&lt;img src="https://sdpyy1.github.io/697bf32a43404daeadb64e6c91c121f0.png" alt="Featured image of post GAMES105 计算机角色动画基础（数学基础）" /&gt;&lt;h1 id=&#34;线性代数&#34;&gt;线性代数
 &lt;/h1&gt;&lt;h2 id=&#34;向量&#34;&gt;向量
 &lt;/h2&gt;&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/fb83138d7956486cb1748166b3de3f4d.png&#34;
 	
@@ -2438,7 +2438,7 @@ v方向是 UcrossA的方向(其实就是圆盘的切线方向,也就是说叉乘
         <pubDate>Sun, 19 Oct 2025 14:02:08 +0800</pubDate>
         
         <guid>https://sdpyy1.github.io/p/games202-games202-%E9%AB%98%E8%B4%A8%E9%87%8F%E5%AE%9E%E6%97%B6%E6%B8%B2%E6%9F%93real-time-ray-tracing/</guid>
-        <description>&lt;h1 id=&#34;rtx&#34;&gt;RTX
+        <description>&lt;img src="https://sdpyy1.github.io/39f6ae2e6aa04864b9165387c73282ae.png" alt="Featured image of post GAMES202 GAMES202 高质量实时渲染（Real-Time Ray-Tracing）" /&gt;&lt;h1 id=&#34;rtx&#34;&gt;RTX
 &lt;/h1&gt;&lt;p&gt;RTX实际做的事：
 一个像素用一个样本来采样SPP&lt;/p&gt;
 &lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/a76c532017ff4b1a99a8e89540ff0a1d.png&#34;
@@ -2875,7 +2875,7 @@ MSAA分辨率不变，在一个像素中采样多次，甚至可以在临近像�
         <pubDate>Sun, 19 Oct 2025 14:01:31 +0800</pubDate>
         
         <guid>https://sdpyy1.github.io/p/games202-%E9%AB%98%E8%B4%A8%E9%87%8F%E5%AE%9E%E6%97%B6%E6%B8%B2%E6%9F%93real-time-physically-based-materials/</guid>
-        <description>&lt;h1 id=&#34;micorfacet-brdf&#34;&gt;Micorfacet BRDF
+        <description>&lt;img src="https://sdpyy1.github.io/a798b632f6bc41f9b3e68453c8445fb7.png" alt="Featured image of post GAMES202 高质量实时渲染（Real-Time Physically Based Materials）" /&gt;&lt;h1 id=&#34;micorfacet-brdf&#34;&gt;Micorfacet BRDF
 &lt;/h1&gt;&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/c1dccc9561914ba7b95432dc6463973e.png&#34;
 	
 	
@@ -3326,7 +3326,7 @@ Fresnel项 和 法线分布函数（例如 GGX）是微面模型的关键组成�
         <pubDate>Sun, 19 Oct 2025 14:00:35 +0800</pubDate>
         
         <guid>https://sdpyy1.github.io/p/games202-%E9%AB%98%E8%B4%A8%E9%87%8F%E5%AE%9E%E6%97%B6%E6%B8%B2%E6%9F%93real-time-global-illumination/</guid>
-        <description>&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/78996c31c1b04f5eae5269c1d6756086.png&#34;
+        <description>&lt;img src="https://sdpyy1.github.io/aa2c09da489f4288808aa9af1f4fc213.png" alt="Featured image of post GAMES202 高质量实时渲染（Real-Time Global Illumination）" /&gt;&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/78996c31c1b04f5eae5269c1d6756086.png&#34;
 	
 	
 	
@@ -3985,7 +3985,7 @@ SSR也有问题，因为屏幕空间只有最前面的数据，所以藏在背�
         <pubDate>Sun, 19 Oct 2025 13:59:44 +0800</pubDate>
         
         <guid>https://sdpyy1.github.io/p/games202-%E9%AB%98%E8%B4%A8%E9%87%8F%E5%AE%9E%E6%97%B6%E6%B8%B2%E6%9F%93real-time-environment-mapping/</guid>
-        <description>&lt;h1 id=&#34;shading-from-environment-lighting&#34;&gt;Shading from Environment Lighting
+        <description>&lt;img src="https://sdpyy1.github.io/787b8e5bfbd6453bad3b4faab67d12d9.png" alt="Featured image of post GAMES202 高质量实时渲染（Real-Time Environment Mapping）" /&gt;&lt;h1 id=&#34;shading-from-environment-lighting&#34;&gt;Shading from Environment Lighting
 &lt;/h1&gt;&lt;p&gt;使用环境光计算shading的操作叫做IBL(Image based lighting)  ，光照不是来自光源，而是环境贴图
 下面在不考虑阴影的情况下来看渲染方程，接受来自整个半球面的光来进行渲染
 &lt;img src=&#34;https://sdpyy1.github.io/3ec446e25c5a4678a6fb753cbbc6d6f9.png&#34;
@@ -4372,7 +4372,7 @@ SH选择不同的阶的时间复杂度
         <pubDate>Sun, 19 Oct 2025 13:58:35 +0800</pubDate>
         
         <guid>https://sdpyy1.github.io/p/games202-%E9%AB%98%E8%B4%A8%E9%87%8F%E5%AE%9E%E6%97%B6%E6%B8%B2%E6%9F%93real-time-shadows/</guid>
-        <description>&lt;h1 id=&#34;shadow-mapping&#34;&gt;Shadow Mapping
+        <description>&lt;img src="https://sdpyy1.github.io/7d064c8a32bd4ca48f6dc45c082cf7c4.png" alt="Featured image of post GAMES202 高质量实时渲染（Real Time Shadows）" /&gt;&lt;h1 id=&#34;shadow-mapping&#34;&gt;Shadow Mapping
 &lt;/h1&gt;&lt;p&gt;这块东西在我OpenGL学习笔记中有详细介绍&lt;/p&gt;
 &lt;blockquote&gt;
 &lt;p&gt;&lt;a class=&#34;link&#34; href=&#34;https://blog.csdn.net/lzh804121985/article/details/147256140?spm=1001.2014.3001.5502&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
@@ -4916,7 +4916,7 @@ VSSM的效果&lt;img src=&#34;https://sdpyy1.github.io/74d05f7b9d7c414e86419b213
         <pubDate>Sun, 19 Oct 2025 12:49:13 +0800</pubDate>
         
         <guid>https://sdpyy1.github.io/p/games101-%E7%8E%B0%E4%BB%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9B%BE%E5%BD%A2%E5%AD%A6%E5%85%A5%E9%97%A8-camera-lenses-light-fields-color-and-perception/</guid>
-        <description>&lt;h1 id=&#34;cameras&#34;&gt;Cameras
+        <description>&lt;img src="https://sdpyy1.github.io/05414f77c7904ed5851265148aa16f58.png" alt="Featured image of post GAMES101 现代计算机图形学入门 Camera Lenses Light Fields Color and Perception" /&gt;&lt;h1 id=&#34;cameras&#34;&gt;Cameras
 &lt;/h1&gt;&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/0212feac63754038823e0e1ee55c74c7.png&#34;
 	
 	
@@ -5276,7 +5276,7 @@ IOS的介绍
         <pubDate>Sun, 19 Oct 2025 12:48:02 +0800</pubDate>
         
         <guid>https://sdpyy1.github.io/p/games101-%E7%8E%B0%E4%BB%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9B%BE%E5%BD%A2%E5%AD%A6%E5%85%A5%E9%97%A8-animation/simulation/</guid>
-        <description>&lt;h1 id=&#34;一些科普&#34;&gt;一些科普
+        <description>&lt;img src="https://sdpyy1.github.io/49ba0bbdd1d24a848de86f532c675a7e.png" alt="Featured image of post GAMES101 现代计算机图形学入门 Animation/Simulation" /&gt;&lt;h1 id=&#34;一些科普&#34;&gt;一些科普
 &lt;/h1&gt;&lt;h2 id=&#34;keyframe-animator&#34;&gt;Keyframe Animator
 &lt;/h2&gt;&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/254f33ee74a74430a5be6baf38e5d1f5.png&#34;
 	
@@ -5659,7 +5659,7 @@ Position-Based / Verlet Integration
         <pubDate>Sun, 19 Oct 2025 12:43:12 +0800</pubDate>
         
         <guid>https://sdpyy1.github.io/p/games101-%E7%8E%B0%E4%BB%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9B%BE%E5%BD%A2%E5%AD%A6%E5%85%A5%E9%97%A8-ray-tracing/</guid>
-        <description>&lt;h1 id=&#34;shadow-mapping&#34;&gt;Shadow Mapping
+        <description>&lt;img src="https://sdpyy1.github.io/a6d366b54c3a45b38beb9e550a1ea53b.png" alt="Featured image of post GAMES101 现代计算机图形学入门 Ray Tracing" /&gt;&lt;h1 id=&#34;shadow-mapping&#34;&gt;Shadow Mapping
 &lt;/h1&gt;&lt;p&gt;如果使用光栅化，对一个像素shading时考虑光源，考虑摄影机位置，但是没有考虑模型其他位置对该位置的影响，因为在光源与该像素点之间有别的东西挡住，那光源就会被挡住，形成阴影。shading解决不了阴影问题&lt;img src=&#34;https://sdpyy1.github.io/070b07cef83249b58bc9e15c0ecad44f.png&#34;
 	
 	
@@ -6977,7 +6977,7 @@ Exiting Radiance 是 开表面辐射强度在per单位面积上&lt;img src=&#34;
         <pubDate>Sun, 19 Oct 2025 12:37:17 +0800</pubDate>
         
         <guid>https://sdpyy1.github.io/p/games101-%E7%8E%B0%E4%BB%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9B%BE%E5%BD%A2%E5%AD%A6%E5%85%A5%E9%97%A8-geometry/</guid>
-        <description>&lt;h1 id=&#34;implicit-and-explicit&#34;&gt;Implicit and explicit
+        <description>&lt;img src="https://sdpyy1.github.io/3b0a2bb693ef4b20a6ca0414d87ae566.png" alt="Featured image of post GAMES101 现代计算机图形学入门 Geometry" /&gt;&lt;h1 id=&#34;implicit-and-explicit&#34;&gt;Implicit and explicit
 &lt;/h1&gt;&lt;h2 id=&#34;implicit&#34;&gt;Implicit
 &lt;/h2&gt;&lt;p&gt;&lt;strong&gt;是并不会告诉任何点的信息，只会告诉该曲面上所有点满足的关系&lt;/strong&gt;
 &lt;/p&gt;
@@ -7473,7 +7473,7 @@ C1连续就是达到了曲面光滑，实现方法看下图红线
         <pubDate>Sun, 19 Oct 2025 00:57:01 +0800</pubDate>
         
         <guid>https://sdpyy1.github.io/p/games101-%E7%8E%B0%E4%BB%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9B%BE%E5%BD%A2%E5%AD%A6%E5%85%A5%E9%97%A8-shading/</guid>
-        <description>&lt;h1 id=&#34;什么是shading&#34;&gt;什么是shading？
+        <description>&lt;img src="https://sdpyy1.github.io/8794c0d329d24aca97c68998d2945da5.png" alt="Featured image of post GAMES101 现代计算机图形学入门 Shading" /&gt;&lt;h1 id=&#34;什么是shading&#34;&gt;什么是shading？
 &lt;/h1&gt;&lt;p&gt;shading 负责计算物体表面每个采样点的颜色，具体考虑光照、材质属性、观察角度等因素，生成具有真实感的视觉效果（如漫反射、镜面高光、环境光等）‌，之前的光栅化将是几何图元（如三角形）转换为屏幕上的像素，确定哪些像素被图元覆盖，是几何层面的处理&lt;/p&gt;
 &lt;h1 id=&#34;blinn-phong-reflectance-modela-simple-shading-model&#34;&gt;Blinn-Phong Reflectance Model(A Simple Shading Model)
 &lt;/h1&gt;&lt;p&gt;Blinn-Phong 反射模型（Blinn-Phong Reflectance Model）是一种用于计算机图形学中模拟物体表面光照效果的着色模型.该模型主要由**环境光(Ambient)、漫反射(Diffuse)和高光反射(Specular)**三部分组成。&lt;img src=&#34;https://sdpyy1.github.io/92975763af4c45deacbe6332c3f2d16b.png&#34;
@@ -7978,7 +7978,7 @@ $$lerp(x,v_0,v_1) = v_0 + x(v_1 - v_0)$$&lt;p&gt;
         <pubDate>Sun, 19 Oct 2025 00:47:26 +0800</pubDate>
         
         <guid>https://sdpyy1.github.io/p/games101-%E7%8E%B0%E4%BB%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9B%BE%E5%BD%A2%E5%AD%A6%E5%85%A5%E9%97%A8-transformation-rasterization/</guid>
-        <description>&lt;h1 id=&#34;线性代数复习&#34;&gt;线性代数复习
+        <description>&lt;img src="https://sdpyy1.github.io/3d23bd7f8fdc4adfa5ef11d68f2d98fd.png" alt="Featured image of post GAMES101 现代计算机图形学入门 Transformation &amp; Rasterization" /&gt;&lt;h1 id=&#34;线性代数复习&#34;&gt;线性代数复习
 &lt;/h1&gt;&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/image-20251019121720334.png&#34;
 	
 	

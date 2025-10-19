@@ -12,9 +12,10 @@
 <meta property='og:description' content="Shading from Environment Lighting 使用环境光计算shading的操作叫做IBL(Image based lighting) ，光照不是来自光源，而是环境贴图 下面在不考虑阴影的情况下来看渲染方程，接受来自整个半球面的光来进行渲染 之前的做法是使用蒙特卡洛积分来估计积分，但是太慢了放在实时渲染中（采样表现并不好，（但是随着发展形势逐渐变化了） ，这里就讲避免采样的方法） 根据上图，联系上节课如何对visibility拆分的情况，这里的光照项也可以提出去 这种操作反应到贴图上就是对贴图进行了过滤，在渲染之前先得到滤波核处理过的贴图 这种操作相当于把多次采样近似为先滤波后的镜面反射方向的一次采样 到这里对于光照项避免了采样，下来来看BRDF项避免采样的方法，如今已经有更好的方法，这里只是学思想，主要思想就是我们想直接打表来预存每个变量下的积分值，但是维度太高了，这里在分析如何降维 微表面模型的BRDF的方程 这里主要考虑菲涅耳项和法线分布项的近似 F项 G项 看这两幅图，说明如果我们想预计算BRDF函数，实际上只需要3个变量，一张三维的表，但是三维还是太麻烦了 F项还可以进一步简化，这样写之后把R0拆出来了，因为它基本是一个常数 这样等式右边的连个积分都可写成一个二维表来进行预计算 在这张2d纹理任何一点的值，就是BRDF积分出来的结果，直接渲染方程都不用积分了 下图可以看见这种简化方法得到的结果与真实采样得到的结果十分相似，但计算量小了很多 这种方法叫做split sum，它是unreal引擎PBR🐮b的基础～（没有采样就没有噪点） 我感觉实时渲染目前了解的很多都是如何把计算进行简化的同时偏差并不大！\n">
 <meta property='og:url' content='https://sdpyy1.github.io/p/games202-%E9%AB%98%E8%B4%A8%E9%87%8F%E5%AE%9E%E6%97%B6%E6%B8%B2%E6%9F%93real-time-environment-mapping/'>
 <meta property='og:site_name' content='wanfeng'>
-<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='课程笔记' /><meta property='article:tag' content='Games202' /><meta property='article:published_time' content='2025-10-19T13:59:44&#43;08:00'/><meta property='article:modified_time' content='2025-10-19T13:59:44&#43;08:00'/>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='课程笔记' /><meta property='article:tag' content='Games202' /><meta property='article:published_time' content='2025-10-19T13:59:44&#43;08:00'/><meta property='article:modified_time' content='2025-10-19T13:59:44&#43;08:00'/><meta property='og:image' content='https://sdpyy1.github.io/787b8e5bfbd6453bad3b4faab67d12d9.png' />
 <meta name="twitter:title" content="GAMES202 高质量实时渲染（Real-Time Environment Mapping）">
-<meta name="twitter:description" content="Shading from Environment Lighting 使用环境光计算shading的操作叫做IBL(Image based lighting) ，光照不是来自光源，而是环境贴图 下面在不考虑阴影的情况下来看渲染方程，接受来自整个半球面的光来进行渲染 之前的做法是使用蒙特卡洛积分来估计积分，但是太慢了放在实时渲染中（采样表现并不好，（但是随着发展形势逐渐变化了） ，这里就讲避免采样的方法） 根据上图，联系上节课如何对visibility拆分的情况，这里的光照项也可以提出去 这种操作反应到贴图上就是对贴图进行了过滤，在渲染之前先得到滤波核处理过的贴图 这种操作相当于把多次采样近似为先滤波后的镜面反射方向的一次采样 到这里对于光照项避免了采样，下来来看BRDF项避免采样的方法，如今已经有更好的方法，这里只是学思想，主要思想就是我们想直接打表来预存每个变量下的积分值，但是维度太高了，这里在分析如何降维 微表面模型的BRDF的方程 这里主要考虑菲涅耳项和法线分布项的近似 F项 G项 看这两幅图，说明如果我们想预计算BRDF函数，实际上只需要3个变量，一张三维的表，但是三维还是太麻烦了 F项还可以进一步简化，这样写之后把R0拆出来了，因为它基本是一个常数 这样等式右边的连个积分都可写成一个二维表来进行预计算 在这张2d纹理任何一点的值，就是BRDF积分出来的结果，直接渲染方程都不用积分了 下图可以看见这种简化方法得到的结果与真实采样得到的结果十分相似，但计算量小了很多 这种方法叫做split sum，它是unreal引擎PBR🐮b的基础～（没有采样就没有噪点） 我感觉实时渲染目前了解的很多都是如何把计算进行简化的同时偏差并不大！\n">
+<meta name="twitter:description" content="Shading from Environment Lighting 使用环境光计算shading的操作叫做IBL(Image based lighting) ，光照不是来自光源，而是环境贴图 下面在不考虑阴影的情况下来看渲染方程，接受来自整个半球面的光来进行渲染 之前的做法是使用蒙特卡洛积分来估计积分，但是太慢了放在实时渲染中（采样表现并不好，（但是随着发展形势逐渐变化了） ，这里就讲避免采样的方法） 根据上图，联系上节课如何对visibility拆分的情况，这里的光照项也可以提出去 这种操作反应到贴图上就是对贴图进行了过滤，在渲染之前先得到滤波核处理过的贴图 这种操作相当于把多次采样近似为先滤波后的镜面反射方向的一次采样 到这里对于光照项避免了采样，下来来看BRDF项避免采样的方法，如今已经有更好的方法，这里只是学思想，主要思想就是我们想直接打表来预存每个变量下的积分值，但是维度太高了，这里在分析如何降维 微表面模型的BRDF的方程 这里主要考虑菲涅耳项和法线分布项的近似 F项 G项 看这两幅图，说明如果我们想预计算BRDF函数，实际上只需要3个变量，一张三维的表，但是三维还是太麻烦了 F项还可以进一步简化，这样写之后把R0拆出来了，因为它基本是一个常数 这样等式右边的连个积分都可写成一个二维表来进行预计算 在这张2d纹理任何一点的值，就是BRDF积分出来的结果，直接渲染方程都不用积分了 下图可以看见这种简化方法得到的结果与真实采样得到的结果十分相似，但计算量小了很多 这种方法叫做split sum，它是unreal引擎PBR🐮b的基础～（没有采样就没有噪点） 我感觉实时渲染目前了解的很多都是如何把计算进行简化的同时偏差并不大！\n"><meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content='https://sdpyy1.github.io/787b8e5bfbd6453bad3b4faab67d12d9.png' />
     <link rel="shortcut icon" href="/favicon.ico" />
 
     </head>
@@ -301,8 +302,16 @@
 
 
             <main class="main full-width">
-    <article class="main-article">
+    <article class="has-image main-article">
     <header class="article-header">
+        <div class="article-image">
+            <a href="/p/games202-%E9%AB%98%E8%B4%A8%E9%87%8F%E5%AE%9E%E6%97%B6%E6%B8%B2%E6%9F%93real-time-environment-mapping/">
+                
+                    <img src="/787b8e5bfbd6453bad3b4faab67d12d9.png" loading="lazy" alt="Featured image of post GAMES202 高质量实时渲染（Real-Time Environment Mapping）" />
+                
+            </a>
+        </div>
+    
 
     <div class="article-details">
     
@@ -403,15 +412,7 @@
         
 
         
-        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-  <path stroke="none" d="M0 0h24v24H0z"/>
-  <circle cx="12" cy="7" r="4" />
-  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
-</svg>
-
-
-
-        <span id="busuanzi_container_page_pv">本文阅读量<span id="busuanzi_value_page_pv"></span>次</span>
+            
     </footer>
     
     
@@ -899,12 +900,18 @@ SH选择不同的阶的时间复杂度
         <div class="flex article-list--tile">
             
                 
-<article class="article-card no-image">
+<article class="article-card has-image">
     <a href="/p/games202-games202-%E9%AB%98%E8%B4%A8%E9%87%8F%E5%AE%9E%E6%97%B6%E6%B8%B2%E6%9F%93real-time-ray-tracing/">
         
-        
-        <div class="article-details">
-            <h2 class="article-title">GAMES202 GAMES202 高质量实时渲染（Real-Time Ray-Tracing）</h2>
+        <div class="article-image">
+            
+                <img src="/39f6ae2e6aa04864b9165387c73282ae.png" loading="lazy" data-key="" data-hash="/39f6ae2e6aa04864b9165387c73282ae.png"/>
+            
+
+            
+            <div class="article-overlay">
+                <h2 class="article-title">GAMES202 GAMES202 高质量实时渲染（Real-Time Ray-Tracing）</h2>
+            </div>
         </div>
         
     </a>
@@ -1004,12 +1011,18 @@ SH选择不同的阶的时间复杂度
 </article>
             
                 
-<article class="article-card no-image">
+<article class="article-card has-image">
     <a href="/p/games202-%E9%AB%98%E8%B4%A8%E9%87%8F%E5%AE%9E%E6%97%B6%E6%B8%B2%E6%9F%93real-time-physically-based-materials/">
         
-        
-        <div class="article-details">
-            <h2 class="article-title">GAMES202 高质量实时渲染（Real-Time Physically Based Materials）</h2>
+        <div class="article-image">
+            
+                <img src="/a798b632f6bc41f9b3e68453c8445fb7.png" loading="lazy" data-key="" data-hash="/a798b632f6bc41f9b3e68453c8445fb7.png"/>
+            
+
+            
+            <div class="article-overlay">
+                <h2 class="article-title">GAMES202 高质量实时渲染（Real-Time Physically Based Materials）</h2>
+            </div>
         </div>
         
     </a>
@@ -1109,12 +1122,18 @@ SH选择不同的阶的时间复杂度
 </article>
             
                 
-<article class="article-card no-image">
+<article class="article-card has-image">
     <a href="/p/games202-%E9%AB%98%E8%B4%A8%E9%87%8F%E5%AE%9E%E6%97%B6%E6%B8%B2%E6%9F%93real-time-global-illumination/">
         
-        
-        <div class="article-details">
-            <h2 class="article-title">GAMES202 高质量实时渲染（Real-Time Global Illumination）</h2>
+        <div class="article-image">
+            
+                <img src="/aa2c09da489f4288808aa9af1f4fc213.png" loading="lazy" data-key="" data-hash="/aa2c09da489f4288808aa9af1f4fc213.png"/>
+            
+
+            
+            <div class="article-overlay">
+                <h2 class="article-title">GAMES202 高质量实时渲染（Real-Time Global Illumination）</h2>
+            </div>
         </div>
         
     </a>
@@ -1214,12 +1233,18 @@ SH选择不同的阶的时间复杂度
 </article>
             
                 
-<article class="article-card no-image">
+<article class="article-card has-image">
     <a href="/p/games202-%E9%AB%98%E8%B4%A8%E9%87%8F%E5%AE%9E%E6%97%B6%E6%B8%B2%E6%9F%93real-time-shadows/">
         
-        
-        <div class="article-details">
-            <h2 class="article-title">GAMES202 高质量实时渲染（Real Time Shadows）</h2>
+        <div class="article-image">
+            
+                <img src="/7d064c8a32bd4ca48f6dc45c082cf7c4.png" loading="lazy" data-key="" data-hash="/7d064c8a32bd4ca48f6dc45c082cf7c4.png"/>
+            
+
+            
+            <div class="article-overlay">
+                <h2 class="article-title">GAMES202 高质量实时渲染（Real Time Shadows）</h2>
+            </div>
         </div>
         
     </a>
@@ -1319,12 +1344,18 @@ SH选择不同的阶的时间复杂度
 </article>
             
                 
-<article class="article-card no-image">
+<article class="article-card has-image">
     <a href="/p/games202-%E9%AB%98%E8%B4%A8%E9%87%8F%E5%AE%9E%E6%97%B6%E6%B8%B2%E6%9F%93assignment-3/">
         
-        
-        <div class="article-details">
-            <h2 class="article-title">GAMES202 高质量实时渲染（Assignment 3）</h2>
+        <div class="article-image">
+            
+                <img src="/8a13212a6c85436f925ee5f06d474564.png" loading="lazy" data-key="" data-hash="/8a13212a6c85436f925ee5f06d474564.png"/>
+            
+
+            
+            <div class="article-overlay">
+                <h2 class="article-title">GAMES202 高质量实时渲染（Assignment 3）</h2>
+            </div>
         </div>
         
     </a>

@@ -13,7 +13,7 @@
         <pubDate>Sun, 19 Oct 2025 13:32:46 +0800</pubDate>
         
         <guid>https://sdpyy1.github.io/p/games101-%E7%8E%B0%E4%BB%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9B%BE%E5%BD%A2%E5%AD%A6%E5%85%A5%E9%97%A8-assignment7/</guid>
-        <description>&lt;h1 id=&#34;作业介绍&#34;&gt;作业介绍
+        <description>&lt;img src="https://sdpyy1.github.io/4360789f62274e29b3aabdfd7a0a1f6a.png" alt="Featured image of post GAMES101 现代计算机图形学入门 Assignment7" /&gt;&lt;h1 id=&#34;作业介绍&#34;&gt;作业介绍
 &lt;/h1&gt;&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/ef43e9abf6c7485d9bf566a59479ed6f.png&#34;
 	
 	
@@ -219,7 +219,7 @@
         <pubDate>Sun, 19 Oct 2025 13:24:41 +0800</pubDate>
         
         <guid>https://sdpyy1.github.io/p/games101-%E7%8E%B0%E4%BB%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9B%BE%E5%BD%A2%E5%AD%A6%E5%85%A5%E9%97%A8-assignment6/</guid>
-        <description>&lt;h1 id=&#34;作业介绍&#34;&gt;作业介绍
+        <description>&lt;img src="https://sdpyy1.github.io/7685e3c05ceb40d686c8997f9b6dab10.png" alt="Featured image of post GAMES101 现代计算机图形学入门 Assignment6" /&gt;&lt;h1 id=&#34;作业介绍&#34;&gt;作业介绍
 &lt;/h1&gt;&lt;p&gt;在上次作业中，每一次计算光线交点时，都需要与场景中所有的物体进行求交运行，这显然是不合理的，这次作业用BVH划分后进行加速
 &lt;img src=&#34;https://sdpyy1.github.io/bace7e32a04640d08dbcb3b7ba95b6d5.png&#34;
 	
@@ -688,7 +688,7 @@
         <pubDate>Sun, 19 Oct 2025 13:24:12 +0800</pubDate>
         
         <guid>https://sdpyy1.github.io/p/games101-%E7%8E%B0%E4%BB%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9B%BE%E5%BD%A2%E5%AD%A6%E5%85%A5%E9%97%A8-assignment5/</guid>
-        <description>&lt;h1 id=&#34;作业介绍&#34;&gt;作业介绍
+        <description>&lt;img src="https://sdpyy1.github.io/596150ce910e433694d4bb76ebe253f6.png" alt="Featured image of post GAMES101 现代计算机图形学入门 Assignment5" /&gt;&lt;h1 id=&#34;作业介绍&#34;&gt;作业介绍
 &lt;/h1&gt;&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/d4bca87d0cc845e78962e550baedf970.png&#34;
 	
 	
@@ -1527,7 +1527,7 @@
         <pubDate>Sun, 19 Oct 2025 13:22:54 +0800</pubDate>
         
         <guid>https://sdpyy1.github.io/p/games101-%E7%8E%B0%E4%BB%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9B%BE%E5%BD%A2%E5%AD%A6%E5%85%A5%E9%97%A8-assignment3/</guid>
-        <description>&lt;h1 id=&#34;作业描述&#34;&gt;作业描述
+        <description>&lt;img src="https://sdpyy1.github.io/6218a369afe94437bb81dfb0420e1b39.png" alt="Featured image of post GAMES101 现代计算机图形学入门 Assignment3" /&gt;&lt;h1 id=&#34;作业描述&#34;&gt;作业描述
 &lt;/h1&gt;&lt;p&gt;上节课已经对光栅化的操作有了了解，这节课直接引入了模型和纹理，其实本质就是引入了很多的顶点，操作其实没什么变化&lt;img src=&#34;https://sdpyy1.github.io/23b1962b67c04c8a914553728140a155.png&#34;
 	
 	
@@ -2446,7 +2446,7 @@
         <pubDate>Sun, 19 Oct 2025 13:21:54 +0800</pubDate>
         
         <guid>https://sdpyy1.github.io/p/games101-%E7%8E%B0%E4%BB%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9B%BE%E5%BD%A2%E5%AD%A6%E5%85%A5%E9%97%A8-assignment1/</guid>
-        <description>&lt;h1 id=&#34;作业介绍&#34;&gt;作业介绍
+        <description>&lt;img src="https://sdpyy1.github.io/594b42fc6200482991a2c402f81c52d1.png" alt="Featured image of post GAMES101 现代计算机图形学入门 Assignment1" /&gt;&lt;h1 id=&#34;作业介绍&#34;&gt;作业介绍
 &lt;/h1&gt;&lt;p&gt;给出三个点的空间坐标，通过MVP矩阵将点投影到平面上，并绘制出三角形
 &lt;img src=&#34;https://sdpyy1.github.io/4b699439c1a649679ce5aa97175af5ce.png&#34;
 	
@@ -2831,7 +2831,7 @@ $$&lt;p&gt;
         <pubDate>Sun, 19 Oct 2025 13:14:45 +0800</pubDate>
         
         <guid>https://sdpyy1.github.io/p/games101-%E7%8E%B0%E4%BB%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9B%BE%E5%BD%A2%E5%AD%A6%E5%85%A5%E9%97%A8-assignment0/</guid>
-        <description>&lt;h1 id=&#34;assignment0&#34;&gt;Assignment0
+        <description>&lt;img src="https://sdpyy1.github.io/2703bfe2cee44ac4b97c54c3d8b35851.png" alt="Featured image of post GAMES101 现代计算机图形学入门 Assignment0" /&gt;&lt;h1 id=&#34;assignment0&#34;&gt;Assignment0
 &lt;/h1&gt;&lt;p&gt;前边一大半主要是安装虚拟机保证运行一致，这里就跳过了，到实际的问题：点旋转和平移
 &lt;img src=&#34;https://sdpyy1.github.io/26aaf651fbad47eca926587f0581a4cc.png&#34;
 	
@@ -2952,7 +2952,7 @@ $$&lt;p&gt;
         <pubDate>Sun, 19 Oct 2025 12:49:13 +0800</pubDate>
         
         <guid>https://sdpyy1.github.io/p/games101-%E7%8E%B0%E4%BB%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9B%BE%E5%BD%A2%E5%AD%A6%E5%85%A5%E9%97%A8-camera-lenses-light-fields-color-and-perception/</guid>
-        <description>&lt;h1 id=&#34;cameras&#34;&gt;Cameras
+        <description>&lt;img src="https://sdpyy1.github.io/05414f77c7904ed5851265148aa16f58.png" alt="Featured image of post GAMES101 现代计算机图形学入门 Camera Lenses Light Fields Color and Perception" /&gt;&lt;h1 id=&#34;cameras&#34;&gt;Cameras
 &lt;/h1&gt;&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/0212feac63754038823e0e1ee55c74c7.png&#34;
 	
 	
@@ -3312,7 +3312,7 @@ IOS的介绍
         <pubDate>Sun, 19 Oct 2025 12:48:02 +0800</pubDate>
         
         <guid>https://sdpyy1.github.io/p/games101-%E7%8E%B0%E4%BB%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9B%BE%E5%BD%A2%E5%AD%A6%E5%85%A5%E9%97%A8-animation/simulation/</guid>
-        <description>&lt;h1 id=&#34;一些科普&#34;&gt;一些科普
+        <description>&lt;img src="https://sdpyy1.github.io/49ba0bbdd1d24a848de86f532c675a7e.png" alt="Featured image of post GAMES101 现代计算机图形学入门 Animation/Simulation" /&gt;&lt;h1 id=&#34;一些科普&#34;&gt;一些科普
 &lt;/h1&gt;&lt;h2 id=&#34;keyframe-animator&#34;&gt;Keyframe Animator
 &lt;/h2&gt;&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/254f33ee74a74430a5be6baf38e5d1f5.png&#34;
 	
@@ -3695,7 +3695,7 @@ Position-Based / Verlet Integration
         <pubDate>Sun, 19 Oct 2025 12:43:12 +0800</pubDate>
         
         <guid>https://sdpyy1.github.io/p/games101-%E7%8E%B0%E4%BB%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9B%BE%E5%BD%A2%E5%AD%A6%E5%85%A5%E9%97%A8-ray-tracing/</guid>
-        <description>&lt;h1 id=&#34;shadow-mapping&#34;&gt;Shadow Mapping
+        <description>&lt;img src="https://sdpyy1.github.io/a6d366b54c3a45b38beb9e550a1ea53b.png" alt="Featured image of post GAMES101 现代计算机图形学入门 Ray Tracing" /&gt;&lt;h1 id=&#34;shadow-mapping&#34;&gt;Shadow Mapping
 &lt;/h1&gt;&lt;p&gt;如果使用光栅化，对一个像素shading时考虑光源，考虑摄影机位置，但是没有考虑模型其他位置对该位置的影响，因为在光源与该像素点之间有别的东西挡住，那光源就会被挡住，形成阴影。shading解决不了阴影问题&lt;img src=&#34;https://sdpyy1.github.io/070b07cef83249b58bc9e15c0ecad44f.png&#34;
 	
 	
@@ -5013,7 +5013,7 @@ Exiting Radiance 是 开表面辐射强度在per单位面积上&lt;img src=&#34;
         <pubDate>Sun, 19 Oct 2025 12:37:17 +0800</pubDate>
         
         <guid>https://sdpyy1.github.io/p/games101-%E7%8E%B0%E4%BB%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9B%BE%E5%BD%A2%E5%AD%A6%E5%85%A5%E9%97%A8-geometry/</guid>
-        <description>&lt;h1 id=&#34;implicit-and-explicit&#34;&gt;Implicit and explicit
+        <description>&lt;img src="https://sdpyy1.github.io/3b0a2bb693ef4b20a6ca0414d87ae566.png" alt="Featured image of post GAMES101 现代计算机图形学入门 Geometry" /&gt;&lt;h1 id=&#34;implicit-and-explicit&#34;&gt;Implicit and explicit
 &lt;/h1&gt;&lt;h2 id=&#34;implicit&#34;&gt;Implicit
 &lt;/h2&gt;&lt;p&gt;&lt;strong&gt;是并不会告诉任何点的信息，只会告诉该曲面上所有点满足的关系&lt;/strong&gt;
 &lt;/p&gt;
@@ -5509,7 +5509,7 @@ C1连续就是达到了曲面光滑，实现方法看下图红线
         <pubDate>Sun, 19 Oct 2025 00:57:01 +0800</pubDate>
         
         <guid>https://sdpyy1.github.io/p/games101-%E7%8E%B0%E4%BB%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9B%BE%E5%BD%A2%E5%AD%A6%E5%85%A5%E9%97%A8-shading/</guid>
-        <description>&lt;h1 id=&#34;什么是shading&#34;&gt;什么是shading？
+        <description>&lt;img src="https://sdpyy1.github.io/8794c0d329d24aca97c68998d2945da5.png" alt="Featured image of post GAMES101 现代计算机图形学入门 Shading" /&gt;&lt;h1 id=&#34;什么是shading&#34;&gt;什么是shading？
 &lt;/h1&gt;&lt;p&gt;shading 负责计算物体表面每个采样点的颜色，具体考虑光照、材质属性、观察角度等因素，生成具有真实感的视觉效果（如漫反射、镜面高光、环境光等）‌，之前的光栅化将是几何图元（如三角形）转换为屏幕上的像素，确定哪些像素被图元覆盖，是几何层面的处理&lt;/p&gt;
 &lt;h1 id=&#34;blinn-phong-reflectance-modela-simple-shading-model&#34;&gt;Blinn-Phong Reflectance Model(A Simple Shading Model)
 &lt;/h1&gt;&lt;p&gt;Blinn-Phong 反射模型（Blinn-Phong Reflectance Model）是一种用于计算机图形学中模拟物体表面光照效果的着色模型.该模型主要由**环境光(Ambient)、漫反射(Diffuse)和高光反射(Specular)**三部分组成。&lt;img src=&#34;https://sdpyy1.github.io/92975763af4c45deacbe6332c3f2d16b.png&#34;
@@ -6014,7 +6014,7 @@ $$lerp(x,v_0,v_1) = v_0 + x(v_1 - v_0)$$&lt;p&gt;
         <pubDate>Sun, 19 Oct 2025 00:47:26 +0800</pubDate>
         
         <guid>https://sdpyy1.github.io/p/games101-%E7%8E%B0%E4%BB%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9B%BE%E5%BD%A2%E5%AD%A6%E5%85%A5%E9%97%A8-transformation-rasterization/</guid>
-        <description>&lt;h1 id=&#34;线性代数复习&#34;&gt;线性代数复习
+        <description>&lt;img src="https://sdpyy1.github.io/3d23bd7f8fdc4adfa5ef11d68f2d98fd.png" alt="Featured image of post GAMES101 现代计算机图形学入门 Transformation &amp; Rasterization" /&gt;&lt;h1 id=&#34;线性代数复习&#34;&gt;线性代数复习
 &lt;/h1&gt;&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/image-20251019121720334.png&#34;
 	
 	
