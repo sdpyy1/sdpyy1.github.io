@@ -1,0 +1,126 @@
++++
+date = '2025-10-19T12:37:17+08:00'
+draft = true
+title = 'GAMES101 现代计算机图形学入门 Geometry'
+categories = ["Course/Games101"]
+tags = ["课程笔记"]
++++
+# Implicit and explicit
+## Implicit
+**是并不会告诉任何点的信息，只会告诉该曲面上所有点满足的关系**
+$$
+f(x,y,z)=0
+$$
+* 判断所给出的隐式方程描述的是一个怎样的形状十分困难
+* 可以十分容易的判断出一点与曲面的关系
+## example for Implicit
+* 代数方法描述
+![请添加图片描述](https://i-blog.csdnimg.cn/direct/3b0a2bb693ef4b20a6ca0414d87ae566.png)
+* Constructive Solid Geometry（CSG 通过基本几何的运算定义新的几何）![请添加图片描述](https://i-blog.csdnimg.cn/direct/915046f3adaf4541acd90f58d2e10e72.png)
+* Signed Distance Functions（空间任何点到物体表面的最短距离来描述，用正负表示在物体外还是内）
+![请添加图片描述](https://i-blog.csdnimg.cn/direct/fed751784b27497d83ac9cf0c4effeb9.png)
+在2D情况，看下图就很好理解了
+>图片来自https://blog.csdn.net/CODE_RabbitV/article/details/140288664
+
+![请添加图片描述](https://i-blog.csdnimg.cn/direct/1b337361748244289c895e5ffcc7e0eb.png)
+当两个距离函数进行融合后后，找到所有值为0的位置，就是融合后的物体表面
+* 分形
+![请添加图片描述](https://i-blog.csdnimg.cn/direct/f3f9e209b7f14b4a928a81d254e4e45b.png)
+## explicit
+**所有曲面的点被直接给出，或者可以通过映射关系直接得到**
+例如：
+$$
+f(u,v) = ((2+cosu)cosv,(2+cosu)sinv,sinu)
+$$
+把uv都遍历一遍就可以拿到所有的(x,y,z)
+
+因根据需要选择一种表达方式
+## Exampl For Explicit
+* Point Cloud（点云）全是点组成的模型
+![请添加图片描述](https://i-blog.csdnimg.cn/direct/94b7d310b92b4e40913f3077ea4bc24b.png)
+* Polygon Mesh（多边形面）
+![请添加图片描述](https://i-blog.csdnimg.cn/direct/e57ef4ac7f744642a46910ebb8565b9a.png)
+计算机中用三角形面表示的文件  .obj文件
+![请添加图片描述](https://i-blog.csdnimg.cn/direct/21899e3590134bc6bdf71158675cec07.png)
+![请添加图片描述](https://i-blog.csdnimg.cn/direct/4137942384e84a358dc39d80de8d06a7.png)
+# Curves 曲线
+## 贝塞尔曲线（Bézier Curves）
+给定一系列控制点，画出曲线，下图是实际例子![请添加图片描述](https://i-blog.csdnimg.cn/direct/234520fa01e7457881cec852c42a5e3f.png)
+de Casteljau实现
+考虑3个控制点（quadratic Bezier）
+![请添加图片描述](https://i-blog.csdnimg.cn/direct/aafe3981bd3a467b9357ff241a7797cc.png)
+给定一个比例t，把两个线段都根据t截开
+
+![请添加图片描述](https://i-blog.csdnimg.cn/direct/468fe6effeaa46669390545ce276a9cc.png)
+得到的两个点连起来再执行相同操作![请添加图片描述](https://i-blog.csdnimg.cn/direct/f393f2c7ef3446bf8a3fe6d05b21a921.png)
+最后只有一个点了，就确定了曲线一个点的位置
+![请添加图片描述](https://i-blog.csdnimg.cn/direct/2fc428c252f34015b1347933ea9f08de.png)
+把所有的t都找一遍，就画出了曲线，见下图，想象一下绿色和蓝色的线跟着t的变化一直变化，就会画出蓝色的线 
+![请添加图片描述](https://i-blog.csdnimg.cn/direct/ff2990a596f0475db8ed0914572b83f2.png)
+  可以用表达式表达出每个点，用t去截线段，其实就是做一个插值计算
+  ![请添加图片描述](https://i-blog.csdnimg.cn/direct/f2d6c928cc9a4084b3da9e78b6d28c5e.png)
+  最终总结，给定n+1个控制点，比例t的情况下，可以得到n阶的贝塞尔曲线
+  ![请添加图片描述](https://i-blog.csdnimg.cn/direct/e9179f932eef40e9b943caa95ef7b554.png)
+贝塞尔曲线的一些性质：
+* 必定经过起始与终止控制点
+* 必定经与起始与终止线段相切
+* 具有仿射变换性质，可以通过移动控制点移动整条曲线
+* 凸包性质，曲线一定不会超出所有控制点构成的多边形范围
+什么是凸包（convex hull）？想象墙上有许多图钉，我们需要用一根橡皮筋把这些图钉围住，于是我们开始会让橡皮筋尽可能的撑大，然后松手放开橡皮筋，它所形成的多边形即为凸包，如图中蓝色曲线所示
+
+![请添加图片描述](https://i-blog.csdnimg.cn/direct/a3e4cb077a784263869be2e1dc4d9100.png)
+贝塞尔曲线在控制点过多时，不好控制，如下图所示
+![请添加图片描述](https://i-blog.csdnimg.cn/direct/2b86fc74c1c347708ed070ecc1a64be5.png)
+于是就有了Piecewise Bézier Curves，取一部分点做，然后结合起来，如下图
+![请添加图片描述](https://i-blog.csdnimg.cn/direct/96f0bf8b2087482dbee33323963f68cc.png)
+![请添加图片描述](https://i-blog.csdnimg.cn/direct/a9815cef4bb04294aff41b81bc115ead.png)
+贝塞尔曲线的连续性
+C0连续，就是控制点重合
+![请添加图片描述](https://i-blog.csdnimg.cn/direct/4879f6270b3c41d884707108e63c4e48.png)
+C1连续就是达到了曲面光滑，实现方法看下图红线
+![请添加图片描述](https://i-blog.csdnimg.cn/direct/77526950457d450a802ba7a1e2ba4663.png)
+# Surfaces 曲面
+## 贝塞尔曲面
+![请添加图片描述](https://i-blog.csdnimg.cn/direct/368fc069555e4e199be6927666bc7f8a.png)
+通过贝塞尔曲线获得贝塞尔曲面的方法：
+如下图已经画出了四条贝塞尔曲线，在t取某一值下生成的4个点，**把这4个点作为控制点再画一条曲线**，这样t变化时，这条线就绘制成了一个面
+![请添加图片描述](https://i-blog.csdnimg.cn/direct/255480476961421ab0879d50907a6d78.png)
+# Mesh Operation
+![请添加图片描述](https://i-blog.csdnimg.cn/direct/d528394fa4364aafa05f82a8c729deb1.png)
+## Mesh subdivision 曲面细分
+引入更多的三角形，
+![请添加图片描述](https://i-blog.csdnimg.cn/direct/394499c9b19e4ebaa468f216e4682a7b.png)
+### Loop Subdivision
+1. 增多三角形数量，如下如
+![请添加图片描述](https://i-blog.csdnimg.cn/direct/c401784eedfb4804b0e2cc41b1d88b43.png)
+  
+2. 调整细分后新的三角形顶点处理，更新一条边的中心点，如下图的白点，对这个点的处理，通过上下左右四个顶点加权平均（这个权重是具体的算法，这里不做解释）
+![请添加图片描述](https://i-blog.csdnimg.cn/direct/78b60ed6955642369eb2b5034aa67ad2.png)
+3. 旧的顶点呢，如下图白点就是一个旧顶点，更新算法包括自己本来的位置，以及周围顶点进行加权平均
+![请添加图片描述](https://i-blog.csdnimg.cn/direct/88179a67c70b45b394f0108254151717.png)
+### Catmull-Clark Subdivision
+一般的模型不一定全是三角形，就没法用loop subdivision，Catmull-Clark可用于一般情况，如下图有正方形也有三角形
+![请添加图片描述](https://i-blog.csdnimg.cn/direct/d2a36872c41244c5946af77bd3427c06.png)
+先定义两个表达，非四边形面和奇异点（度不等于 4的点）
+![请添加图片描述](https://i-blog.csdnimg.cn/direct/f8b7071330a44f75ba1733991aac29ab.png)
+如上图框所示，每条边和每个面都取钟中点，然后把这些点连起来，如下图所示
+![请添加图片描述](https://i-blog.csdnimg.cn/direct/02bb2646bc284ffb8d04ffd8831f6d2b.png)
+连接后，奇异点变多了，非四边形都消失了，此时奇异点是4个，但是如果继续细分，奇异点数目并不会继续增加，如下图还是4个
+![请添加图片描述](https://i-blog.csdnimg.cn/direct/3c2c267ffd014712ae9c1a86e7983b1e.png)
+与loop一样，调整完后需要对顶点位置进行处理，处理方法如下
+![请添加图片描述](https://i-blog.csdnimg.cn/direct/0a5d2d7623f34e598f546e0caac7f418.png)
+下图为两种方法对比
+![请添加图片描述](https://i-blog.csdnimg.cn/direct/8774493823fb49108527661615ff1f5a.png)
+## Mesh Simplification 曲面简化
+当模型距离很远时，模型的细节就没必要表现出来
+### Collapsing An Edge 边坍缩
+![请添加图片描述](https://i-blog.csdnimg.cn/direct/f7c0115a0d124a3b98dae744161a1177.png)
+那哪些边可以进行坍缩，如果度量呢？下图进行了度量，首先5个顶点进行平均效果并不好， 用2次误差方法来实现：即坍缩之后蓝色新顶点所在的位置与原来各个平面的垂直距离之和。
+1. 为模型每条边赋值，其值为坍缩这条边之后，代替两个老顶点的新顶点所能得到的最小二次误差度量
+2. 选取权值最小的边做坍缩，新顶点位置为原来计算得出使得二次误差最小的位置
+3. 坍缩完之后，与之相连其他的边的位置会改动，更新这些边的权值
+4. 重复上述步骤，直到到达终止条件
+![请添加图片描述](https://i-blog.csdnimg.cn/direct/ad8ca52871de45ff98abfb35d33ee169.png)
+一些坍缩的实例
+![请添加图片描述](https://i-blog.csdnimg.cn/direct/69166ee4014448b3b2543619933435f9.png)
+几何部分就这些东西了～

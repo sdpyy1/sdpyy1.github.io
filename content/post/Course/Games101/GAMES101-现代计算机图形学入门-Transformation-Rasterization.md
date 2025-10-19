@@ -3,8 +3,7 @@ date = '2025-10-19T00:47:26+08:00'
 draft = false
 title = 'GAMES101 现代计算机图形学入门 Transformation & Rasterization'
 categories = ["Course/Games101"]
-tags = ["笔记"]
-
+tags = ["课程笔记"]
 +++
 
 # 线性代数复习
