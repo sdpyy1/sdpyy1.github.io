@@ -507,7 +507,16 @@
 </blockquote>
 <h1 id="什么是shading">什么是shading？
 </h1><p>shading 负责计算物体表面每个采样点的颜色，具体考虑光照、材质属性、观察角度等因素，生成具有真实感的视觉效果（如漫反射、镜面高光、环境光等）‌，之前的光栅化将是几何图元（如三角形）转换为屏幕上的像素，确定哪些像素被图元覆盖，是几何层面的处理</p>
-<h1 id="blinn-phong-reflectance-modela-simple-shading-model">Blinn-Phong Reflectance Model(A Simple Shading Model)
+<h1 id="image-20251019113421503blinn-phong-reflectance-modela-simple-shading-model"><img src="/image-20251019113421503.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251019113421503"
+	
+	
+>Blinn-Phong Reflectance Model(A Simple Shading Model)
 </h1><p>Blinn-Phong 反射模型（Blinn-Phong Reflectance Model）是一种用于计算机图形学中模拟物体表面光照效果的着色模型.该模型主要由**环境光(Ambient)、漫反射(Diffuse)和高光反射(Specular)**三部分组成。<img src="https://i-blog.csdnimg.cn/direct/92975763af4c45deacbe6332c3f2d16b.png"
 	
 	
@@ -515,16 +524,6 @@
 	loading="lazy"
 	
 		alt="请添加图片描述"
-	
-	
-></p>
-<p><img src="/image-20251019112537042.png"
-	
-	
-	
-	loading="lazy"
-	
-		alt="image-20251019112537042"
 	
 	
 ></p>
@@ -544,6 +543,16 @@
 	
 ></li>
 </ul>
+<p><img src="/image-20251019113448750.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251019113448750"
+	
+	
+></p>
 <h2 id="diffuse-reflection漫反射">Diffuse Reflection（漫反射）
 </h2><p>是投射在粗糙表面上的光向各个方向反射的现象。当一束平行的入射光线射到粗糙的表面时，表面会把光线向着四面八方反射，所以入射线虽然互相平行，由于各点的法线方向不一致，造成反射光线向不同的方向无规则地反射，这种反射称之为“漫反射”或“漫射”。正是因为反射是完全随机的，因此可以认为漫反射光在任何反射方向上的分布都是一样的。
 <img src="https://i-blog.csdnimg.cn/direct/536d9f34abe444b6864d43a98691793b.png"

@@ -22,7 +22,16 @@
 &lt;/blockquote&gt;
 &lt;h1 id=&#34;什么是shading&#34;&gt;什么是shading？
 &lt;/h1&gt;&lt;p&gt;shading 负责计算物体表面每个采样点的颜色，具体考虑光照、材质属性、观察角度等因素，生成具有真实感的视觉效果（如漫反射、镜面高光、环境光等）‌，之前的光栅化将是几何图元（如三角形）转换为屏幕上的像素，确定哪些像素被图元覆盖，是几何层面的处理&lt;/p&gt;
-&lt;h1 id=&#34;blinn-phong-reflectance-modela-simple-shading-model&#34;&gt;Blinn-Phong Reflectance Model(A Simple Shading Model)
+&lt;h1 id=&#34;image-20251019113421503blinn-phong-reflectance-modela-simple-shading-model&#34;&gt;&lt;img src=&#34;https://sdpyy1.github.io/image-20251019113421503.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;image-20251019113421503&#34;
+	
+	
+&gt;Blinn-Phong Reflectance Model(A Simple Shading Model)
 &lt;/h1&gt;&lt;p&gt;Blinn-Phong 反射模型（Blinn-Phong Reflectance Model）是一种用于计算机图形学中模拟物体表面光照效果的着色模型.该模型主要由**环境光(Ambient)、漫反射(Diffuse)和高光反射(Specular)**三部分组成。&lt;img src=&#34;https://i-blog.csdnimg.cn/direct/92975763af4c45deacbe6332c3f2d16b.png&#34;
 	
 	
@@ -30,16 +39,6 @@
 	loading=&#34;lazy&#34;
 	
 		alt=&#34;请添加图片描述&#34;
-	
-	
-&gt;&lt;/p&gt;
-&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/image-20251019112537042.png&#34;
-	
-	
-	
-	loading=&#34;lazy&#34;
-	
-		alt=&#34;image-20251019112537042&#34;
 	
 	
 &gt;&lt;/p&gt;
@@ -59,6 +58,16 @@
 	
 &gt;&lt;/li&gt;
 &lt;/ul&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/image-20251019113448750.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;image-20251019113448750&#34;
+	
+	
+&gt;&lt;/p&gt;
 &lt;h2 id=&#34;diffuse-reflection漫反射&#34;&gt;Diffuse Reflection（漫反射）
 &lt;/h2&gt;&lt;p&gt;是投射在粗糙表面上的光向各个方向反射的现象。当一束平行的入射光线射到粗糙的表面时，表面会把光线向着四面八方反射，所以入射线虽然互相平行，由于各点的法线方向不一致，造成反射光线向不同的方向无规则地反射，这种反射称之为“漫反射”或“漫射”。正是因为反射是完全随机的，因此可以认为漫反射光在任何反射方向上的分布都是一样的。
 &lt;img src=&#34;https://i-blog.csdnimg.cn/direct/536d9f34abe444b6864d43a98691793b.png&#34;
@@ -543,17 +552,7 @@ $$lerp(x,v_0,v_1) = v_0 + x(v_1 - v_0)$$&lt;p&gt;
     &gt;games101项目作业代码&lt;/a&gt;：https://github.com/sdpyy1/CppLearn/tree/main/games101&lt;/p&gt;
 &lt;/blockquote&gt;
 &lt;h1 id=&#34;线性代数复习&#34;&gt;线性代数复习
-&lt;/h1&gt;&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/image-20251019112537042.png&#34;
-	
-	
-	
-	loading=&#34;lazy&#34;
-	
-		alt=&#34;image-20251019112537042&#34;
-	
-	
-&gt;&lt;/p&gt;
-&lt;h2 id=&#34;向量&#34;&gt;向量
+&lt;/h1&gt;&lt;h2 id=&#34;向量&#34;&gt;向量
 &lt;/h2&gt;&lt;p&gt;首先介绍一下向量，有长度有方向，起始位置不固定
 &lt;img src=&#34;https://i-blog.csdnimg.cn/direct/0cf789e58553444d93cff71c08defe69.png&#34;
 	
