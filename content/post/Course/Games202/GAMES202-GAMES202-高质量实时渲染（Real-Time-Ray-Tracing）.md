@@ -9,41 +9,41 @@ tags = ["课程笔记","Games202"]
 RTX实际做的事：
 一个像素用一个样本来采样SPP
 
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/a76c532017ff4b1a99a8e89540ff0a1d.png)
+![请添加图片描述](a76c532017ff4b1a99a8e89540ff0a1d.png)
 考虑了一次弹射，第一次primary Ray其实没有必要（从摄像机到着色点），只需要做一遍光栅化就可以实现一整个屏幕的primaryRay。所以一个SPP只需要考虑3条光线
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/4ce1bb095aad48f196e68d8c98b20e33.png)
+![请添加图片描述](4ce1bb095aad48f196e68d8c98b20e33.png)
 
 # 降噪
 ## 时间滤波
-1SPP噪声非常大。实时光线追踪在算法上并没有区别，主要原因是硬件的突破，让光线追踪达到了实时水平。所以**实时光线追踪**最关键的技术是**降噪**！![请添加图片描述](https://i-blog.csdnimg.cn/direct/39f6ae2e6aa04864b9165387c73282ae.png)
+1SPP噪声非常大。实时光线追踪在算法上并没有区别，主要原因是硬件的突破，让光线追踪达到了实时水平。所以**实时光线追踪**最关键的技术是**降噪**！![请添加图片描述](39f6ae2e6aa04864b9165387c73282ae.png)
 从这幅图可以看出，降噪的效果非常好。降噪的方法有很多，但是应用到实时的降噪技术很少
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/f982631b992146b097864633b0a53ae3.png)
+![请添加图片描述](f982631b992146b097864633b0a53ae3.png)
 实时降噪使用的是时间上的滤波。当前帧需要前一帧已经滤波。假设运动是连续的。有一个vector叫做motion vector，记录每个点上一帧的位置
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/2d793638b6b84714a60774e35e9124e8.png)
+![请添加图片描述](2d793638b6b84714a60774e35e9124e8.png)
 也就是当前帧用的spp，使用了上一帧的spp，上一帧的spp也用了上上帧的spp，所以作用到当前帧的spp，远大于1。
 下面首先介绍一个概念，G-buffer，这东西就是延迟渲染用的
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/7a4368e284a44c3382c58232585bfa11.png)
+![请添加图片描述](7a4368e284a44c3382c58232585bfa11.png)
 ## Back projection
 求一个像素的内容，在上一帧中的位置
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/f3910dd985d84359b1377ce7f496129e.png)
+![请添加图片描述](f3910dd985d84359b1377ce7f496129e.png)
 首先求一个点的世界坐标：
 - 可以提前存储在G-buffer
 - 通过MVP+viewport的逆变换变回世界坐标
 - 我们是知道每个世界坐标是如何变换的，所以通过逆变换来找到这个坐标上一帧的坐标，再把世界坐标转为屏幕坐标即可
- ![请添加图片描述](https://i-blog.csdnimg.cn/direct/b0532bcdccf24008b291f482d0dac78d.png)
+ ![请添加图片描述](b0532bcdccf24008b291f482d0dac78d.png)
  得到上一帧对应像素的像素值，进行线性插值，通常a取0.1-0.2，也就是80%以上都是上一帧得到的
- ![请添加图片描述](https://i-blog.csdnimg.cn/direct/312bd52061794f478d59867c74c47197.png)
-下面对比一下groundtruth和降噪结果![请添加图片描述](https://i-blog.csdnimg.cn/direct/5a0a29863d87499ea0a2d9c70128d317.png)
+ ![请添加图片描述](312bd52061794f478d59867c74c47197.png)
+下面对比一下groundtruth和降噪结果![请添加图片描述](5a0a29863d87499ea0a2d9c70128d317.png)
 
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/1a8470c295ea41ddb3a3ab9342f15e9b.png)
+![请添加图片描述](1a8470c295ea41ddb3a3ab9342f15e9b.png)
 有一些该暗的地方仍然是亮的。
 基于时间的滤波是有问题的，有一下几点：
 - 第一帧/切换场景
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/34f34ea233b94fe7b59789340e54eb03.png)
+![请添加图片描述](34f34ea233b94fe7b59789340e54eb03.png)
 
-- 当前帧的物体在上一帧不存在![请添加图片描述](https://i-blog.csdnimg.cn/direct/b6c4a8ff9d2c43de8bdcc3e4e75c5cf8.png)
-- - 当前帧的物体在上一帧被遮挡了（G-buffer中没有存储）![请添加图片描述](https://i-blog.csdnimg.cn/direct/32e4a578f958445e9a7da52e98fad6dd.png)
-会出现脱尾![请添加图片描述](https://i-blog.csdnimg.cn/direct/d8478f9beef441be9e6d241da1ef74a6.png)
+- 当前帧的物体在上一帧不存在![请添加图片描述](b6c4a8ff9d2c43de8bdcc3e4e75c5cf8.png)
+- - 当前帧的物体在上一帧被遮挡了（G-buffer中没有存储）![请添加图片描述](32e4a578f958445e9a7da52e98fad6dd.png)
+会出现脱尾![请添加图片描述](d8478f9beef441be9e6d241da1ef74a6.png)
 
 解决思路：
 1. 混合当前帧和上一帧数据之前，把上一帧的结果拉到当前帧周围
@@ -52,51 +52,51 @@ RTX实际做的事：
 	2. 优化混合系数
 	3. 增大空间滤波
 但是这样处理噪声又出现了
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/eaed0634083748f4ba7b4fef2031dbb3.png)
+![请添加图片描述](eaed0634083748f4ba7b4fef2031dbb3.png)
  # 滤波实现
  ## 空间滤波
- ![请添加图片描述](https://i-blog.csdnimg.cn/direct/2fe0dce053d6484e87ca84dea99e5032.png)
+ ![请添加图片描述](2fe0dce053d6484e87ca84dea99e5032.png)
 滤波操作为低通滤波，保留低频信息，移除高频信息
 ### 高斯滤波
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/226d14370a9843d3a3990a43137bd398.png)
+![请添加图片描述](226d14370a9843d3a3990a43137bd398.png)
 ### 双边滤波（考虑边界）
 高斯滤波会把图像均匀地糊掉，边界也会模糊 ，公式的第二项表示如果两边颜色差值很大，贡献就会变小
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/18f01a6f9ec3434083c55e212ecc4a96.png)
+![请添加图片描述](18f01a6f9ec3434083c55e212ecc4a96.png)
 ### 联合双边滤波
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/bc05c831d26444b1b7f2be94bd0ac6c7.png)
-使用G-buffer来更好地指导滤波![请添加图片描述](https://i-blog.csdnimg.cn/direct/34a42118bb1343dc86076ffb5307f9b7.png)
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/df173782d37d40e4b5a69b112cc64e7a.png)
+![请添加图片描述](bc05c831d26444b1b7f2be94bd0ac6c7.png)
+使用G-buffer来更好地指导滤波![请添加图片描述](34a42118bb1343dc86076ffb5307f9b7.png)
+![请添加图片描述](df173782d37d40e4b5a69b112cc64e7a.png)
 用深度、颜色、法向量来指导滤波
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/7fc20e6cb0294e45ae804b081003ac66.png)
-如何实现大的滤波核呢？先水平再垂直，效率从![请添加图片描述](https://i-blog.csdnimg.cn/direct/d32d0c15a5d6426abed34653ee5cc8e9.png)
+![请添加图片描述](7fc20e6cb0294e45ae804b081003ac66.png)
+如何实现大的滤波核呢？先水平再垂直，效率从![请添加图片描述](d32d0c15a5d6426abed34653ee5cc8e9.png)
 
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/2fc21a8857784f5992c7f7fb25f697b3.png)
-Progressively Growing Sizes![请添加图片描述](https://i-blog.csdnimg.cn/direct/05056902573f4822b28b48d11e3b2979.png)
+![请添加图片描述](2fc21a8857784f5992c7f7fb25f697b3.png)
+Progressively Growing Sizes![请添加图片描述](05056902573f4822b28b48d11e3b2979.png)
 # RTRT滤波解决方案
 ## SVGF
 3个factors指导的滤波
 - 深度
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/470cbbaec95148b7896ec4f297fddd3a.png)- 法线
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/e1cc43f114e2421f920259a9a661fefc.png)
+![请添加图片描述](470cbbaec95148b7896ec4f297fddd3a.png)- 法线
+![请添加图片描述](e1cc43f114e2421f920259a9a661fefc.png)
 - 颜色差异
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/3cd3d3f53d6044eea50c50b365e89ac1.png)
+![请添加图片描述](3cd3d3f53d6044eea50c50b365e89ac1.png)
 
 ## RAE
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/94d5daff4fca4be4bfdc1c6831e344d9.png)
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/f3dfd86f3ee04bfdb949699ae8009b3f.png)
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/dd1e1b9eeb6449a0b8a54f2d458dc156.png)
+![请添加图片描述](94d5daff4fca4be4bfdc1c6831e344d9.png)
+![请添加图片描述](f3dfd86f3ee04bfdb949699ae8009b3f.png)
+![请添加图片描述](dd1e1b9eeb6449a0b8a54f2d458dc156.png)
 # 工业界问题及解法
 ## TAA 时间上的抗锯齿
- ![请添加图片描述](https://i-blog.csdnimg.cn/direct/9dd2e2f5474243ad8b4858bc5b8c3fcc.png)
+ ![请添加图片描述](9dd2e2f5474243ad8b4858bc5b8c3fcc.png)
 每一帧采样一个像素的四个角之一，剩余三个角用之前的数据。这样就相当于MSAA了（静止场景）
 
 ## MSAA vs SSAA
 SSAA就是高分辨率渲染再变小
-MSAA分辨率不变，在一个像素中采样多次，甚至可以在临近像素复用![请添加图片描述](https://i-blog.csdnimg.cn/direct/2d90294b634340a7a10298bef0ee3dd3.png)
+MSAA分辨率不变，在一个像素中采样多次，甚至可以在临近像素复用![请添加图片描述](2d90294b634340a7a10298bef0ee3dd3.png)
 ## SMAA
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/0625fb122b9b40ab885a85f5dfe911ea.png)
+![请添加图片描述](0625fb122b9b40ab885a85f5dfe911ea.png)
 ## 超级分辨率
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/68edb7f8725542d1b77cedcdb0958bb9.png)
+![请添加图片描述](68edb7f8725542d1b77cedcdb0958bb9.png)
 ## 延迟渲染
 节省shading的时间
 

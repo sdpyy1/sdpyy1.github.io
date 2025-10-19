@@ -17,7 +17,7 @@ PRT 方法存在的限制包括：
 PRT课上最终得出的结论是对渲染方程的计算，可以先把光照和其余部分分别计算球谐展开后系数相乘（针对BRDF是diffuse的情况），所以我们只需要针对光照算球谐展开的系数，然后针对其余部分算一个球谐展开的系数，传递给顶点着色器后相乘就是顶点的着色
 # 环境光贴图预计算
 要做的就是把L(wi)项用球谐函数表示，因为球谐函数都一样，不一样的只有系数，所以只需要预计算出系数，系数求法如下，针对球谐函数的任何一项求他的系数都是算一个积分
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/68ce51019876497a8d3dbb1f8017eedd.png)
+![请添加图片描述](68ce51019876497a8d3dbb1f8017eedd.png)
 根据作业提示，需要完成函数，输入为天空盒的6个面图片
 
 ```cpp
@@ -68,7 +68,7 @@ PRT课上最终得出的结论是对渲染方程的计算，可以先把光照�
                 {
                     // TODO: here you need to compute light sh of each face of cubemap of each pixel
                     // TODO: 此处你需要计算每个像素下cubemap某个面的球谐系数
-            ![请添加图片描述](https://i-blog.csdnimg.cn/direct/f30ab4af6a6c4b1d9ba4c82953bd31d1.png)
+            ![请添加图片描述](f30ab4af6a6c4b1d9ba4c82953bd31d1.png)
         Eigen::Vector3f dir = cubemapDirs[i * width * height + y * width + x];
                     int index = (y * width + x) * channel;
                     Eigen::Array3f Le(images[i][index + 0], images[i][index + 1],
@@ -77,7 +77,7 @@ PRT课上最终得出的结论是对渲染方程的计算，可以先把光照�
             }
         }
 ```
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/b81cf47af03a44c79b93d69350ac2461.png)
+![请添加图片描述](b81cf47af03a44c79b93d69350ac2461.png)
 计算方法就是遍历每一个像素，通过黎曼积分的方法来说，每个像素点都对每个球谐函数的系数有贡献
 
 ```cpp
@@ -115,9 +115,9 @@ PRT课上最终得出的结论是对渲染方程的计算，可以先把光照�
 
 ## Diffuse unshadowed
 这种情况下渲染方程的BRDF项为常数，此时渲染方程为
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/c3145424df5240929cd5f5322ef265a5.png)
+![请添加图片描述](c3145424df5240929cd5f5322ef265a5.png)
 Li项已经处理掉了，就剩下max()项了
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/16863f3cd0d84d619ea9f84772cf18a1.png)
+![请添加图片描述](16863f3cd0d84d619ea9f84772cf18a1.png)
 作业中只需要写出transport部分在给定一个方向时的值
 
 ```cpp
@@ -153,7 +153,7 @@ Indoor的数据
 ```
 每一行代表一个基函数的参数，可以理解为把原光照函数投影到某一个基函数后的RGB分量分别为多少
 ## Diffuse shadowed
-相对于unshadowed，就多出来一项Visibility![请添加图片描述](https://i-blog.csdnimg.cn/direct/e0bd44c09e1e4303bd4e1e7b21a0c977.png)
+相对于unshadowed，就多出来一项Visibility![请添加图片描述](e0bd44c09e1e4303bd4e1e7b21a0c977.png)
 
 ```cpp
                     // 从顶点位置发射一条光线，与场景相交说明被遮挡了
@@ -184,7 +184,7 @@ Indoor的数据
 每一行代表一个顶点的球谐展开系数。因为T部分不仅与入射方向有关，也与顶点的具体位置有关，所以每固定一个顶点，球谐展开系数都是不一样的
 ## Diffuse Inter-reflection(bonus)
 这里就需要考虑光线的多次弹射，渲染方程变成
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/c9a2872a95db46b784060a8ad959019b.png)
+![请添加图片描述](c9a2872a95db46b784060a8ad959019b.png)
 计算一个顶点的系数时，不仅考虑到来自环境光的光照，还考虑来自别的地方弹射过来的光的影响，仿照光线追踪的写法，从着色点射出采样光线，若击中物体，则把光线反过来求出它对着色点的贡献（如果递归的写就可以求出击中物体的值，递归到最后一层就是本身着色点的值）
 
 ```cpp
@@ -307,12 +307,12 @@ void main(void) {
 }
 ```
 以R通道举例
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/2c95481b3a0a4a6583730d34d8d60e4b.png)
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/d8fa472334d246f28550c75a7d613f94.png)
+![请添加图片描述](2c95481b3a0a4a6583730d34d8d60e4b.png)
+![请添加图片描述](d8fa472334d246f28550c75a7d613f94.png)
 一行（顶点的系数）乘一列（环境光贴图系数的R通道）结果作为着色点的R通道值
 
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/91eca0df3710473291dfdf1a32061647.png)
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/4cda862ff20a40b5a713e80f38913543.png)
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/1e99f72904054ad5bbfe172340ccd69e.png)
+![请添加图片描述](91eca0df3710473291dfdf1a32061647.png)
+![请添加图片描述](4cda862ff20a40b5a713e80f38913543.png)
+![请添加图片描述](1e99f72904054ad5bbfe172340ccd69e.png)
 至于还有一个作业要做旋转。
 我的理解是如果环境光贴图进行了旋转，其实修改的就只是环境光贴图的球谐展开的系数，其他的不会变，而且因为球谐函数的特性，很容易就能求旋转后的系数。先理解了就行

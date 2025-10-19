@@ -55,7 +55,7 @@ float useShadowMap(sampler2D shadowMap, vec4 shadowCoord){
   vec3 shadowCoord = (vPositionFromLight.xyz+1.0)/2.0;
   visibility = useShadowMap(uShadowMap, vec4(shadowCoord, 1.0));
 ```
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/2512767e2eb04bca806c3d6c4f27f50d.png)
+![请添加图片描述](2512767e2eb04bca806c3d6c4f27f50d.png)
 居然没出现自阴影问题，我们手动创建一个，首先光源位置修改在engine.js中`lightPos`
 
 ```cpp
@@ -69,12 +69,12 @@ float useShadowMap(sampler2D shadowMap, vec4 shadowCoord){
 ```
 把光源变斜一点，就会发现场景从远到近逐渐出现自阴影现象
 y = 40
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/0fc12ecbe085466282cdd9000f85a9cc.png)
-y=30![请添加图片描述](https://i-blog.csdnimg.cn/direct/d87e3c12019a442ba4111897ea288b43.png)
+![请添加图片描述](0fc12ecbe085466282cdd9000f85a9cc.png)
+y=30![请添加图片描述](d87e3c12019a442ba4111897ea288b43.png)
 y=20
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/cc230e1ed77440258c7c9b21d6c3406b.png)
+![请添加图片描述](cc230e1ed77440258c7c9b21d6c3406b.png)
 y=10这时候整个地板都出错了
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/7e891f865178491baf2e906dd1291639.png)
+![请添加图片描述](7e891f865178491baf2e906dd1291639.png)
 加一个自偏移，就解决了
 
 ```cpp
@@ -82,12 +82,12 @@ y=10这时候整个地板都出错了
     visibility = 0.0;
   }
 ```
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/b6fab18e30604f9492873f8c479b1fa2.png)
+![请添加图片描述](b6fab18e30604f9492873f8c479b1fa2.png)
 下面是偏移量改为0.05的效果，效果就太差了，偏移量应该根据光照的角度动态调整
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/09ff707a0adc4aa3a0d37cc2777b38da.png)
+![请添加图片描述](09ff707a0adc4aa3a0d37cc2777b38da.png)
 
 走样的情况，下面就用PCF来解决～
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/443c67a5eeb94f5192ba4e0d6dd8255a.png)
+![请添加图片描述](443c67a5eeb94f5192ba4e0d6dd8255a.png)
 ## PCF(Percentage Closer Filter)
 简单理解就是不只判断shadowmap的一个位置，而是一圈位置的平均。
 作业中提供了两种采样，它的作用就是减少计算量，没必要真的一个一个便利来取均值，偏移记录在了`vec2 poissonDisk[NUM_SAMPLES];`
@@ -118,11 +118,11 @@ float PCF(sampler2D shadowMap, vec4 coords) {
 }
 ```
 锯齿位置的变化（过滤核大小为5）
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/6aa19964fb46400ca8f117b43734a99c.png)
+![请添加图片描述](6aa19964fb46400ca8f117b43734a99c.png)
 当改为20时
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/1cbe62a143964f31bb42e77527909ef0.png)
+![请添加图片描述](1cbe62a143964f31bb42e77527909ef0.png)
 改为100时，出现了大量噪点
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/7d9e0921010a4dd4a35671a4cba27684.png)
+![请添加图片描述](7d9e0921010a4dd4a35671a4cba27684.png)
 
 ## PCSS(Percentage Closer Soft Shadow)
 用PCF来做软阴影，一句话来说就是动态修改过滤核的尺寸，达到不同的因子区域不同的软硬程度
@@ -172,8 +172,8 @@ float PCSS(sampler2D shadowMap, vec4 coords){
 ```
 光源尺寸越大，阴影软硬区分程度越大，因为计算出的过滤核尺寸区分度越大
 Wlight = 50
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/19ecfe67f62c49c098cdda6bb944ce6f.png)
+![请添加图片描述](19ecfe67f62c49c098cdda6bb944ce6f.png)
 Wlight = 100
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/d62c51f4d6764bfbbbcf7eafca8d191a.png)
+![请添加图片描述](d62c51f4d6764bfbbbcf7eafca8d191a.png)
 设置过小时，反而看不出什么效果
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/531daca67f0242c6abba44c1e5a88603.png)
+![请添加图片描述](531daca67f0242c6abba44c1e5a88603.png)

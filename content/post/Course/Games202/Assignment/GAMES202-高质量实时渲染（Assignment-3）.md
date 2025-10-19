@@ -44,7 +44,7 @@ tags = ["课程作业","Games202"]
 # 直接光照
 ## EvalDiffuse(wi, wo, uv)
 通过入射方向、出射方向、漫反射率纹理图uv坐标来计算BRDF的返回值，因为是计算diffuse的BRDF，所以它是一个常数
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/e0c05229f5d34dec824183f4ab1e7831.png)
+![请添加图片描述](e0c05229f5d34dec824183f4ab1e7831.png)
 分母π保证了反射光的总能量不超过入射光能量
 ```cpp
 vec3 EvalDiffuse(vec3 wi, vec3 wo, vec2 uv) {
@@ -93,14 +93,14 @@ void main() {
 }
 ```
 我的电脑是mac，根据网上只有mac电脑会出下如下问题，根据视角移动会不断变换出错的位置
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/92a237ad23cd47488788aec57d8651c8.png)
+![请添加图片描述](92a237ad23cd47488788aec57d8651c8.png)
 我们先把可见性设置为1，避免阴影生成，看看是什么情况
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/4570536737ad40bbbc4876c1a143b807.png)
+![请添加图片描述](4570536737ad40bbbc4876c1a143b807.png)
 举个例子：假设地板深度值为0.5001，上方模型为0.5002。在16位深度缓冲区中，两者可能被四舍五入为相同值（如0.500），导致GPU随机选择显示其中一个67。此时地板可能因浮点舍入误差被误判为更小Z值，从而错误覆盖模型。
 
 NDC坐标下的Z值并不是线性的，越靠近近平面的地方，精度越高，远的地方精度越低，参考下图
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/8a42179c646f4909b9e669cde3b3c24c.png)
-所以说当我把摄像机离得特别近时，这种问题慢慢就得到了缓解，因为接近近平面精度比较高![请添加图片描述](https://i-blog.csdnimg.cn/direct/6be026bd8d2c4581a20316d792f8d7c9.png)
+![请添加图片描述](8a42179c646f4909b9e669cde3b3c24c.png)
+所以说当我把摄像机离得特别近时，这种问题慢慢就得到了缓解，因为接近近平面精度比较高![请添加图片描述](6be026bd8d2c4581a20316d792f8d7c9.png)
 所以说这种问题的一种解决思路就是调整远近平面的距离，越小，精度高的范围越大，出现z-fighting可能性越低
 
 ```cpp
@@ -108,16 +108,16 @@ NDC坐标下的Z值并不是线性的，越靠近近平面的地方，精度越�
 	// const camera = new THREE.PerspectiveCamera(75, gl.canvas.clientWidth / gl.canvas.clientHeight, 1e-3, 1000);
 	const camera = new THREE.PerspectiveCamera(75, gl.canvas.clientWidth / gl.canvas.clientHeight, 5e-2, 1e2);
 ```
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/f1ace066ff5b458788b4ce3aa208e4f4.png)
+![请添加图片描述](f1ace066ff5b458788b4ce3aa208e4f4.png)
 为了验证这一说法的正确性，我们拉远镜头，就看出来这种问题又出现了，说明远处z值精度小
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/22a169d0eeaa40cc94ecbe3e99d95195.png)
+![请添加图片描述](22a169d0eeaa40cc94ecbe3e99d95195.png)
 不过这种解决方案只适合玩具，调整NF参数属于是把整个项目的东西都改了，还有一种解决思路就是在有这种重叠放置的地方进行手动偏移
 
 # 间接光照
 
 ## bool RayMarch(vec3 ori, vec3 dir, out vec3 hitPos)
 这一步需要实现linear RayMarch，通过一条光线，求出击中点的坐标
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/eb10b273434e4a0eb31474188f438ff5.png)
+![请添加图片描述](eb10b273434e4a0eb31474188f438ff5.png)
 基本思路就是从着色点沿着光照方向每次向前一小步，查看这一点对应的深度值，并于深度缓冲中的深度值做比较，如果这一点深度值比深度缓冲中深度值大了，说明他已经处于可见物体的内部
 
 ```cpp
@@ -184,16 +184,16 @@ void main() {
 }
 ```
 方块场景
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/372eb00a41b34955af630e0346de9097.png)
+![请添加图片描述](372eb00a41b34955af630e0346de9097.png)
 
 洞穴场景渲染
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/8a13212a6c85436f925ee5f06d474564.png)
+![请添加图片描述](8a13212a6c85436f925ee5f06d474564.png)
 只渲染间接光
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/5c587b5eb47841c4bbbf97b90cec6805.png)
+![请添加图片描述](5c587b5eb47841c4bbbf97b90cec6805.png)
 所以SSR我理解也是在做光线追踪，但只利用了屏幕空间的信息，也就是真正被渲染的位置的信息，被覆盖掉的着色点是不会考虑的，这当然要比直接做光线追踪快很多。课程后边有实时光线渲染，目前还不知道如何实现的。
 
 目前从方块场景能看出一些问题
-按照目前的一次弹射渲染逻辑，理论上阴影的颜色就应该是黑色（因为即使有击中点，这一点计算出来的直接光照也必然是黑色），而现在有点漏光了![请添加图片描述](https://i-blog.csdnimg.cn/direct/a25ffa0da8e947a18dcce31ebc5baa7b.png)
+按照目前的一次弹射渲染逻辑，理论上阴影的颜色就应该是黑色（因为即使有击中点，这一点计算出来的直接光照也必然是黑色），而现在有点漏光了![请添加图片描述](a25ffa0da8e947a18dcce31ebc5baa7b.png)
 说明它判断击中点时，判断了B4位置的颜色，而实际上，它直接穿过了模型，打到了模型的正面，说明步长太大了。参考其他博客的解决思路
 >https://zhuanlan.zhihu.com/p/668194020
 >代码的思路跟前面的差不多，每一次步进时，判断下一步位置的深度与gBuffer的深度的关系，如果下一步的位置在gBuffer的前面（nextDepth<gDepth），则可以步进。如果下一步的深度没有gBuffer的深，就判断一下深度相差多少，有没有给定的阈值大。如果比阈值大，那么就直接返回 false ，否则，这个时候就可以执行SSR了。先让当前位置步进一个step，返回给 hitPos ，然后返回真。

@@ -8,84 +8,84 @@ tags = ["课程笔记","Games202"]
 # Shading from Environment Lighting
 使用环境光计算shading的操作叫做IBL(Image based lighting)  ，光照不是来自光源，而是环境贴图
 下面在不考虑阴影的情况下来看渲染方程，接受来自整个半球面的光来进行渲染
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/3ec446e25c5a4678a6fb753cbbc6d6f9.png)
+![请添加图片描述](3ec446e25c5a4678a6fb753cbbc6d6f9.png)
 之前的做法是使用蒙特卡洛积分来估计积分，但是太慢了放在实时渲染中（采样表现并不好，（但是随着发展形势逐渐变化了）
 ，这里就讲避免采样的方法）
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/39c5875688c94a2d8d3fc3df667a1ef9.png)
+![请添加图片描述](39c5875688c94a2d8d3fc3df667a1ef9.png)
 根据上图，联系上节课如何对visibility拆分的情况，这里的光照项也可以提出去 
- ![请添加图片描述](https://i-blog.csdnimg.cn/direct/73cecc8f034c4e4eaade9ce2ebedb2d9.png)这种操作反应到贴图上就是对贴图进行了过滤，在渲染之前先得到滤波核处理过的贴图![请添加图片描述](https://i-blog.csdnimg.cn/direct/2aa3e22aacb44a39b7f4bb43027ce3b3.png)
+ ![请添加图片描述](73cecc8f034c4e4eaade9ce2ebedb2d9.png)这种操作反应到贴图上就是对贴图进行了过滤，在渲染之前先得到滤波核处理过的贴图![请添加图片描述](2aa3e22aacb44a39b7f4bb43027ce3b3.png)
 这种操作相当于把多次采样近似为先滤波后的镜面反射方向的一次采样
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/5539519c2d25465982cbf7bf6bbbdf08.png)
+![请添加图片描述](5539519c2d25465982cbf7bf6bbbdf08.png)
 到这里对于光照项避免了采样，下来来看BRDF项避免采样的方法，如今已经有更好的方法，这里只是学思想，主要思想就是我们想直接打表来预存每个变量下的积分值，但是维度太高了，这里在分析如何降维
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/5250dbc3f66a4e47a2290d29bb5ba9b6.png)
+![请添加图片描述](5250dbc3f66a4e47a2290d29bb5ba9b6.png)
 微表面模型的BRDF的方程
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/9fff82c9ae2a4d7bbff1cfe250f279c2.png)
+![请添加图片描述](9fff82c9ae2a4d7bbff1cfe250f279c2.png)
 这里主要考虑菲涅耳项和法线分布项的近似
 F项
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/b8cf2f62fcd24797a0b8f197c8efb930.png)
+![请添加图片描述](b8cf2f62fcd24797a0b8f197c8efb930.png)
 G项
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/f9ee80ce04064ec5a03545db4639901a.png)
+![请添加图片描述](f9ee80ce04064ec5a03545db4639901a.png)
 看这两幅图，说明如果我们想预计算BRDF函数，实际上只需要3个变量，一张三维的表，但是三维还是太麻烦了
 F项还可以进一步简化，这样写之后把R0拆出来了，因为它基本是一个常数
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/687b7aea7cb64f3b83567eceba64e94c.png)
+![请添加图片描述](687b7aea7cb64f3b83567eceba64e94c.png)
 这样等式右边的连个积分都可写成一个二维表来进行预计算
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/3540dc410fa8452d8d65c347f5f27662.png)
+![请添加图片描述](3540dc410fa8452d8d65c347f5f27662.png)
  在这张2d纹理任何一点的值，就是BRDF积分出来的结果，直接渲染方程都不用积分了 
  下图可以看见这种简化方法得到的结果与真实采样得到的结果十分相似，但计算量小了很多
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/5933360aa82d4f6a9c6804cb11cfeda6.png)
+![请添加图片描述](5933360aa82d4f6a9c6804cb11cfeda6.png)
 这种方法叫做split sum，它是unreal引擎PBR🐮b的基础～（没有采样就没有噪点）
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/fa29c88b35f64132b0993545a666f19e.png)
+![请添加图片描述](fa29c88b35f64132b0993545a666f19e.png)
 我感觉实时渲染目前了解的很多都是如何把计算进行简化的同时偏差并不大！
 
 # shadow from environment lighting
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/26c1b3405781438180a4b810824b9dd0.png)
+![请添加图片描述](26c1b3405781438180a4b810824b9dd0.png)
 可以把环境光贴图当作很多光源，每个光源都需要shadowMap，这是很困难的
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/6cef31e5c0a84c2d8169249a8e360a0e.png)
+![请添加图片描述](6cef31e5c0a84c2d8169249a8e360a0e.png)
 # Spherical Harmonics (SH)
 Spherical Harmonics (SH)（球面谐函数）是一类在球面坐标系中定义的特殊函数
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/787b8e5bfbd6453bad3b4faab67d12d9.png)
+![请添加图片描述](787b8e5bfbd6453bad3b4faab67d12d9.png)
 - l决定了波动的“频率”或阶数
 - m 控制了波动的方向性，特别是如何沿着经度
 这个东西就是用来把一个二维函数展开成SH的线性组合（类似一维的傅里叶变换）
 
 每一项前边的系数用下式来计算（两个函数乘起来求积分），这种求系数叫做投影，同样通过这些系数也可以恢复原来的函数
 
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/2e4caf69b2934fc49c30ba96dc633a0a.png)
+![请添加图片描述](2e4caf69b2934fc49c30ba96dc633a0a.png)
 说了这么多东西，想表达的就是计算时BRDF是低频时，就可以把它比做低通滤波器，所以不管光照项算出来多高频，最终都会被抵消，所以并不需要高频。所以可以用球谐函数前三阶来近似光照项
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/7b22a2af73bb4329820c215937e56650.png)
+![请添加图片描述](7b22a2af73bb4329820c215937e56650.png)
 
 总结一下上边这些东西。球谐函数的作用是把一个函数展开成从低频到高频的基函数组的线性组合，渲染方程中如果BRDF是diffuse的，那它就是个低通滤波，即使光照是高频的，它的高频信号计算后也会消失，所以直接用球谐函数前几阶来代替它即可。
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/41f9c5ac28cb4442b772436446722b58.png)
+![请添加图片描述](41f9c5ac28cb4442b772436446722b58.png)
 上面这些东西还只是shading，还没有解决shadow 
 # 	Precomputed Radiance Transfer (PRT)
 在实时渲染下，人们更愿意把渲染方程写成下面，PRT假设光照会变，别的不会变的情况
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/652f7a58ed6940a698dcc8b3fba57d21.png)
+![请添加图片描述](652f7a58ed6940a698dcc8b3fba57d21.png)
 上图是考虑下图这一点的数据
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/961727f1808d42a7989c991a899e2548.png)
+![请添加图片描述](961727f1808d42a7989c991a899e2548.png)
 这三张图就代表了在这一点任何方向的lighting、visibility、brdf。直接对应相乘再相加就是这一点的shading，但是每个像素都这么大的计算了，显然效率太低了
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/d48d235d7966422b805ba06d1503e41c.png)  
+![请添加图片描述](d48d235d7966422b805ba06d1503e41c.png)  
 这三项都可以表示为球面函数，那直接把上边三张图对应像素值相乘就可以了
 PRT的基本思想就是把渲染方程看成下面的两部分 lighting和light transport
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/56f69f29c630443496301553c0fb02ec.png)
+![请添加图片描述](56f69f29c630443496301553c0fb02ec.png)
  PRT的做法就是：（它假设场景所有东西都不变，就光照可以改变）
 1. 把lighting进行球谐函数展开，在预计算时就可以算好，因为每个像素的lighting部分都是来自同一张环境光贴图所有点位的值
   2. transport部分也可以预计算球谐函数展开
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/7f9dcb3f501a44a39240b48fab246876.png)
+![请添加图片描述](7f9dcb3f501a44a39240b48fab246876.png)
 如果BRDF是diffuse的，那可以把它当作一个常数（即任何方向都均匀反射），下图先提出BRDF的常数，然后把光照项换成求和式，之后交换了求和与积分的顺序（在CG中可以认为任何时候求和和积分都可以交换顺序）
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/28b19afbc5fa4c39ab92fde81736f665.png)
+![请添加图片描述](28b19afbc5fa4c39ab92fde81736f665.png)
 到这里发现积分内的含义就和之前求球谐函数展开后各项系数的方程是长一样的，所以可以把后边剩下的项先变成球谐函数，然后i不同就是不同项的系数，这样这个积分项就变成了一个离散的一维数组
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/04f092d214b945cea246ccf7477481f4.png)![请添加图片描述](https://i-blog.csdnimg.cn/direct/2e4caf69b2934fc49c30ba96dc633a0a.png)
+![请添加图片描述](04f092d214b945cea246ccf7477481f4.png)![请添加图片描述](2e4caf69b2934fc49c30ba96dc633a0a.png)
 最终渲染方程变成了两个东西的点乘
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/cc0ac8c6867345e19c251bb7399e1836.png)
+![请添加图片描述](cc0ac8c6867345e19c251bb7399e1836.png)
 但是预计算后边这一部分就说明整个场景的物体是不能动的。另外球谐函数的一个优点是旋转后可以很快算出系数的变化，所以支持光照的旋转。
 
 最终渲染方程只需要一个light的数组和一个transport的数组来计算
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/a7dc415487bf45afb4eac0d4f4c84a06.png)
-另外还有glossy的物体没有处理。 diffuse的BRDF可以当作一个常数，而glossy的BRDF与摄像机的位置o也有关系，不同的摄像机位置o得出的T数组是不一样的 ![请添加图片描述](https://i-blog.csdnimg.cn/direct/ccac4f66b271437bbee6790d1889fb50.png)
+![请添加图片描述](a7dc415487bf45afb4eac0d4f4c84a06.png)
+另外还有glossy的物体没有处理。 diffuse的BRDF可以当作一个常数，而glossy的BRDF与摄像机的位置o也有关系，不同的摄像机位置o得出的T数组是不一样的 ![请添加图片描述](ccac4f66b271437bbee6790d1889fb50.png)
 因为现在最终的结果与摄像机视角o有关了，进一步把T(o)也进行球谐函数展开
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/a65f458c84994241b27033321eb82309.png)
+![请添加图片描述](a65f458c84994241b27033321eb82309.png)
 最终light项仍然是一个数组，而transport项变成了二维的
 
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/cc2ac22356cd4629abb290871a69cc0e.png)
+![请添加图片描述](cc2ac22356cd4629abb290871a69cc0e.png)
 SH选择不同的阶的时间复杂度
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/b5d52282691c49fcbeb70e40c4ed5391.png)
+![请添加图片描述](b5d52282691c49fcbeb70e40c4ed5391.png)

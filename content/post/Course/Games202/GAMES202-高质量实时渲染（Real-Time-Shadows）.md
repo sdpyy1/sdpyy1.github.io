@@ -12,34 +12,34 @@ tags = ["课程笔记","Games202"]
 ## shadowMapping的问题
 
   阴影痤疮(Shadow Acne)、或者叫自阴影
-  ![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/a4e85793e2aa4f54a130ad1b28572f94.png)
+  ![在这里插入图片描述](a4e85793e2aa4f54a130ad1b28572f94.png)
   出现该问题的原因可以看下图，光源视角下的一个像素内高度认为是同一个，下一个像素的位置，会被认为比前一个Z值更远，所以平坦的地板会交替出现高低不平的地方，这样就会出现阴影
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/4844c9f5ebb04b3abf5ec382b4b4a06a.png)
+![在这里插入图片描述](4844c9f5ebb04b3abf5ec382b4b4a06a.png)
 简单解决就是认为z插值在一个范围内就不算在阴影中，虽然能解决这个问题，但是引入了新的问题，阴影发生了偏移。如果bias设置的过大，在靠近脚的地方，就不会出现阴影。在工业界称为“彼得潘效应"(Peter Panning)
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/fe24e805998f4e88b24fd2906686da31.png)
+![在这里插入图片描述](fe24e805998f4e88b24fd2906686da31.png)
 对于这种不接触的阴影，解决方法是shadowmapping中不仅存最小深度的表面，还存储第二小深度的表面
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/5f5663c92fcd49c2ba4b560d1dd36054.png)
+![在这里插入图片描述](5f5663c92fcd49c2ba4b560d1dd36054.png)
 另外在learnOpenGL提到，在渲染深度贴图时，使用正面剔除，让深度贴图存储的是物体的内面来解决彼得潘问题。
 因为我们只需要深度贴图的深度值，对于实体物体无论我们用它们的正面还是背面都没问题。使用背面深度不会有错误，因为阴影在物体内部有错误我们也看不见。
 
 
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/17af5ba33265405da751453ee1908cd0.png)
+![请添加图片描述](17af5ba33265405da751453ee1908cd0.png)
 
 
 另外阴影还有走样问题，毕竟阴影计算就是一个像素一个像素来做的
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/ec576e1cfcf343c5818928afd9fbbbca.png)
+![在这里插入图片描述](ec576e1cfcf343c5818928afd9fbbbca.png)
 ## shadow mapping背后的数学
 在实时渲染中，经常会用到一些不等式，但人们更多关注的是不等式相等时成立的条件，也就是说，不等式在什么条件下近似相等。实时渲染中，经常用到的一个约等如下：
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/57bf987cf801430aa8186bca896c9806.png)
+![在这里插入图片描述](57bf987cf801430aa8186bca896c9806.png)
 满足下列两个条件之一时，实时渲染领域认为他们近似相等：
 当g(x)满足：
 1. g(x)积分域足够小
 2. g(x)足够smooth，g(x)值变化不大，比较平坦
 
 下面来到渲染方程
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/1e7d325e87c946f4bee344e8a444f67a.png)
+![在这里插入图片描述](1e7d325e87c946f4bee344e8a444f67a.png)
 根据上边的不等式，就可以把最后一项（V）提出来
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/0a9420c5315942a9a51bcef35adf03ef.png)
+![在这里插入图片描述](0a9420c5315942a9a51bcef35adf03ef.png)
 这样变换后，渲染方程就变成了正常做shading之后，再乘以一个表示可见不可见的项
 这时的G(x)就是渲染方程的被积函数
 
@@ -47,95 +47,95 @@ tags = ["课程笔记","Games202"]
 ## PCF（Percentage Closer Filtering）
 
 以点P为例，并不只找shadowmap中对应的一个像素，而是找一圈的像素，与这些像素都进行比较，最后将比较结果进行平均
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/d9deb341cfcd4d268b64267a42fc9d4a.png)
+![在这里插入图片描述](d9deb341cfcd4d268b64267a42fc9d4a.png)
 比较结果就是一个全是1，0的矩阵，最终得到的数就不是非0即1的数了
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/c74e9d602c71492580041d0a067681c6.png)
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/e38b95bd0bcb4710b7df647d2ec33f0c.png)
+![在这里插入图片描述](c74e9d602c71492580041d0a067681c6.png)
+![在这里插入图片描述](e38b95bd0bcb4710b7df647d2ec33f0c.png)
 ## PCSS（Percentage closer soft shadows）
 PCF它原本是用来解决阴影的走样问题的，后来人们又发现它可以用来生成软阴影，就是PCSS
 首先来回顾一下软阴影和硬阴影
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/9e65479f005e4d1d8d8d5e9a2ec26560.png)
+![在这里插入图片描述](9e65479f005e4d1d8d8d5e9a2ec26560.png)
 到这里就可以理解软阴影在阴影不同位置有不同的软硬程度就可以通过PCF的滤波核的大小来控制，越大越模糊，越小越硬
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/7a944c13c04246a4ba67e519e0857896.png)
+![在这里插入图片描述](7a944c13c04246a4ba67e519e0857896.png)
 w(半影)与光源大小、物体位置之间呈现相似三角形的关系，w就可以用来表示软硬程度。半影举例越大，滤波核尺寸就应该设计的更大，让阴影更软
 
 总结PCSS的算法流程：1. 在一个范围搜索遮挡物，并计算平均深度。2. 用平均深度求出半影距离3. 在对应的滤波核尺寸下进行PCF
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/15f8ad64ccca453c8d4d78adede3ebe6.png)
+![在这里插入图片描述](15f8ad64ccca453c8d4d78adede3ebe6.png)
 上边的步骤1需要选取一个合适的范围，下图就展示了如何选取一个范围来进行遮挡物搜素，假设了ShadowMap在近平面，用光源的大小来决定搜素范围
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/b926533d9f8147a082953d4d4832eb61.png)![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/f36ec8d9e8cd425c9006784e630e6b08.png)
+![在这里插入图片描述](b926533d9f8147a082953d4d4832eb61.png)![在这里插入图片描述](f36ec8d9e8cd425c9006784e630e6b08.png)
 在PCSS第一步和第三步中，为了计算一个像素点的着色，需要考虑多个纹素，从而导致速度慢。如果采用稀疏采样，又会有噪点产生
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/7d58a8364ceb4b02ba11c9420e67ea67.png)
+![请添加图片描述](7d58a8364ceb4b02ba11c9420e67ea67.png)
 ## VSSM（Variance Soft Shadow Mapping）
 针对PCSS效率问题，提出VSSM
 
 ### 优化步骤3
 PCF和PCSS的 PC（percentage closer）的理解就是在深度纹理的一片区域内，有多少比例的纹素比着色点深度小
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/c5016ff53ff445b0803802017092554d.png)
+![请添加图片描述](c5016ff53ff445b0803802017092554d.png)
 这就相当于看多少人比我考试分数高，就需要遍历所有同学的成绩
 VSSM的解决方案就是用成绩分布（正态分布）来估计（⚠️VSSM并没有用正态分布，这里这样说只是方便理解，后边提到切比雪夫不等式就好理解了）
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/4c15595d7a7b4bafbeaf151712f92592.png)
-定义一个正态分布需要均值和方差，这个可以快速计算![请添加图片描述](https://i-blog.csdnimg.cn/direct/f59a96bfa0404bafa5dbd1e679d1a3e0.png)
+![请添加图片描述](4c15595d7a7b4bafbeaf151712f92592.png)
+定义一个正态分布需要均值和方差，这个可以快速计算![请添加图片描述](f59a96bfa0404bafa5dbd1e679d1a3e0.png)
 均值可以通过mipmap（因为上一级map到下一级map就是把相邻的正方形进行平均，到最后就整合为了一个平均值）、SAT（是一种用于高效计算矩形区域内元素总和的数据结构）来求，方差则是用一个概率论公式来求
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/a8edfd50921a428e88f0d33eb0a37738.png)
+![请添加图片描述](a8edfd50921a428e88f0d33eb0a37738.png)
 得到正态分布分布后，求小于着色点深度的纹素百分比，其实就是阴影部分的线下面积
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/851b3d8206ed41f1beb15718639d3d8d.png)
+![请添加图片描述](851b3d8206ed41f1beb15718639d3d8d.png)
  下来VASS还对这种计算进行了简化。直接使用不等式来近似
  只要给定均值、方差、和要比较的位置t，就有下面的不等式成立 ，在渲染中就直接用方差、期望、t来估计红色部分的面积，然后马上就能得出剩余部分的面积（t必须大于中间线才好使）
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/bcf078962ce443468d42dbc6a0f6c4ad.png)
+![请添加图片描述](bcf078962ce443468d42dbc6a0f6c4ad.png)
 至此，对PCSS步骤三的优化结束，在生成shadowMap时，为了计算方差，还需要额外生成一张平方shadowMap，总体来说甚至都不需要进行loop就可以知道一片区域有多少纹素深度小于着色点深度
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/b74b9a83b7724e0eba57119b474890c1.png)
+![请添加图片描述](b74b9a83b7724e0eba57119b474890c1.png)
 ### 优化步骤1
 为了设置合理大小的过滤核，对一个区域内遮挡物的深度进行平均，需要遍历纹素，效率并不高
 
 例如下图，如果着色点的深度为7，那么这些纹素的深度只有蓝色的是遮挡物，就需要平均他们，而红色不参与计算
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/ca091f3d07d14ea8a74954809b7591bd.png)
+![请添加图片描述](ca091f3d07d14ea8a74954809b7591bd.png)
 对蓝色部分和红色部分求均值后，满足下式
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/fdc6f0946e014ef697caad775ea35e6a.png)
+![请添加图片描述](fdc6f0946e014ef697caad775ea35e6a.png)
 这里求N1/N就可以直接用刚才步骤三的不等式（用方差、均值、t来估计大于t的比例），之后1减去它就是N2/N。
 
 但我们还不知道红色部分的均值，在VSSM中直接假设红色部分均值就是t（大胆的假设，假设的依据是阴影位置大概率是个平面） 
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/be8ceb956e1d494d8554b489ecee84a7.png)
-VSSM的效果![请添加图片描述](https://i-blog.csdnimg.cn/direct/74d05f7b9d7c414e86419b2132fe7ff5.png)
+![请添加图片描述](be8ceb956e1d494d8554b489ecee84a7.png)
+VSSM的效果![请添加图片描述](74d05f7b9d7c414e86419b2132fe7ff5.png)
 另外课程还提到目前PCSS是压过VSSM的，因为人们对噪声的容忍度越来越高，在图像层面进行降噪手段变强了
 
 ### SAT（Summed Area Tables）
 SAT是给一片区域立刻得到它的均值的一种数据结构
 
 SAT是对原数据的预处理得到的数据，在一维场景下，每个index记录都是前缀和（提前记录好），现在要求中间某一段的和，就直接拿出SAT在范围查询边界（左边是边界-1）的数据相减就行了
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/07f3c4580f624d6aafe41be6826e8e77.png)
+![请添加图片描述](07f3c4580f624d6aafe41be6826e8e77.png)
 在二维情况下蓝色的范围查询，可以转化为左上角都是(0,0)的框加减操作
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/8cb7f27cf97f4adf9e6ea1fbeb4cac1f.png)
+![请添加图片描述](8cb7f27cf97f4adf9e6ea1fbeb4cac1f.png)
 
 ###  VSSM的问题
 VSSM中作了很多假设，有一个就是假设一片区域纹素是符合正态分布的
 例如右图深度只有3个峰值，不符合正态分布
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/aa6e951fd68249239b5e19793e93c89c.png)
+![请添加图片描述](aa6e951fd68249239b5e19793e93c89c.png)
 下图就是说本来只有一小部分没遮住，但是假设为正态分布变成了很大一部分，就会让阴影边白
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/13a872953e014f068ddf98e464e2db5a.png)
+![请添加图片描述](13a872953e014f068ddf98e464e2db5a.png)
 有一些地方变白了
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/54cefbba0016469d89dbc251c675249c.png)
+![请添加图片描述](54cefbba0016469d89dbc251c675249c.png)
 ## Moment Shadow Mapping
  为了解决VSSM分布描述不准确的问题，提出MSM，使用更高阶矩来描述分布
- ![请添加图片描述](https://i-blog.csdnimg.cn/direct/cea1241bde6b496d99b4891771f2ccf9.png)
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/9b05e04602c64889a6c3b4a5f0c266b8.png)
+ ![请添加图片描述](cea1241bde6b496d99b4891771f2ccf9.png)
+![请添加图片描述](9b05e04602c64889a6c3b4a5f0c266b8.png)
 大概意思就是用数据的高阶来更好的拟合PCF的效果，下图表明用4阶矩下的分布就很好的达到了PCF的效果
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/694f857749eb4faf8383307c4cdbd3f8.png)
+![请添加图片描述](694f857749eb4faf8383307c4cdbd3f8.png)
 缺点很明显空间很大
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/7e05d414ae314233be94eef20d425425.png)
+![请添加图片描述](7e05d414ae314233be94eef20d425425.png)
 ## Distance Field Soft Shadows
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/7d064c8a32bd4ca48f6dc45c082cf7c4.png)
+![请添加图片描述](7d064c8a32bd4ca48f6dc45c082cf7c4.png)
 首先看一下Distance functions是什么,它描述了空间中任意一点到物体表面的最小距离，离得越远值越小，表示到图上就是变白
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/3fd17bb7bbc544e7a3ec382a89ff1a47.png)
+![请添加图片描述](3fd17bb7bbc544e7a3ec382a89ff1a47.png)
 在任何一个点上，以它记录的值为半径画圆，都不可能碰到物体，如果做光线追踪，那可以直接移动到圆的表面上去，这就是SFD的一个应用
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/a7125637980b4220a54757ea99f6e3b6.png)
+![请添加图片描述](a7125637980b4220a54757ea99f6e3b6.png)
 下来用它来生成软阴影是它的另外一个阴影
 用SDF可以大概描述多大的范围被物体挡住了，圆圈内为安全距离，不会有物体挡住，用这个圈的大小来定义visbility的大小，从而实现软阴影
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/d9ed1e511264484789edc877159fa42b.png)
+![请添加图片描述](d9ed1e511264484789edc877159fa42b.png)
 在不同的位置找圆做切线，最小的切线就是需要的安全距离
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/263eeee958a84834acc700f7eee4cf11.png)
+![请添加图片描述](263eeee958a84834acc700f7eee4cf11.png)
 求角度是一个acrsin的计算，比较慢，人们用一个替代来简化
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/2f5e03e72efa4c3797ca5374ecb73de6.png)
+![请添加图片描述](2f5e03e72efa4c3797ca5374ecb73de6.png)
 其中根据不同的k值来达到不同的效果
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/30c654e66f5e4dbeb49e36a7db26c7fc.png)
+![请添加图片描述](30c654e66f5e4dbeb49e36a7db26c7fc.png)
 显而易见的优缺点 空间换时间，但这是不考虑生成距离场的时间
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/f3282cf582e24978bfcbda13be27e15b.png)
+![请添加图片描述](f3282cf582e24978bfcbda13be27e15b.png)
