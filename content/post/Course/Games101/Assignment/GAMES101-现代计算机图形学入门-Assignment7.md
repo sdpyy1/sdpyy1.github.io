@@ -6,16 +6,16 @@ categories = ["Course/Games101","Assignment"]
 tags = ["课程作业","Games101"]
 +++
 # 作业介绍
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/ef43e9abf6c7485d9bf566a59479ed6f.png)
+![在这里插入图片描述](ef43e9abf6c7485d9bf566a59479ed6f.png)
 本次作业只需要实现渲染方程，首先需要理解渲染公式
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/4360789f62274e29b3aabdfd7a0a1f6a.png)
+![请添加图片描述](4360789f62274e29b3aabdfd7a0a1f6a.png)
 其次需要知道利用蒙特卡洛公式求积分的方法
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/dfd9a34a85914eafbc58030d1c602839.png)
+![在这里插入图片描述](dfd9a34a85914eafbc58030d1c602839.png)
 求渲染公式的积分部分需要在半球面采样，为了提高准确度，换元为在光源面积上采样
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/7918f9a7ec6b42919cb6a28ed9f7765e.png)
+![在这里插入图片描述](7918f9a7ec6b42919cb6a28ed9f7765e.png)
 
 在作业中也给出了伪代码
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/e25213988c684054883bfe579bb423e0.png)
+![在这里插入图片描述](e25213988c684054883bfe579bb423e0.png)
 
 # 代码实现
 >代码参考https://zhuanlan.zhihu.com/p/606074595

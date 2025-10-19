@@ -20,7 +20,7 @@ void Triangle::setShadingColor(Eigen::Vector3f lightDir) {
 }
 ```
 因为我的MVP变换和课程设置不一致，所以角度不一样，下面展示 lightDir(1,-1,1)情况下的渲染
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/778af6511c364147942ed5581d92eefc.png)
+![在这里插入图片描述](778af6511c364147942ed5581d92eefc.png)
 完整代码在（Gouraud-shading分支）：https://github.com/sdpyy1/CppLearn/tree/Gouraud-shading
 # Lesson 6: Shaders for the software renderer
 ## phongShading
@@ -71,9 +71,9 @@ TGAColor blinnPhongShading(const TGAColor & kdColor,const Vector3f & point,const
 
 ## 法线贴图
 法线贴图是通过使用 RGB 纹理的红色、绿色和蓝色分量来存储法线的 XYZ 分量，但是存储在法线贴图中的法线是模型坐标系下的法线坐标，如果模型在空间中发生了旋转，那法线位置就会发生变化，所以如果要用法线贴图，需要对法线变换到global坐标系下才行。另外不能简单地给法线左乘一个模型变换矩阵，解释及正确做法如下（也不是一定不行，有几种模型变换是不行滴）
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/e302739d57b74492bfacc7d258946ea4.png)
+![请添加图片描述](e302739d57b74492bfacc7d258946ea4.png)
 下面使用法线贴图作为color得到的图片
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/906cafb276b4449f84b6dd977052a20a.png)
+![请添加图片描述](906cafb276b4449f84b6dd977052a20a.png)
 下面使用法线贴图作为phongshading的法线来渲染光照，注意贴图范围是[-1，1]，而颜色通道是[0,1]，也就是拿到的材质颜色是[0,1]的，需要先转成[-1,1]才可以使用，关键代码如下
 
 ```cpp
@@ -81,8 +81,8 @@ TGAColor blinnPhongShading(const TGAColor & kdColor,const Vector3f & point,const
             Eigen::Vector3f barycentricNorm = TGAColorToVector3f(nm.getColor(texU,texV))*2-Vector3f{1,1,1};
 ```
 对比直接使用插值的法线和使用贴图法线的效果区别，区别还是很明显的，使用法线贴图并没有增加模型的结构，但精细程度大大提升了
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/7799600835494a2681ba86db3e992fbe.png)
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/ffcc9426ad114d0da59ea8fac6c7ab0a.png)
+![请添加图片描述](7799600835494a2681ba86db3e992fbe.png)
+![请添加图片描述](ffcc9426ad114d0da59ea8fac6c7ab0a.png)
 
 ## Specular mapping 高光贴图
 在之前的设置中镜面反射系数是自己设置的，使用高光贴图就是用来获取这个参数
@@ -98,10 +98,10 @@ TGAColor blinnPhongShading(const TGAColor & kdColor,const Vector3f & point,const
             TGAColor specKd = spec.getColor(texU,texV);
 ```
 最终效果如下，变化看不太出来了，主要是一些奇怪的高光点消失了
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/411cee7014ba4c0d979bd4541e58a605.png)
+![请添加图片描述](411cee7014ba4c0d979bd4541e58a605.png)
 ## tangent space normal mapping ‌切线空间法线贴图
 将法线方向存储在‌切线空间‌（Tangent Space）中，而非模型或世界空间。这种技术可以显著提升表面凹凸感，且对模型变形（如动画）更友好，首先解释一下切线空间
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/94a52acdc6ca46d0978954dfed295449.png)
+![请添加图片描述](94a52acdc6ca46d0978954dfed295449.png)
 这个东西就是把法线存储在切线空间坐标下，如果需要法线就在着色器中，通过 ‌TBN矩阵‌（Tangent-Bitangent-Normal Matrix）将法线从切线空间转换到世界空间
 
 **为什么有了法线贴图，还需要切线法线贴图呢？**
@@ -109,9 +109,9 @@ TGAColor blinnPhongShading(const TGAColor & kdColor,const Vector3f & point,const
 2. 切线空间法线贴图能够很好地支持模型变形。因为切线空间是随着顶点一起变形的，当模型发生变形时，切线空间也会相应地改变，而切线空间法线贴图中的法向量在新的切线空间中仍然能够正确表示表面的细节。所以，即使模型在动画过程中发生了变形，光照效果依然能够保持正确。
 
 如果不对切线法线贴图进行转换，直接使用，效果如下哈哈哈
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/62c2dbe29bab4549940aae2f6b33c04c.png)
+![请添加图片描述](62c2dbe29bab4549940aae2f6b33c04c.png)
 获取到切线法线贴图后，需要左乘一个TBN矩阵，转为空间法线才能使用，第一列是三角形的切线，第二列是副切线，第三列是法线
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/41e46c065dd2466d920e4337e581759b.png)
+![请添加图片描述](41e46c065dd2466d920e4337e581759b.png)
 具体转化函数如下
 
 ```cpp
@@ -149,7 +149,7 @@ Eigen::Vector3f getNormalFromTangent(const Triangle& triangle, const Eigen::Vect
     return TBN * tangentSpaceNormal;
 }
 ```
-最终用转化后的切线作为像素的切线得到的图片如下![请添加图片描述](https://i-blog.csdnimg.cn/direct/376308674cff41d0a41f4933b97538c1.png)
+最终用转化后的切线作为像素的切线得到的图片如下![请添加图片描述](376308674cff41d0a41f4933b97538c1.png)
 # Lesson 7: Shadow mapping
 简单理解就是把光源当作摄像机，重新渲染一遍场景，但只需要记录每个点离光源最近的点，也就是哪些点能被光源照到，在正式渲染时，判断一个点颜色时，先去刚才记录的光照缓存中查看该点是否能被光照到，来决定是否进行渲染
 完成的做法是对于一个像素，先去找它原本在空间中的位置，紧接着做MVP变换和视口变换变到以光源为摄像机下的对应像素块的位置，判断该位置深度是否需要阴影，不需要阴影才去正常进行光照，我的简单做法是如果在阴影，就让光照最终结果*0.2,从而变暗，这里这样做只是为了效果好看，不过这个光照模型本身就是不准确的，我的做法并不特别准确，但是理解原理即可
@@ -433,11 +433,11 @@ void shadow(Triangle &triangle,std::vector<std::vector<float>> *shadowBuffer){
 
 ```
 最终呈现效果如下，很合理哈，因为右手并未被挡住，所以还是亮的
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/4e40987343c54ccd8f85bb15ed75aaf5.png)
+![请添加图片描述](4e40987343c54ccd8f85bb15ed75aaf5.png)
 下图通过过曝来展示哪些像素被阴影化了，还是蛮合理的～
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/94e11dd82b4a40e3a13075aaf915dd91.png)
+![请添加图片描述](94e11dd82b4a40e3a13075aaf915dd91.png)
 在使用普通的材质贴图下效果比较好
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/6bc2b6001d9a42d1834c05bd2a824915.png)
+![请添加图片描述](6bc2b6001d9a42d1834c05bd2a824915.png)
 
 
 
@@ -454,7 +454,7 @@ void shadow(Triangle &triangle,std::vector<std::vector<float>> *shadowBuffer){
                 }
 ```
 
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/23afe9a8003a44a788f6448c182b6b68.png)
+![请添加图片描述](23afe9a8003a44a788f6448c182b6b68.png)
 ai给出的解释：这种现象叫做自阴影
 - 深度图的精度限制‌：Shadow Mapping 需要从光源视角生成深度图（Shadow Map）。由于深度图的分辨率有限，物体表面在光源视角下的离散采样可能导致实际连续的几何表面在深度图中被“阶梯化”。当从摄像机视角比较深度时，同一表面的不同片段可能被错误判定为处于阴影中。
 - 浮点数精度误差‌：深度值存储为浮点数，计算时可能因精度不足导致比较错误。例如，光源视角和摄像机视角的深度计算存在微小差异，导致同一位置被误判为“低于”深度图记录的深度，从而触发阴影。
