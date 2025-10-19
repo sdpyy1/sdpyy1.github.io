@@ -1,18 +1,20 @@
 <!DOCTYPE html>
 <html lang="zh-cn" dir="ltr">
     <head><meta charset='utf-8'>
-<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content="">
+<meta name='viewport' content='width=device-width, initial-scale=1'>
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+  <meta name="referrer" content="no-referrer-when-downgrade"><meta name='description' content="@TOC\nGitHub主页：https://github.com/sdpyy1 games101项目作业代码：https://github.com/sdpyy1/CppLearn/tree/main/games101\n">
 <title>GAMES101 现代计算机图形学入门 Shading</title>
 
 <link rel='canonical' href='https://sdpyy1.github.io/p/games101-%E7%8E%B0%E4%BB%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9B%BE%E5%BD%A2%E5%AD%A6%E5%85%A5%E9%97%A8-shading/'>
 
 <link rel="stylesheet" href="/scss/style.min.6a692fd055deae459f2a9767f57f3855ba80cafd5041317f24f7360f6ca47cdf.css"><meta property='og:title' content="GAMES101 现代计算机图形学入门 Shading">
-<meta property='og:description' content="">
+<meta property='og:description' content="@TOC\nGitHub主页：https://github.com/sdpyy1 games101项目作业代码：https://github.com/sdpyy1/CppLearn/tree/main/games101\n">
 <meta property='og:url' content='https://sdpyy1.github.io/p/games101-%E7%8E%B0%E4%BB%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9B%BE%E5%BD%A2%E5%AD%A6%E5%85%A5%E9%97%A8-shading/'>
 <meta property='og:site_name' content='wanfeng'>
 <meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:published_time' content='2025-10-19T00:57:01&#43;08:00'/><meta property='article:modified_time' content='2025-10-19T00:57:01&#43;08:00'/>
 <meta name="twitter:title" content="GAMES101 现代计算机图形学入门 Shading">
-<meta name="twitter:description" content="">
+<meta name="twitter:description" content="@TOC\nGitHub主页：https://github.com/sdpyy1 games101项目作业代码：https://github.com/sdpyy1/CppLearn/tree/main/games101\n">
     <link rel="shortcut icon" href="/favicon.ico" />
 
     </head>
@@ -262,7 +264,63 @@
     </ol>
 </aside>
 
-    
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">目录</h2>
+        
+        <div class="widget--toc">
+            <nav id="TableOfContents">
+  <ol>
+    <li><a href="#diffuse-reflection漫反射">Diffuse Reflection（漫反射）</a></li>
+    <li><a href="#specular-highlights高光镜面反射">Specular highlights(高光/镜面反射)</a></li>
+    <li><a href="#ambient-term环境光">Ambient Term（环境光）</a></li>
+  </ol>
+
+  <ol>
+    <li><a href="#nearest">Nearest</a></li>
+    <li><a href="#bilinear-interpolation">Bilinear Interpolation</a>
+      <ol>
+        <li><a href="#bicubic">Bicubic</a></li>
+      </ol>
+    </li>
+    <li><a href="#texture-magnification纹理图太大">Texture Magnification（纹理图太大）</a>
+      <ol>
+        <li><a href="#mipmap">Mipmap</a></li>
+        <li><a href="#各向异性过滤">各向异性过滤</a></li>
+      </ol>
+    </li>
+    <li><a href="#纹理的应用">纹理的应用</a>
+      <ol>
+        <li><a href="#environment-map">Environment Map</a></li>
+        <li><a href="#bump-mapping-凹凸贴图">Bump Mapping 凹凸贴图</a></li>
+        <li><a href="#displacement-mapping-位移贴图">Displacement Mapping 位移贴图</a></li>
+        <li><a href="#3维纹理">3维纹理</a></li>
+      </ol>
+    </li>
+  </ol>
+</nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
 
             <main class="main full-width">
     <article class="main-article">
@@ -272,8 +330,8 @@
     
     <header class="article-category">
         
-            <a href="/categories/course/games101/" >
-                Games101
+            <a href="/categories/games202/" >
+                Games202
             </a>
         
     </header>
@@ -318,13 +376,23 @@
 
 
                 <time class="article-time--reading">
-                    阅读时长: 0 分钟
+                    阅读时长: 7 分钟
                 </time>
             </div>
         
+
+        
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+        <span id="busuanzi_container_page_pv">本文阅读量<span id="busuanzi_value_page_pv"></span>次</span>
     </footer>
     
-
     
 </div>
 
@@ -333,7 +401,511 @@
     <section class="article-content">
     
     
-    
+    <p>@<a class="link" href="%e7%9b%ae%e5%bd%95" >TOC</a></p>
+<blockquote>
+<p><a class="link" href="https://github.com/sdpyy1"  target="_blank" rel="noopener"
+    >GitHub主页</a>：https://github.com/sdpyy1
+<a class="link" href="https://github.com/sdpyy1/CppLearn/tree/main/games101"  target="_blank" rel="noopener"
+    >games101项目作业代码</a>：https://github.com/sdpyy1/CppLearn/tree/main/games101</p>
+</blockquote>
+<h1 id="什么是shading">什么是shading？
+</h1><p>shading 负责计算物体表面每个采样点的颜色，具体考虑光照、材质属性、观察角度等因素，生成具有真实感的视觉效果（如漫反射、镜面高光、环境光等）‌，之前的光栅化将是几何图元（如三角形）转换为屏幕上的像素，确定哪些像素被图元覆盖，是几何层面的处理</p>
+<h1 id="blinn-phong-reflectance-modela-simple-shading-model">Blinn-Phong Reflectance Model(A Simple Shading Model)
+</h1><p>Blinn-Phong 反射模型（Blinn-Phong Reflectance Model）是一种用于计算机图形学中模拟物体表面光照效果的着色模型.该模型主要由**环境光(Ambient)、漫反射(Diffuse)和高光反射(Specular)**三部分组成。<img src="https://i-blog.csdnimg.cn/direct/92975763af4c45deacbe6332c3f2d16b.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+定义一些基本向量，默认为单位向量：</p>
+<ul>
+<li><code>Viewer Direction</code> ：观察方向,用<code>v</code>	表示</li>
+<li><code>Surface normal</code>：法线方向，使用<code>n</code>表示</li>
+<li><code>Light direction</code>：光线方向，用<code>l</code>表示
+<img src="https://i-blog.csdnimg.cn/direct/7b8e79b519294907b6730677c6933da2.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+></li>
+</ul>
+<h2 id="diffuse-reflection漫反射">Diffuse Reflection（漫反射）
+</h2><p>是投射在粗糙表面上的光向各个方向反射的现象。当一束平行的入射光线射到粗糙的表面时，表面会把光线向着四面八方反射，所以入射线虽然互相平行，由于各点的法线方向不一致，造成反射光线向不同的方向无规则地反射，这种反射称之为“漫反射”或“漫射”。正是因为反射是完全随机的，因此可以认为漫反射光在任何反射方向上的分布都是一样的。
+<img src="https://i-blog.csdnimg.cn/direct/536d9f34abe444b6864d43a98691793b.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+漫反射强度影响因素：</p>
+<ol>
+<li>入射光线与法线的夹角
+<code>lambert's cosine law</code>: 当夹角为θ时，能量要乘<code>cosθ = l.dot(v)</code>(单位向量)
+<img src="https://i-blog.csdnimg.cn/direct/ab18d5ca508a49a0b207f2a4755b3942.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+></li>
+<li>入射光线自身的强度
+入射光自身的强度与距离有关 <img src="https://i-blog.csdnimg.cn/direct/e0e28606ee0f45e7b31cbbdea8a1ee12.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+结合两个影响因素，得到漫反射能量公式
+$$L_d = k_d (I / r^2) \max(0, \mathbf{n} \cdot \mathbf{l})$$</li>
+</ol>
+<p><img src="https://i-blog.csdnimg.cn/direct/59bc96822aeb4792901933319aa199b0.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+其中$k_d$表示反射系数指光（入射光）投向物体时，其表面反射光的强度与入射光的强度之比值，受入射光的投射角度、强度、波长、物体表面材料的性质以及反射光的测量角度等因素影响。一般来讲，在颜色系列中，黑色的反射系数较小，为0.03，白色的反射系数较大，为0.8
+<img src="https://i-blog.csdnimg.cn/direct/72ad4013378a455397a40b15611554e8.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+最后，漫反射与观察方向<code>v</code>没有关系，漫反射能量会均匀反射到各个方向上去。</p>
+<h2 id="specular-highlights高光镜面反射">Specular highlights(高光/镜面反射)
+</h2><p>若物体表面很光滑，光线会被反射，如图所示<code>R</code>为镜面反射方向，观察方向<code>v</code>与反射方向<code>R</code>接近时，能看见反射光，反射光强度与<code>R</code>和<code>v</code>的夹角有关
+<img src="https://i-blog.csdnimg.cn/direct/7a8efb9ae9544cc6b84f38e78a19849f.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+<code>R</code>和<code>v</code>的夹角 <strong>等价于</strong><code>l</code>和<code>v</code>的half vector与法线方向<code>n</code>之间的夹角，通过向量相加的平行四边形法则获取到half vector，再单位化
+<img src="https://i-blog.csdnimg.cn/direct/9d8198ee92e340ff8c5b953692887771.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+><img src="https://i-blog.csdnimg.cn/direct/5b4efb68c51d4f6792da743a7c374394.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+最终得到镜面反射能量公式
+</p>
+$$
+\begin{align*}
+L_s &= k_s (I / r^2) \max(0, \cos\alpha)^p \\
+&= k_s (I / r^2) \max(0, \mathbf{n} \cdot \mathbf{h})^p
+\end{align*}
+$$<p>
+其中$k_s$为镜面反射系数，通常取白色的系数</p>
+<p>因为镜面反射对角度很敏感，所以设置参数p来控制夹角的影响
+<img src="https://i-blog.csdnimg.cn/direct/382d5aa80fa342ddbb2fb7f7e2a08cf2.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+<img src="https://i-blog.csdnimg.cn/direct/cd3c5483732b4f65bb2a6199c51b69c3.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+></p>
+<h2 id="ambient-term环境光">Ambient Term（环境光）
+</h2><p>环境光不依赖任何项，任何方向射入，任何方向观察都不影响环境光的强度（该模型的简化，精确计算需要用到全局光照技术）
+<img src="https://i-blog.csdnimg.cn/direct/beb39f55be6248edad0bf167089248dd.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+最后，展示结合效果
+<img src="https://i-blog.csdnimg.cn/direct/6218a369afe94437bb81dfb0420e1b39.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+></p>
+<h1 id="shading-frequencies着色频率">Shading Frequencies（着色频率）
+</h1><p>3个几何形状完全相同的球，为什么着色结果各不相同？计算作色的频率不同，球1一个平面取一个法线，做一次着色，球3每个像素都求法线后都做一次着色
+<img src="https://i-blog.csdnimg.cn/direct/67eb9331c2f04237ba3ae48c01e76f40.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+></p>
+<ul>
+<li>shade each triangle(flat shading)：每个三角形求一个法线（边向量叉积），对整个三角形进行相同的shading，当三角形面很多，效果也不一定差，反而计算量少</li>
+<li>shade each vertex（Gouraud shading）：三角形的三个顶点都求法线，三个顶点进行shading，三角形内部用插值填充</li>
+<li>shade each pixel(Phong shading)：每个像素都求法线，每个像素都进行shading</li>
+</ul>
+<p>如何求顶点的法线？利用顶点关联的面的法线进行加权平均<img src="https://i-blog.csdnimg.cn/direct/8f2e024b74cd409ba1b6d43604a60d15.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+></p>
+<h1 id="graphicsreal-time-renderingpipeline">Graphics（Real time Rendering）Pipeline
+</h1><p><code>Pipeline</code>：从场景到图的流程<img src="https://i-blog.csdnimg.cn/direct/2fb691f7ae274fa88e39ed8201439dfb.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+⚠️：Shading根据Shading Frequencies（着色频率）的不同发生在不同阶段，如果是每个顶点进行着色，就发生在顶点处理阶段，如果是每个像素shading么就在光栅化之后，下面图也解释的shader编程中的vertexShader和fragmentShader
+<img src="https://i-blog.csdnimg.cn/direct/aba7ce94e1894472ae4b1f697106576d.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+GPU模型
+<img src="https://i-blog.csdnimg.cn/direct/e5b95abc7b0b48eb9a8cccce0aab5c97.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+></p>
+<h1 id="texture-mapping">Texture Mapping
+</h1><p>考虑球和地板，不同的位置有不同的颜色，每个位置都有自己的漫反射系数，引入纹理映射对每一个点定义不同的属性
+<img src="https://i-blog.csdnimg.cn/direct/8794c0d329d24aca97c68998d2945da5.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+模型上任意一个三角形的顶点，都能在纹理图找到对应的顶点。 至于如何一一对应，是美工的任务。
+纹理图通过UV坐标来进行定位（UV取值范围都是0-1之间），这样每个三角形的顶点都对应一个UV坐标
+<img src="https://i-blog.csdnimg.cn/direct/e1b8430b6af44f74bea4eeefb3af4d96.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+如果我已经知道每个三角形顶点对于的UV坐标，那如何知道三角形内部每个点的UV坐标呢？ （插值解决）</p>
+<h1 id="如何插值">如何插值？
+</h1><p>为什么要用插值？因为我们希望处理完顶点后，三角形内部进行平滑的过度
+首先引入<strong>重心坐标 Barycentric Coordinates</strong> 重心坐标可以表示为顶点的线性组合（如下图所示），三角形内任意一点的坐标(x,y)，找到满足$\alpha+\beta+\gamma=1$ 和 (x, y) = $\alpha A + \beta B + \gamma C$的（$\alpha$,$\beta$,$\gamma$）, 就可以用（$\alpha$,$\beta$,$\gamma$）表示该点的重心坐标
+<img src="https://i-blog.csdnimg.cn/direct/517b089099a44139ae749739315b7713.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+重心坐标（$\alpha$,$\beta$,$\gamma$）可以通过面积比求出，如下图
+<img src="https://i-blog.csdnimg.cn/direct/9f827fde268a47c4bc84ea6b54573ca1.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+由此可得三角形的重心的重心坐标为(1/3,1/3,1/3), 除此之外，也有直接的公式求出任意一点的重心坐标，如下图<img src="https://i-blog.csdnimg.cn/direct/32f3c44f1aaf4457ab19517910e03bac.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+其实重心坐标显示出的内容就是该点对于三角形三个顶点的权重应该是多少。（$\alpha$,$\beta$,$\gamma$）就分别是A、B、C顶点的权重。
+⚠️：投影后重心坐标会变化</p>
+<h1 id="texture-magnification纹理图太小">Texture Magnification（纹理图太小）
+</h1><p>A pixel on a texture - a texel(纹理元素、纹素)
+场景：纹理图片2<em>2，但需要把它渲染到4</em>4的屏幕，那在渲染中间像素时，他的UV坐标无法对应texel，所以需要处理，下图为三种处理方式
+<img src="https://i-blog.csdnimg.cn/direct/e9aa4e162f6442d39accc2a3b712be12.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+></p>
+<h2 id="nearest">Nearest
+</h2><p>落在哪个texel附近，就选择哪个texel
+<img src="https://i-blog.csdnimg.cn/direct/09ba75ab4b774ad68d34aa2ca946fac8.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+></p>
+<h2 id="bilinear-interpolation">Bilinear Interpolation
+</h2><p>综合考虑周围4个texel的值，水平方向得到两个插值，再垂直方向再做一次插值，所以叫双线性插值，插值函数就是 </p>
+$$lerp(x,v_0,v_1) = v_0 + x(v_1 - v_0)$$<p>
+<img src="https://i-blog.csdnimg.cn/direct/717b972334db44758f07c7e0fe803292.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+></p>
+<h3 id="bicubic">Bicubic
+</h3><p>更复杂的插值，取周围16的texel</p>
+<h2 id="texture-magnification纹理图太大">Texture Magnification（纹理图太大）
+</h2><p>例如纹理图被重复使用用来帖地板
+<img src="https://i-blog.csdnimg.cn/direct/b07a70e13acf492ea9426eb388d797bc.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>如果只进行简单操作，得到结果为<img src="https://i-blog.csdnimg.cn/direct/d008434c555a4cfab877a258e29584be.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+问题的原因：在远处一个Pixel就覆盖了多个texel，下图大框是Pixel，在远处，一个像素就覆盖了多个纹理，很大范围只采样一次，就会导致信息丢失，导致走样。最简单解决思路就是Supersampling，采样点增多，获得的信息就多，但计算量太大
+<img src="https://i-blog.csdnimg.cn/direct/1b1ea995cd5f4eefa26ca339f6c4b7f4.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+></p>
+<h3 id="mipmap">Mipmap
+</h3><p>为一张纹理图生成多个低分辨率纹理图，每次分辨率减半，将4个相邻像素点求均值合为一个像素点。从存储容量上看，根据等比数列求和，存储只增加了$1/3$
+<img src="https://i-blog.csdnimg.cn/direct/bf9cf2d5e45e47e6960504a48231cbf4.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+那在映射时应该选择哪一Level 作为纹理呢？利用屏幕相邻的像素点的距离估计纹理的大小，如图红色像素距离上和右两个像素的距离反应到纹理图上的距离变大的程度来选择，取最大</p>
+<p><img src="https://i-blog.csdnimg.cn/direct/15e4c9a36001452196577fd5d56451b1.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+但通过$D = log_2L$计算的是一个连续值，并不一定直接表面使用第几层，如何处理？
+使用三线性插值，例如D=1.8，就在第1层和第2层分别做一次双线性插值，最后根据D的大小，对两次插值结果再插值一次</p>
+<p><img src="https://i-blog.csdnimg.cn/direct/85612818317b45fb9f6573afd11e35af.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+使用该技术得到结果，如下图所示，远处仍然比较模糊</p>
+<p><img src="https://i-blog.csdnimg.cn/direct/c983fcf64bcb45629909889ac856342f.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+></p>
+<h3 id="各向异性过滤">各向异性过滤
+</h3><p>Mipmap所规定的区域查询
+必须是正方形，而纹理映射中可不仅仅只有正方形，如下图所示，某些像素对应的纹理图位置并不是正方形，针对这种情况，有时候需要水平方向的高Level，有时候需要竖直方向上的高Level，因此也启发了各向异性过滤，生成各种方向上压缩的材质，最终存储容量收敛到原来的3倍
+<img src="https://i-blog.csdnimg.cn/direct/a159d9343186494fba48b180ddc7b9a6.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+看下图一个像素点在纹理上对应的并不是一个正方形区域，使用Mipmap就不合适了
+<img src="https://i-blog.csdnimg.cn/direct/a2694a17e4324c34b7b7844a9fcd9959.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+></p>
+<h2 id="纹理的应用">纹理的应用
+</h2><h3 id="environment-map">Environment Map
+</h3><p>纹理不一定非得一副图片，可以用纹理描述环境光效果
+<img src="https://i-blog.csdnimg.cn/direct/8c14a0abbde44a91baaef5af594efec3.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+<img src="https://i-blog.csdnimg.cn/direct/215575e087ee43d39e809f0a70a6f259.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+></p>
+<h3 id="bump-mapping-凹凸贴图">Bump Mapping 凹凸贴图
+</h3><p>欺骗人眼，看着像是用模型做出来的凹凸效果，其实只是材质的原因。在贴图上定义每个点的高度进而改变法向量，这就回影响shading，因为法线参与了color生成过程。</p>
+<p><img src="https://i-blog.csdnimg.cn/direct/f152f87a28e243db85b3c98c4a11d9ec.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+></p>
+<h3 id="displacement-mapping-位移贴图">Displacement Mapping 位移贴图
+</h3><p>真的去移动了顶点，Bump会露馅，因为最外圈显然是一个完整的球。Bump Maps是逻辑上的高度改变，它实则并没有改变内部的模型，是假的改变；而Displacement Map则是物理上的高度改变。它真正改变了模型。二者的区别就在此处，可以通过物体阴影的边缘发现这点
+<img src="https://i-blog.csdnimg.cn/direct/d3136e29f86748cfb3269debba2f2f33.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+></p>
+<h3 id="3维纹理">3维纹理
+</h3><p><img src="https://i-blog.csdnimg.cn/direct/a0540dee9994499282928a5f85dd36fa.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+></p>
+
 </section>
 
 
@@ -354,6 +926,32 @@
     </section>
     </footer>
 
+
+    
+        <link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css"integrity="sha384-n8MVd4RsNIU0tAv4ct0nTaAbDJwPJzDEaqSD1odI&#43;WdtXRGWt2kTvGFasHpSy3SV"crossorigin="anonymous"
+            ><script 
+                src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"integrity="sha384-XjKyOOlGwcjNTAIQHIpgOno0Hl1YQqzUOEleOLALmuqehneUG&#43;vnGctmUb0ZY0l8"crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"integrity="sha384-&#43;VBxd3r6XgURycqtZ117nYw44OOcIax56Z4dCRWbxyPt0Koah1uHoK0o4&#43;/RRE05"crossorigin="anonymous"
+                defer
+                >
+            </script><script>
+    window.addEventListener("DOMContentLoaded", () => {
+	const mainArticleElement = document.querySelector(".main-article");
+        renderMathInElement(mainArticleElement, {
+            delimiters: [
+                { left: "$$", right: "$$", display: true },
+                { left: "$", right: "$", display: false },
+                { left: "\\(", right: "\\)", display: false },
+                { left: "\\[", right: "\\]", display: true }
+            ],
+            ignoredClasses: ["gist"]
+        });})
+</script>
 
     
 </article>
@@ -422,6 +1020,19 @@
         使用 <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> 构建 <br />
         主题 <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="3.31.0">Stack</a></b> 由 <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a> 设计
     </section>
+    <section class="powerby">
+      
+    
+    <div class="busuanzi-footer">
+        <span id="busuanzi_container_site_pv">
+          本站总访问量<span id="busuanzi_value_site_pv"></span>次
+        </span>
+        <span id="busuanzi_container_site_uv">
+          本站访客数<span id="busuanzi_value_site_uv"></span>人次
+        </span>
+      </div></section>
+
+
 </footer>
 
 
