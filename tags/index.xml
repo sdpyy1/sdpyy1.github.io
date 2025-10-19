@@ -7,7 +7,23 @@
         <generator>Hugo -- gohugo.io</generator>
         <language>zh-cn</language>
         <copyright>爱喝东方树叶</copyright>
-        <lastBuildDate>Sun, 19 Oct 2025 13:42:48 +0800</lastBuildDate><atom:link href="https://sdpyy1.github.io/tags/index.xml" rel="self" type="application/rss+xml" /><item>
+        <lastBuildDate>Sun, 19 Oct 2025 13:53:52 +0800</lastBuildDate><atom:link href="https://sdpyy1.github.io/tags/index.xml" rel="self" type="application/rss+xml" /><item>
+        <title>API学习</title>
+        <link>https://sdpyy1.github.io/tags/api%E5%AD%A6%E4%B9%A0/</link>
+        <pubDate>Sun, 19 Oct 2025 13:53:52 +0800</pubDate>
+        
+        <guid>https://sdpyy1.github.io/tags/api%E5%AD%A6%E4%B9%A0/</guid>
+        <description></description>
+        </item>
+        <item>
+        <title>OpenGL</title>
+        <link>https://sdpyy1.github.io/tags/opengl/</link>
+        <pubDate>Sun, 19 Oct 2025 13:53:52 +0800</pubDate>
+        
+        <guid>https://sdpyy1.github.io/tags/opengl/</guid>
+        <description></description>
+        </item>
+        <item>
         <title>TinyRender</title>
         <link>https://sdpyy1.github.io/tags/tinyrender/</link>
         <pubDate>Sun, 19 Oct 2025 13:42:48 +0800</pubDate>

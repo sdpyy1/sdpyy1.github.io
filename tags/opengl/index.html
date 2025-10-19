@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+<html lang="zh-cn" dir="ltr">
+    <head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'>
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+  <meta name="referrer" content="no-referrer-when-downgrade"><meta name='description' content="Blog">
+<title>Tag: OpenGL - wanfeng</title>
+
+<link rel='canonical' href='https://sdpyy1.github.io/tags/opengl/'>
+
+<link rel="stylesheet" href="/scss/style.min.6a692fd055deae459f2a9767f57f3855ba80cafd5041317f24f7360f6ca47cdf.css"><meta property='og:title' content="Tag: OpenGL - wanfeng">
+<meta property='og:description' content="Blog">
+<meta property='og:url' content='https://sdpyy1.github.io/tags/opengl/'>
+<meta property='og:site_name' content='wanfeng'>
+<meta property='og:type' content='website'><meta property='og:updated_time' content=' 2025-10-19T13:53:52&#43;08:00 '/>
+<meta name="twitter:title" content="Tag: OpenGL - wanfeng">
+<meta name="twitter:description" content="Blog"><link rel="alternate" type="application/rss&#43;xml" href="https://sdpyy1.github.io/tags/opengl/index.xml">
+    <link rel="shortcut icon" href="/favicon.ico" />
+
+    </head>
+    <body class="">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="切换菜单">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        
+            
+            <figure class="site-avatar">
+                <a href="/">
+                
+                    
+                    
+                    
+                        
+                        <img src="/img/avatar_hu_f59158f730715054.png" width="300"
+                            height="300" class="site-logo" loading="lazy" alt="Avatar">
+                    
+                
+                </a>
+                
+                    <span class="emoji">🧐</span>
+                
+            </figure>
+            
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="/">wanfeng</a></h1>
+            <h2 class="site-description">Blog</h2>
+        </div>
+    </header><ol class="menu-social">
+            
+                <li>
+                    <a 
+                        href='https://space.bilibili.com/287473737'
+                        target="_blank"
+                        title="Bilibili"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-brand-bilibili"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 10a4 4 0 0 1 4 -4h10a4 4 0 0 1 4 4v6a4 4 0 0 1 -4 4h-10a4 4 0 0 1 -4 -4v-6z" /><path d="M8 3l2 3" /><path d="M16 3l-2 3" /><path d="M9 13v-2" /><path d="M15 11v2" /></svg>
+                        
+                    </a>
+                </li>
+            
+                <li>
+                    <a 
+                        href='https://github.com/sdpyy1'
+                        target="_blank"
+                        title="GitHub"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
+</svg>
+
+
+
+                        
+                    </a>
+                </li>
+            
+        </ol><ol class="menu" id="main-menu">
+        
+        
+        
+        <li >
+            <a href='/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>Home</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/about/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>About</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>Archives</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/search/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>Search</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/links/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5" />
+  <path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5" />
+</svg>
+
+
+
+                
+                <span>Links</span>
+            </a>
+        </li>
+        
+        <li class="menu-bottom-section">
+            <ol class="menu">
+                    
+                        <li id="i18n-switch">  
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-language" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M4 5h7" />
+  <path d="M9 3v2c0 4.418 -2.239 8 -5 8" />
+  <path d="M5 9c-.003 2.144 2.952 3.908 6.7 4" />
+  <path d="M12 20l4 -9l4 9" />
+  <path d="M19.1 18h-6.2" />
+</svg>
+
+
+
+                            <select name="language" title="language" onchange="window.location.href = this.selectedOptions[0].value">
+                                
+                                    <option value="https://sdpyy1.github.io/en/" >English</option>
+                                
+                                    <option value="https://sdpyy1.github.io/" selected>中文</option>
+                                
+                            </select>
+                        </li>
+                    
+                
+
+                
+                    <li id="dark-mode-toggle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <span>暗色模式</span>
+                    </li>
+                
+            </ol>
+        </li>
+    </ol>
+</aside>
+
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                <form action="/search/" class="search-form widget" >
+        <p>
+            <label>搜索</label>
+            <input name="keyword" required placeholder="输入关键词..." />
+        
+            <button title="搜索">
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+            </button>
+        </p>
+    </form>
+            
+        
+            
+                <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-infinity" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M9.828 9.172a4 4 0 1 0 0 5.656 a10 10 0 0 0 2.172 -2.828a10 10 0 0 1 2.172 -2.828 a4 4 0 1 1 0 5.656a10 10 0 0 1 -2.172 -2.828a10 10 0 0 0 -2.172 -2.828" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">归档</h2>
+
+        
+        
+        
+        
+        
+        <div class="widget-archive--list">
+            <div class="archives-year">
+                    <a href="/archives/#2025">
+                        
+                            <span class="year">2025</span>
+                            <span class="count">22</span>
+                        
+                    </a> 
+                </div>
+            
+        </div>
+    </section>
+            
+        
+            
+                <section class="widget tagCloud">
+    <div class="widget-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+    </div>
+    <h2 class="widget-title section-title">分类</h2>
+
+    <div class="tagCloud-tags">
+        
+                    
+                    
+                
+                    
+                    
+                
+                    
+                    
+                
+                    
+                    
+                
+                    
+                    
+                
+                    
+                    
+                
+                    
+                    
+                
+                <a 
+                    href="/categories/course/games101/" 
+                    class="tag-cloud-item"
+                    style="color: hsl(300, 70%, 60%);"
+                    title="Games101（14篇文章）"
+                >
+                    Games101
+                    <span class="tag-count">14</span>
+                </a>
+                    
+                    
+                
+                    
+                    
+                
+                    
+                    
+                
+                    
+                    
+                
+                    
+                    
+                
+                    
+                    
+                
+                    
+                    
+                
+                <a 
+                    href="/categories/assignment/" 
+                    class="tag-cloud-item"
+                    style="color: hsl(180, 70%, 60%);"
+                    title="Assignment（8篇文章）"
+                >
+                    Assignment
+                    <span class="tag-count">8</span>
+                </a>
+                    
+                    
+                
+                    
+                    
+                
+                    
+                    
+                
+                    
+                    
+                
+                    
+                    
+                
+                    
+                    
+                
+                    
+                    
+                
+                <a 
+                    href="/categories/rendering/opengl/" 
+                    class="tag-cloud-item"
+                    style="color: hsl(180, 70%, 60%);"
+                    title="OpenGL（6篇文章）"
+                >
+                    OpenGL
+                    <span class="tag-count">6</span>
+                </a>
+                    
+                    
+                
+                    
+                    
+                
+                    
+                    
+                
+                    
+                    
+                
+                    
+                    
+                
+                    
+                    
+                
+                    
+                    
+                
+                <a 
+                    href="/categories/projects/tinyrender/" 
+                    class="tag-cloud-item"
+                    style="color: hsl(180, 70%, 60%);"
+                    title="Notes（2篇文章）"
+                >
+                    Notes
+                    <span class="tag-count">2</span>
+                </a>
+    </div>
+</section>
+
+<style>
+.tagCloud-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;  
+    padding: 15px 0;  
+    justify-content: flex-start;  
+    align-items: center;  
+}
+
+.tag-cloud-item {
+    text-decoration: none;
+    font-size: 14px;  
+    padding: 5px 12px;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+
+.tag-cloud-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+    background: rgba(255, 255, 255, 0.1);
+    border-color: currentColor;
+}
+
+.tag-count {
+    display: inline-block;
+    margin-left: 6px;
+    font-size: 11px;
+    background: rgba(0, 0, 0, 0.1);
+    padding: 0 5px;
+    border-radius: 8px;
+    opacity: 0.7;
+}
+
+ 
+@media (max-width: 768px) {
+    .tagCloud-tags {
+        gap: 6px;
+        padding: 10px 0;
+    }
+    .tag-cloud-item {
+        font-size: 13px;
+        padding: 3px 10px;
+    }
+}
+</style>
+            
+        
+            
+                <section class="widget tagCloud">
+    <div class="widget-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-tag" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11 3L20 12a1.5 1.5 0 0 1 0 2L14 20a1.5 1.5 0 0 1 -2 0L3 11v-4a4 4 0 0 1 4 -4h4" />
+  <circle cx="9" cy="9" r="2" />
+</svg>
+
+
+
+    </div>
+    <h2 class="widget-title section-title">标签云</h2>
+
+    <div class="tagCloud-tags">
+        
+            
+                
+                
+            
+                
+                
+            
+                
+                
+            
+                
+                
+            
+                
+                
+            
+                
+                
+            
+                
+                
+            
+            
+
+            <a 
+                href="/tags/games101/" 
+                class="tag-cloud-item"
+                style="color: hsl(300, 70%, 60%);"
+                title="Games101（14篇文章）"
+            >
+                Games101
+                <span class="tag-count">14</span>
+            </a>
+        
+            
+                
+                
+            
+                
+                
+            
+                
+                
+            
+                
+                
+            
+                
+                
+            
+                
+                
+            
+                
+                
+            
+            
+
+            <a 
+                href="/tags/%E8%AF%BE%E7%A8%8B%E4%BD%9C%E4%B8%9A/" 
+                class="tag-cloud-item"
+                style="color: hsl(180, 70%, 60%);"
+                title="课程作业（8篇文章）"
+            >
+                课程作业
+                <span class="tag-count">8</span>
+            </a>
+        
+            
+                
+                
+            
+                
+                
+            
+                
+                
+            
+                
+                
+            
+                
+                
+            
+                
+                
+            
+                
+                
+            
+            
+
+            <a 
+                href="/tags/api%E5%AD%A6%E4%B9%A0/" 
+                class="tag-cloud-item"
+                style="color: hsl(180, 70%, 60%);"
+                title="API学习（6篇文章）"
+            >
+                API学习
+                <span class="tag-count">6</span>
+            </a>
+        
+            
+                
+                
+            
+                
+                
+            
+                
+                
+            
+                
+                
+            
+                
+                
+            
+                
+                
+            
+                
+                
+            
+            
+
+            <a 
+                href="/tags/opengl/" 
+                class="tag-cloud-item"
+                style="color: hsl(180, 70%, 60%);"
+                title="OpenGL（6篇文章）"
+            >
+                OpenGL
+                <span class="tag-count">6</span>
+            </a>
+        
+            
+                
+                
+            
+                
+                
+            
+                
+                
+            
+                
+                
+            
+                
+                
+            
+                
+                
+            
+                
+                
+            
+            
+
+            <a 
+                href="/tags/%E8%AF%BE%E7%A8%8B%E7%AC%94%E8%AE%B0/" 
+                class="tag-cloud-item"
+                style="color: hsl(180, 70%, 60%);"
+                title="课程笔记（6篇文章）"
+            >
+                课程笔记
+                <span class="tag-count">6</span>
+            </a>
+        
+            
+                
+                
+            
+                
+                
+            
+                
+                
+            
+                
+                
+            
+                
+                
+            
+                
+                
+            
+                
+                
+            
+            
+
+            <a 
+                href="/tags/tinyrender/" 
+                class="tag-cloud-item"
+                style="color: hsl(180, 70%, 60%);"
+                title="TinyRender（2篇文章）"
+            >
+                TinyRender
+                <span class="tag-count">2</span>
+            </a>
+        
+            
+                
+                
+            
+                
+                
+            
+                
+                
+            
+                
+                
+            
+                
+                
+            
+                
+                
+            
+                
+                
+            
+            
+
+            <a 
+                href="/tags/%E6%B8%B2%E6%9F%93%E5%99%A8%E5%BC%80%E5%8F%91/" 
+                class="tag-cloud-item"
+                style="color: hsl(180, 70%, 60%);"
+                title="渲染器开发（2篇文章）"
+            >
+                渲染器开发
+                <span class="tag-count">2</span>
+            </a>
+        
+    </div>
+</section>
+
+<style>
+.tagCloud-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;  
+    padding: 15px 0;  
+    justify-content: flex-start;  
+    align-items: center;  
+}
+
+.tag-cloud-item {
+    text-decoration: none;
+    font-size: 14px;  
+    padding: 5px 12px;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.3s ease;
+    white-space: nowrap;  
+}
+
+.tag-cloud-item:hover {
+    transform: translateY(-2px);  
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+    background: rgba(255, 255, 255, 0.1);
+    border-color: currentColor;  
+}
+
+ 
+.tag-count {
+    display: inline-block;
+    margin-left: 6px;
+    font-size: 11px;
+    background: rgba(0, 0, 0, 0.1);
+    padding: 0 5px;
+    border-radius: 8px;
+    opacity: 0.7;
+}
+
+ 
+@media (max-width: 768px) {
+    .tagCloud-tags {
+        gap: 6px;
+        padding: 10px 0;
+    }
+    .tag-cloud-item {
+        font-size: 13px;
+        padding: 3px 10px;
+    }
+}
+</style>
+            
+        
+    </aside>
+
+
+            <main class="main full-width">
+    <header>
+        <h3 class="section-title">
+            
+                Tags
+            
+        </h3>
+
+        <div class="section-card">
+            <div class="section-details">
+                <h3 class="section-count">6 个页面</h3>
+                <h1 class="section-term">OpenGL</h1>
+                
+            </div>
+        </div>
+    </header>
+    
+    <section class="article-list--compact">
+        
+            <article>
+    <a href="/p/opengl%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0pbr/">
+        <div class="article-details">
+            <h2 class="article-title">OpenGL学习笔记（PBR）</h2>
+            <footer class="article-time">
+                <time datetime='2025-10-19T13:53:52&#43;08:00'>Oct 19, 2025</time>
+            </footer>
+        </div>
+    </a>
+</article>
+        
+            <article>
+    <a href="/p/opengl%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0%E5%BB%B6%E8%BF%9F%E7%9D%80%E8%89%B2%E6%B3%95ssao/">
+        <div class="article-details">
+            <h2 class="article-title">OpenGL学习笔记（延迟着色法、SSAO）</h2>
+            <footer class="article-time">
+                <time datetime='2025-10-19T13:53:03&#43;08:00'>Oct 19, 2025</time>
+            </footer>
+        </div>
+    </a>
+</article>
+        
+            <article>
+    <a href="/p/opengl%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0hdr%E6%B3%9B%E5%85%89/">
+        <div class="article-details">
+            <h2 class="article-title">OpenGL学习笔记（HDR、泛光）</h2>
+            <footer class="article-time">
+                <time datetime='2025-10-19T13:52:28&#43;08:00'>Oct 19, 2025</time>
+            </footer>
+        </div>
+    </a>
+</article>
+        
+            <article>
+    <a href="/p/opengl%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0%E6%B3%95%E7%BA%BF%E8%B4%B4%E5%9B%BE%E8%A7%86%E5%B7%AE%E8%B4%B4%E5%9B%BE/">
+        <div class="article-details">
+            <h2 class="article-title">OpenGL学习笔记（法线贴图、视差贴图）</h2>
+            <footer class="article-time">
+                <time datetime='2025-10-19T13:51:43&#43;08:00'>Oct 19, 2025</time>
+            </footer>
+        </div>
+    </a>
+</article>
+        
+            <article>
+    <a href="/p/opengl%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0blinn-phong%E4%BC%BD%E9%A9%AC%E7%9F%AB%E6%AD%A3%E9%98%B4%E5%BD%B1/">
+        <div class="article-details">
+            <h2 class="article-title">OpenGL学习笔记（Blinn Phong、伽马矫正、阴影）</h2>
+            <footer class="article-time">
+                <time datetime='2025-10-19T13:50:26&#43;08:00'>Oct 19, 2025</time>
+            </footer>
+        </div>
+    </a>
+</article>
+        
+            <article>
+    <a href="/p/opengl%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0%E7%AE%80%E4%BB%8B%E4%B8%89%E8%A7%92%E5%BD%A2%E7%9D%80%E8%89%B2%E5%99%A8%E7%BA%B9%E7%90%86%E5%9D%90%E6%A0%87%E7%B3%BB%E7%BB%9F%E6%91%84%E5%83%8F%E6%9C%BA/">
+        <div class="article-details">
+            <h2 class="article-title">OpenGL学习笔记（简介、三角形、着色器、纹理、坐标系统、摄像机）</h2>
+            <footer class="article-time">
+                <time datetime='2025-10-19T13:48:28&#43;08:00'>Oct 19, 2025</time>
+            </footer>
+        </div>
+    </a>
+</article>
+        
+    </section>
+<footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+            2020 - 
+        
+        2025 爱喝东方树叶
+    </section>
+    <section style="display: flex; gap: 30px; align-items: center;">
+      
+      
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+      <span>📚 文章数: 22</span>
+      <span>✍️ 总字数: 
+        
+        
+        76.17K
+      </span>
+    </section>
+
+    <section class="powerby">
+    
+    <div class="busuanzi-footer">
+        <span id="busuanzi_container_site_pv">
+          本站总访问量<span id="busuanzi_value_site_pv"></span>次
+        </span>
+        <span id="busuanzi_container_site_uv">
+          本站访客数<span id="busuanzi_value_site_uv"></span>人次
+        </span>
+      </div></section>
+
+</footer>
+
+
+            </main>
+        </div>
+        <script 
+                src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js"integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z&#43;KMkF24hUW8WePSA9HM="crossorigin="anonymous"
+                
+                >
+            </script><script type="text/javascript" src="/ts/main.1e9a3bafd846ced4c345d084b355fb8c7bae75701c338f8a1f8a82c780137826.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>

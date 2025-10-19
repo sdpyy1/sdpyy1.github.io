@@ -1,0 +1,2550 @@
+<!DOCTYPE html>
+<html lang="zh-cn" dir="ltr">
+    <head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'>
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+  <meta name="referrer" content="no-referrer-when-downgrade"><meta name='description' content="Blinn-Phong PhongShading不仅对真实光照有很好的近似，而且性能也很高。但是它的镜面反射会在一些情况下出现问题，特别是物体反光度很低时，会导致大片（粗糙的）高光区域。下面这张图展示了当p为1.0时地板会出现的效果： 上图高光区域的边缘有明显的断层，出现这个问题的原因是观察向量和反射向量间的夹角不能大于90度。如果点积的结果为负数，镜面光分量会变为0.0。所以90°的地方明显的断层 下图就是这个角度大于90°的情况 1977年，James F. Blinn在风氏着色模型上加以拓展，引入了Blinn-Phong着色模型。Blinn-Phong模型与风氏模型非常相似，但是它对镜面光模型的处理上有一些不同，让我们能够解决之前提到的问题。Blinn-Phong模型不再依赖于反射向量，而是采用了所谓的半程向量(Halfway Vector)，即光线与视线夹角一半方向上的一个单位向量。当半程向量与法线向量越接近时，镜面光分量就越大。 用光线与实现夹角的半程向量与法线夹角来表示镜面光强度。当视线正好与（现在不需要的）反射向量对齐时，半程向量就会与法线完美契合。所以当观察者视线越接近于原本反射光线的方向时，镜面高光就会越强。现在，不论观察者向哪个方向看，半程向量与表面法线之间的夹角都不会超过90度（除非光源在表面以下）。\n">
+<title>OpenGL学习笔记（Blinn Phong、伽马矫正、阴影）</title>
+
+<link rel='canonical' href='https://sdpyy1.github.io/p/opengl%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0blinn-phong%E4%BC%BD%E9%A9%AC%E7%9F%AB%E6%AD%A3%E9%98%B4%E5%BD%B1/'>
+
+<link rel="stylesheet" href="/scss/style.min.6a692fd055deae459f2a9767f57f3855ba80cafd5041317f24f7360f6ca47cdf.css"><meta property='og:title' content="OpenGL学习笔记（Blinn Phong、伽马矫正、阴影）">
+<meta property='og:description' content="Blinn-Phong PhongShading不仅对真实光照有很好的近似，而且性能也很高。但是它的镜面反射会在一些情况下出现问题，特别是物体反光度很低时，会导致大片（粗糙的）高光区域。下面这张图展示了当p为1.0时地板会出现的效果： 上图高光区域的边缘有明显的断层，出现这个问题的原因是观察向量和反射向量间的夹角不能大于90度。如果点积的结果为负数，镜面光分量会变为0.0。所以90°的地方明显的断层 下图就是这个角度大于90°的情况 1977年，James F. Blinn在风氏着色模型上加以拓展，引入了Blinn-Phong着色模型。Blinn-Phong模型与风氏模型非常相似，但是它对镜面光模型的处理上有一些不同，让我们能够解决之前提到的问题。Blinn-Phong模型不再依赖于反射向量，而是采用了所谓的半程向量(Halfway Vector)，即光线与视线夹角一半方向上的一个单位向量。当半程向量与法线向量越接近时，镜面光分量就越大。 用光线与实现夹角的半程向量与法线夹角来表示镜面光强度。当视线正好与（现在不需要的）反射向量对齐时，半程向量就会与法线完美契合。所以当观察者视线越接近于原本反射光线的方向时，镜面高光就会越强。现在，不论观察者向哪个方向看，半程向量与表面法线之间的夹角都不会超过90度（除非光源在表面以下）。\n">
+<meta property='og:url' content='https://sdpyy1.github.io/p/opengl%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0blinn-phong%E4%BC%BD%E9%A9%AC%E7%9F%AB%E6%AD%A3%E9%98%B4%E5%BD%B1/'>
+<meta property='og:site_name' content='wanfeng'>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='API学习' /><meta property='article:tag' content='OpenGL' /><meta property='article:published_time' content='2025-10-19T13:50:26&#43;08:00'/><meta property='article:modified_time' content='2025-10-19T13:50:26&#43;08:00'/>
+<meta name="twitter:title" content="OpenGL学习笔记（Blinn Phong、伽马矫正、阴影）">
+<meta name="twitter:description" content="Blinn-Phong PhongShading不仅对真实光照有很好的近似，而且性能也很高。但是它的镜面反射会在一些情况下出现问题，特别是物体反光度很低时，会导致大片（粗糙的）高光区域。下面这张图展示了当p为1.0时地板会出现的效果： 上图高光区域的边缘有明显的断层，出现这个问题的原因是观察向量和反射向量间的夹角不能大于90度。如果点积的结果为负数，镜面光分量会变为0.0。所以90°的地方明显的断层 下图就是这个角度大于90°的情况 1977年，James F. Blinn在风氏着色模型上加以拓展，引入了Blinn-Phong着色模型。Blinn-Phong模型与风氏模型非常相似，但是它对镜面光模型的处理上有一些不同，让我们能够解决之前提到的问题。Blinn-Phong模型不再依赖于反射向量，而是采用了所谓的半程向量(Halfway Vector)，即光线与视线夹角一半方向上的一个单位向量。当半程向量与法线向量越接近时，镜面光分量就越大。 用光线与实现夹角的半程向量与法线夹角来表示镜面光强度。当视线正好与（现在不需要的）反射向量对齐时，半程向量就会与法线完美契合。所以当观察者视线越接近于原本反射光线的方向时，镜面高光就会越强。现在，不论观察者向哪个方向看，半程向量与表面法线之间的夹角都不会超过90度（除非光源在表面以下）。\n">
+    <link rel="shortcut icon" href="/favicon.ico" />
+
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="切换菜单">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        
+            
+            <figure class="site-avatar">
+                <a href="/">
+                
+                    
+                    
+                    
+                        
+                        <img src="/img/avatar_hu_f59158f730715054.png" width="300"
+                            height="300" class="site-logo" loading="lazy" alt="Avatar">
+                    
+                
+                </a>
+                
+                    <span class="emoji">🧐</span>
+                
+            </figure>
+            
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="/">wanfeng</a></h1>
+            <h2 class="site-description">Blog</h2>
+        </div>
+    </header><ol class="menu-social">
+            
+                <li>
+                    <a 
+                        href='https://space.bilibili.com/287473737'
+                        target="_blank"
+                        title="Bilibili"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-brand-bilibili"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 10a4 4 0 0 1 4 -4h10a4 4 0 0 1 4 4v6a4 4 0 0 1 -4 4h-10a4 4 0 0 1 -4 -4v-6z" /><path d="M8 3l2 3" /><path d="M16 3l-2 3" /><path d="M9 13v-2" /><path d="M15 11v2" /></svg>
+                        
+                    </a>
+                </li>
+            
+                <li>
+                    <a 
+                        href='https://github.com/sdpyy1'
+                        target="_blank"
+                        title="GitHub"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
+</svg>
+
+
+
+                        
+                    </a>
+                </li>
+            
+        </ol><ol class="menu" id="main-menu">
+        
+        
+        
+        <li >
+            <a href='/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>Home</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/about/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>About</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>Archives</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/search/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>Search</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/links/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5" />
+  <path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5" />
+</svg>
+
+
+
+                
+                <span>Links</span>
+            </a>
+        </li>
+        
+        <li class="menu-bottom-section">
+            <ol class="menu">
+                    
+                        <li id="i18n-switch">  
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-language" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M4 5h7" />
+  <path d="M9 3v2c0 4.418 -2.239 8 -5 8" />
+  <path d="M5 9c-.003 2.144 2.952 3.908 6.7 4" />
+  <path d="M12 20l4 -9l4 9" />
+  <path d="M19.1 18h-6.2" />
+</svg>
+
+
+
+                            <select name="language" title="language" onchange="window.location.href = this.selectedOptions[0].value">
+                                
+                                    <option value="https://sdpyy1.github.io/en/" >English</option>
+                                
+                                    <option value="https://sdpyy1.github.io/" selected>中文</option>
+                                
+                            </select>
+                        </li>
+                    
+                
+
+                
+                    <li id="dark-mode-toggle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <span>暗色模式</span>
+                    </li>
+                
+            </ol>
+        </li>
+    </ol>
+</aside>
+
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">目录</h2>
+        
+        <div class="widget--toc">
+            <nav id="TableOfContents">
+  <ol>
+    <li><a href="#blinn-phong">Blinn-Phong</a></li>
+    <li><a href="#gamma矫正">Gamma矫正</a>
+      <ol>
+        <li><a href="#gamma">Gamma</a></li>
+        <li><a href="#gamma矫正-1">Gamma矫正</a></li>
+        <li><a href="#实现方法">实现方法</a></li>
+        <li><a href="#srgb纹理">sRGB纹理</a></li>
+        <li><a href="#衰减">衰减</a></li>
+      </ol>
+    </li>
+    <li><a href="#阴影">阴影</a>
+      <ol>
+        <li><a href="#shadow-mapping">shadow mapping</a></li>
+        <li><a href="#渲染阴影">渲染阴影</a></li>
+        <li><a href="#改进阴影贴图">改进阴影贴图</a></li>
+        <li><a href="#pcf">PCF</a></li>
+      </ol>
+    </li>
+  </ol>
+</nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+            <main class="main full-width">
+    <article class="main-article">
+    <header class="article-header">
+
+    <div class="article-details">
+    
+    <header class="article-category">
+        
+        
+             
+            
+            
+            
+            <div class="category-hierarchy">
+                
+                    
+                    
+                    
+                        
+                    
+                     
+                    
+                    
+                    
+                    <a href="/categories/rendering/" 
+                       >
+                        Rendering
+                    </a>
+                    
+                    
+                    
+                        <span class="category-separator">/</span>
+                    
+                
+                    
+                    
+                    
+                        
+                    
+                        
+                    
+                     
+                    
+                    
+                    
+                    <a href="/categories/rendering/opengl/" 
+                       >
+                        OpenGL
+                    </a>
+                    
+                    
+                    
+                
+            </div>
+        
+    </header>
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="/p/opengl%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0blinn-phong%E4%BC%BD%E9%A9%AC%E7%9F%AB%E6%AD%A3%E9%98%B4%E5%BD%B1/">OpenGL学习笔记（Blinn Phong、伽马矫正、阴影）</a>
+        </h2>
+    
+        
+    </div>
+
+    
+    
+    
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published">Oct 19, 2025</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-time--reading">
+                    阅读时长: 14 分钟
+                </time>
+            </div>
+        
+
+        
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+        <span id="busuanzi_container_page_pv">本文阅读量<span id="busuanzi_value_page_pv"></span>次</span>
+    </footer>
+    
+    
+</div>
+<style>
+    .category-hierarchy {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;  
+        margin-right: 12px;  
+        margin-bottom: 8px;  
+    }
+    
+    .category-separator {
+        color: #999;
+        user-select: none;
+        font-size: 1em;  
+    }
+    
+    .article-category a {
+        text-decoration: none;
+        padding: 6px 12px;  
+        border-radius: 6px;  
+        font-size: 0.95em;  
+        transition: all 0.2s ease;
+        line-height: 1.5;  
+    }
+    
+    .article-category a:hover {
+        opacity: 0.9;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 6px rgba(0,0,0,0.1);  
+    }
+</style>
+</header>
+
+    <section class="article-content">
+    
+    
+    <h1 id="blinn-phong">Blinn-Phong
+</h1><p>PhongShading不仅对真实光照有很好的近似，而且性能也很高。但是它的镜面反射会在一些情况下出现问题，特别是物体反光度很低时，会导致大片（粗糙的）高光区域。下面这张图展示了当p为1.0时地板会出现的效果：
+<img src="/80b55f8646e1467b93cff1b9ecd6641f.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+>
+上图高光区域的边缘有明显的断层，出现这个问题的原因是观察向量和反射向量间的夹角不能大于90度。如果点积的结果为负数，镜面光分量会变为0.0。所以90°的地方明显的断层
+下图就是这个角度大于90°的情况
+<img src="/17f69751f1204ff794a2dca51ed20f25.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+>
+1977年，James F. Blinn在风氏着色模型上加以拓展，引入了Blinn-Phong着色模型。Blinn-Phong模型与风氏模型非常相似，但是它对镜面光模型的处理上有一些不同，让我们能够解决之前提到的问题。Blinn-Phong模型不再依赖于反射向量，而是采用了所谓的半程向量(Halfway Vector)，即光线与视线夹角一半方向上的一个单位向量。当半程向量与法线向量越接近时，镜面光分量就越大。
+<img src="/398be4c82dcc40c3ac582bff364dcc7b.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+>
+用光线与实现夹角的半程向量与法线夹角来表示镜面光强度。当视线正好与（现在不需要的）反射向量对齐时，半程向量就会与法线完美契合。所以当观察者视线越接近于原本反射光线的方向时，镜面高光就会越强。现在，不论观察者向哪个方向看，半程向量与表面法线之间的夹角都不会超过90度（除非光源在表面以下）。</p>
+<p><strong>Blinn-Phong与风氏模型唯一的区别就是，Blinn-Phong测量的是法线与半程向量之间的夹角，而风氏模型测量的是观察方向与反射向量间的夹角。</strong>
+<img src="/7ddd6ea90d13401ab06f552c82d0fe6a.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+>
+除此之外还有一个小区别，就是半程向量与表面法线的夹角通常会小于观察与反射向量的夹角。所以，如果你想获得和风氏着色类似的效果，就必须在使用Blinn-Phong模型时将镜面反光度设置更高一点。通常我们会选择风氏着色时反光度分量的2到4倍。
+<img src="/70d5962e69104f79b5e52d6fef8ad105.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+>
+Blinn-Phong着色的一个附加好处是，它比Phong着色性能更高，因为我们不必计算更加复杂的反射向量了。</p>
+<h1 id="gamma矫正">Gamma矫正
+</h1><h2 id="gamma">Gamma
+</h2><p>设备输出亮度 = 输入电压的Gamma次幂
+<img src="/bf6ee5e130a444f8a4a063e839d1a8ef.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+>
+第一行表示人眼感知色阶，第二行是物理的色阶。
+人眼对暗色的分辨能力远超亮色，那么在有限的计算机颜色中（256个色阶），亮色和暗色均匀分布的话，那亮色部分就会精度过剩而暗色部分就会精度不足。如何解决这个问题？进行 Gamma 矫正。</p>
+<p>人的视觉系统对光照强度的反应并不是线性的，这意味着一个线性变化的光强，人眼感知起来却并非如此。</p>
+<p><img src="/1d50ec9cae5d4c4e8d01ed8dcf3d1709.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+>
+y=x的电线表示Gamma为1的理想状态，当我们输出一个值为(0.5,0.0,0.0)的颜色时，显示器输出的实际颜色为(0.218,0.0,0.0)  就是0.5的2.2次幂。如果我们把设置的颜色翻倍变为（1，0，0）实际上显示器的输出翻了4.5倍不止。</p>
+<p>这块我感觉他解释的很乱，不如直接说人眼的gamma是1/2.2，显示器的gamma是2.2，刚好抵消了</p>
+<p>为什么看起来&quot;正常&quot;：
+人眼恰好需要约4.5倍的物理亮度变化才能感知&quot;2倍亮度&quot;
+显示器的Gamma 2.2 ≈ 补偿了人眼的非线性感知
+最终达到&quot;所见即所得&quot;的效果</p>
+<p>因为颜色是根据显示器的输出配置的，所以线性空间中的所有中间(照明)计算在物理上都是不正确的。随着更多先进的照明算法的引入，这一点变得更加明显，如下图所示：
+<img src="/96a5a493dfe64ebda901f9fb55096ddb.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+>
+如果没有适当地纠正这个显示器伽马，照明看起来是错误的，艺术家将很难获得逼真和好看的结果。解决方案正是应用伽马校正。</p>
+<h2 id="gamma矫正-1">Gamma矫正
+</h2><p>Gamma校正(Gamma Correction)的思路是在最终的颜色输出到显示器之前先将Gamma的倒数作用到颜色上。就是让一个颜色变得更亮之后输出到显示器又会变暗，刚好抵消了~</p>
+<p>我们来看另一个例子。还是那个暗红色(0.5,0.0,0.0)。在将颜色显示到显示器之前，我们先对颜色应用Gamma校正曲线。线性的颜色显示在显示器上相当于降低了2.2
+次幂的亮度，所以倒数就是1/2.2次幂。Gamma校正后的暗红色就会成为(0.73,0.0,0.0)。校正后的颜色接着被发送给显示器，最终显示出来的颜色是(0.5,0.0,0.0)。你会发现使用了Gamma校正，显示器最终会显示出我们在应用中设置的那种线性的颜色。</p>
+<p>基于gamma2.2的颜色空间叫做sRGB颜色空间。每个显示器的gamma曲线都有所不同，但是gamma2.2在大多数显示器上表现都不错。</p>
+<h2 id="实现方法">实现方法
+</h2><ol>
+<li>使用OpenGL内建的sRGB帧缓冲。
+开启即可</li>
+</ol>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="n">glEnable</span><span class="p">(</span><span class="n">GL_FRAMEBUFFER_SRGB</span><span class="p">);</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>不开矫正效果
+<img src="/14ab11ba1f9e43658f14890c44421222.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+>
+开启矫正
+<img src="/7de60a5b6a2e42248ba6f0d61815deb4.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+>
+明显亮了很多，这也就是在抵消显示器让颜色变暗的情况。
+使用这种方法要注意，他是输出到屏幕之前进行的矫正，如果你提前进行了矫正，那后续操作就全错了。</p>
+<ol start="2">
+<li>自己在像素着色器中进行gamma校正w。</li>
+</ol>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="kt">void</span> <span class="nf">main</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 在线性空间做炫酷的光照效果
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="p">[...]</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 应用伽马矫正
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="kt">float</span> <span class="n">gamma</span> <span class="o">=</span> <span class="mf">2.2</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">fragColor</span><span class="p">.</span><span class="n">rgb</span> <span class="o">=</span> <span class="n">pow</span><span class="p">(</span><span class="n">fragColor</span><span class="p">.</span><span class="n">rgb</span><span class="p">,</span> <span class="n">vec3</span><span class="p">(</span><span class="mf">1.0</span><span class="o">/</span><span class="n">gamma</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="srgb纹理">sRGB纹理
+</h2><p>显示器显示颜色时使用了gamma曲线（约2.2），这意味着：你看到的颜色 ≠ 内存中的数值
+<img src="/6af533da32a246499c36ad61e5de058e.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+>
+典型错误场景：
+当你在渲染管线中：
+① 加载sRGB纹理（已经gamma校正）
+② 进行光照计算（应该在线性空间）
+③ 输出到显示器（又自动gamma校正）
+→ 实际发生了两次gamma校正 → 画面过亮</p>
+<p>也就是说sRGB纹理它已经被gamma矫正过了，渲染完成后不需要再进行gamma矫正。</p>
+<p>所以可以先转为线性颜色计算后，再统一进行gamma矫正
+为了转为线性的颜色，可以使用特定的纹理创建函数</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">glTexImage2D<span class="o">(</span>GL_TEXTURE_2D, 0, GL_SRGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image<span class="o">)</span><span class="p">;</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>这个函数会自动把sRGB纹理转为线性空间，正常进行计算后统一进行gamma矫正并输出</p>
+<h2 id="衰减">衰减
+</h2><p>伽马校正的另一个不同之处在于光照衰减。在真实的物理世界中，光衰减与光源距离的平方成反比。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">float <span class="nv">attenuation</span> <span class="o">=</span> 1.0 / <span class="o">(</span>distance * distance<span class="o">)</span><span class="p">;</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>然而当我们使用这个衰减公式时，衰减效果总是过于强烈
+如果我们使用这个方程，而且不进行gamma校正，显示在监视器上的衰减方程实际上将变成$(1.0/distance^2)^{2.2}$,所以进行了强烈的衰减。</p>
+<p>总而言之，gamma校正使你可以在线性空间中进行操作。因为线性空间更符合物理世界，大多数物理公式现在都可以获得较好效果，比如真实的光的衰减。你的光照越真实，使用gamma校正获得漂亮的效果就越容易。这也正是为什么当引进gamma校正时，建议只去调整光照参数的原因。</p>
+<h1 id="阴影">阴影
+</h1><h2 id="shadow-mapping">shadow mapping
+</h2><p>这个在我的tinyrenderer中实现过。这里额外提到了把摄像机角度生成的zbuffer存储在纹理中。我们管储存在纹理中的所有这些深度值，叫做深度贴图（depth map）或阴影贴图。
+首先创建一个有三个正方形的场景</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">  1
+</span><span class="lnt">  2
+</span><span class="lnt">  3
+</span><span class="lnt">  4
+</span><span class="lnt">  5
+</span><span class="lnt">  6
+</span><span class="lnt">  7
+</span><span class="lnt">  8
+</span><span class="lnt">  9
+</span><span class="lnt"> 10
+</span><span class="lnt"> 11
+</span><span class="lnt"> 12
+</span><span class="lnt"> 13
+</span><span class="lnt"> 14
+</span><span class="lnt"> 15
+</span><span class="lnt"> 16
+</span><span class="lnt"> 17
+</span><span class="lnt"> 18
+</span><span class="lnt"> 19
+</span><span class="lnt"> 20
+</span><span class="lnt"> 21
+</span><span class="lnt"> 22
+</span><span class="lnt"> 23
+</span><span class="lnt"> 24
+</span><span class="lnt"> 25
+</span><span class="lnt"> 26
+</span><span class="lnt"> 27
+</span><span class="lnt"> 28
+</span><span class="lnt"> 29
+</span><span class="lnt"> 30
+</span><span class="lnt"> 31
+</span><span class="lnt"> 32
+</span><span class="lnt"> 33
+</span><span class="lnt"> 34
+</span><span class="lnt"> 35
+</span><span class="lnt"> 36
+</span><span class="lnt"> 37
+</span><span class="lnt"> 38
+</span><span class="lnt"> 39
+</span><span class="lnt"> 40
+</span><span class="lnt"> 41
+</span><span class="lnt"> 42
+</span><span class="lnt"> 43
+</span><span class="lnt"> 44
+</span><span class="lnt"> 45
+</span><span class="lnt"> 46
+</span><span class="lnt"> 47
+</span><span class="lnt"> 48
+</span><span class="lnt"> 49
+</span><span class="lnt"> 50
+</span><span class="lnt"> 51
+</span><span class="lnt"> 52
+</span><span class="lnt"> 53
+</span><span class="lnt"> 54
+</span><span class="lnt"> 55
+</span><span class="lnt"> 56
+</span><span class="lnt"> 57
+</span><span class="lnt"> 58
+</span><span class="lnt"> 59
+</span><span class="lnt"> 60
+</span><span class="lnt"> 61
+</span><span class="lnt"> 62
+</span><span class="lnt"> 63
+</span><span class="lnt"> 64
+</span><span class="lnt"> 65
+</span><span class="lnt"> 66
+</span><span class="lnt"> 67
+</span><span class="lnt"> 68
+</span><span class="lnt"> 69
+</span><span class="lnt"> 70
+</span><span class="lnt"> 71
+</span><span class="lnt"> 72
+</span><span class="lnt"> 73
+</span><span class="lnt"> 74
+</span><span class="lnt"> 75
+</span><span class="lnt"> 76
+</span><span class="lnt"> 77
+</span><span class="lnt"> 78
+</span><span class="lnt"> 79
+</span><span class="lnt"> 80
+</span><span class="lnt"> 81
+</span><span class="lnt"> 82
+</span><span class="lnt"> 83
+</span><span class="lnt"> 84
+</span><span class="lnt"> 85
+</span><span class="lnt"> 86
+</span><span class="lnt"> 87
+</span><span class="lnt"> 88
+</span><span class="lnt"> 89
+</span><span class="lnt"> 90
+</span><span class="lnt"> 91
+</span><span class="lnt"> 92
+</span><span class="lnt"> 93
+</span><span class="lnt"> 94
+</span><span class="lnt"> 95
+</span><span class="lnt"> 96
+</span><span class="lnt"> 97
+</span><span class="lnt"> 98
+</span><span class="lnt"> 99
+</span><span class="lnt">100
+</span><span class="lnt">101
+</span><span class="lnt">102
+</span><span class="lnt">103
+</span><span class="lnt">104
+</span><span class="lnt">105
+</span><span class="lnt">106
+</span><span class="lnt">107
+</span><span class="lnt">108
+</span><span class="lnt">109
+</span><span class="lnt">110
+</span><span class="lnt">111
+</span><span class="lnt">112
+</span><span class="lnt">113
+</span><span class="lnt">114
+</span><span class="lnt">115
+</span><span class="lnt">116
+</span><span class="lnt">117
+</span><span class="lnt">118
+</span><span class="lnt">119
+</span><span class="lnt">120
+</span><span class="lnt">121
+</span><span class="lnt">122
+</span><span class="lnt">123
+</span><span class="lnt">124
+</span><span class="lnt">125
+</span><span class="lnt">126
+</span><span class="lnt">127
+</span><span class="lnt">128
+</span><span class="lnt">129
+</span><span class="lnt">130
+</span><span class="lnt">131
+</span><span class="lnt">132
+</span><span class="lnt">133
+</span><span class="lnt">134
+</span><span class="lnt">135
+</span><span class="lnt">136
+</span><span class="lnt">137
+</span><span class="lnt">138
+</span><span class="lnt">139
+</span><span class="lnt">140
+</span><span class="lnt">141
+</span><span class="lnt">142
+</span><span class="lnt">143
+</span><span class="lnt">144
+</span><span class="lnt">145
+</span><span class="lnt">146
+</span><span class="lnt">147
+</span><span class="lnt">148
+</span><span class="lnt">149
+</span><span class="lnt">150
+</span><span class="lnt">151
+</span><span class="lnt">152
+</span><span class="lnt">153
+</span><span class="lnt">154
+</span><span class="lnt">155
+</span><span class="lnt">156
+</span><span class="lnt">157
+</span><span class="lnt">158
+</span><span class="lnt">159
+</span><span class="lnt">160
+</span><span class="lnt">161
+</span><span class="lnt">162
+</span><span class="lnt">163
+</span><span class="lnt">164
+</span><span class="lnt">165
+</span><span class="lnt">166
+</span><span class="lnt">167
+</span><span class="lnt">168
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">int main<span class="o">(){</span>
+</span></span><span class="line"><span class="cl">    // 初始化窗口
+</span></span><span class="line"><span class="cl">    GLFWwindow * <span class="nv">window</span> <span class="o">=</span> InitWindowAndFunc<span class="o">()</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    stbi_set_flip_vertically_on_load<span class="o">(</span><span class="nb">true</span><span class="o">)</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    // 启用深度测试
+</span></span><span class="line"><span class="cl">    glEnable<span class="o">(</span>GL_DEPTH_TEST<span class="o">)</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    // shader
+</span></span><span class="line"><span class="cl">    Shader shader<span class="o">(</span><span class="s2">&#34;./shader/base.vert&#34;</span>, <span class="s2">&#34;./shader/base.frag&#34;</span><span class="o">)</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    // 纹理
+</span></span><span class="line"><span class="cl">    unsigned int <span class="nv">planeDiffuse</span> <span class="o">=</span> loadTexture<span class="o">(</span><span class="s2">&#34;./assets/diffuse.png&#34;</span><span class="o">)</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    unsigned int <span class="nv">cubeDiffuse</span> <span class="o">=</span> loadTexture<span class="o">(</span><span class="s2">&#34;./assets/container.jpg&#34;</span><span class="o">)</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    // 地板
+</span></span><span class="line"><span class="cl">    float planeVertices<span class="o">[]</span> <span class="o">=</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            // positions            // normals         // texcoords
+</span></span><span class="line"><span class="cl">            25.0f, -0.5f,  25.0f,  0.0f, 1.0f, 0.0f,  25.0f,  0.0f,
+</span></span><span class="line"><span class="cl">            -25.0f, -0.5f,  25.0f,  0.0f, 1.0f, 0.0f,   0.0f,  0.0f,
+</span></span><span class="line"><span class="cl">            -25.0f, -0.5f, -25.0f,  0.0f, 1.0f, 0.0f,   0.0f, 25.0f,
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">            25.0f, -0.5f,  25.0f,  0.0f, 1.0f, 0.0f,  25.0f,  0.0f,
+</span></span><span class="line"><span class="cl">            -25.0f, -0.5f, -25.0f,  0.0f, 1.0f, 0.0f,   0.0f, 25.0f,
+</span></span><span class="line"><span class="cl">            25.0f, -0.5f, -25.0f,  0.0f, 1.0f, 0.0f,  25.0f, 25.0f
+</span></span><span class="line"><span class="cl">    <span class="o">}</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    // plane VAO
+</span></span><span class="line"><span class="cl">    unsigned int planeVBO,planeVAO<span class="p">;</span>
+</span></span><span class="line"><span class="cl">    glGenVertexArrays<span class="o">(</span>1, <span class="p">&amp;</span>planeVAO<span class="o">)</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    glGenBuffers<span class="o">(</span>1, <span class="p">&amp;</span>planeVBO<span class="o">)</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    glBindVertexArray<span class="o">(</span>planeVAO<span class="o">)</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    glBindBuffer<span class="o">(</span>GL_ARRAY_BUFFER, planeVBO<span class="o">)</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    glBufferData<span class="o">(</span>GL_ARRAY_BUFFER, sizeof<span class="o">(</span>planeVertices<span class="o">)</span>, planeVertices, GL_STATIC_DRAW<span class="o">)</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    glEnableVertexAttribArray<span class="o">(</span>0<span class="o">)</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    glVertexAttribPointer<span class="o">(</span>0, 3, GL_FLOAT, GL_FALSE, <span class="m">8</span> * sizeof<span class="o">(</span>float<span class="o">)</span>, <span class="o">(</span>void*<span class="o">)</span>0<span class="o">)</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    glEnableVertexAttribArray<span class="o">(</span>1<span class="o">)</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    glVertexAttribPointer<span class="o">(</span>1, 3, GL_FLOAT, GL_FALSE, <span class="m">8</span> * sizeof<span class="o">(</span>float<span class="o">)</span>, <span class="o">(</span>void*<span class="o">)(</span><span class="m">3</span> * sizeof<span class="o">(</span>float<span class="o">)))</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    glEnableVertexAttribArray<span class="o">(</span>2<span class="o">)</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    glVertexAttribPointer<span class="o">(</span>2, 2, GL_FLOAT, GL_FALSE, <span class="m">8</span> * sizeof<span class="o">(</span>float<span class="o">)</span>, <span class="o">(</span>void*<span class="o">)(</span><span class="m">6</span> * sizeof<span class="o">(</span>float<span class="o">)))</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    glBindVertexArray<span class="o">(</span>0<span class="o">)</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">while</span> <span class="o">(</span>!glfwWindowShouldClose<span class="o">(</span>window<span class="o">))</span>
+</span></span><span class="line"><span class="cl">    <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        // 清理窗口
+</span></span><span class="line"><span class="cl">        glClearColor<span class="o">(</span>0.05f, 0.05f, 0.05f, 1.0f<span class="o">)</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        glClear<span class="o">(</span>GL_COLOR_BUFFER_BIT <span class="p">|</span> GL_DEPTH_BUFFER_BIT<span class="o">)</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        glm::mat4 <span class="nv">projection</span> <span class="o">=</span> glm::perspective<span class="o">(</span>glm::radians<span class="o">(</span>45.0f<span class="o">)</span>, <span class="o">(</span>float<span class="o">)</span>SCR_WIDTH / <span class="o">(</span>float<span class="o">)</span>SCR_HEIGHT, 0.1f, 1000.0f<span class="o">)</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        glm::mat4 <span class="nv">view</span> <span class="o">=</span> camera.GetViewMatrix<span class="o">()</span><span class="p">;;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        shader.use<span class="o">()</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        glBindVertexArray<span class="o">(</span>planeVAO<span class="o">)</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        shader.setMat4<span class="o">(</span><span class="s2">&#34;projection&#34;</span>, projection<span class="o">)</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        shader.setMat4<span class="o">(</span><span class="s2">&#34;view&#34;</span>, view<span class="o">)</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        shader.setMat4<span class="o">(</span><span class="s2">&#34;model&#34;</span>, glm::mat4<span class="o">(</span>1.0<span class="o">))</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        shader.setInt<span class="o">(</span><span class="s2">&#34;diffuse_texture1&#34;</span>, 0<span class="o">)</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        glBindTexture<span class="o">(</span>GL_TEXTURE_2D, planeDiffuse<span class="o">)</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        glDrawArrays<span class="o">(</span>GL_TRIANGLES, 0, 6<span class="o">)</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        glBindTexture<span class="o">(</span>GL_TEXTURE_2D, cubeDiffuse<span class="o">)</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        // cubes
+</span></span><span class="line"><span class="cl">        glm::mat4 <span class="nv">model</span> <span class="o">=</span> glm::mat4<span class="o">(</span>1.0f<span class="o">)</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="nv">model</span> <span class="o">=</span> glm::mat4<span class="o">(</span>1.0f<span class="o">)</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="nv">model</span> <span class="o">=</span> glm::translate<span class="o">(</span>model, glm::vec3<span class="o">(</span>0.0f, 1.5f, 0.0<span class="o">))</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="nv">model</span> <span class="o">=</span> glm::scale<span class="o">(</span>model, glm::vec3<span class="o">(</span>0.5f<span class="o">))</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        shader.setMat4<span class="o">(</span><span class="s2">&#34;model&#34;</span>, model<span class="o">)</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        renderCube<span class="o">()</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="nv">model</span> <span class="o">=</span> glm::mat4<span class="o">(</span>1.0f<span class="o">)</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="nv">model</span> <span class="o">=</span> glm::translate<span class="o">(</span>model, glm::vec3<span class="o">(</span>2.0f, 0.0f, 1.0<span class="o">))</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="nv">model</span> <span class="o">=</span> glm::scale<span class="o">(</span>model, glm::vec3<span class="o">(</span>0.5f<span class="o">))</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        shader.setMat4<span class="o">(</span><span class="s2">&#34;model&#34;</span>, model<span class="o">)</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        renderCube<span class="o">()</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="nv">model</span> <span class="o">=</span> glm::mat4<span class="o">(</span>1.0f<span class="o">)</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="nv">model</span> <span class="o">=</span> glm::translate<span class="o">(</span>model, glm::vec3<span class="o">(</span>-1.0f, 0.0f, 2.0<span class="o">))</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="nv">model</span> <span class="o">=</span> glm::rotate<span class="o">(</span>model, glm::radians<span class="o">(</span>60.0f<span class="o">)</span>, glm::normalize<span class="o">(</span>glm::vec3<span class="o">(</span>1.0, 0.0, 1.0<span class="o">)))</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="nv">model</span> <span class="o">=</span> glm::scale<span class="o">(</span>model, glm::vec3<span class="o">(</span>0.25<span class="o">))</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        shader.setMat4<span class="o">(</span><span class="s2">&#34;model&#34;</span>, model<span class="o">)</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        renderCube<span class="o">()</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        // 事件处理
+</span></span><span class="line"><span class="cl">        glfwPollEvents<span class="o">()</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        // 双缓冲
+</span></span><span class="line"><span class="cl">        glfwSwapBuffers<span class="o">(</span>window<span class="o">)</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        processFrameTimeForMove<span class="o">()</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        processInput<span class="o">(</span>window<span class="o">)</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">    glfwTerminate<span class="o">()</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> 0<span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">void renderCube<span class="o">()</span>
+</span></span><span class="line"><span class="cl"><span class="o">{</span>
+</span></span><span class="line"><span class="cl">    // initialize <span class="o">(</span><span class="k">if</span> necessary<span class="o">)</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="o">(</span><span class="nv">cubeVAO</span> <span class="o">==</span> 0<span class="o">)</span>
+</span></span><span class="line"><span class="cl">    <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        float vertices<span class="o">[]</span> <span class="o">=</span> <span class="o">{</span>
+</span></span><span class="line"><span class="cl">                // back face
+</span></span><span class="line"><span class="cl">                -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 0.0f, // bottom-left
+</span></span><span class="line"><span class="cl">                1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 1.0f, // top-right
+</span></span><span class="line"><span class="cl">                1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 0.0f, // bottom-right
+</span></span><span class="line"><span class="cl">                1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 1.0f, 1.0f, // top-right
+</span></span><span class="line"><span class="cl">                -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 0.0f, // bottom-left
+</span></span><span class="line"><span class="cl">                -1.0f,  1.0f, -1.0f,  0.0f,  0.0f, -1.0f, 0.0f, 1.0f, // top-left
+</span></span><span class="line"><span class="cl">                // front face
+</span></span><span class="line"><span class="cl">                -1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 0.0f, // bottom-left
+</span></span><span class="line"><span class="cl">                1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 0.0f, // bottom-right
+</span></span><span class="line"><span class="cl">                1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 1.0f, // top-right
+</span></span><span class="line"><span class="cl">                1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f, 1.0f, // top-right
+</span></span><span class="line"><span class="cl">                -1.0f,  1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 1.0f, // top-left
+</span></span><span class="line"><span class="cl">                -1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f, 0.0f, // bottom-left
+</span></span><span class="line"><span class="cl">                // left face
+</span></span><span class="line"><span class="cl">                -1.0f,  1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-right
+</span></span><span class="line"><span class="cl">                -1.0f,  1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 1.0f, // top-left
+</span></span><span class="line"><span class="cl">                -1.0f, -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-left
+</span></span><span class="line"><span class="cl">                -1.0f, -1.0f, -1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-left
+</span></span><span class="line"><span class="cl">                -1.0f, -1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 0.0f, 0.0f, // bottom-right
+</span></span><span class="line"><span class="cl">                -1.0f,  1.0f,  1.0f, -1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-right
+</span></span><span class="line"><span class="cl">                // right face
+</span></span><span class="line"><span class="cl">                1.0f,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-left
+</span></span><span class="line"><span class="cl">                1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-right
+</span></span><span class="line"><span class="cl">                1.0f,  1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 1.0f, // top-right
+</span></span><span class="line"><span class="cl">                1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 1.0f, // bottom-right
+</span></span><span class="line"><span class="cl">                1.0f,  1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 1.0f, 0.0f, // top-left
+</span></span><span class="line"><span class="cl">                1.0f, -1.0f,  1.0f,  1.0f,  0.0f,  0.0f, 0.0f, 0.0f, // bottom-left
+</span></span><span class="line"><span class="cl">                // bottom face
+</span></span><span class="line"><span class="cl">                -1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 1.0f, // top-right
+</span></span><span class="line"><span class="cl">                1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 1.0f, 1.0f, // top-left
+</span></span><span class="line"><span class="cl">                1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 1.0f, 0.0f, // bottom-left
+</span></span><span class="line"><span class="cl">                1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 1.0f, 0.0f, // bottom-left
+</span></span><span class="line"><span class="cl">                -1.0f, -1.0f,  1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 0.0f, // bottom-right
+</span></span><span class="line"><span class="cl">                -1.0f, -1.0f, -1.0f,  0.0f, -1.0f,  0.0f, 0.0f, 1.0f, // top-right
+</span></span><span class="line"><span class="cl">                // top face
+</span></span><span class="line"><span class="cl">                -1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 1.0f, // top-left
+</span></span><span class="line"><span class="cl">                1.0f,  1.0f , 1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 0.0f, // bottom-right
+</span></span><span class="line"><span class="cl">                1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 1.0f, // top-right
+</span></span><span class="line"><span class="cl">                1.0f,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f, 1.0f, 0.0f, // bottom-right
+</span></span><span class="line"><span class="cl">                -1.0f,  1.0f, -1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 1.0f, // top-left
+</span></span><span class="line"><span class="cl">                -1.0f,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 0.0f  // bottom-left
+</span></span><span class="line"><span class="cl">        <span class="o">}</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        glGenVertexArrays<span class="o">(</span>1, <span class="p">&amp;</span>cubeVAO<span class="o">)</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        glGenBuffers<span class="o">(</span>1, <span class="p">&amp;</span>cubeVBO<span class="o">)</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        // fill buffer
+</span></span><span class="line"><span class="cl">        glBindBuffer<span class="o">(</span>GL_ARRAY_BUFFER, cubeVBO<span class="o">)</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        glBufferData<span class="o">(</span>GL_ARRAY_BUFFER, sizeof<span class="o">(</span>vertices<span class="o">)</span>, vertices, GL_STATIC_DRAW<span class="o">)</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        // link vertex attributes
+</span></span><span class="line"><span class="cl">        glBindVertexArray<span class="o">(</span>cubeVAO<span class="o">)</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        glEnableVertexAttribArray<span class="o">(</span>0<span class="o">)</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        glVertexAttribPointer<span class="o">(</span>0, 3, GL_FLOAT, GL_FALSE, <span class="m">8</span> * sizeof<span class="o">(</span>float<span class="o">)</span>, <span class="o">(</span>void*<span class="o">)</span>0<span class="o">)</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        glEnableVertexAttribArray<span class="o">(</span>1<span class="o">)</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        glVertexAttribPointer<span class="o">(</span>1, 3, GL_FLOAT, GL_FALSE, <span class="m">8</span> * sizeof<span class="o">(</span>float<span class="o">)</span>, <span class="o">(</span>void*<span class="o">)(</span><span class="m">3</span> * sizeof<span class="o">(</span>float<span class="o">)))</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        glEnableVertexAttribArray<span class="o">(</span>2<span class="o">)</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        glVertexAttribPointer<span class="o">(</span>2, 2, GL_FLOAT, GL_FALSE, <span class="m">8</span> * sizeof<span class="o">(</span>float<span class="o">)</span>, <span class="o">(</span>void*<span class="o">)(</span><span class="m">6</span> * sizeof<span class="o">(</span>float<span class="o">)))</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        glBindBuffer<span class="o">(</span>GL_ARRAY_BUFFER, 0<span class="o">)</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        glBindVertexArray<span class="o">(</span>0<span class="o">)</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">    // render Cube
+</span></span><span class="line"><span class="cl">    glBindVertexArray<span class="o">(</span>cubeVAO<span class="o">)</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    glDrawArrays<span class="o">(</span>GL_TRIANGLES, 0, 36<span class="o">)</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    glBindVertexArray<span class="o">(</span>0<span class="o">)</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><img src="/eb3e4fd9b21c4d4aa5681c401566dd8d.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+>
+下来就是生成阴影贴图了</p>
+<p>第一步需要使用自定义帧缓冲生成深度贴图</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">GLuint depthMapFBO<span class="p">;</span>
+</span></span><span class="line"><span class="cl">glGenFramebuffers<span class="o">(</span>1, <span class="p">&amp;</span>depthMapFBO<span class="o">)</span><span class="p">;</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>下面生成一张空纹理图，因为我们只关心深度值，我们要把纹理格式指定为GL_DEPTH_COMPONENT</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">    GLuint depthMap<span class="p">;</span>
+</span></span><span class="line"><span class="cl">    glGenTextures<span class="o">(</span>1, <span class="p">&amp;</span>depthMap<span class="o">)</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    glBindTexture<span class="o">(</span>GL_TEXTURE_2D, depthMap<span class="o">)</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    glTexImage2D<span class="o">(</span>GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT,
+</span></span><span class="line"><span class="cl">                 SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL<span class="o">)</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    glTexParameteri<span class="o">(</span>GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST<span class="o">)</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    glTexParameteri<span class="o">(</span>GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST<span class="o">)</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    glTexParameteri<span class="o">(</span>GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT<span class="o">)</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    glTexParameteri<span class="o">(</span>GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT<span class="o">)</span><span class="p">;</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>把纹理图挂载到自定义帧缓冲中
+然而，不包含颜色缓冲的帧缓冲对象是不完整的，所以我们需要显式告诉OpenGL我们不适用任何颜色数据进行渲染。我们通过将调用glDrawBuffer和glReadBuffer把读和绘制缓冲设置为GL_NONE来做这件事。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">glBindFramebuffer<span class="o">(</span>GL_FRAMEBUFFER, depthMapFBO<span class="o">)</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">glFramebufferTexture2D<span class="o">(</span>GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthMap, 0<span class="o">)</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">glDrawBuffer<span class="o">(</span>GL_NONE<span class="o">)</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">glReadBuffer<span class="o">(</span>GL_NONE<span class="o">)</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">glBindFramebuffer<span class="o">(</span>GL_FRAMEBUFFER, 0<span class="o">)</span><span class="p">;</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>这里光源视角下设置的是平行光，所以直接用正交投影即可</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">GLfloat <span class="nv">near_plane</span> <span class="o">=</span> 1.0f, <span class="nv">far_plane</span> <span class="o">=</span> 7.5f<span class="p">;</span>
+</span></span><span class="line"><span class="cl">glm::mat4 <span class="nv">lightProjection</span> <span class="o">=</span> glm::ortho<span class="o">(</span>-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane<span class="o">)</span><span class="p">;</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>下面为了渲染是从光源角度的渲染，所以要修改视图矩阵</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">glm::mat4 <span class="nv">lightView</span> <span class="o">=</span> glm::lookAt<span class="o">(</span>glm::vec3<span class="o">(</span>-2.0f, 4.0f, -1.0f<span class="o">)</span>, glm::vec3<span class="o">(</span>0.0f, 0.0f, 0.0f<span class="o">)</span>, glm::vec3<span class="o">(</span>0.0f, 1.0f, 0.0f<span class="o">))</span><span class="p">;</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>两者结合就得到了一个光空间的变换矩阵，他能将每个世界空间坐标转变为光源视角下的坐标</p>
+<p>用于渲染的shader非常简单</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1">#version 330 core</span>
+</span></span><span class="line"><span class="cl">layout <span class="o">(</span><span class="nv">location</span> <span class="o">=</span> 0<span class="o">)</span> in vec3 position<span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">uniform mat4 lightSpaceMatrix<span class="p">;</span>
+</span></span><span class="line"><span class="cl">uniform mat4 model<span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">void main<span class="o">()</span>
+</span></span><span class="line"><span class="cl"><span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="nv">gl_Position</span> <span class="o">=</span> lightSpaceMatrix * model * vec4<span class="o">(</span>position, 1.0f<span class="o">)</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>片段着色器什么都不用干，但是它默认就会进行深度测试，会存储深度缓冲</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1">#version 330 core</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">void main<span class="o">()</span>
+</span></span><span class="line"><span class="cl"><span class="o">{</span>
+</span></span><span class="line"><span class="cl">    // <span class="nv">gl_FragDepth</span> <span class="o">=</span> gl_FragCoord.z<span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>在自定义缓冲下进行渲染后，就存入了深度缓存的信息</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">        // 切换到光源视角下
+</span></span><span class="line"><span class="cl">        glm::mat4 lightProjection, lightView<span class="p">;</span>
+</span></span><span class="line"><span class="cl">        glm::mat4 lightSpaceMatrix<span class="p">;</span>
+</span></span><span class="line"><span class="cl">        float <span class="nv">near_plane</span> <span class="o">=</span> 1.0f, <span class="nv">far_plane</span> <span class="o">=</span> 7.5f<span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="nv">lightProjection</span> <span class="o">=</span> glm::ortho<span class="o">(</span>-10.0f, 10.0f, -10.0f, 10.0f, near_plane, far_plane<span class="o">)</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="nv">lightView</span> <span class="o">=</span> glm::lookAt<span class="o">(</span>lightPos, glm::vec3<span class="o">(</span>0.0f<span class="o">)</span>, glm::vec3<span class="o">(</span>0.0, 1.0, 0.0<span class="o">))</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="nv">lightSpaceMatrix</span> <span class="o">=</span> lightProjection * lightView<span class="p">;</span>
+</span></span><span class="line"><span class="cl">        depthShader.use<span class="o">()</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        depthShader.setMat4<span class="o">(</span><span class="s2">&#34;lightSpaceMatrix&#34;</span>, lightSpaceMatrix<span class="o">)</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        glViewport<span class="o">(</span>0, 0, SHADOW_WIDTH, SHADOW_HEIGHT<span class="o">)</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        glBindFramebuffer<span class="o">(</span>GL_FRAMEBUFFER, depthMapFBO<span class="o">)</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        glClear<span class="o">(</span>GL_DEPTH_BUFFER_BIT<span class="o">)</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        // cubes
+</span></span><span class="line"><span class="cl">        glm::mat4 <span class="nv">model</span> <span class="o">=</span> glm::mat4<span class="o">(</span>1.0f<span class="o">)</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="nv">model</span> <span class="o">=</span> glm::mat4<span class="o">(</span>1.0f<span class="o">)</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="nv">model</span> <span class="o">=</span> glm::translate<span class="o">(</span>model, glm::vec3<span class="o">(</span>0.0f, 1.5f, 0.0<span class="o">))</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="nv">model</span> <span class="o">=</span> glm::scale<span class="o">(</span>model, glm::vec3<span class="o">(</span>0.5f<span class="o">))</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        depthShader.setMat4<span class="o">(</span><span class="s2">&#34;model&#34;</span>, model<span class="o">)</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        renderCube<span class="o">()</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="nv">model</span> <span class="o">=</span> glm::mat4<span class="o">(</span>1.0f<span class="o">)</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="nv">model</span> <span class="o">=</span> glm::translate<span class="o">(</span>model, glm::vec3<span class="o">(</span>2.0f, 0.0f, 1.0<span class="o">))</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="nv">model</span> <span class="o">=</span> glm::scale<span class="o">(</span>model, glm::vec3<span class="o">(</span>0.5f<span class="o">))</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        depthShader.setMat4<span class="o">(</span><span class="s2">&#34;model&#34;</span>, model<span class="o">)</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        renderCube<span class="o">()</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="nv">model</span> <span class="o">=</span> glm::mat4<span class="o">(</span>1.0f<span class="o">)</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="nv">model</span> <span class="o">=</span> glm::translate<span class="o">(</span>model, glm::vec3<span class="o">(</span>-1.0f, 0.0f, 2.0<span class="o">))</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="nv">model</span> <span class="o">=</span> glm::rotate<span class="o">(</span>model, glm::radians<span class="o">(</span>60.0f<span class="o">)</span>, glm::normalize<span class="o">(</span>glm::vec3<span class="o">(</span>1.0, 0.0, 1.0<span class="o">)))</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="nv">model</span> <span class="o">=</span> glm::scale<span class="o">(</span>model, glm::vec3<span class="o">(</span>0.25<span class="o">))</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        depthShader.setMat4<span class="o">(</span><span class="s2">&#34;model&#34;</span>, model<span class="o">)</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        renderCube<span class="o">()</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        glBindFramebuffer<span class="o">(</span>GL_FRAMEBUFFER, 0<span class="o">)</span><span class="p">;</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><img src="/e876017653874542a3d6dcca727f0a04.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+></p>
+<h2 id="渲染阴影">渲染阴影
+</h2><p>首先在顶点着色器，我们要记录每个顶点在光源视角下的位置FragPosLightSpace</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="cp">#version 330 core
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span><span class="nf">layout</span> <span class="p">(</span><span class="n">location</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="n">in</span> <span class="n">vec3</span> <span class="n">aPos</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="nf">layout</span> <span class="p">(</span><span class="n">location</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="n">in</span> <span class="n">vec3</span> <span class="n">aNormal</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="nf">layout</span> <span class="p">(</span><span class="n">location</span> <span class="o">=</span> <span class="mi">2</span><span class="p">)</span> <span class="n">in</span> <span class="n">vec2</span> <span class="n">aTexCoords</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">out</span> <span class="n">vec2</span> <span class="n">TexCoords</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">out</span> <span class="n">VS_OUT</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">vec3</span> <span class="n">FragPos</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">vec3</span> <span class="n">Normal</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">vec2</span> <span class="n">TexCoords</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">vec4</span> <span class="n">FragPosLightSpace</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span> <span class="n">vs_out</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">uniform</span> <span class="n">mat4</span> <span class="n">projection</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">uniform</span> <span class="n">mat4</span> <span class="n">view</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">uniform</span> <span class="n">mat4</span> <span class="n">model</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">uniform</span> <span class="n">mat4</span> <span class="n">lightSpaceMatrix</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">void</span> <span class="nf">main</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 世界坐标
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">vs_out</span><span class="p">.</span><span class="n">FragPos</span> <span class="o">=</span> <span class="nf">vec3</span><span class="p">(</span><span class="n">model</span> <span class="o">*</span> <span class="nf">vec4</span><span class="p">(</span><span class="n">aPos</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">    <span class="n">vs_out</span><span class="p">.</span><span class="n">Normal</span> <span class="o">=</span> <span class="nf">transpose</span><span class="p">(</span><span class="nf">inverse</span><span class="p">(</span><span class="nf">mat3</span><span class="p">(</span><span class="n">model</span><span class="p">)))</span> <span class="o">*</span> <span class="n">aNormal</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">vs_out</span><span class="p">.</span><span class="n">TexCoords</span> <span class="o">=</span> <span class="n">aTexCoords</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 在光源视角下的裁剪空间坐标
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">vs_out</span><span class="p">.</span><span class="n">FragPosLightSpace</span> <span class="o">=</span> <span class="n">lightSpaceMatrix</span> <span class="o">*</span> <span class="nf">vec4</span><span class="p">(</span><span class="n">vs_out</span><span class="p">.</span><span class="n">FragPos</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">gl_Position</span> <span class="o">=</span> <span class="n">projection</span> <span class="o">*</span> <span class="n">view</span> <span class="o">*</span> <span class="n">model</span> <span class="o">*</span> <span class="nf">vec4</span><span class="p">(</span><span class="n">aPos</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>在片段着色器中，通过是否在阴影中来修改是否需要高光和漫反射光，如果在阴影中，则设置为0</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl"><span class="c1">#version 330 core</span>
+</span></span><span class="line"><span class="cl">out vec4 FragColor<span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">in VS_OUT <span class="o">{</span>
+</span></span><span class="line"><span class="cl">    vec3 FragPos<span class="p">;</span>
+</span></span><span class="line"><span class="cl">    vec3 Normal<span class="p">;</span>
+</span></span><span class="line"><span class="cl">    vec2 TexCoords<span class="p">;</span>
+</span></span><span class="line"><span class="cl">    vec4 FragPosLightSpace<span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span> fs_in<span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">uniform sampler2D diffuseTexture<span class="p">;</span>
+</span></span><span class="line"><span class="cl">uniform sampler2D shadowMap<span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">uniform vec3 lightPos<span class="p">;</span>
+</span></span><span class="line"><span class="cl">uniform vec3 viewPos<span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">float ShadowCalculation<span class="o">(</span>vec4 fragPosLightSpace<span class="o">)</span>
+</span></span><span class="line"><span class="cl"><span class="o">{</span>
+</span></span><span class="line"><span class="cl">    <span class="o">[</span>...<span class="o">]</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">void main<span class="o">()</span>
+</span></span><span class="line"><span class="cl"><span class="o">{</span>           
+</span></span><span class="line"><span class="cl">    vec3 <span class="nv">color</span> <span class="o">=</span> texture<span class="o">(</span>diffuseTexture, fs_in.TexCoords<span class="o">)</span>.rgb<span class="p">;</span>
+</span></span><span class="line"><span class="cl">    vec3 <span class="nv">normal</span> <span class="o">=</span> normalize<span class="o">(</span>fs_in.Normal<span class="o">)</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    vec3 <span class="nv">lightColor</span> <span class="o">=</span> vec3<span class="o">(</span>1.0<span class="o">)</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    // Ambient
+</span></span><span class="line"><span class="cl">    vec3 <span class="nv">ambient</span> <span class="o">=</span> 0.15 * color<span class="p">;</span>
+</span></span><span class="line"><span class="cl">    // Diffuse
+</span></span><span class="line"><span class="cl">    vec3 <span class="nv">lightDir</span> <span class="o">=</span> normalize<span class="o">(</span>lightPos - fs_in.FragPos<span class="o">)</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    float <span class="nv">diff</span> <span class="o">=</span> max<span class="o">(</span>dot<span class="o">(</span>lightDir, normal<span class="o">)</span>, 0.0<span class="o">)</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    vec3 <span class="nv">diffuse</span> <span class="o">=</span> diff * lightColor<span class="p">;</span>
+</span></span><span class="line"><span class="cl">    // Specular
+</span></span><span class="line"><span class="cl">    vec3 <span class="nv">viewDir</span> <span class="o">=</span> normalize<span class="o">(</span>viewPos - fs_in.FragPos<span class="o">)</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    vec3 <span class="nv">reflectDir</span> <span class="o">=</span> reflect<span class="o">(</span>-lightDir, normal<span class="o">)</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    float <span class="nv">spec</span> <span class="o">=</span> 0.0<span class="p">;</span>
+</span></span><span class="line"><span class="cl">    vec3 <span class="nv">halfwayDir</span> <span class="o">=</span> normalize<span class="o">(</span>lightDir + viewDir<span class="o">)</span><span class="p">;</span>  
+</span></span><span class="line"><span class="cl">    <span class="nv">spec</span> <span class="o">=</span> pow<span class="o">(</span>max<span class="o">(</span>dot<span class="o">(</span>normal, halfwayDir<span class="o">)</span>, 0.0<span class="o">)</span>, 64.0<span class="o">)</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    vec3 <span class="nv">specular</span> <span class="o">=</span> spec * lightColor<span class="p">;</span>    
+</span></span><span class="line"><span class="cl">    // 计算阴影
+</span></span><span class="line"><span class="cl">    float <span class="nv">shadow</span> <span class="o">=</span> ShadowCalculation<span class="o">(</span>fs_in.FragPosLightSpace<span class="o">)</span><span class="p">;</span>       
+</span></span><span class="line"><span class="cl">    vec3 <span class="nv">lighting</span> <span class="o">=</span> <span class="o">(</span>ambient + <span class="o">(</span>1.0 - shadow<span class="o">)</span> * <span class="o">(</span>diffuse + specular<span class="o">))</span> * color<span class="p">;</span>    
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="nv">FragColor</span> <span class="o">=</span> vec4<span class="o">(</span>lighting, 1.0f<span class="o">)</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>计算方法如下
+首先根据像素位置对应记录的光源坐标下的NDC坐标（注意要手动进行透视除法,切换到[0,1]范围。在深度贴图中用NDC坐标当作UV坐标去采样，得到该点最近的深度值，然后与该点的深度值进行比较</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">float ShadowCalculation<span class="o">(</span>vec4 fragPosLightSpace<span class="o">)</span>
+</span></span><span class="line"><span class="cl"><span class="o">{</span>
+</span></span><span class="line"><span class="cl">    // 手动进行透视除法，转为NDC坐标
+</span></span><span class="line"><span class="cl">    vec3 <span class="nv">projCoords</span> <span class="o">=</span> fragPosLightSpace.xyz / fragPosLightSpace.w<span class="p">;</span>
+</span></span><span class="line"><span class="cl">    // 变换到<span class="o">[</span>0,1<span class="o">]</span>的范围
+</span></span><span class="line"><span class="cl">    <span class="nv">projCoords</span> <span class="o">=</span> projCoords * 0.5 + 0.5<span class="p">;</span>
+</span></span><span class="line"><span class="cl">    // 取得最近点的深度<span class="o">(</span>使用<span class="o">[</span>0,1<span class="o">]</span>范围下的fragPosLight当坐标<span class="o">)</span>
+</span></span><span class="line"><span class="cl">    float <span class="nv">closestDepth</span> <span class="o">=</span> texture<span class="o">(</span>shadowMap, projCoords.xy<span class="o">)</span>.r<span class="p">;</span> 
+</span></span><span class="line"><span class="cl">    // 取得当前片段在光源视角下的深度
+</span></span><span class="line"><span class="cl">    float <span class="nv">currentDepth</span> <span class="o">=</span> projCoords.z<span class="p">;</span>
+</span></span><span class="line"><span class="cl">    // 检查当前片段是否在阴影中  大离的近
+</span></span><span class="line"><span class="cl">    float <span class="nv">shadow</span> <span class="o">=</span> currentDepth &gt; closestDepth  ? 1.0 : 0.0<span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> shadow<span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>最终渲染出来为
+<img src="/ec23146a7988471eac1562ab0f3a55ea.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+></p>
+<h2 id="改进阴影贴图">改进阴影贴图
+</h2><p>目前的渲染是有问题的
+<img src="/9b67b4e4af314ddcbb4731c8bc394490.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+>
+地板四边形渲染出一大块交替黑线。这种阴影贴图的不真实感叫做阴影失真(Shadow Acne)，下图解释了成因：</p>
+<p><img src="/f30bde087beb4cdd8f3eccbe48e731ae.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+>
+阴影贴图受限于分辨率，在离光源很远的情况下，多个片段在深度贴图的同一个位置进行了采样。
+我们可以用一个叫做阴影偏移（shadow bias）的技巧来解决这个问题，我们简单的对表面的深度（或深度贴图）应用一个偏移量，这样片段就不会被错误地认为在表面之下了。
+<img src="/4c0f83e599714eb480a6cb62aee55f36.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">    float <span class="nv">bias</span> <span class="o">=</span> 0.005<span class="p">;</span>
+</span></span><span class="line"><span class="cl">    float <span class="nv">shadow</span> <span class="o">=</span> currentDepth - bias &gt; closestDepth  ? 1.0 : 0.0<span class="p">;</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>还有更好的方法是自适应的偏移量</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">float <span class="nv">bias</span> <span class="o">=</span> max<span class="o">(</span>0.05 * <span class="o">(</span>1.0 - dot<span class="o">(</span>normal, lightDir<span class="o">))</span>, 0.005<span class="o">)</span><span class="p">;</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>但是当偏移量过大时，也会出现悬浮效果。这个阴影失真叫做悬浮(Peter Panning)，因为物体看起来轻轻悬浮在表面之上
+<img src="/b58afd2b109f4069968b3a00e8976841.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+>
+下边这幅是正常的，很明显能感觉到上图的错误
+<img src="/17998b82d1fa42cfabb958e8eac56982.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+></p>
+<p>我们可以使用一个叫技巧解决大部分的Peter panning问题：当渲染深度贴图时候使用正面剔除（front face culling）你也许记得在面剔除教程中OpenGL默认是背面剔除。我们要告诉OpenGL我们要剔除正面。</p>
+<p>因为我们只需要深度贴图的深度值，对于实体物体无论我们用它们的正面还是背面都没问题。使用背面深度不会有错误，因为阴影在物体内部有错误我们也看不见。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">glCullFace<span class="o">(</span>GL_FRONT<span class="o">)</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">RenderSceneToDepthMap<span class="o">()</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">glCullFace<span class="o">(</span>GL_BACK<span class="o">)</span><span class="p">;</span> // 不要忘记设回原先的culling face
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>另外还有一个问题是光锥不可见的区域一律被任务处于阴影中了
+<img src="/9eaddf39f05c4518b56315e998a87144.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+></p>
+<p>也就是说有些纹理坐标超出了深度贴图的范围，我们可以修改贴图的环绕参数，将超出部分的深度值全部设置为1，这样，贴图外永远都不在阴影中</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">glTexParameteri<span class="o">(</span>GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER<span class="o">)</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">glTexParameteri<span class="o">(</span>GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER<span class="o">)</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">GLfloat borderColor<span class="o">[]</span> <span class="o">=</span> <span class="o">{</span> 1.0, 1.0, 1.0, 1.0 <span class="o">}</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">glTexParameterfv<span class="o">(</span>GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor<span class="o">)</span><span class="p">;</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>但这样处理只解决了一块阴影</p>
+<p><img src="/5a705f04981c468f9c299d0b080855e3.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+></p>
+<p>仍有一部分是黑暗区域。那里的坐标超出了光的正交视锥的远平面。你可以看到这片黑色区域总是出现在光源视锥的极远处。</p>
+<p>当一个点比光的远平面还要远时，它的投影坐标的z坐标大于1.0。这种情况下，GL_CLAMP_TO_BORDER环绕方式不起作用，因为我们把坐标的z元素和深度贴图的值进行了对比；它总是为大于1.0的z返回true。</p>
+<p>直接强制让z值大于1的位置（在远平面外的点）设置不在阴影中
+<img src="/c9c42b30315549b2a66f3386bb802aca.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+></p>
+<h2 id="pcf">PCF
+</h2><p>目前的阴影表面仍有锯齿
+<img src="/a03bd6a415e343c894a7ffa0bf416d51.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+></p>
+<p>因为深度贴图有一个固定的分辨率，多个片段对应于一个纹理像素。结果就是多个片段会从深度贴图的同一个深度值进行采样，这几个片段便得到的是同一个阴影，这就会产生锯齿边。</p>
+<p>你可以通过增加深度贴图的分辨率的方式来降低锯齿块，也可以尝试尽可能的让光的视锥接近场景。</p>
+<p>另一个（并不完整的）解决方案叫做PCF（percentage-closer filtering），这是一种多个不同过滤方式的组合，它产生柔和阴影，使它们出现更少的锯齿块和硬边。核心思想是从深度贴图中多次采样，每一次采样的纹理坐标都稍有不同。每个独立的样本可能在也可能不再阴影中。所有的次生结果接着结合在一起，进行平均化，我们就得到了柔和阴影。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">float ShadowCalculation<span class="o">(</span>vec4 fragPosLightSpace<span class="o">)</span>
+</span></span><span class="line"><span class="cl"><span class="o">{</span>
+</span></span><span class="line"><span class="cl">    // perform perspective divide
+</span></span><span class="line"><span class="cl">    vec3 <span class="nv">projCoords</span> <span class="o">=</span> fragPosLightSpace.xyz / fragPosLightSpace.w<span class="p">;</span>
+</span></span><span class="line"><span class="cl">    // Transform to <span class="o">[</span>0,1<span class="o">]</span> range
+</span></span><span class="line"><span class="cl">    <span class="nv">projCoords</span> <span class="o">=</span> projCoords * 0.5 + 0.5<span class="p">;</span>
+</span></span><span class="line"><span class="cl">    // Get closest depth value from light<span class="s1">&#39;s perspective (using [0,1] range fragPosLight as coords)
+</span></span></span><span class="line"><span class="cl"><span class="s1">    float closestDepth = texture(shadowMap, projCoords.xy).r;
+</span></span></span><span class="line"><span class="cl"><span class="s1">    // Get depth of current fragment from light&#39;</span>s perspective
+</span></span><span class="line"><span class="cl">    float <span class="nv">currentDepth</span> <span class="o">=</span> projCoords.z<span class="p">;</span>
+</span></span><span class="line"><span class="cl">    // Calculate bias <span class="o">(</span>based on depth map resolution and slope<span class="o">)</span>
+</span></span><span class="line"><span class="cl">    vec3 <span class="nv">normal</span> <span class="o">=</span> normalize<span class="o">(</span>fs_in.Normal<span class="o">)</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    vec3 <span class="nv">lightDir</span> <span class="o">=</span> normalize<span class="o">(</span>lightPos - fs_in.FragPos<span class="o">)</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    float <span class="nv">bias</span> <span class="o">=</span> max<span class="o">(</span>0.05 * <span class="o">(</span>1.0 - dot<span class="o">(</span>normal, lightDir<span class="o">))</span>, 0.005<span class="o">)</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    // Check whether current frag pos is in shadow
+</span></span><span class="line"><span class="cl">    // float <span class="nv">shadow</span> <span class="o">=</span> currentDepth - bias &gt; closestDepth  ? 1.0 : 0.0<span class="p">;</span>
+</span></span><span class="line"><span class="cl">    // PCF
+</span></span><span class="line"><span class="cl">    float <span class="nv">shadow</span> <span class="o">=</span> 0.0<span class="p">;</span>
+</span></span><span class="line"><span class="cl">    vec2 <span class="nv">texelSize</span> <span class="o">=</span> 1.0 / textureSize<span class="o">(</span>shadowMap, 0<span class="o">)</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">for</span><span class="o">(</span>int <span class="nv">x</span> <span class="o">=</span> -1<span class="p">;</span> x &lt;<span class="o">=</span> 1<span class="p">;</span> ++x<span class="o">)</span>
+</span></span><span class="line"><span class="cl">    <span class="o">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">for</span><span class="o">(</span>int <span class="nv">y</span> <span class="o">=</span> -1<span class="p">;</span> y &lt;<span class="o">=</span> 1<span class="p">;</span> ++y<span class="o">)</span>
+</span></span><span class="line"><span class="cl">        <span class="o">{</span>
+</span></span><span class="line"><span class="cl">            float <span class="nv">pcfDepth</span> <span class="o">=</span> texture<span class="o">(</span>shadowMap, projCoords.xy + vec2<span class="o">(</span>x, y<span class="o">)</span> * texelSize<span class="o">)</span>.r<span class="p">;</span>
+</span></span><span class="line"><span class="cl">            <span class="nv">shadow</span> <span class="o">+=</span> currentDepth - bias &gt; pcfDepth  ? 1.0 : 0.0<span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="o">}</span>
+</span></span><span class="line"><span class="cl">    <span class="o">}</span>
+</span></span><span class="line"><span class="cl">    shadow /<span class="o">=</span> 9.0<span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    // Keep the shadow at 0.0 when outside the far_plane region of the light<span class="err">&#39;</span>s frustum.
+</span></span><span class="line"><span class="cl">    <span class="k">if</span><span class="o">(</span>projCoords.z &gt; 1.0<span class="o">)</span>
+</span></span><span class="line"><span class="cl">    <span class="nv">shadow</span> <span class="o">=</span> 0.0<span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> shadow<span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><img src="/7e6a7ecf9ce3475084c2aa30ba876d8a.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+>
+正交 vs 投影
+在渲染深度贴图的时候，正交(Orthographic)和投影(Projection)矩阵之间有所不同。正交投影矩阵并不会将场景用透视图进行变形，所有视线/光线都是平行的，这使它对于定向光来说是个很好的投影矩阵。然而透视投影矩阵，会将所有顶点根据透视关系进行变形，结果因此而不同。下图展示了两种投影方式所产生的不同阴影区域：
+<img src="/29e896e7050e488b89c89191c59d0711.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+>
+如果使用的是透视投影，在使用深度贴图时，需要先将深度转为线性深度</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-bash" data-lang="bash"><span class="line"><span class="cl">float LinearizeDepth<span class="o">(</span>float depth<span class="o">)</span>
+</span></span><span class="line"><span class="cl"><span class="o">{</span>
+</span></span><span class="line"><span class="cl">    float <span class="nv">z</span> <span class="o">=</span> depth * 2.0 - 1.0<span class="p">;</span> // Back to NDC 
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="o">(</span>2.0 * near_plane * far_plane<span class="o">)</span> / <span class="o">(</span>far_plane + near_plane - z * <span class="o">(</span>far_plane - near_plane<span class="o">))</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="o">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>后续对于阴影的优化放在Games202课程作业一中进行~</p>
+<p>另外第二章点阴影就是在一个向四面八方发射光的点光源的阴影渲染，实现就是参考天空盒类似的6个面的shadowmap来实现</p>
+
+</section>
+
+
+    <footer class="article-footer">
+    
+    <section class="article-tags">
+        
+            <a href="/tags/api%E5%AD%A6%E4%B9%A0/">API学习</a>
+        
+            <a href="/tags/opengl/">OpenGL</a>
+        
+    </section>
+
+
+    
+    <section class="article-copyright">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
+</svg>
+
+
+
+        <span>Licensed under CC BY-NC-SA 4.0</span>
+    </section>
+    </footer>
+
+
+    
+        <link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css"integrity="sha384-n8MVd4RsNIU0tAv4ct0nTaAbDJwPJzDEaqSD1odI&#43;WdtXRGWt2kTvGFasHpSy3SV"crossorigin="anonymous"
+            ><script 
+                src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"integrity="sha384-XjKyOOlGwcjNTAIQHIpgOno0Hl1YQqzUOEleOLALmuqehneUG&#43;vnGctmUb0ZY0l8"crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"integrity="sha384-&#43;VBxd3r6XgURycqtZ117nYw44OOcIax56Z4dCRWbxyPt0Koah1uHoK0o4&#43;/RRE05"crossorigin="anonymous"
+                defer
+                >
+            </script><script>
+    window.addEventListener("DOMContentLoaded", () => {
+	const mainArticleElement = document.querySelector(".main-article");
+        renderMathInElement(mainArticleElement, {
+            delimiters: [
+                { left: "$$", right: "$$", display: true },
+                { left: "$", right: "$", display: false },
+                { left: "\\(", right: "\\)", display: false },
+                { left: "\\[", right: "\\]", display: true }
+            ],
+            ignoredClasses: ["gist"]
+        });})
+</script>
+
+    
+</article>
+
+    
+
+    
+
+<aside class="related-content--wrapper">
+    <h2 class="section-title">相关文章</h2>
+    <div class="related-content">
+        <div class="flex article-list--tile">
+            
+                
+<article class="article-card no-image">
+    <a href="/p/opengl%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0pbr/">
+        
+        
+        <div class="article-details">
+            <h2 class="article-title">OpenGL学习笔记（PBR）</h2>
+        </div>
+        
+    </a>
+
+    <style>
+     
+    .article-card {
+        background: rgba(255, 255, 255, 0.25);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        margin: 10px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .article-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    }
+
+    .article-card a {
+        display: flex;
+        flex-direction: column;
+        text-decoration: none;
+        color: inherit;
+        height: 100%;
+    }
+
+     
+    .article-image {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        overflow: hidden;
+    }
+    .article-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+    .article-image:hover img {
+        transform: scale(1.05);
+    }
+
+     
+    .article-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: rgba(0,0,0,0.3);  
+        padding: 10px;
+        box-sizing: border-box;
+        text-align: center;
+    }
+    .article-overlay .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #fff;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .article-card.no-image .article-details {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 15px;
+    }
+    .article-card.no-image .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #222;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .articles-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 20px;
+    }
+    </style>
+</article>
+            
+                
+<article class="article-card no-image">
+    <a href="/p/opengl%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0%E5%BB%B6%E8%BF%9F%E7%9D%80%E8%89%B2%E6%B3%95ssao/">
+        
+        
+        <div class="article-details">
+            <h2 class="article-title">OpenGL学习笔记（延迟着色法、SSAO）</h2>
+        </div>
+        
+    </a>
+
+    <style>
+     
+    .article-card {
+        background: rgba(255, 255, 255, 0.25);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        margin: 10px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .article-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    }
+
+    .article-card a {
+        display: flex;
+        flex-direction: column;
+        text-decoration: none;
+        color: inherit;
+        height: 100%;
+    }
+
+     
+    .article-image {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        overflow: hidden;
+    }
+    .article-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+    .article-image:hover img {
+        transform: scale(1.05);
+    }
+
+     
+    .article-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: rgba(0,0,0,0.3);  
+        padding: 10px;
+        box-sizing: border-box;
+        text-align: center;
+    }
+    .article-overlay .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #fff;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .article-card.no-image .article-details {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 15px;
+    }
+    .article-card.no-image .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #222;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .articles-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 20px;
+    }
+    </style>
+</article>
+            
+                
+<article class="article-card no-image">
+    <a href="/p/opengl%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0hdr%E6%B3%9B%E5%85%89/">
+        
+        
+        <div class="article-details">
+            <h2 class="article-title">OpenGL学习笔记（HDR、泛光）</h2>
+        </div>
+        
+    </a>
+
+    <style>
+     
+    .article-card {
+        background: rgba(255, 255, 255, 0.25);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        margin: 10px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .article-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    }
+
+    .article-card a {
+        display: flex;
+        flex-direction: column;
+        text-decoration: none;
+        color: inherit;
+        height: 100%;
+    }
+
+     
+    .article-image {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        overflow: hidden;
+    }
+    .article-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+    .article-image:hover img {
+        transform: scale(1.05);
+    }
+
+     
+    .article-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: rgba(0,0,0,0.3);  
+        padding: 10px;
+        box-sizing: border-box;
+        text-align: center;
+    }
+    .article-overlay .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #fff;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .article-card.no-image .article-details {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 15px;
+    }
+    .article-card.no-image .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #222;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .articles-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 20px;
+    }
+    </style>
+</article>
+            
+                
+<article class="article-card no-image">
+    <a href="/p/opengl%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0%E6%B3%95%E7%BA%BF%E8%B4%B4%E5%9B%BE%E8%A7%86%E5%B7%AE%E8%B4%B4%E5%9B%BE/">
+        
+        
+        <div class="article-details">
+            <h2 class="article-title">OpenGL学习笔记（法线贴图、视差贴图）</h2>
+        </div>
+        
+    </a>
+
+    <style>
+     
+    .article-card {
+        background: rgba(255, 255, 255, 0.25);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        margin: 10px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .article-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    }
+
+    .article-card a {
+        display: flex;
+        flex-direction: column;
+        text-decoration: none;
+        color: inherit;
+        height: 100%;
+    }
+
+     
+    .article-image {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        overflow: hidden;
+    }
+    .article-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+    .article-image:hover img {
+        transform: scale(1.05);
+    }
+
+     
+    .article-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: rgba(0,0,0,0.3);  
+        padding: 10px;
+        box-sizing: border-box;
+        text-align: center;
+    }
+    .article-overlay .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #fff;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .article-card.no-image .article-details {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 15px;
+    }
+    .article-card.no-image .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #222;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .articles-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 20px;
+    }
+    </style>
+</article>
+            
+                
+<article class="article-card no-image">
+    <a href="/p/opengl%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0%E7%AE%80%E4%BB%8B%E4%B8%89%E8%A7%92%E5%BD%A2%E7%9D%80%E8%89%B2%E5%99%A8%E7%BA%B9%E7%90%86%E5%9D%90%E6%A0%87%E7%B3%BB%E7%BB%9F%E6%91%84%E5%83%8F%E6%9C%BA/">
+        
+        
+        <div class="article-details">
+            <h2 class="article-title">OpenGL学习笔记（简介、三角形、着色器、纹理、坐标系统、摄像机）</h2>
+        </div>
+        
+    </a>
+
+    <style>
+     
+    .article-card {
+        background: rgba(255, 255, 255, 0.25);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        margin: 10px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .article-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    }
+
+    .article-card a {
+        display: flex;
+        flex-direction: column;
+        text-decoration: none;
+        color: inherit;
+        height: 100%;
+    }
+
+     
+    .article-image {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        overflow: hidden;
+    }
+    .article-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+    .article-image:hover img {
+        transform: scale(1.05);
+    }
+
+     
+    .article-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: rgba(0,0,0,0.3);  
+        padding: 10px;
+        box-sizing: border-box;
+        text-align: center;
+    }
+    .article-overlay .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #fff;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .article-card.no-image .article-details {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 15px;
+    }
+    .article-card.no-image .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #222;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .articles-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 20px;
+    }
+    </style>
+</article>
+            
+        </div>
+    </div>
+</aside>
+
+     
+    
+        
+    <script
+    src="https://giscus.app/client.js"
+    data-repo="sdpyy1/sdpyy1.github.io"
+    data-repo-id="R_kgDOQEycpQ"
+    data-category="Announcements"
+    data-category-id="DIC_kwDOQEycpc4Cwz7v"
+    data-mapping="pathname"
+    data-strict="0"
+    data-reactions-enabled="1"
+    data-emit-metadata="0"
+    data-input-position="top"
+    data-theme="light"
+    data-lang="en"
+    data-loading=""
+    crossorigin="anonymous"
+    async
+></script>
+<script>
+    function setGiscusTheme(theme) {
+        let giscus = document.querySelector("iframe.giscus-frame");
+        if (giscus) {
+            giscus.contentWindow.postMessage(
+                {
+                    giscus: {
+                        setConfig: {
+                            theme: theme,
+                        },
+                    },
+                },
+                "https://giscus.app"
+            );
+        }
+    }
+
+    (function () {
+        addEventListener("message", (e) => {
+            if (event.origin !== "https://giscus.app") return;
+            handler();
+        });
+        window.addEventListener("onColorSchemeChange", handler);
+
+        function handler() {
+            if (document.documentElement.dataset.scheme === "light") {
+                setGiscusTheme('light');
+            } else {
+                setGiscusTheme('light');
+            }
+        }
+    })();
+</script>
+
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+            2020 - 
+        
+        2025 爱喝东方树叶
+    </section>
+    <section style="display: flex; gap: 30px; align-items: center;">
+      
+      
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+      <span>📚 文章数: 22</span>
+      <span>✍️ 总字数: 
+        
+        
+        76.17K
+      </span>
+    </section>
+
+    <section class="powerby">
+    
+    <div class="busuanzi-footer">
+        <span id="busuanzi_container_site_pv">
+          本站总访问量<span id="busuanzi_value_site_pv"></span>次
+        </span>
+        <span id="busuanzi_container_site_uv">
+          本站访客数<span id="busuanzi_value_site_uv"></span>人次
+        </span>
+      </div></section>
+
+</footer>
+
+
+    
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    
+    <div class="pswp__bg"></div>
+
+    
+    <div class="pswp__scroll-wrap">
+
+        
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                
+                
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                        <div class="pswp__preloader__cut">
+                            <div class="pswp__preloader__donut"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div>
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js"integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo="crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js"integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU="crossorigin="anonymous"
+                defer
+                >
+            </script><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css"crossorigin="anonymous"
+            ><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css"crossorigin="anonymous"
+            >
+
+            </main>
+        </div>
+        <script 
+                src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js"integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z&#43;KMkF24hUW8WePSA9HM="crossorigin="anonymous"
+                
+                >
+            </script><script type="text/javascript" src="/ts/main.1e9a3bafd846ced4c345d084b355fb8c7bae75701c338f8a1f8a82c780137826.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>
