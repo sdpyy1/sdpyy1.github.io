@@ -1,0 +1,2349 @@
+<!DOCTYPE html>
+<html lang="zh-cn" dir="ltr">
+    <head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'>
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+  <meta name="referrer" content="no-referrer-when-downgrade"><meta name='description' content="前向运动学 单链 每个关节的局部坐标系与全局坐标系重合\n父关节的旋转会让子关节也跟着旋转 子关节的朝向就是夫关节朝向乘以自身的旋转 只旋转R0时,Q1在Q0的局部坐标系下的坐标并不会变一直是l0,如果想求Q1的世界坐标,就是父关节的世界坐标加朝向*l0 这一套东西就是用传播来更新,比如Q4的局部坐标系的某一个点,可以算出他在Q3的局部坐标系的位置,Q3的位置又能计算出他在Q2的位置,最终得到这个点在Q0的位置,最终再换算到世界坐标系,就得到了Q4局部坐标系下某一点在全局坐标系下的位置 这块比较好理解 BVH文件,用欧拉角表示旋转 ">
+<title>GAMES105 计算机角色动画基础（前向运动学、逆向运动学、关键帧动画与插值）</title>
+
+<link rel='canonical' href='https://sdpyy1.github.io/p/games105-%E8%AE%A1%E7%AE%97%E6%9C%BA%E8%A7%92%E8%89%B2%E5%8A%A8%E7%94%BB%E5%9F%BA%E7%A1%80%E5%89%8D%E5%90%91%E8%BF%90%E5%8A%A8%E5%AD%A6%E9%80%86%E5%90%91%E8%BF%90%E5%8A%A8%E5%AD%A6%E5%85%B3%E9%94%AE%E5%B8%A7%E5%8A%A8%E7%94%BB%E4%B8%8E%E6%8F%92%E5%80%BC/'>
+
+<link rel="stylesheet" href="/scss/style.min.6a692fd055deae459f2a9767f57f3855ba80cafd5041317f24f7360f6ca47cdf.css"><meta property='og:title' content="GAMES105 计算机角色动画基础（前向运动学、逆向运动学、关键帧动画与插值）">
+<meta property='og:description' content="前向运动学 单链 每个关节的局部坐标系与全局坐标系重合\n父关节的旋转会让子关节也跟着旋转 子关节的朝向就是夫关节朝向乘以自身的旋转 只旋转R0时,Q1在Q0的局部坐标系下的坐标并不会变一直是l0,如果想求Q1的世界坐标,就是父关节的世界坐标加朝向*l0 这一套东西就是用传播来更新,比如Q4的局部坐标系的某一个点,可以算出他在Q3的局部坐标系的位置,Q3的位置又能计算出他在Q2的位置,最终得到这个点在Q0的位置,最终再换算到世界坐标系,就得到了Q4局部坐标系下某一点在全局坐标系下的位置 这块比较好理解 BVH文件,用欧拉角表示旋转 ">
+<meta property='og:url' content='https://sdpyy1.github.io/p/games105-%E8%AE%A1%E7%AE%97%E6%9C%BA%E8%A7%92%E8%89%B2%E5%8A%A8%E7%94%BB%E5%9F%BA%E7%A1%80%E5%89%8D%E5%90%91%E8%BF%90%E5%8A%A8%E5%AD%A6%E9%80%86%E5%90%91%E8%BF%90%E5%8A%A8%E5%AD%A6%E5%85%B3%E9%94%AE%E5%B8%A7%E5%8A%A8%E7%94%BB%E4%B8%8E%E6%8F%92%E5%80%BC/'>
+<meta property='og:site_name' content='wanfeng'>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='课程笔记' /><meta property='article:tag' content='Games105' /><meta property='article:published_time' content='2025-10-19T14:25:28&#43;08:00'/><meta property='article:modified_time' content='2025-10-19T14:25:28&#43;08:00'/>
+<meta name="twitter:title" content="GAMES105 计算机角色动画基础（前向运动学、逆向运动学、关键帧动画与插值）">
+<meta name="twitter:description" content="前向运动学 单链 每个关节的局部坐标系与全局坐标系重合\n父关节的旋转会让子关节也跟着旋转 子关节的朝向就是夫关节朝向乘以自身的旋转 只旋转R0时,Q1在Q0的局部坐标系下的坐标并不会变一直是l0,如果想求Q1的世界坐标,就是父关节的世界坐标加朝向*l0 这一套东西就是用传播来更新,比如Q4的局部坐标系的某一个点,可以算出他在Q3的局部坐标系的位置,Q3的位置又能计算出他在Q2的位置,最终得到这个点在Q0的位置,最终再换算到世界坐标系,就得到了Q4局部坐标系下某一点在全局坐标系下的位置 这块比较好理解 BVH文件,用欧拉角表示旋转 ">
+    <link rel="shortcut icon" href="/favicon.ico" />
+
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="切换菜单">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        
+            
+            <figure class="site-avatar">
+                <a href="/">
+                
+                    
+                    
+                    
+                        
+                        <img src="/img/avatar_hu_f59158f730715054.png" width="300"
+                            height="300" class="site-logo" loading="lazy" alt="Avatar">
+                    
+                
+                </a>
+                
+                    <span class="emoji">🧐</span>
+                
+            </figure>
+            
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="/">wanfeng</a></h1>
+            <h2 class="site-description">Blog</h2>
+        </div>
+    </header><ol class="menu-social">
+            
+                <li>
+                    <a 
+                        href='https://space.bilibili.com/287473737'
+                        target="_blank"
+                        title="Bilibili"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-brand-bilibili"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 10a4 4 0 0 1 4 -4h10a4 4 0 0 1 4 4v6a4 4 0 0 1 -4 4h-10a4 4 0 0 1 -4 -4v-6z" /><path d="M8 3l2 3" /><path d="M16 3l-2 3" /><path d="M9 13v-2" /><path d="M15 11v2" /></svg>
+                        
+                    </a>
+                </li>
+            
+                <li>
+                    <a 
+                        href='https://github.com/sdpyy1'
+                        target="_blank"
+                        title="GitHub"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
+</svg>
+
+
+
+                        
+                    </a>
+                </li>
+            
+        </ol><ol class="menu" id="main-menu">
+        
+        
+        
+        <li >
+            <a href='/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>Home</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/about/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>About</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>Archives</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/search/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>Search</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/links/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5" />
+  <path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5" />
+</svg>
+
+
+
+                
+                <span>Links</span>
+            </a>
+        </li>
+        
+        <li class="menu-bottom-section">
+            <ol class="menu">
+                    
+                        <li id="i18n-switch">  
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-language" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M4 5h7" />
+  <path d="M9 3v2c0 4.418 -2.239 8 -5 8" />
+  <path d="M5 9c-.003 2.144 2.952 3.908 6.7 4" />
+  <path d="M12 20l4 -9l4 9" />
+  <path d="M19.1 18h-6.2" />
+</svg>
+
+
+
+                            <select name="language" title="language" onchange="window.location.href = this.selectedOptions[0].value">
+                                
+                                    <option value="https://sdpyy1.github.io/en/" >English</option>
+                                
+                                    <option value="https://sdpyy1.github.io/" selected>中文</option>
+                                
+                            </select>
+                        </li>
+                    
+                
+
+                
+                    <li id="dark-mode-toggle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <span>暗色模式</span>
+                    </li>
+                
+            </ol>
+        </li>
+    </ol>
+</aside>
+
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">目录</h2>
+        
+        <div class="widget--toc">
+            <nav id="TableOfContents">
+  <ol>
+    <li><a href="#前向运动学">前向运动学</a>
+      <ol>
+        <li><a href="#单链">单链</a></li>
+        <li><a href="#前向运动学作业">前向运动学作业</a>
+          <ol>
+            <li><a href="#1-解析bvh文件">1. 解析BVH文件</a></li>
+            <li><a href="#2-前向运动学计算">2. 前向运动学计算</a></li>
+            <li><a href="#3-运动重定向">3. 运动重定向</a></li>
+          </ol>
+        </li>
+      </ol>
+    </li>
+    <li><a href="#逆向运动学">逆向运动学</a>
+      <ol>
+        <li><a href="#双关节问题">双关节问题</a></li>
+        <li><a href="#多关节最优化问题">多关节最优化问题</a>
+          <ol>
+            <li><a href="#优化问题下降方法">优化问题下降方法</a>
+              <ol>
+                <li><a href="#1-循环坐标下降法-ccd">1. 循环坐标下降法 CCD</a></li>
+                <li><a href="#2--梯度下降雅可比转置法">2.  梯度下降（雅可比转置法）</a></li>
+                <li><a href="#3--高斯-牛顿法">3.  高斯-牛顿法</a></li>
+                <li><a href="#4--雅可比逆方法">4.  雅可比逆方法</a></li>
+              </ol>
+            </li>
+          </ol>
+        </li>
+        <li><a href="#角色的ik">角色的IK</a></li>
+        <li><a href="#逆向运动学作业">逆向运动学作业</a></li>
+      </ol>
+    </li>
+    <li><a href="#关键帧插值">关键帧插值</a>
+      <ol>
+        <li><a href="#梯度函数">梯度函数</a></li>
+        <li><a href="#线性插值函数">线性插值函数</a>
+          <ol>
+            <li><a href="#线性插值的平滑性">线性插值的平滑性</a></li>
+          </ol>
+        </li>
+        <li><a href="#多项式插值-polynomial-interpolation">多项式插值 Polynomial Interpolation</a></li>
+        <li><a href="#样条插值-spline-interpolation">样条插值 Spline Interpolation</a></li>
+        <li><a href="#三次埃尔米特样条-cubic-hermite-splines">三次埃尔米特样条 Cubic Hermite Splines</a></li>
+        <li><a href="#旋转的插值">旋转的插值</a></li>
+      </ol>
+    </li>
+  </ol>
+</nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+            <main class="main full-width">
+    <article class="main-article">
+    <header class="article-header">
+
+    <div class="article-details">
+    
+    <header class="article-category">
+        
+        
+             
+            
+            
+            
+            <div class="category-hierarchy">
+                
+                    
+                    
+                    
+                        
+                    
+                     
+                    
+                    
+                    
+                    <a href="/categories/course/" 
+                       >
+                        Course
+                    </a>
+                    
+                    
+                    
+                        <span class="category-separator">/</span>
+                    
+                
+                    
+                    
+                    
+                        
+                    
+                        
+                    
+                     
+                    
+                    
+                    
+                    <a href="/categories/course/games105/" 
+                       >
+                        Games105
+                    </a>
+                    
+                    
+                    
+                
+            </div>
+        
+    </header>
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="/p/games105-%E8%AE%A1%E7%AE%97%E6%9C%BA%E8%A7%92%E8%89%B2%E5%8A%A8%E7%94%BB%E5%9F%BA%E7%A1%80%E5%89%8D%E5%90%91%E8%BF%90%E5%8A%A8%E5%AD%A6%E9%80%86%E5%90%91%E8%BF%90%E5%8A%A8%E5%AD%A6%E5%85%B3%E9%94%AE%E5%B8%A7%E5%8A%A8%E7%94%BB%E4%B8%8E%E6%8F%92%E5%80%BC/">GAMES105 计算机角色动画基础（前向运动学、逆向运动学、关键帧动画与插值）</a>
+        </h2>
+    
+        
+    </div>
+
+    
+    
+    
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published">Oct 19, 2025</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-time--reading">
+                    阅读时长: 12 分钟
+                </time>
+            </div>
+        
+
+        
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+        <span id="busuanzi_container_page_pv">本文阅读量<span id="busuanzi_value_page_pv"></span>次</span>
+    </footer>
+    
+    
+</div>
+<style>
+    .category-hierarchy {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;  
+        margin-right: 12px;  
+        margin-bottom: 8px;  
+    }
+    
+    .category-separator {
+        color: #999;
+        user-select: none;
+        font-size: 1em;  
+    }
+    
+    .article-category a {
+        text-decoration: none;
+        padding: 6px 12px;  
+        border-radius: 6px;  
+        font-size: 0.95em;  
+        transition: all 0.2s ease;
+        line-height: 1.5;  
+    }
+    
+    .article-category a:hover {
+        opacity: 0.9;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 6px rgba(0,0,0,0.1);  
+    }
+</style>
+</header>
+
+    <section class="article-content">
+    
+    
+    <h1 id="前向运动学">前向运动学
+</h1><h2 id="单链">单链
+</h2><p>每个关节的局部坐标系与全局坐标系重合</p>
+<p><img src="/30420a057d4b48d1ac427d38c5392200.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+></p>
+<p>父关节的旋转会让子关节也跟着旋转
+<img src="/487d233707f2467eb57598a1f1b105e9.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+>
+子关节的朝向就是夫关节朝向乘以自身的旋转
+<img src="/c5ef766273b74f7798dcde2d2431193f.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+>
+只旋转R0时,Q1在Q0的局部坐标系下的坐标并不会变一直是l0,如果想求Q1的世界坐标,就是父关节的世界坐标加朝向*l0
+<img src="/26526c4801494c039050d004bac0e624.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+>
+这一套东西就是用传播来更新,比如Q4的局部坐标系的某一个点,可以算出他在Q3的局部坐标系的位置,Q3的位置又能计算出他在Q2的位置,最终得到这个点在Q0的位置,最终再换算到世界坐标系,就得到了Q4局部坐标系下某一点在全局坐标系下的位置
+这块比较好理解
+<img src="/a3dd2947738740b8a3ed38487aace030.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+>
+BVH文件,用欧拉角表示旋转
+<img src="/68e64229085948d2ac4ae0eae284d160.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="n">HIERARCHY</span>
+</span></span><span class="line"><span class="cl"><span class="n">ROOT</span> <span class="n">RootJoint</span>  <span class="o">//</span> <span class="n">主结点</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">OFFSET</span>   <span class="mf">0.000000</span>   <span class="mf">0.000000</span>   <span class="mf">0.000000</span>
+</span></span><span class="line"><span class="cl">    <span class="n">CHANNELS</span> <span class="mi">6</span> <span class="n">Xposition</span> <span class="n">Yposition</span> <span class="n">Zposition</span> <span class="n">Xrotation</span> <span class="n">Yrotation</span> <span class="n">Zrotation</span> <span class="o">//</span> <span class="n">主节点的位置和旋转信息</span>
+</span></span><span class="line"><span class="cl">    <span class="n">JOINT</span> <span class="n">lHip</span> <span class="o">//</span> <span class="n">主关节内的子关节</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">OFFSET</span>   <span class="mf">0.100000</span>  <span class="o">-</span><span class="mf">0.051395</span>   <span class="mf">0.000000</span> <span class="o">//</span> <span class="n">子关节相对于主关节局部坐标系的偏移量</span>
+</span></span><span class="line"><span class="cl">        <span class="n">CHANNELS</span> <span class="mi">3</span> <span class="n">Xrotation</span> <span class="n">Yrotation</span> <span class="n">Zrotation</span> <span class="o">//</span> <span class="n">欧拉角表示的旋转</span>
+</span></span><span class="line"><span class="cl">        <span class="n">JOINT</span> <span class="n">lKnee</span> <span class="o">//</span> <span class="n">子关节的子关节</span> <span class="n">一层一层嵌套</span>
+</span></span><span class="line"><span class="cl">        <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">OFFSET</span>   <span class="mf">0.000000</span>  <span class="o">-</span><span class="mf">0.410000</span>   <span class="mf">0.000000</span>
+</span></span><span class="line"><span class="cl">            <span class="n">CHANNELS</span> <span class="mi">3</span> <span class="n">Xrotation</span> <span class="n">Yrotation</span> <span class="n">Zrotation</span>
+</span></span><span class="line"><span class="cl">            <span class="n">JOINT</span> <span class="n">lAnkle</span>
+</span></span><span class="line"><span class="cl">            <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                <span class="n">OFFSET</span>   <span class="mf">0.000000</span>  <span class="o">-</span><span class="mf">0.390000</span>   <span class="mf">0.000000</span>
+</span></span><span class="line"><span class="cl">                <span class="n">CHANNELS</span> <span class="mi">3</span> <span class="n">Xrotation</span> <span class="n">Yrotation</span> <span class="n">Zrotation</span>
+</span></span><span class="line"><span class="cl">                <span class="n">JOINT</span> <span class="n">lToeJoint</span>
+</span></span><span class="line"><span class="cl">                <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                    <span class="n">OFFSET</span>   <span class="mf">0.000000</span>  <span class="o">-</span><span class="mf">0.050000</span>   <span class="mf">0.130000</span>
+</span></span><span class="line"><span class="cl">                    <span class="n">CHANNELS</span> <span class="mi">3</span> <span class="n">Xrotation</span> <span class="n">Yrotation</span> <span class="n">Zrotation</span>
+</span></span><span class="line"><span class="cl">                    <span class="n">End</span> <span class="n">Site</span>
+</span></span><span class="line"><span class="cl">                    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                        <span class="n">OFFSET</span>   <span class="mf">0.010000</span>   <span class="mf">0.002000</span>   <span class="mf">0.060000</span>
+</span></span><span class="line"><span class="cl">                    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">                <span class="p">}</span>
+</span></span><span class="line"><span class="cl">            <span class="p">}</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>一行MOTION信息按照上边给的关节顺序和通道数给出一帧的旋转信息</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl">  <span class="mf">1.471305</span>   <span class="mf">0.917570</span>   <span class="mf">2.607916</span>   <span class="mf">0.000000</span>   <span class="mf">0.000000</span>   <span class="mf">0.000000</span>   <span class="mf">0.000000</span>   <span class="mf">0.000000</span>   <span class="mf">0.000000</span>   <span class="mf">0.000000</span>   <span class="mf">0.000000</span>   <span class="mf">0.000000</span>   <span class="mf">0.000000</span>   <span class="mf">0.000000</span>   <span class="mf">0.000000</span>   <span class="mf">0.000000</span>   <span class="mf">0.000000</span>   <span class="mf">0.000000</span>   <span class="mf">0.000000</span>   <span class="mf">0.000000</span>   <span class="mf">0.000000</span>   <span class="mf">0.000000</span>   <span class="mf">0.000000</span>   <span class="mf">0.000000</span>   <span class="mf">0.000000</span>   <span class="mf">0.000000</span>   <span class="mf">0.000000</span>   <span class="mf">0.000000</span>   <span class="mf">0.000000</span>   <span class="mf">0.000000</span>   <span class="mf">0.000000</span>   <span class="mf">0.000000</span>   <span class="mf">0.000000</span>   <span class="mf">0.000000</span>   <span class="mf">0.000000</span>   <span class="mf">0.000000</span>   <span class="mf">0.000000</span>   <span class="mf">0.000000</span>   <span class="mf">0.000000</span>   <span class="mf">0.000000</span>   <span class="mf">0.000000</span>   <span class="mf">0.000000</span>   <span class="mf">0.000000</span>   <span class="mf">0.000000</span>  <span class="mf">45.000000</span>   <span class="mf">0.000000</span>   <span class="mf">0.000000</span>   <span class="mf">0.000000</span>   <span class="mf">0.000000</span>   <span class="mf">0.000000</span>   <span class="mf">0.000000</span>   <span class="mf">0.000000</span>   <span class="mf">0.000000</span>   <span class="mf">0.000000</span>   <span class="mf">0.000000</span>   <span class="mf">0.000000</span> <span class="o">-</span><span class="mf">45.000000</span>   <span class="mf">0.000000</span>   <span class="mf">0.000000</span>   <span class="mf">0.000000</span>   <span class="mf">0.000000</span>   <span class="mf">0.000000</span>   <span class="mf">0.000000</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="前向运动学作业">前向运动学作业
+</h2><h3 id="1-解析bvh文件">1. 解析BVH文件
+</h3><p>BVH存储的是每个关节相对于父关节的旋转(欧拉角)和位置偏移</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
+</span><span class="lnt">56
+</span><span class="lnt">57
+</span><span class="lnt">58
+</span><span class="lnt">59
+</span><span class="lnt">60
+</span><span class="lnt">61
+</span><span class="lnt">62
+</span><span class="lnt">63
+</span><span class="lnt">64
+</span><span class="lnt">65
+</span><span class="lnt">66
+</span><span class="lnt">67
+</span><span class="lnt">68
+</span><span class="lnt">69
+</span><span class="lnt">70
+</span><span class="lnt">71
+</span><span class="lnt">72
+</span><span class="lnt">73
+</span><span class="lnt">74
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="k">def</span> <span class="nf">part1_calculate_T_pose</span><span class="p">(</span><span class="n">bvh_file_path</span><span class="p">):</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;&#34;&#34;
+</span></span></span><span class="line"><span class="cl"><span class="s2">    输入： bvh 文件路径
+</span></span></span><span class="line"><span class="cl"><span class="s2">    输出:
+</span></span></span><span class="line"><span class="cl"><span class="s2">        joint_name: List[str]，字符串列表，包含着所有关节的名字
+</span></span></span><span class="line"><span class="cl"><span class="s2">        joint_parent: List[int]，整数列表，包含着所有关节的父关节的索引,根节点的父关节索引为-1
+</span></span></span><span class="line"><span class="cl"><span class="s2">        joint_offset: np.ndarray，形状为(M, 3)的numpy数组，包含着所有关节的偏移量
+</span></span></span><span class="line"><span class="cl"><span class="s2">    &#34;&#34;&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">joint_name</span> <span class="o">=</span> <span class="p">[]</span>
+</span></span><span class="line"><span class="cl">    <span class="n">joint_parent</span> <span class="o">=</span> <span class="p">[]</span>
+</span></span><span class="line"><span class="cl">    <span class="n">joint_offset</span> <span class="o">=</span> <span class="p">[]</span>
+</span></span><span class="line"><span class="cl">    <span class="n">parent_stack</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c1"># 用于跟踪当前关节的父级层次</span>
+</span></span><span class="line"><span class="cl">    <span class="n">current_parent</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>  <span class="c1"># 根节点的父节点索引为-1</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1"># 读取BVH文件内容</span>
+</span></span><span class="line"><span class="cl">    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">bvh_file_path</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">        <span class="n">lines</span> <span class="o">=</span> <span class="p">[</span><span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">f</span> <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()]</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1"># 定位层次结构部分（HIERARCHY到MOTION之间的内容）</span>
+</span></span><span class="line"><span class="cl">    <span class="n">hierarchy_start</span> <span class="o">=</span> <span class="kc">None</span>
+</span></span><span class="line"><span class="cl">    <span class="n">hierarchy_end</span> <span class="o">=</span> <span class="kc">None</span>
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">line</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">lines</span><span class="p">):</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="n">line</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;HIERARCHY&#39;</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">            <span class="n">hierarchy_start</span> <span class="o">=</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span>
+</span></span><span class="line"><span class="cl">        <span class="k">elif</span> <span class="n">line</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;MOTION&#39;</span> <span class="ow">and</span> <span class="n">hierarchy_start</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">            <span class="n">hierarchy_end</span> <span class="o">=</span> <span class="n">i</span>
+</span></span><span class="line"><span class="cl">            <span class="k">break</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="n">hierarchy_start</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">hierarchy_end</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&#34;BVH文件格式错误，未找到层次结构或运动数据部分&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1"># 解析层次结构</span>
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">[</span><span class="n">hierarchy_start</span><span class="p">:</span><span class="n">hierarchy_end</span><span class="p">]:</span>
+</span></span><span class="line"><span class="cl">        <span class="n">tokens</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="ow">not</span> <span class="n">tokens</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">            <span class="k">continue</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="n">tokens</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;ROOT&#39;</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">            <span class="c1"># 处理根节点</span>
+</span></span><span class="line"><span class="cl">            <span class="n">joint_name</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tokens</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+</span></span><span class="line"><span class="cl">            <span class="n">joint_parent</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">            <span class="n">parent_stack</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">joint_name</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">            <span class="n">current_parent</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">joint_name</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="k">elif</span> <span class="n">tokens</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;JOINT&#39;</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">            <span class="c1"># 处理子关节</span>
+</span></span><span class="line"><span class="cl">            <span class="n">joint_name</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tokens</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+</span></span><span class="line"><span class="cl">            <span class="n">joint_parent</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">current_parent</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">            <span class="n">parent_stack</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">joint_name</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">            <span class="n">current_parent</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">joint_name</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="k">elif</span> <span class="n">tokens</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;OFFSET&#39;</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">            <span class="c1"># 处理偏移量（T姿态下的位置偏移）</span>
+</span></span><span class="line"><span class="cl">            <span class="n">offset</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="nb">float</span><span class="p">(</span><span class="n">tokens</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="nb">float</span><span class="p">(</span><span class="n">tokens</span><span class="p">[</span><span class="mi">2</span><span class="p">]),</span> <span class="nb">float</span><span class="p">(</span><span class="n">tokens</span><span class="p">[</span><span class="mi">3</span><span class="p">])])</span>
+</span></span><span class="line"><span class="cl">            <span class="n">joint_offset</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">offset</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="k">elif</span> <span class="n">tokens</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;END&#39;</span> <span class="ow">and</span> <span class="n">tokens</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;SITE&#39;</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">            <span class="c1"># 处理末端节点</span>
+</span></span><span class="line"><span class="cl">            <span class="n">end_joint_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&#34;</span><span class="si">{</span><span class="n">joint_name</span><span class="p">[</span><span class="n">current_parent</span><span class="p">]</span><span class="si">}</span><span class="s2">_end&#34;</span>
+</span></span><span class="line"><span class="cl">            <span class="n">joint_name</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">end_joint_name</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">            <span class="n">joint_parent</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">current_parent</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">            <span class="n">parent_stack</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">joint_name</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">            <span class="n">current_parent</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">joint_name</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="k">elif</span> <span class="n">tokens</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;}&#39;</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">            <span class="c1"># 层级结束，返回上一级父节点</span>
+</span></span><span class="line"><span class="cl">            <span class="k">if</span> <span class="n">parent_stack</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">                <span class="n">parent_stack</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">                <span class="n">current_parent</span> <span class="o">=</span> <span class="n">parent_stack</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="k">if</span> <span class="n">parent_stack</span> <span class="k">else</span> <span class="o">-</span><span class="mi">1</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1"># 转换为numpy数组</span>
+</span></span><span class="line"><span class="cl">    <span class="n">joint_offset</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">joint_offset</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">joint_name</span><span class="p">,</span> <span class="n">joint_parent</span><span class="p">,</span> <span class="n">joint_offset</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><img src="/b4c4695c429a408d894e4cac371cbc93.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+></p>
+<h3 id="2-前向运动学计算">2. 前向运动学计算
+</h3><p>读入BVH文件中每一帧的动作数据, 计算每个关节在世界坐标系下的旋转和位置。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="k">def</span> <span class="nf">part2_forward_kinematics</span><span class="p">(</span><span class="n">joint_name</span><span class="p">,</span> <span class="n">joint_parent</span><span class="p">,</span> <span class="n">joint_offset</span><span class="p">,</span> <span class="n">motion_data</span><span class="p">,</span> <span class="n">frame_id</span><span class="p">):</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;&#34;&#34;请填写以下内容
+</span></span></span><span class="line"><span class="cl"><span class="s2">    输入: part1 获得的关节名字，父节点列表，偏移量列表
+</span></span></span><span class="line"><span class="cl"><span class="s2">        motion_data: np.ndarray，形状为(N,X)的numpy数组，其中N为帧数，X为Channel数
+</span></span></span><span class="line"><span class="cl"><span class="s2">        frame_id: int，需要返回的帧的索引
+</span></span></span><span class="line"><span class="cl"><span class="s2">    输出:
+</span></span></span><span class="line"><span class="cl"><span class="s2">        joint_positions: np.ndarray，形状为(M, 3)的numpy数组，包含着所有关节的全局位置
+</span></span></span><span class="line"><span class="cl"><span class="s2">        joint_orientations: np.ndarray，形状为(M, 4)的numpy数组，包含着所有关节的全局旋转(四元数)
+</span></span></span><span class="line"><span class="cl"><span class="s2">    Tips:
+</span></span></span><span class="line"><span class="cl"><span class="s2">        1. joint_orientations的四元数顺序为(x, y, z, w)
+</span></span></span><span class="line"><span class="cl"><span class="s2">        2. from_euler时注意使用大写的XYZ
+</span></span></span><span class="line"><span class="cl"><span class="s2">    &#34;&#34;&#34;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">bone_num</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">joint_name</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1"># 记录所有关节的全局位置</span>
+</span></span><span class="line"><span class="cl">    <span class="n">joint_positions</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">bone_num</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">    <span class="c1"># 记录所有关节的全局旋转(四元数)</span>
+</span></span><span class="line"><span class="cl">    <span class="n">joint_orientations</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">bone_num</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">    <span class="c1"># 一帧的所有旋转数据和主关节的位置信息</span>
+</span></span><span class="line"><span class="cl">    <span class="n">motion_data_oneFrame</span> <span class="o">=</span> <span class="n">motion_data</span><span class="p">[</span><span class="n">frame_id</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1"># 主关节的位置信息</span>
+</span></span><span class="line"><span class="cl">    <span class="n">joint_positions</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">motion_data_oneFrame</span><span class="p">[:</span><span class="mi">3</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl">    <span class="c1"># 主关节的旋转(从欧拉角转为四元数)</span>
+</span></span><span class="line"><span class="cl">    <span class="n">joint_orientations</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">R</span><span class="o">.</span><span class="n">from_euler</span><span class="p">(</span><span class="s1">&#39;XYZ&#39;</span><span class="p">,</span> <span class="n">motion_data_oneFrame</span><span class="p">[</span><span class="mi">3</span><span class="p">:</span><span class="mi">6</span><span class="p">],</span> <span class="n">degrees</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">as_quat</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">frame_count</span> <span class="o">=</span> <span class="mi">1</span>
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">bone_num</span><span class="p">):</span>
+</span></span><span class="line"><span class="cl">        <span class="c1"># 当前关节的父关节id</span>
+</span></span><span class="line"><span class="cl">        <span class="n">p</span> <span class="o">=</span> <span class="n">joint_parent</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl">        <span class="n">cur_rotate</span> <span class="o">=</span> <span class="kc">None</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="n">joint_name</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;_end&#39;</span><span class="p">):</span>
+</span></span><span class="line"><span class="cl">            <span class="c1"># _end表示一条关节链的终点位置</span>
+</span></span><span class="line"><span class="cl">            <span class="n">cur_rotate</span> <span class="o">=</span> <span class="n">R</span><span class="o">.</span><span class="n">from_euler</span><span class="p">(</span><span class="s1">&#39;XYZ&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">],</span> <span class="n">degrees</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="k">else</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">            <span class="n">cur_rotate</span> <span class="o">=</span> <span class="n">R</span><span class="o">.</span><span class="n">from_euler</span><span class="p">(</span><span class="s1">&#39;XYZ&#39;</span><span class="p">,</span> <span class="n">motion_data_oneFrame</span><span class="p">[</span><span class="mi">3</span> <span class="o">+</span> <span class="n">frame_count</span> <span class="o">*</span> <span class="mi">3</span><span class="p">:</span> <span class="mi">6</span> <span class="o">+</span> <span class="n">frame_count</span> <span class="o">*</span> <span class="mi">3</span><span class="p">],</span>
+</span></span><span class="line"><span class="cl">                                      <span class="n">degrees</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">            <span class="n">frame_count</span> <span class="o">+=</span> <span class="mi">1</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="c1"># 父关节的旋转信息</span>
+</span></span><span class="line"><span class="cl">        <span class="n">p_orient</span> <span class="o">=</span> <span class="n">R</span><span class="o">.</span><span class="n">from_quat</span><span class="p">(</span><span class="n">joint_orientations</span><span class="p">[</span><span class="n">p</span><span class="p">])</span>
+</span></span><span class="line"><span class="cl">        <span class="c1"># 当前位置的旋转 = 父关节的旋转 * 当前关节的旋转</span>
+</span></span><span class="line"><span class="cl">        <span class="n">joint_orientations</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">p_orient</span> <span class="o">*</span> <span class="n">cur_rotate</span><span class="p">)</span><span class="o">.</span><span class="n">as_quat</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">        <span class="c1"># 当前位置 = 父关节的全局位置 + 父关节的旋转 * 当前关节在父关节旋转方向上的偏移</span>
+</span></span><span class="line"><span class="cl">        <span class="n">joint_positions</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">joint_positions</span><span class="p">[</span><span class="n">p</span><span class="p">]</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">R</span><span class="o">.</span><span class="n">from_quat</span><span class="p">(</span><span class="n">joint_orientations</span><span class="p">[</span><span class="n">p</span><span class="p">])</span><span class="o">.</span><span class="n">as_matrix</span><span class="p">(),</span>
+</span></span><span class="line"><span class="cl">                                                         <span class="n">joint_offset</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">joint_positions</span><span class="p">,</span> <span class="n">joint_orientations</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="3-运动重定向">3. 运动重定向
+</h3><p>读入一个A-Pose的文件, 将A-pose的bvh重定向到T-pose上
+意思是 骨骼信息来自T-pose,但是一帧的旋转信息来自A-pose的文件.
+<code>   retarget_motion_data = part3_retarget_func(T_pose_bvh_path, A_pose_bvh_path)</code>用来把A-pose给出的旋转信息重定向到T-pose的骨骼上. 处理办法就是遍历到肩膀肘手腕时要额外处理旋转信息</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
+</span><span class="lnt">56
+</span><span class="lnt">57
+</span><span class="lnt">58
+</span><span class="lnt">59
+</span><span class="lnt">60
+</span><span class="lnt">61
+</span><span class="lnt">62
+</span><span class="lnt">63
+</span><span class="lnt">64
+</span><span class="lnt">65
+</span><span class="lnt">66
+</span><span class="lnt">67
+</span><span class="lnt">68
+</span><span class="lnt">69
+</span><span class="lnt">70
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-python" data-lang="python"><span class="line"><span class="cl"><span class="k">def</span> <span class="nf">part3_retarget_func</span><span class="p">(</span><span class="n">T_pose_bvh_path</span><span class="p">,</span> <span class="n">A_pose_bvh_path</span><span class="p">):</span>
+</span></span><span class="line"><span class="cl">    <span class="s2">&#34;&#34;&#34;
+</span></span></span><span class="line"><span class="cl"><span class="s2">    将 A-pose的bvh重定向到T-pose上
+</span></span></span><span class="line"><span class="cl"><span class="s2">    输入: 两个bvh文件的路径
+</span></span></span><span class="line"><span class="cl"><span class="s2">    输出: 
+</span></span></span><span class="line"><span class="cl"><span class="s2">        motion_data: np.ndarray，形状为(N,X)的numpy数组，其中N为帧数，X为Channel数。retarget后的运动数据
+</span></span></span><span class="line"><span class="cl"><span class="s2">    Tips:
+</span></span></span><span class="line"><span class="cl"><span class="s2">        两个bvh的joint name顺序可能不一致哦(
+</span></span></span><span class="line"><span class="cl"><span class="s2">        as_euler时也需要大写的XYZ
+</span></span></span><span class="line"><span class="cl"><span class="s2">    &#34;&#34;&#34;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">def</span> <span class="nf">index_bone_to_channel</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">flag</span><span class="p">):</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="n">flag</span> <span class="o">==</span> <span class="s1">&#39;t&#39;</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">            <span class="n">end_bone_index</span> <span class="o">=</span> <span class="n">end_bone_index_t</span>
+</span></span><span class="line"><span class="cl">        <span class="k">else</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">            <span class="n">end_bone_index</span> <span class="o">=</span> <span class="n">end_bone_index_a</span>
+</span></span><span class="line"><span class="cl">        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">end_bone_index</span><span class="p">)):</span>
+</span></span><span class="line"><span class="cl">            <span class="k">if</span> <span class="n">end_bone_index</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">index</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">                <span class="k">return</span> <span class="n">index</span> <span class="o">-</span> <span class="n">i</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="n">index</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">end_bone_index</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">def</span> <span class="nf">get_t2a_offset</span><span class="p">(</span><span class="n">bone_name</span><span class="p">):</span>
+</span></span><span class="line"><span class="cl">        <span class="n">l_bone</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;lShoulder&#39;</span><span class="p">,</span> <span class="s1">&#39;lElbow&#39;</span><span class="p">,</span> <span class="s1">&#39;lWrist&#39;</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl">        <span class="n">r_bone</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;rShoulder&#39;</span><span class="p">,</span> <span class="s1">&#39;rElbow&#39;</span><span class="p">,</span> <span class="s1">&#39;rWrist&#39;</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="n">bone_name</span> <span class="ow">in</span> <span class="n">l_bone</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">            <span class="k">return</span> <span class="n">R</span><span class="o">.</span><span class="n">from_euler</span><span class="p">(</span><span class="s1">&#39;XYZ&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">45.</span><span class="p">],</span> <span class="n">degrees</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="n">bone_name</span> <span class="ow">in</span> <span class="n">r_bone</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">            <span class="k">return</span> <span class="n">R</span><span class="o">.</span><span class="n">from_euler</span><span class="p">(</span><span class="s1">&#39;XYZ&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="o">-</span><span class="mf">45.</span><span class="p">],</span> <span class="n">degrees</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="n">R</span><span class="o">.</span><span class="n">from_euler</span><span class="p">(</span><span class="s1">&#39;XYZ&#39;</span><span class="p">,</span> <span class="p">[</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">],</span> <span class="n">degrees</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">motion_data</span> <span class="o">=</span> <span class="n">load_motion_data</span><span class="p">(</span><span class="n">A_pose_bvh_path</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">t_name</span><span class="p">,</span> <span class="n">t_parent</span><span class="p">,</span> <span class="n">t_offset</span> <span class="o">=</span> <span class="n">part1_calculate_T_pose</span><span class="p">(</span><span class="n">T_pose_bvh_path</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="n">a_name</span><span class="p">,</span> <span class="n">a_parent</span><span class="p">,</span> <span class="n">a_offset</span> <span class="o">=</span> <span class="n">part1_calculate_T_pose</span><span class="p">(</span><span class="n">A_pose_bvh_path</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">end_bone_index_t</span> <span class="o">=</span> <span class="p">[]</span>
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">t_name</span><span class="p">)):</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="n">t_name</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;_end&#39;</span><span class="p">):</span>
+</span></span><span class="line"><span class="cl">            <span class="n">end_bone_index_t</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">end_bone_index_a</span> <span class="o">=</span> <span class="p">[]</span>
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">a_name</span><span class="p">)):</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="n">a_name</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;_end&#39;</span><span class="p">):</span>
+</span></span><span class="line"><span class="cl">            <span class="n">end_bone_index_a</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="n">m_i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">motion_data</span><span class="p">)):</span>
+</span></span><span class="line"><span class="cl">        <span class="n">frame</span> <span class="o">=</span> <span class="n">motion_data</span><span class="p">[</span><span class="n">m_i</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl">        <span class="n">cur_frame</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">frame</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+</span></span><span class="line"><span class="cl">        <span class="n">cur_frame</span><span class="p">[:</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">frame</span><span class="p">[:</span><span class="mi">3</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl">        <span class="k">for</span> <span class="n">t_i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">t_name</span><span class="p">)):</span>
+</span></span><span class="line"><span class="cl">            <span class="n">cur_bone</span> <span class="o">=</span> <span class="n">t_name</span><span class="p">[</span><span class="n">t_i</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl">            <span class="n">a_i</span> <span class="o">=</span> <span class="n">a_name</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">t_name</span><span class="p">[</span><span class="n">t_i</span><span class="p">])</span>
+</span></span><span class="line"><span class="cl">            <span class="k">if</span> <span class="n">cur_bone</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;_end&#39;</span><span class="p">):</span>
+</span></span><span class="line"><span class="cl">                <span class="k">continue</span>
+</span></span><span class="line"><span class="cl">            <span class="n">channel_t_i</span> <span class="o">=</span> <span class="n">index_bone_to_channel</span><span class="p">(</span><span class="n">t_i</span><span class="p">,</span> <span class="s1">&#39;t&#39;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">            <span class="n">channel_a_i</span> <span class="o">=</span> <span class="n">index_bone_to_channel</span><span class="p">(</span><span class="n">a_i</span><span class="p">,</span> <span class="s1">&#39;a&#39;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">            <span class="c1"># retarget</span>
+</span></span><span class="line"><span class="cl">            <span class="n">local_rotation</span> <span class="o">=</span> <span class="n">frame</span><span class="p">[</span><span class="mi">3</span> <span class="o">+</span> <span class="n">channel_a_i</span> <span class="o">*</span> <span class="mi">3</span><span class="p">:</span> <span class="mi">6</span> <span class="o">+</span> <span class="n">channel_a_i</span> <span class="o">*</span> <span class="mi">3</span><span class="p">]</span>
+</span></span><span class="line"><span class="cl">            <span class="k">if</span> <span class="n">cur_bone</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;lShoulder&#39;</span><span class="p">,</span> <span class="s1">&#39;lElbow&#39;</span><span class="p">,</span> <span class="s1">&#39;lWrist&#39;</span><span class="p">,</span> <span class="s1">&#39;rShoulder&#39;</span><span class="p">,</span> <span class="s1">&#39;rElbow&#39;</span><span class="p">,</span> <span class="s1">&#39;rWrist&#39;</span><span class="p">]:</span>
+</span></span><span class="line"><span class="cl">                <span class="n">p_bone_name</span> <span class="o">=</span> <span class="n">t_name</span><span class="p">[</span><span class="n">t_parent</span><span class="p">[</span><span class="n">t_i</span><span class="p">]]</span>
+</span></span><span class="line"><span class="cl">                <span class="n">Q_pi</span> <span class="o">=</span> <span class="n">get_t2a_offset</span><span class="p">(</span><span class="n">p_bone_name</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">                <span class="n">Q_i</span> <span class="o">=</span> <span class="n">get_t2a_offset</span><span class="p">(</span><span class="n">cur_bone</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">                <span class="n">local_rotation</span> <span class="o">=</span> <span class="p">(</span><span class="n">Q_pi</span> <span class="o">*</span> <span class="n">R</span><span class="o">.</span><span class="n">from_euler</span><span class="p">(</span><span class="s1">&#39;XYZ&#39;</span><span class="p">,</span> <span class="n">local_rotation</span><span class="p">,</span> <span class="n">degrees</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">*</span> <span class="n">Q_i</span><span class="o">.</span><span class="n">inv</span><span class="p">())</span><span class="o">.</span><span class="n">as_euler</span><span class="p">(</span><span class="s1">&#39;XYZ&#39;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">                                                                                                                 <span class="n">degrees</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">            <span class="n">cur_frame</span><span class="p">[</span><span class="mi">3</span> <span class="o">+</span> <span class="n">channel_t_i</span> <span class="o">*</span> <span class="mi">3</span><span class="p">:</span> <span class="mi">6</span> <span class="o">+</span> <span class="n">channel_t_i</span> <span class="o">*</span> <span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">local_rotation</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="n">motion_data</span><span class="p">[</span><span class="n">m_i</span><span class="p">]</span> <span class="o">=</span> <span class="n">cur_frame</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">motion_data</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><img src="/9cd6da17016c4d8bb0a71ba5e8f44d0c.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+></p>
+<h1 id="逆向运动学">逆向运动学
+</h1><p>已知运动结果求每一个关节的旋转
+<img src="/523c2740ff8a489bbf301e897f189a11.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+>
+IK问题可以有解、无解、多解
+<img src="/5e31c5f9ee3d4b41bcbe530f51958de1.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+></p>
+<h2 id="双关节问题">双关节问题
+</h2><p>下图两个虚线圆的交点就是关节1应该去的位置，到达后旋转关节1，肯定能让关节2到达指定位置
+<img src="/09191a1412b7413cb8b4b24f031951c3.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+></p>
+<p>另外一种思路：
+<img src="/9ee2f77744404313b353f6b4e0be5ba9.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+></p>
+<ol>
+<li>移动关节1，让0-2的距离= 0到x的距离
+<img src="/dff6e1244c5e4a85a1e318edc2404993.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+>
+再旋转关节0即可
+<img src="/e3984243737a40ee8295c55bd1c75fc2.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+>
+在三维下绕着0x为轴旋转即可
+<img src="/46d4bc76f25f46fa9198e4e6408ad15a.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+></li>
+</ol>
+<h2 id="多关节最优化问题">多关节最优化问题
+</h2><p>只考虑末端点到达指定位置的问题，建模成 <strong>通过各个关节的旋转，得到末端点位置的这个函数</strong>
+<img src="/f42d20f408024c66b807662f62c181c2.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+>
+求解问题就是：就是找到各关节的旋转使得目标点位置-公式求解的末端点位置=0
+这个方程有没有根 <img src="/a83a39c75e6d44b28505bc38fe51b669.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+>
+等价的可以转化为一个优化问题，优化问题取极值
+<img src="/8d0ddd126ff34be3ad0ba4905bf04f05.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+>
+<img src="/daaebb3f845246a19d2ff1c00482f0d6.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+>
+求解问题到这里就变成了函数求极值的问题
+<img src="/59f12c68be1f4f8ca5caf06bc19e5b46.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+></p>
+<h3 id="优化问题下降方法">优化问题下降方法
+</h3><h4 id="1-循环坐标下降法-ccd">1. 循环坐标下降法 CCD
+</h4><p>认为参数的坐标轴方向为下降方向，不断交换坐标轴。 其实就是每次只更新一个参数（一个旋转角度）
+<img src="/7bab171e461a44c3bdc96608ae6d92cc.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+>
+CCD放在IK来解释就是每次只旋转一个关节
+下图就是只旋转3，让3-4朝向正确（也就是寻找了x离目标位置最近的位置）
+<img src="/b8103f4217204a0eb70cc6f78da8302d.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+></p>
+<p>下一步旋转关节2
+<img src="/aaf51c0f1d8e4c7a88014c5f9cecb5c1.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+>
+依此类推
+<img src="/b31cd73e4a4b4100b70025bdf97d8cf0.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+>
+之后再回到4关节进行循环
+<img src="/8d495bf0c26e49e3b095a8899fe78f78.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+></p>
+<h4 id="2--梯度下降雅可比转置法">2.  梯度下降（雅可比转置法）
+</h4><p>CCD没有考虑到目标函数的性质，直接找负梯度方向就可以更快的下降
+<img src="/a1bb1fda63424be8a95f5ee62979d73b.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+>
+也就是说每个参数的更新方向都是下降最快的方向<img src="/e4ebf4f5fe21425f82803dda0393847b.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+>
+参数的更新公式
+<img src="/3c958e0be7a347f098c0f43a1badccab.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+>
+红色的这一项是控制梯度更新是往正方向还是负方向（因为下降过头还得回来）
+<img src="/d5cbec56d7f04707b1036b396aef142f.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+>
+前边梯度的倒数构成的矩阵也可以叫做雅可比矩阵（f对每个参数求导的结果组成的矩阵）
+<img src="/086df6c95162428c814ec88e36cf060a.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+>
+下降梯度法也可以就雅可比转置法。
+对于IK问题，他输出是一个点，是三维的输出（x,y,z）所以雅可比矩阵应该是三维的
+<img src="/b45b38c520104f5ba5bd8bcd6365baff.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+>
+<img src="/0d7028d05b824fc08e40b90d524b2c45.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+></p>
+<h5 id="雅可比矩阵计算方法">雅可比矩阵计算方法
+</h5><ol>
+<li>调库！！！</li>
+<li>有限差分（用前向运动学运动依次来获得数据填充矩阵，看不懂。。。。）
+<img src="/0bdd5647b2a84cc19081b7e3a4e65443.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+></li>
+<li>几何方法
+（针对单自由度关节）这里应该是当一个关节旋转一个很小的角度时，把罗德里格斯旋转公式求出目标点，取极限求出来的就是雅可比矩阵的一项
+<img src="/9ca61d9917d745799f1546d4cd652f48.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+>
+（针对ball 3自由度的关节）很难理解的，选择不理解，知道是可以的就行
+<img src="/346ecc4e5d2545a58626414074e7df36.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+>
+<img src="/b04f38a3641c4be99b353d7ae8b9e9fc.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+></li>
+</ol>
+<h4 id="3--高斯-牛顿法">3.  高斯-牛顿法
+</h4><p>最优化学过。。忘了，这里选择不回忆
+<img src="/6a1ebe08306a44dba0156749759741cc.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+>
+<img src="/aff67403181642ca985180be00ce10e7.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+></p>
+<h4 id="4--雅可比逆方法">4.  雅可比逆方法
+</h4><p>。。。听个响<img src="/33850882bb744ab6a7088f7923a5b08e.png"
+	
+	
+	
+	loading="lazy"
+	
+	
+>
+听个。。
+<img src="/21260fddf90a4ea385c6696d49e9d117.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+></p>
+<h2 id="角色的ik">角色的IK
+</h2><p>更复杂的优化问题。 每个目标点都对应上一节一个优化目标，最后相加。还需要加一个正则项，约束各个关节的旋转
+<img src="/3ac34f45d8f5453385d3d1406f6c5851.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+></p>
+<h2 id="逆向运动学作业">逆向运动学作业
+</h2><p>def load_motion_data(bvh_file_path):
+&ldquo;&ldquo;&ldquo;part2 辅助函数，读取bvh文件&rdquo;&rdquo;&rdquo;
+with open(bvh_file_path, &lsquo;r&rsquo;) as f:
+lines = f.readlines()
+for i in range(len(lines)):
+if lines[i].startswith(&lsquo;Frame Time&rsquo;):
+break
+motion_data = []
+for line in lines[i + 1:]:
+data = [float(x) for x in line.split()]
+if len(data) == 0:
+break
+motion_data.append(np.array(data).reshape(1, -1))
+motion_data = np.concatenate(motion_data, axis=0)
+return motion_data</p>
+<p>def rotation_matrix(a, b):
+a = a / np.linalg.norm(a)
+b = b / np.linalg.norm(b)
+n = np.cross(a, b)
+# 旋转矩阵是正交矩阵，矩阵的每一行每一列的模，都为1；并且任意两个列向量或者任意两个行向量都是正交的。
+# n=n/np.linalg.norm(n)
+# 计算夹角
+cos_theta = np.dot(a, b)
+sin_theta = np.linalg.norm(n)
+theta = np.arctan2(sin_theta, cos_theta)
+# 构造旋转矩阵
+c = np.cos(theta)
+s = np.sin(theta)
+v = 1 - c
+rotation_matrix = np.array([[n[0] * n[0] * v + c, n[0] * n[1] * v - n[2] * s, n[0] * n[2] * v + n[1] * s],
+[n[0] * n[1] * v + n[2] * s, n[1] * n[1] * v + c, n[1] * n[2] * v - n[0] * s],
+[n[0] * n[2] * v - n[1] * s, n[1] * n[2] * v + n[0] * s, n[2] * n[2] * v + c]])
+return rotation_matrix</p>
+<p>def inv_safe(data):
+# return R.from_quat(data).inv()
+if np.allclose(data, [0, 0, 0, 0]):
+return np.eye(3)
+else:
+return np.linalg.inv(R.from_quat(data).as_matrix())</p>
+<p>def from_quat_safe(data):
+# return R.from_quat(data)
+if np.allclose(data, [0, 0, 0, 0]):
+return np.eye(3)
+else:
+return R.from_quat(data).as_matrix()</p>
+<p>def part1_inverse_kinematics(meta_data, joint_positions, joint_orientations, target_pose):
+&quot;&quot;&quot;
+完成函数，计算逆运动学
+输入:
+meta_data: 为了方便，将一些固定信息进行了打包，见上面的meta_data类
+joint_positions: 当前的关节位置，是一个numpy数组，shape为(M, 3)，M为关节数
+joint_orientations: 当前的关节朝向，是一个numpy数组，shape为(M, 4)，M为关节数
+target_pose: 目标位置，是一个numpy数组，shape为(3,)
+输出:
+经过IK后的姿态
+joint_positions: 计算得到的关节位置，是一个numpy数组，shape为(M, 3)，M为关节数
+joint_orientations: 计算得到的关节朝向，是一个numpy数组，shape为(M, 4)，M为关节数
+&quot;&quot;&quot;
+path, path_name, path1, path2 = meta_data.get_path_from_root_to_end()
+parent_idx = meta_data.joint_parent
+# local_rotation是用于最后计算不在链上的节点
+no_caled_orientation = copy.deepcopy(joint_orientations)
+local_rotation = [
+R.from_matrix(inv_safe(joint_orientations[parent_idx[i]]) * from_quat_safe(joint_orientations[i])).as_quat() for
+i
+in range(len(joint_orientations))]
+local_rotation[0] = R.from_matrix(from_quat_safe(joint_orientations[0])).as_quat()
+local_position = [joint_positions[i] - joint_positions[parent_idx[i]] for i
+in range(len(joint_orientations))]
+local_position[0] = joint_positions[0]</p>
+<pre><code>path_end_id = path1[0]  ## lWrist_end 就是手掌 只是加了end不叫hand而已
+for k in range(0, 300):
+    # k：循环次数
+    # 正向的，path1是从手到root之前
+    for idx in range(0, len(path1)):
+        # idx：路径上的第几个节点了，第0个是手，最后一个是root
+        path_joint_id = path1[idx]
+
+        vec_to_end = joint_positions[path_end_id] - joint_positions[path_joint_id]
+        vec_to_target = target_pose - joint_positions[path_joint_id]
+        # 获取end-&gt;target的旋转矩阵
+        # debug
+        # rot_matrix=rotation_matrix(np.array([1,0,0]),np.array([1,1,0]))
+        rot_matrix = rotation_matrix(vec_to_end, vec_to_target)
+
+        # 计算前的朝向。这个朝向实际上是累乘到父节点的
+        initial_orientation = from_quat_safe(joint_orientations[path_joint_id])
+        # 旋转矩阵，格式换算
+        rot_matrix_R = R.from_matrix(rot_matrix).as_matrix()
+        # 计算后的朝向
+        calculated_orientation = rot_matrix_R.dot(initial_orientation)
+        # 写回结果列表
+        joint_orientations[path_joint_id] = R.from_matrix(calculated_orientation).as_quat()
+
+        # 子节点的朝向也会有所变化
+        # idx-1 就是当前节点的下一个更接近尾端的节点，一直向前迭代到1
+        for i in range(idx - 1, 0, -1):
+            path_joint_id = path1[i]
+            # 遍历路径后的节点,都乘上旋转
+            joint_orientations[path_joint_id] = R.from_matrix(
+                rot_matrix_R.dot(from_quat_safe(joint_orientations[path_joint_id]))).as_quat()
+
+        path_joint_id = path1[idx]
+        # 修改子节点的位置
+        for i in range(idx - 1, -1, -1):
+            # path_joint_id=path1[i]
+            # 节点id
+            next_joint_id = path1[i]
+            # 指向下个节点的向量
+            vec_to_next = joint_positions[next_joint_id] - joint_positions[path_joint_id]
+            # 左乘，改变向量
+            calculated_vec_to_next_dir = rot_matrix.dot(vec_to_next)
+            # 防止长度不对
+            calculated_vec_to_next = calculated_vec_to_next_dir / np.linalg.norm(
+                calculated_vec_to_next_dir) * np.linalg.norm(vec_to_next)
+            # 还原回去
+            joint_positions[next_joint_id] = calculated_vec_to_next + joint_positions[path_joint_id]
+
+    # path2是从脚到root，所以要倒着
+    # debug
+    # for idx in range(len(path2)-1,len(path2)-3,-1): # len(path2)-1 --&gt; 0
+    for idx in range(len(path2) - 1, 0, -1):  # len(path2)-1 --&gt; 0
+        path_joint_id = path2[idx]
+        parient_joint_id = max(parent_idx[path_joint_id], 0)
+
+        vec_to_end = joint_positions[path_end_id] - joint_positions[path_joint_id]
+        vec_to_target = target_pose - joint_positions[path_joint_id]
+        # 获取end-&gt;target的旋转矩阵
+        # debug
+        # rot_matrix=rotation_matrix(np.array([0.72,0.35,0]),np.array([0.5,0.35,0]))
+        # rot_matrix=np.linalg.inv(rot_matrix)
+        rot_matrix = rotation_matrix(vec_to_end, vec_to_target)
+
+        # 计算前的朝向。注意path2是反方向的，要改父节点才行
+        initial_orientation = from_quat_safe(joint_orientations[path_joint_id])
+        # 旋转矩阵，格式换算
+        rot_matrix_R = R.from_matrix(rot_matrix).as_matrix()
+        # 计算后的朝向
+        calculated_orientation = rot_matrix_R.dot(initial_orientation)
+        # 写回结果列表
+        joint_orientations[path_joint_id] = R.from_matrix(calculated_orientation).as_quat()
+
+        # 其他节点的朝向也会有所变化
+        for i in range(idx + 1, len(path2)):
+            path_joint_id = path2[i]
+            joint_orientations[path_joint_id] = R.from_matrix(
+                rot_matrix_R.dot(from_quat_safe(joint_orientations[path_joint_id]))).as_quat()
+
+        # idx-1 就是当前节点的下一个更接近尾端的节点，一直向前迭代到1
+        for i in range(len(path1) - 1, 0, -1):
+            path_joint_id = path1[i]
+            # 遍历路径后的节点,都乘上旋转
+            joint_orientations[path_joint_id] = R.from_matrix(
+                rot_matrix_R.dot(from_quat_safe(joint_orientations[path_joint_id]))).as_quat()
+
+        path_joint_id = path2[max(idx - 1, 0)]
+        # 修改父节点，或者说更靠近手的那些节点的位置
+        # path2上的
+        for i in range(idx, len(path2)):
+            # path_joint_id=path1[i]
+            # 节点id
+            prev_joint_id = path2[i]
+            # 指向上一个节点的向量
+            vec_to_next = joint_positions[prev_joint_id] - joint_positions[path_joint_id]
+            # 左乘，改变向量
+            calculated_vec_to_next_dir = rot_matrix.dot(vec_to_next)
+            # 防止长度不对
+            calculated_vec_to_next = calculated_vec_to_next_dir / np.linalg.norm(
+                calculated_vec_to_next_dir) * np.linalg.norm(vec_to_next)
+            # 还原回去
+            joint_positions[prev_joint_id] = joint_positions[path_joint_id] + calculated_vec_to_next
+        # path1上的
+        for i in range(len(path1) - 1, -1, -1):
+            # path_joint_id=path1[i]
+            # 节点id
+            prev_joint_id = path1[i]
+            # 指向上一个节点的向量
+            vec_to_next = joint_positions[prev_joint_id] - joint_positions[path_joint_id]
+            # 左乘，改变向量
+            calculated_vec_to_next_dir = rot_matrix.dot(vec_to_next)
+            # 防止长度不对
+            calculated_vec_to_next = calculated_vec_to_next_dir / np.linalg.norm(
+                calculated_vec_to_next_dir) * np.linalg.norm(vec_to_next)
+            # 还原回去
+            joint_positions[prev_joint_id] = calculated_vec_to_next + joint_positions[path_joint_id]
+
+    # debug
+    # rot_matrix=rotation_matrix(np.array([1,0,0]),np.array([1,0,1]))
+    # joint_orientations[0]=R.from_matrix(rot_matrix).as_quat()
+    # joint_orientations[1]=R.from_matrix(rot_matrix).as_quat()
+    joint_orientations[path_end_id] = joint_orientations[path1[1]]
+    cur_dis = np.linalg.norm(joint_positions[path_end_id] - target_pose)
+    if cur_dis &lt; 0.01:
+        break
+print(&quot;距离&quot;, cur_dis, &quot;迭代了&quot;, k, &quot;次&quot;)
+# 更新不在链上的节点
+for k in range(len(joint_orientations)):
+    if k in path:
+        pass
+    elif k == 0:
+        # 要单独处理，不然跟节点的-1就会变成从最后一个节点开始算
+        pass
+    else:
+        # 先获取局部旋转
+        # 这里如果直接存的就是矩阵就会有问题？
+        local_rot_matrix = R.from_quat(local_rotation[k]).as_matrix()
+        # 再获取我们已经计算了的父节点的旋转
+        parent_rot_matrix = from_quat_safe(joint_orientations[parent_idx[k]])
+        # 乘起来
+        # re=local_rot_matrix.dot(parent_rot_matrix)
+        re = parent_rot_matrix.dot(local_rot_matrix)
+        joint_orientations[k] = R.from_matrix(re).as_quat()
+
+        # 父节点没旋转的时候是：
+        initial_o = from_quat_safe(no_caled_orientation[parent_idx[k]])
+        # 父节点的旋转*delta_orientation=子节点旋转
+        # 反求delta_orientation
+        delta_orientation = np.dot(re, np.linalg.inv(initial_o))
+        # 父节点的位置加原本基础上的旋转
+        joint_positions[k] = joint_positions[parent_idx[k]] + delta_orientation.dot(local_position[k])
+
+return joint_positions, joint_orientations
+</code></pre>
+<h1 id="关键帧插值">关键帧插值
+</h1><p>给出一系列离散的值后，寻找一个f(x),首先满足已有的点都在f(x)上，另外要能计算其他的未给出的x的f(x)
+<img src="/4ab8167d086641ae88099a898c09df2e.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+></p>
+<h2 id="梯度函数">梯度函数
+</h2><p><img src="/c009bf351cde4c5fb7bb4a1e77f171a2.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+>
+也可以是离当前点最近的点的值作为f(x)
+<img src="/f5df7d93340e407fb4ed42fb0e09eebc.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+></p>
+<h2 id="线性插值函数">线性插值函数
+</h2><p>直接用直线连接已知点
+<img src="/406f498e5b85496cac6c4e98ba6e49dc.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+>
+<img src="/15117e860a2142ac9245283827ace5cc.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+></p>
+<h3 id="线性插值的平滑性">线性插值的平滑性
+</h3><p><img src="/d51108c9114540598f2f95a026d9388f.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+>
+<img src="/deb1999fb8824fef9509505dba7418bb.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+></p>
+<h2 id="多项式插值-polynomial-interpolation">多项式插值 Polynomial Interpolation
+</h2><p><img src="/5ddbccd8457e4d459972ecffc786d58a.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+>
+计算参数就是把已知点带进去
+<img src="/d372c045005b4bdbb0bb6d60f171b9c4.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+>
+然后用矩阵求解。 这里就能看出需要多少个采样点
+<img src="/18e43c512d2346d9a17e8ae3bdafa8e7.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+>
+把矩阵求逆就可以求出参数a
+<img src="/b7ad98fd79554f44a457f438aac0a76b.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+></p>
+<p><strong>Runge&rsquo;s phenomenon</strong>：当使用等距节点对某些光滑函数进行高次多项式插值时，随着插值多项式次数的增加，多项式在区间端点附近会出现剧烈的振荡，导致插值误差不仅不减小，反而会急剧增大，最终完全偏离原函数。
+下图靠近两边的点中间插值出现了非常巨大的震荡（原因是接近1时，x的高次方会变得很大，如果还是使用<strong>等距插值</strong>就会出问题）
+<img src="/01cf9890b6474a47a01f866482512ae6.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+></p>
+<h2 id="样条插值-spline-interpolation">样条插值 Spline Interpolation
+</h2><p>只在单独几个采样点上用低阶多项式插值
+<img src="/fcd34f02bada4671bacb8287547a5cd1.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+>
+常用的是Cubic Splines （三次样条插值）
+<img src="/3fab4c877b7b47a7bbb8057296033dad.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+>
+计算时只需要相邻的两个采样点计算依次多项式参数。
+如果总采样点是N+1，那一共有N段，每段都是一个三次多项式。每个多项式4个未知参数。所以一共有4N个未知参数。
+<img src="/4790b9f7979c487f803d56a18b773c99.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+>
+2个采样点信息没办法求出4个未知数。样条采样引入了别的规则。</p>
+<ol>
+<li>两段之间的采样点的在两个多项式的导数相同</li>
+<li>二阶导也相同</li>
+<li>对整条曲线的边缘点的一阶二阶导数一些额外限制</li>
+</ol>
+<h2 id="三次埃尔米特样条-cubic-hermite-splines">三次埃尔米特样条 Cubic Hermite Splines
+</h2><p><strong>Cubic Splines问题是只要移动一个点，都可能发生整条曲线的变化，求解也比较昂贵</strong></p>
+<p>Cubic Hermite Splines的做法是除了给出两个采样点外，还需要额外告诉两个点的导数</p>
+<p><img src="/ad7da6c9a3b54b8d8e10b14875a936cc.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+>
+总结就是 4个方程4个未知数
+<img src="/431e38372bf44abaa65f519f88fad3d0.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+>
+<img src="/f243ca6de7ea4264840c08951b771522.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+>
+矩阵的逆都一步到位了，一次矩阵乘法就直接求解4个位置系数
+<img src="/9f814d58223a4ccfb2b3fa816ffdd56c.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+>
+还可以把多项式直接写出矩阵形式
+<img src="/91e86cc0e00d461d9a3ba6f0041721c5.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+></p>
+<h2 id="旋转的插值">旋转的插值
+</h2><p>旋转的四种表示方法：</p>
+<ul>
+<li>旋转矩阵</li>
+<li>欧拉角</li>
+<li>轴角</li>
+<li>四元数</li>
+</ul>
+<p>下面两种旋转表达旋转速度插值不是恒定的
+<img src="/72fbd1c6d1c74e8ca344732c2c35fe8e.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+>
+用四元数的slerp来恒定速度（但线性插值并单位化四元数来插值不恒定）</p>
+
+</section>
+
+
+    <footer class="article-footer">
+    
+    <section class="article-tags">
+        
+            <a href="/tags/%E8%AF%BE%E7%A8%8B%E7%AC%94%E8%AE%B0/">课程笔记</a>
+        
+            <a href="/tags/games105/">Games105</a>
+        
+    </section>
+
+
+    
+    <section class="article-copyright">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
+</svg>
+
+
+
+        <span>Licensed under CC BY-NC-SA 4.0</span>
+    </section>
+    </footer>
+
+
+    
+        <link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css"integrity="sha384-n8MVd4RsNIU0tAv4ct0nTaAbDJwPJzDEaqSD1odI&#43;WdtXRGWt2kTvGFasHpSy3SV"crossorigin="anonymous"
+            ><script 
+                src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"integrity="sha384-XjKyOOlGwcjNTAIQHIpgOno0Hl1YQqzUOEleOLALmuqehneUG&#43;vnGctmUb0ZY0l8"crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"integrity="sha384-&#43;VBxd3r6XgURycqtZ117nYw44OOcIax56Z4dCRWbxyPt0Koah1uHoK0o4&#43;/RRE05"crossorigin="anonymous"
+                defer
+                >
+            </script><script>
+    window.addEventListener("DOMContentLoaded", () => {
+	const mainArticleElement = document.querySelector(".main-article");
+        renderMathInElement(mainArticleElement, {
+            delimiters: [
+                { left: "$$", right: "$$", display: true },
+                { left: "$", right: "$", display: false },
+                { left: "\\(", right: "\\)", display: false },
+                { left: "\\[", right: "\\]", display: true }
+            ],
+            ignoredClasses: ["gist"]
+        });})
+</script>
+
+    
+</article>
+
+    
+
+    
+
+<aside class="related-content--wrapper">
+    <h2 class="section-title">相关文章</h2>
+    <div class="related-content">
+        <div class="flex article-list--tile">
+            
+                
+<article class="article-card no-image">
+    <a href="/p/games105-%E8%AE%A1%E7%AE%97%E6%9C%BA%E8%A7%92%E8%89%B2%E5%8A%A8%E7%94%BB%E5%9F%BA%E7%A1%80%E6%95%B0%E5%AD%A6%E5%9F%BA%E7%A1%80/">
+        
+        
+        <div class="article-details">
+            <h2 class="article-title">GAMES105 计算机角色动画基础（数学基础）</h2>
+        </div>
+        
+    </a>
+
+    <style>
+     
+    .article-card {
+        background: rgba(255, 255, 255, 0.25);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        margin: 10px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .article-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    }
+
+    .article-card a {
+        display: flex;
+        flex-direction: column;
+        text-decoration: none;
+        color: inherit;
+        height: 100%;
+    }
+
+     
+    .article-image {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        overflow: hidden;
+    }
+    .article-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+    .article-image:hover img {
+        transform: scale(1.05);
+    }
+
+     
+    .article-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: rgba(0,0,0,0.3);  
+        padding: 10px;
+        box-sizing: border-box;
+        text-align: center;
+    }
+    .article-overlay .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #fff;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .article-card.no-image .article-details {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 15px;
+    }
+    .article-card.no-image .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #222;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .articles-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 20px;
+    }
+    </style>
+</article>
+            
+        </div>
+    </div>
+</aside>
+
+     
+    
+        
+    <script
+    src="https://giscus.app/client.js"
+    data-repo="sdpyy1/sdpyy1.github.io"
+    data-repo-id="R_kgDOQEycpQ"
+    data-category="Announcements"
+    data-category-id="DIC_kwDOQEycpc4Cwz7v"
+    data-mapping="pathname"
+    data-strict="0"
+    data-reactions-enabled="1"
+    data-emit-metadata="0"
+    data-input-position="top"
+    data-theme="light"
+    data-lang="en"
+    data-loading=""
+    crossorigin="anonymous"
+    async
+></script>
+<script>
+    function setGiscusTheme(theme) {
+        let giscus = document.querySelector("iframe.giscus-frame");
+        if (giscus) {
+            giscus.contentWindow.postMessage(
+                {
+                    giscus: {
+                        setConfig: {
+                            theme: theme,
+                        },
+                    },
+                },
+                "https://giscus.app"
+            );
+        }
+    }
+
+    (function () {
+        addEventListener("message", (e) => {
+            if (event.origin !== "https://giscus.app") return;
+            handler();
+        });
+        window.addEventListener("onColorSchemeChange", handler);
+
+        function handler() {
+            if (document.documentElement.dataset.scheme === "light") {
+                setGiscusTheme('light');
+            } else {
+                setGiscusTheme('light');
+            }
+        }
+    })();
+</script>
+
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+            2020 - 
+        
+        2025 爱喝东方树叶
+    </section>
+    <section style="display: flex; gap: 30px; align-items: center;">
+      
+      
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+      <span>📚 文章数: 34</span>
+      <span>✍️ 总字数: 
+        
+        
+        105.62K
+      </span>
+    </section>
+
+    <section class="powerby">
+    
+    <div class="busuanzi-footer">
+        <span id="busuanzi_container_site_pv">
+          本站总访问量<span id="busuanzi_value_site_pv"></span>次
+        </span>
+        <span id="busuanzi_container_site_uv">
+          本站访客数<span id="busuanzi_value_site_uv"></span>人次
+        </span>
+      </div></section>
+
+</footer>
+
+
+    
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    
+    <div class="pswp__bg"></div>
+
+    
+    <div class="pswp__scroll-wrap">
+
+        
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                
+                
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                        <div class="pswp__preloader__cut">
+                            <div class="pswp__preloader__donut"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div>
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js"integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo="crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js"integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU="crossorigin="anonymous"
+                defer
+                >
+            </script><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css"crossorigin="anonymous"
+            ><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css"crossorigin="anonymous"
+            >
+
+            </main>
+        </div>
+        <script 
+                src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js"integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z&#43;KMkF24hUW8WePSA9HM="crossorigin="anonymous"
+                
+                >
+            </script><script type="text/javascript" src="/ts/main.1e9a3bafd846ced4c345d084b355fb8c7bae75701c338f8a1f8a82c780137826.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>
