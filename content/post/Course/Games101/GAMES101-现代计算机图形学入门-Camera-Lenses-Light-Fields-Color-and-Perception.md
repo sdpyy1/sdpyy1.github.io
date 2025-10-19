@@ -6,68 +6,68 @@ categories = ["Course/Games101"]
 tags = ["课程笔记"]
 +++
 # Cameras
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/0212feac63754038823e0e1ee55c74c7.png)
+![在这里插入图片描述](0212feac63754038823e0e1ee55c74c7.png)
 小孔成像
- ![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/277a3299df2c4a7a840c225aa53392a6.png)
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/481a70553db447f9adc33467f40f0247.png)
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/05414f77c7904ed5851265148aa16f58.png)
+ ![在这里插入图片描述](277a3299df2c4a7a840c225aa53392a6.png)
+![在这里插入图片描述](481a70553db447f9adc33467f40f0247.png)
+![在这里插入图片描述](05414f77c7904ed5851265148aa16f58.png)
 小孔成像是可以拍照的，但是没有景深效果
 ## 视场 Field of View (FOV)
 传感器的高度与传感器和小孔之间的距离决定FOV的大小
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/46be80e1be924712a035c98cad524c71.png)
+![在这里插入图片描述](46be80e1be924712a035c98cad524c71.png)
 通常都是固定传感器尺寸，控制焦距来控制FOV
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/57c59165023649119dd1e9678e725133.png)
+![在这里插入图片描述](57c59165023649119dd1e9678e725133.png)
 不同焦距下的视场
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/644ab57a421f444cbad7e74b50e6861a.png)
+![在这里插入图片描述](644ab57a421f444cbad7e74b50e6861a.png)
 ## 曝光 Exposure
 决定曝光的变量
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/09cbb038e7bf4d7bb9065eb0629adb82.png)
+![在这里插入图片描述](09cbb038e7bf4d7bb9065eb0629adb82.png)
 在摄像机中决定曝光的变量
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/12951eeafae74efe92248e404fb4aa0f.png)
+![在这里插入图片描述](12951eeafae74efe92248e404fb4aa0f.png)
 第一行是光圈、第二行是快门速度、第三行是IOS设置
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/25ffc05ea69c460b93b5082c98567983.png)
+![在这里插入图片描述](25ffc05ea69c460b93b5082c98567983.png)
 IOS的介绍
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/30db89edd702486d8aa0803a229109ac.png)
+![在这里插入图片描述](30db89edd702486d8aa0803a229109ac.png)
 光圈，N越大直径越小
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/688f2ee9555c48eb921b90412c3248c3.png)
+![在这里插入图片描述](688f2ee9555c48eb921b90412c3248c3.png)
 快门
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/4646427f788448058de608465730cfb4.png)
+![在这里插入图片描述](4646427f788448058de608465730cfb4.png)
 因为快门打开需要时间，那高速运动物体就会出问题
 
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/d198f47b40a64f8d8b6cb4d9146b8d3c.png)
+![在这里插入图片描述](d198f47b40a64f8d8b6cb4d9146b8d3c.png)
 ## 镜头
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/8660f05786d74a46b24339783ded405b.png)
+![在这里插入图片描述](8660f05786d74a46b24339783ded405b.png)
 理想情况
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/5548fd95da8d4ac1ba2a22de2ddc5e59.png)
+![在这里插入图片描述](5548fd95da8d4ac1ba2a22de2ddc5e59.png)
 焦距物距像距的关系
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/8384f6f89d914a039d371693feec8818.png)
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/2f335c402e9049ca98c2262b67c140aa.png)
+![在这里插入图片描述](8384f6f89d914a039d371693feec8818.png)
+![在这里插入图片描述](2f335c402e9049ca98c2262b67c140aa.png)
 景深就是像距没有落到感光元件上
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/9743de7b29944420b98b0f4530aab3f3.png)
+![在这里插入图片描述](9743de7b29944420b98b0f4530aab3f3.png)
 这节主要是科普摄像机的东西
 # 光场 Light Field
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/c3e7349ff74e44b6951d6426226d813a.png)
+![在这里插入图片描述](c3e7349ff74e44b6951d6426226d813a.png)
 人眼前放一块幕布，投影这个图形，对人来说看到的是一样的
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/594d74a32b7842b3aa08a5277edf00fa.png)
+![在这里插入图片描述](594d74a32b7842b3aa08a5277edf00fa.png)
 ## 全光函数
 用全光函数表示人能看到的东西
-![**加粗样式**](https://i-blog.csdnimg.cn/direct/e1a3a5871dd942d49af14e46f4fd0ea0.png)
+![**加粗样式**](e1a3a5871dd942d49af14e46f4fd0ea0.png)
 从简单来看
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/d628c3573ceb47e4959ac0204624a5e4.png)
+![在这里插入图片描述](d628c3573ceb47e4959ac0204624a5e4.png)
 引入颜色
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/e1b7c163732848649b19280a2787a3de.png)
+![在这里插入图片描述](e1b7c163732848649b19280a2787a3de.png)
 引入时间，变为电影
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/eae45b0a46324553adca0b8bf95a1252.png)
+![在这里插入图片描述](eae45b0a46324553adca0b8bf95a1252.png)
 引入位置。全息电影
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/d7a3e97a98b44d0fa496f694e0927d49.png)
+![在这里插入图片描述](d7a3e97a98b44d0fa496f694e0927d49.png)
 用七个维度衡量看到的所有东西，光场从这里开始
 
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/e4d5f2f6fff4402cb2bd86865a278a62.png)
+![在这里插入图片描述](e4d5f2f6fff4402cb2bd86865a278a62.png)
 从任意一个位置看向任何一个位置，都可以从光场中提取光的信息
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/8750ede794b14384bb225606075f4a3a.png)
+![在这里插入图片描述](8750ede794b14384bb225606075f4a3a.png)
 并不需要知道光场内是什么物体，只需要光场的信息，在盒子表面任何一点任何一个位置的信息
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/4c9c6bc46c3440a4ba0a250c6aa883c4.png)
+![在这里插入图片描述](4c9c6bc46c3440a4ba0a250c6aa883c4.png)
 # 颜色 Color
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/626e79e259a946daa88de4a32306b39f.png)
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/f5d27f54201d4d869024a66c55c45c33.png)
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/88fc3df638544ab9a2303199d48f7b1c.png)
+![在这里插入图片描述](626e79e259a946daa88de4a32306b39f.png)
+![在这里插入图片描述](f5d27f54201d4d869024a66c55c45c33.png)
+![在这里插入图片描述](88fc3df638544ab9a2303199d48f7b1c.png)

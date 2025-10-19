@@ -7,73 +7,73 @@ tags = ["课程笔记"]
 +++
 # 一些科普
 ## Keyframe Animator
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/254f33ee74a74430a5be6baf38e5d1f5.png)
+![请添加图片描述](254f33ee74a74430a5be6baf38e5d1f5.png)
 ## Physical Simulation
 利用物理公式来模拟
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/91f335168e244e1ea749d0d67d302687.png)
+![请添加图片描述](91f335168e244e1ea749d0d67d302687.png)
 ##  质点弹簧系统 Mass Spring Rope
 下面开始描述这个系统
 胡克定律描述弹簧或弹性体所受的回复力 F 与形变量 x 成正比， $k_s$是劲度系数，但是弹簧本身也有长度
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/25049f6423a34d6a898ad8f34f17e20d.png)考虑弹簧原始长度 ，$\frac{b - a}{\|b - a\|}$这个向量用来表示方向，但问题是这样写，弹簧一旦拉开就不会不停的运动下去（动能和势能相互转化），所以还需要引入摩擦力
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/110547693de240849dbc157c4afa95ce.png)
+![请添加图片描述](25049f6423a34d6a898ad8f34f17e20d.png)考虑弹簧原始长度 ，$\frac{b - a}{\|b - a\|}$这个向量用来表示方向，但问题是这样写，弹簧一旦拉开就不会不停的运动下去（动能和势能相互转化），所以还需要引入摩擦力
+![请添加图片描述](110547693de240849dbc157c4afa95ce.png)
 引入摩擦力之前先引入一些符号表示位置、速度、加速度
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/1a0fdeee467b47318d4eccd8e33ae216.png)
+![请添加图片描述](1a0fdeee467b47318d4eccd8e33ae216.png)
 给物体一个相反与速度方向的力，但还有问题，这样会导致所有的运动都停下来，假设AB两个物体同步向右走，他俩都有速度，但相对之间没有速度，所以应该没摩擦力，但是用下面的公式，只要物体有速度，就会受到摩擦力而停止
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/14a447de54d34ed391bbf45e9f856c14.png)
+![请添加图片描述](14a447de54d34ed391bbf45e9f856c14.png)
 我们在逐渐完善弹簧系统，摩擦力应该跟着物体AB的相对运动而产生，下图用两个物体速度差来表示相对速度，另外还需要考虑这个速度差是沿着弹簧方向才行，所以点乘$\frac{b - a}{\|b - a\|}$来投影到ba方向
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/a1438c4208f446f6b6af25aefb047a62.png)
-下面看一些弹簧结构![请添加图片描述](https://i-blog.csdnimg.cn/direct/bf8f492757154e20ae44b810420dfcb7.png)
+![请添加图片描述](a1438c4208f446f6b6af25aefb047a62.png)
+下面看一些弹簧结构![请添加图片描述](bf8f492757154e20ae44b810420dfcb7.png)
 模型的行为是由结构连接来决定的，下面看如果一块布这样设计，很明显是不合理的，图中展示了2种原因（布可以抵抗切变力但这个结构不行，布会对抗对折）
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/6b48a3875c18466e8ebc2c0aed92d4fd.png)
-先来改进切变，加入蓝色弹簧来抵抗![请添加图片描述](https://i-blog.csdnimg.cn/direct/fc36d6c0ec0b45e9b18956c7bad91719.png)
+![请添加图片描述](6b48a3875c18466e8ebc2c0aed92d4fd.png)
+先来改进切变，加入蓝色弹簧来抵抗![请添加图片描述](fc36d6c0ec0b45e9b18956c7bad91719.png)
 再加另外一个方向，但不能解决第二个问题
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/b0a5fe3bed954fa284c3e6d218d2bab8.png)
+![请添加图片描述](b0a5fe3bed954fa284c3e6d218d2bab8.png)
 最终版
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/39275121565e476a9ff80c4325673c09.png)
+![请添加图片描述](39275121565e476a9ff80c4325673c09.png)
 ## 粒子系统 
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/48203561654e46c1b304d23a609f9e96.png)
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/2e6cc29304194f129916e28fdba8bae2.png)
+![请添加图片描述](48203561654e46c1b304d23a609f9e96.png)
+![请添加图片描述](2e6cc29304194f129916e28fdba8bae2.png)
 ## 运动学 Forward Kinematics
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/800e646fb8dc48c7b31d322eded58823.png)
+![请添加图片描述](800e646fb8dc48c7b31d322eded58823.png)
 已知角度求P的位置
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/703cbcdc115340778d35738f211ec57e.png)
+![请添加图片描述](703cbcdc115340778d35738f211ec57e.png)
 ## 逆运动学Inverse Kinematics
 已知P的位置求角度
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/b62327776513418c87a405914d33ddba.png)
+![请添加图片描述](b62327776513418c87a405914d33ddba.png)
 ## Rigging
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/1f420e4a8bde4f1db3da9f9895c7b114.png)
+![请添加图片描述](1f420e4a8bde4f1db3da9f9895c7b114.png)
 
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/49ba0bbdd1d24a848de86f532c675a7e.png)
+![请添加图片描述](49ba0bbdd1d24a848de86f532c675a7e.png)
 ## Motion Capture
-![请添![请添加图片描述](https://i-blog.csdnimg.cn/direct/bf2d01f5eb5f4bcd8eae491584418063.png)
+![请添![请添加图片描述](bf2d01f5eb5f4bcd8eae491584418063.png)
 # 第二次课 cont.
 ## Single Particle Simulation
 首先学习单粒子运动，假设粒子的运动由一个速度向量场决定，速度向量场的速度由位置和时间决定
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/f02f0ad1b7cd45e98ac0935b806f85b6.png)
+![在这里插入图片描述](f02f0ad1b7cd45e98ac0935b806f85b6.png)
 要计算粒子在某个时间的位置，需要解下图所示的常微分方程
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/de4f27953eb44c24917d53b78be5046f.png)
+![在这里插入图片描述](de4f27953eb44c24917d53b78be5046f.png)
 用欧拉公式来解微分方程，用上一步的数据来计算下一步的位置
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/a107c18e085447c09e0242d062cd108d.png)
+![在这里插入图片描述](a107c18e085447c09e0242d062cd108d.png)
 欧拉方程的误差与步长大小有关
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/16f272e6dc224dba89340ffb8d8a7eff.png)
+![在这里插入图片描述](16f272e6dc224dba89340ffb8d8a7eff.png)
 欧拉方程的不稳定性，在一个螺旋速度场中，本来应该旋转，但是不管步长选的多小都一定会飞出去。第二幅图的运动模拟也不合理。
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/5830c8a8200546aeac8aa4f58bce0b4f.png)
+![在这里插入图片描述](5830c8a8200546aeac8aa4f58bce0b4f.png)
 如何解决呢，有人提出了中点法，先用欧拉算出a点，但不用a点，取中点b，考虑b点的速度，应用b点的速度回去重新算欧拉
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/e32beae8a0994f9d83cecac488b87535.png)
+![在这里插入图片描述](e32beae8a0994f9d83cecac488b87535.png)
 进一步，有人用中点思想，算两次欧拉方法，不是回原点重新算，而是去中点算，如果算出来和第一次算出来差不多就不算了，说明步长够小了
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/d577bca230be4e05aba92260bee39e42.png)
+![在这里插入图片描述](d577bca230be4e05aba92260bee39e42.png)
 还有隐式的欧拉方法
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/a3bde1586cb94a169354526f9e18eaa1.png)
+![在这里插入图片描述](a3bde1586cb94a169354526f9e18eaa1.png)
 Runge-Kutta Families
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/6505e56ffe404bcd8a17749f9b9b7f9f.png)
+![在这里插入图片描述](6505e56ffe404bcd8a17749f9b9b7f9f.png)
 Position-Based / Verlet Integration
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/30ea8e236c8b4792a83b6a0cf536de57.png)
+![在这里插入图片描述](30ea8e236c8b4792a83b6a0cf536de57.png)
 刚体（不会发生形变）模拟
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/32fd87b928d640f8ad20b95caa79d2d8.png)
+![在这里插入图片描述](32fd87b928d640f8ad20b95caa79d2d8.png)
 ## 流体模拟 Fluid Simulation
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/f0dc6630895540ebbe11b9880dd7c8dc.png)
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/050ad9b02d4449e6a2605cbe04ca9999.png)
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/35a97b81986e4258bb49b15dedacf91f.png)
+![在这里插入图片描述](f0dc6630895540ebbe11b9880dd7c8dc.png)
+![在这里插入图片描述](050ad9b02d4449e6a2605cbe04ca9999.png)
+![在这里插入图片描述](35a97b81986e4258bb49b15dedacf91f.png)
 这门课的动画模拟更多都是在科普。
 
 
