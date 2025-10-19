@@ -7,21 +7,22 @@
         {{ end }}
         {{ now.Format "2006" }} {{ default .Site.Title .Site.Copyright }}
     </section>
+    <section style="display: flex; gap: 30px; align-items: center;">
+      {{ $scratch := newScratch }}
+      {{ $scratch.Set "total" 0 }}
+      {{ range (where .Site.RegularPages "Section" "post") }}
+        {{ $scratch.Add "total" .WordCount }}
+      {{ end }}
     
-    <section class="powerby">
-        {{ with .Site.Params.footer.customText }}
-            {{ . | safeHTML }} <br/>
-        {{ end }}
-
-        {{- $Generator := `<a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a>` -}}
-        {{- $Theme := printf `<b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="%s">Stack</a></b>` $ThemeVersion -}}
-        {{- $DesignedBy := `<a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a>` -}}
-
-        {{ T "footer.builtWith" (dict "Generator" $Generator) | safeHTML }} <br />
-        {{ T "footer.designedBy" (dict "Theme" $Theme "DesignedBy" $DesignedBy) | safeHTML }}
+      <span>📚 文章数: {{ len (where .Site.RegularPages "Section" "post") }}</span>
+      <span>✍️ 总字数: 
+        {{ $total := $scratch.Get "total" | int }}
+        {{ $kWords := div (float $total) 1000.0 }}
+        {{ lang.FormatNumber 2 $kWords }}K
+      </span>
     </section>
+
     <section class="powerby">
-      
     <!-- busuanzi -->
     {{ if .Site.Params.busuanzi.enable -}}
       <div class="busuanzi-footer">
@@ -34,6 +35,5 @@
       </div>
     {{- end -}}
     </section>
-
 
 </footer>
