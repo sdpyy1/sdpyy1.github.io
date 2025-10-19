@@ -1,7 +1,7 @@
 +++
 date = '2025-10-19T13:42:48+08:00'
 draft = false
-title = 'TinyRender开发记录 5 7'
+title = 'TinyRender开发记录 5-7'
 categories = ["Projects/TinyRender"]
 tags = ["渲染器开发","TinyRender"]
 +++

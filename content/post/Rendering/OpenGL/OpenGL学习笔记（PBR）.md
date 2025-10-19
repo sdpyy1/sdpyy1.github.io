@@ -1,0 +1,66 @@
++++
+date = '2025-10-19T13:53:52+08:00'
+draft = false
+title = 'OpenGL学习笔记（PBR）'
+categories = ["Rendering/OpenGL"]
+tags = ["API学习","OpenGL"]
++++
+# 微平面模型
+所有的PBR技术都基于微平面理论。这项理论认为，达到微观尺度之后任何平面都可以用被称为微平面(Microfacets)的细小镜面来进行描绘。根据平面粗糙程度的不同，这些细小镜面的取向排列可以相当不一致：
+下图展示了ROUGH和SMOOTH的微平面
+![请添加图片描述](https://i-blog.csdnimg.cn/direct/3e5dfa0281e1482db87633e865f83e85.png)
+我们假设一个粗糙度(Roughness)参数，然后用统计学的方法来估计微平面的粗糙程度。我们可以基于这个粗糙程度来计算众多微平面中朝着半程向量方向的比例。微平面的朝向方向与半程向量的方向越是一致，镜面反射的效果就越是强烈越是锐利。通过使用一个介于0到1之间的粗糙度参数，我们就能概略地估算微平面的取向情况了![请添加图片描述](https://i-blog.csdnimg.cn/direct/f9c17e0cf6ff46a7a63a8f8199cf48b0.png)
+为了遵守能量守恒定律，我们需要对漫反射光和镜面反射光做出明确的区分。**当一束光线碰撞到一个表面的时候，它就会分离成一个折射部分和一个反射部分。**
+反射部分就是镜面光，折射部分被吸收进而转为漫反射
+
+对于金属表面，折射光会被直接吸收而不会散开，也就是没有了漫反射，因此它们两者在PBR渲染管线中被区别处理。
+
+```cpp
+float kS = calculateSpecularComponent(...); // 反射/镜面 部分
+float kD = 1.0 - ks;                        // 折射/漫反射 部分
+```
+# 反射率方程
+基于物理的渲染所坚定遵循的是一种被称为反射率方程(The Reflectance Equation)的渲染方程的特化版本。要正确地理解PBR，很重要的一点就是要首先透彻地理解反射率方程：
+$$
+L_0(p, \omega_{\text{o}}) = \int_{\Omega} f_{r}(p, \omega_{\text{i}}, \omega_{\text{o}}) L_{r}(p, \omega_{\text{i}}) n \cdot \omega_{\text{i}} \, d\omega_{\text{i}}
+$$
+
+一些物理量，在Games101已经接触过
+- 辐射通量Φ：光源输出的能量，以瓦特为单位
+- 辐射强度：单位球面上，一个光源向每单位立体角所投射的辐射通量 $I = \frac{d\Phi}{d\omega}$
+- 辐射率:一个拥有辐射强度Φ的光源在单位面积A，单位立体角ω上的辐射出的总能量.$L = \frac{d^2 \Phi}{dA d\omega \cos \theta}$
+
+这里的$cos\theta$为入射光与平面法线的夹角余弦，也就是说入射光越斜，平面接受到的光能量越弱
+
+事实上，当涉及到辐射率时，我们通常关心的是所有投射到点p上的光线的总和，而这个和就称为辐射照度或者辐照度(Irradiance)。
+
+再回到渲染方程
+$$
+L_0(p, \omega_{\text{o}}) = \int_{\Omega} f_{r}(p, \omega_{\text{i}}, \omega_{\text{o}}) L_{r}(p, \omega_{\text{i}}) n \cdot \omega_{\text{i}} \, d\omega_{\text{i}}
+$$
+
+$\omega_{\text{i}}$就表示半球面的一个立体角，然后在整个半球面进行积分，所以$L_o(p,\omega_o)$就代表从$\omega_o$方向上观察，光线投射到p点后反射出来的irradiance
+
+# BRDF
+现在这个方程就剩下$f_{r}(p, \omega_{\text{i}}, \omega_{\text{o}})$未解释了。BRDF，或者说双向反射分布函数，它接受入射（光）方向ωi，出射（观察）方向ωo
+
+BRDF基于我们之前所探讨过的微平面理论来近似的求得材质的反射与折射属性。几乎所有实时渲染管线使用的都是一种被称为Cook-Torrance BRDF模型。
+
+Cook-Torrance BRDF兼有漫反射和镜面反射两个部分：
+$f_r = k_df_{lambert}+k_sf_{cook-torrance}$
+
+其中$f_{lambert} = c/\pi$，c表示表面颜色。除以π是为了对漫反射光进行标准化
+
+另外镜面反射为：
+![请添加图片描述](https://i-blog.csdnimg.cn/direct/ac487d91cf474e0f8c9e6df7dfc523b0.png)
+
+字母D，F与G分别代表着一种类型的函数。三个函数分别为法线分布函数(Normal Distribution Function)，菲涅尔方程(Fresnel Rquation)和几何函数(Geometry Function)
+
+以上的每一种函数都是用来估算相应的物理参数的，而且你会发现用来实现相应物理机制的每种函数都有不止一种形式。它们有的非常真实，有的则性能高效。
+
+- 法线分布函数：从统计学上近似地表示了与某些（半程）向量h取向一致的微平面的比率
+- 几何函数：几何函数从统计学上近似的求得了微平面间相互遮蔽的比率，这种相互遮蔽会损耗光线的能量。
+- 菲涅尔方程：被反射的光线对比光线被折射的部分所占的比率，这个比率会随着我们观察的角度不同而不同。当光线碰撞到一个表面的时候，菲涅尔方程会根据观察角度告诉我们被反射的光线所占的百分比
+菲涅尔方程是一个相当复杂的方程式，不过幸运的是菲涅尔方程可以用Fresnel-Schlick近似法求得近似解：![请添加图片描述](https://i-blog.csdnimg.cn/direct/9dad6feb04414714be7b59ea86848b7b.png)
+
+我觉得了解这么多足够继续看Games202课程了～
