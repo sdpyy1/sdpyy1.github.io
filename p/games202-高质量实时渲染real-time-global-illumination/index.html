@@ -1,0 +1,1961 @@
+<!DOCTYPE html>
+<html lang="zh-cn" dir="ltr">
+    <head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'>
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+  <meta name="referrer" content="no-referrer-when-downgrade"><meta name='description' content=" 简单理解就是已经被照亮的点作为光源再去照亮别的点 在3D空间的全局光照 Reflective Shadow Maps（RSM） 用非直接光照照亮点p需要什么：\n那些点被光源直接照亮（从shadowMap中得到） 其他点对点p的贡献是什么 shadowMap中每个纹素就是一个面光源（因为shadowMap描述的就是那些地方被直接照到），紧接着要求p点的间接光照其实就是求shadowMap每个纹素代表的面光源对p点的贡献 把纹素作为面光源来求渲染方程 现在问题就是从纹素反射出来的Radiance如何计算\n">
+<title>GAMES202 高质量实时渲染（Real-Time Global Illumination）</title>
+
+<link rel='canonical' href='https://sdpyy1.github.io/p/games202-%E9%AB%98%E8%B4%A8%E9%87%8F%E5%AE%9E%E6%97%B6%E6%B8%B2%E6%9F%93real-time-global-illumination/'>
+
+<link rel="stylesheet" href="/scss/style.min.6a692fd055deae459f2a9767f57f3855ba80cafd5041317f24f7360f6ca47cdf.css"><meta property='og:title' content="GAMES202 高质量实时渲染（Real-Time Global Illumination）">
+<meta property='og:description' content=" 简单理解就是已经被照亮的点作为光源再去照亮别的点 在3D空间的全局光照 Reflective Shadow Maps（RSM） 用非直接光照照亮点p需要什么：\n那些点被光源直接照亮（从shadowMap中得到） 其他点对点p的贡献是什么 shadowMap中每个纹素就是一个面光源（因为shadowMap描述的就是那些地方被直接照到），紧接着要求p点的间接光照其实就是求shadowMap每个纹素代表的面光源对p点的贡献 把纹素作为面光源来求渲染方程 现在问题就是从纹素反射出来的Radiance如何计算\n">
+<meta property='og:url' content='https://sdpyy1.github.io/p/games202-%E9%AB%98%E8%B4%A8%E9%87%8F%E5%AE%9E%E6%97%B6%E6%B8%B2%E6%9F%93real-time-global-illumination/'>
+<meta property='og:site_name' content='wanfeng'>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='课程笔记' /><meta property='article:tag' content='Games202' /><meta property='article:published_time' content='2025-10-19T14:00:35&#43;08:00'/><meta property='article:modified_time' content='2025-10-19T14:00:35&#43;08:00'/>
+<meta name="twitter:title" content="GAMES202 高质量实时渲染（Real-Time Global Illumination）">
+<meta name="twitter:description" content=" 简单理解就是已经被照亮的点作为光源再去照亮别的点 在3D空间的全局光照 Reflective Shadow Maps（RSM） 用非直接光照照亮点p需要什么：\n那些点被光源直接照亮（从shadowMap中得到） 其他点对点p的贡献是什么 shadowMap中每个纹素就是一个面光源（因为shadowMap描述的就是那些地方被直接照到），紧接着要求p点的间接光照其实就是求shadowMap每个纹素代表的面光源对p点的贡献 把纹素作为面光源来求渲染方程 现在问题就是从纹素反射出来的Radiance如何计算\n">
+    <link rel="shortcut icon" href="/favicon.ico" />
+
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="切换菜单">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        
+            
+            <figure class="site-avatar">
+                <a href="/">
+                
+                    
+                    
+                    
+                        
+                        <img src="/img/avatar_hu_f59158f730715054.png" width="300"
+                            height="300" class="site-logo" loading="lazy" alt="Avatar">
+                    
+                
+                </a>
+                
+                    <span class="emoji">🧐</span>
+                
+            </figure>
+            
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="/">wanfeng</a></h1>
+            <h2 class="site-description">Blog</h2>
+        </div>
+    </header><ol class="menu-social">
+            
+                <li>
+                    <a 
+                        href='https://space.bilibili.com/287473737'
+                        target="_blank"
+                        title="Bilibili"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-brand-bilibili"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 10a4 4 0 0 1 4 -4h10a4 4 0 0 1 4 4v6a4 4 0 0 1 -4 4h-10a4 4 0 0 1 -4 -4v-6z" /><path d="M8 3l2 3" /><path d="M16 3l-2 3" /><path d="M9 13v-2" /><path d="M15 11v2" /></svg>
+                        
+                    </a>
+                </li>
+            
+                <li>
+                    <a 
+                        href='https://github.com/sdpyy1'
+                        target="_blank"
+                        title="GitHub"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
+</svg>
+
+
+
+                        
+                    </a>
+                </li>
+            
+        </ol><ol class="menu" id="main-menu">
+        
+        
+        
+        <li >
+            <a href='/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>Home</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/about/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>About</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>Archives</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/search/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>Search</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/links/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5" />
+  <path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5" />
+</svg>
+
+
+
+                
+                <span>Links</span>
+            </a>
+        </li>
+        
+        <li class="menu-bottom-section">
+            <ol class="menu">
+                    
+                        <li id="i18n-switch">  
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-language" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M4 5h7" />
+  <path d="M9 3v2c0 4.418 -2.239 8 -5 8" />
+  <path d="M5 9c-.003 2.144 2.952 3.908 6.7 4" />
+  <path d="M12 20l4 -9l4 9" />
+  <path d="M19.1 18h-6.2" />
+</svg>
+
+
+
+                            <select name="language" title="language" onchange="window.location.href = this.selectedOptions[0].value">
+                                
+                                    <option value="https://sdpyy1.github.io/en/" >English</option>
+                                
+                                    <option value="https://sdpyy1.github.io/" selected>中文</option>
+                                
+                            </select>
+                        </li>
+                    
+                
+
+                
+                    <li id="dark-mode-toggle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <span>暗色模式</span>
+                    </li>
+                
+            </ol>
+        </li>
+    </ol>
+</aside>
+
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">目录</h2>
+        
+        <div class="widget--toc">
+            <nav id="TableOfContents">
+  <ol>
+    <li><a href="#在3d空间的全局光照">在3D空间的全局光照</a>
+      <ol>
+        <li><a href="#reflective-shadow-mapsrsm">Reflective Shadow Maps（RSM）</a></li>
+        <li><a href="#light-propagation-volumes-lpv">Light Propagation Volumes (LPV)</a></li>
+        <li><a href="#voxel-global-illumination-vxgi">Voxel Global Illumination (VXGI)</a></li>
+      </ol>
+    </li>
+    <li><a href="#在屏幕空间的全局光照">在屏幕空间的全局光照</a>
+      <ol>
+        <li><a href="#screen-space-ambient-occlusionssao">Screen Space Ambient Occlusion（SSAO）</a></li>
+        <li><a href="#screen-space-directional-occlusionssdo">Screen Space Directional Occlusion(SSDO)</a></li>
+        <li><a href="#screen-space-reflectionssr">Screen Space Reflection（SSR）</a></li>
+      </ol>
+    </li>
+  </ol>
+</nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+            <main class="main full-width">
+    <article class="main-article">
+    <header class="article-header">
+
+    <div class="article-details">
+    
+    <header class="article-category">
+        
+        
+             
+            
+            
+            
+            <div class="category-hierarchy">
+                
+                    
+                    
+                    
+                        
+                    
+                     
+                    
+                    
+                    
+                    <a href="/categories/course/" 
+                       >
+                        Course
+                    </a>
+                    
+                    
+                    
+                        <span class="category-separator">/</span>
+                    
+                
+                    
+                    
+                    
+                        
+                    
+                        
+                    
+                     
+                    
+                    
+                    
+                    <a href="/categories/course/games202/" 
+                       >
+                        Games202
+                    </a>
+                    
+                    
+                    
+                
+            </div>
+        
+    </header>
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="/p/games202-%E9%AB%98%E8%B4%A8%E9%87%8F%E5%AE%9E%E6%97%B6%E6%B8%B2%E6%9F%93real-time-global-illumination/">GAMES202 高质量实时渲染（Real-Time Global Illumination）</a>
+        </h2>
+    
+        
+    </div>
+
+    
+    
+    
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published">Oct 19, 2025</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-time--reading">
+                    阅读时长: 6 分钟
+                </time>
+            </div>
+        
+
+        
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+        <span id="busuanzi_container_page_pv">本文阅读量<span id="busuanzi_value_page_pv"></span>次</span>
+    </footer>
+    
+    
+</div>
+<style>
+    .category-hierarchy {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;  
+        margin-right: 12px;  
+        margin-bottom: 8px;  
+    }
+    
+    .category-separator {
+        color: #999;
+        user-select: none;
+        font-size: 1em;  
+    }
+    
+    .article-category a {
+        text-decoration: none;
+        padding: 6px 12px;  
+        border-radius: 6px;  
+        font-size: 0.95em;  
+        transition: all 0.2s ease;
+        line-height: 1.5;  
+    }
+    
+    .article-category a:hover {
+        opacity: 0.9;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 6px rgba(0,0,0,0.1);  
+    }
+</style>
+</header>
+
+    <section class="article-content">
+    
+    
+    <p><img src="/78996c31c1b04f5eae5269c1d6756086.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+简单理解就是已经被照亮的点作为光源再去照亮别的点
+<img src="/aa2c09da489f4288808aa9af1f4fc213.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+></p>
+<h1 id="在3d空间的全局光照">在3D空间的全局光照
+</h1><h2 id="reflective-shadow-mapsrsm">Reflective Shadow Maps（RSM）
+</h2><p>用非直接光照照亮点p需要什么：</p>
+<ol>
+<li>那些点被光源直接照亮（从shadowMap中得到）</li>
+<li>其他点对点p的贡献是什么
+<img src="/789badb3ea1447e7be3f08235557ba93.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+shadowMap中每个纹素就是一个面光源（因为shadowMap描述的就是那些地方被直接照到），紧接着要求p点的间接光照其实就是求shadowMap每个纹素代表的面光源对p点的贡献</li>
+</ol>
+<p>把纹素作为面光源来求渲染方程<img src="/b1aba486555a4511bb14e750381231f9.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+><img src="/474b13e5a0ca4d9da12c7c9abc5387b7.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+现在问题就是从纹素反射出来的Radiance如何计算</p>
+<ol>
+<li>BRDF项在当前场景中认为是diffuse的
+<img src="/370d725f018f4338ac513d7cc5e0874c.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+></li>
+<li>BRDF可以认为是出射的Radiance与入射的irradiance的比例，所以L可以算出
+<img src="/d48ebf44454f4d858a7734014dc2d2ee.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+这样写的好处是带入渲染方程后把dA项消掉了，这样就不需要patch的面积大小了，公式就变成了
+<img src="/9bd48f54de9048638db79731b15805c5.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+有几个问题：</li>
+<li>V项没了，因为计算量太大，要计算对于每个着色点从任何一个纹素看向着色点是否被遮挡</li>
+<li>方程下边变成4次方，是论文作者对距离衰减做了平方衰减处理，课程中说这是错的，应该是平方，如果说错了直播吃键盘😄（看到第9节课，老师真吃键盘了）</li>
+</ol>
+<p>有一些纹素一定不会对着色点有贡献 1. 可见性 2. 方向 3. 距离
+<img src="/c4456044a9cc4795be040b04487755c4.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+这个问题就引出了这篇论文的假设，如何知道那些纹素离着色点比较近，论文中认为在shaowMap上比较近，那么世界坐标下就离的比较近（大胆的假设）<img src="/3647b13dc46d496ba7d5aa63f555a220.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+RSM需要存储的东西
+<img src="/4691c26e05fe46c195c34d823642dd78.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+RSM在工业界通常用在手电筒<img src="/1c7c92698d714a6cac0ca5d004b64cc3.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+RSM的优点：</p>
+<ol>
+<li>易于实现
+缺点：</li>
+<li>直接光源有多少就得有多少张shadowMap</li>
+<li>可见行没法做</li>
+<li>很多的假设</li>
+<li>采样率和质量的tradeoff
+<img src="/f6fbb270566c424daf7e3a0cbdde3f9a.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+></li>
+</ol>
+<h2 id="light-propagation-volumes-lpv">Light Propagation Volumes (LPV)
+</h2><p>关键点：Radiance沿直线传播时不会发生变化z
+关键做法：把整个场景体积进行切割，成为一个个体素（类比纹素）
+下图红色箭头就是间接光照的来源，就是求黄色点接收到的红色radiance的计算
+<img src="/2fd97894c5514c76b66407796bd15ce2.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+步骤：</p>
+<ol>
+<li>
+<p>那些点接收到了直接光照</p>
+</li>
+<li>
+<p>把这些点放在场景到的一个网格中</p>
+</li>
+<li>
+<p>在网格中传播radiance
+<img src="/966136cd35304efc8a6af1bf0507518f.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+通过RSM得到一系列虚拟光源
+<img src="/37bb32b97d4a4264a1daa2f40c5ec2e1.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+对场景划分3D网格（可以使用3D纹理，定义每个UV是3D空间的哪个网格）
+计算一个格子中向任何方向上的radiance是多少，并用SH压缩，LPV需要存储场景中每个体素（voxel）的辐射度分布，直接存储全方向的辐射度会导致内存爆炸。通过SH投影（通常用2阶或3阶），可将6D的光照函数压缩为少量系数（如9个或16个），极大降低内存需求。
+这一步我理解就是把每个次级光源都归为了每个网格的属性，这里记录了每个网格向各个方向的Radiance
+<img src="/ae5fdbf29cf74f25b2ef695cf1ed74a8.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+一个格子的radiance向上下左右方向进行传播，这一步结束后每个格子的radiance就都记录好了
+<img src="/a7ff006c9d0f4b04b2490c9dde74c8f2.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+对于一个着色点来说，就可以直接使用当前格子接受到的Radiance来计算间接光照了
+<img src="/4065c3b52123461c86c47f818868fcdb.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+但是有问题，墙的一边不可能照亮墙的另一边，那把一堵墙放在同一个网格中，那计算着色时墙两边的Radiance都会被考虑，就会出现漏光
+<img src="/ce86dd9217cc4335a6be27fabf77d8ca.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+这样就会出现漏光现象，这就要考虑网格划分粒度了
+<img src="/00005e4e479d4e18ad8e06298b36210e.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+></p>
+</li>
+</ol>
+<h2 id="voxel-global-illumination-vxgi">Voxel Global Illumination (VXGI)
+</h2><p>把整个场景网格化，想象成MC用方块搭起来的场景，并做了层级处理，比如上一层的一个格子在下一次划分为8个格子，最终建立起一颗树
+<img src="/833a236299854a6095942f118b28b821.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+第一步：用RSM的方法找到直接光照的网格，并记录每个网格接收到的光源的入射方向和法线，并更新到各个层级，高层级整合低层级的光源入射方向和法线
+<img src="/c16217c988254f6483fa9f2bb6e19bfe.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+开始着色：
+对于glossy的着色点，光源到达后会反射为一个圆锥的范围
+从着色点发射锥体，沿锥体轴线步进采样。看场景中那些体素在椎体范围内，那它就对该着色点有贡献（这是利用光路可逆的思想，反过来这些碰到的体素就会通过椎体射到着色点）
+<img src="/c9b988666964493c9a7de9f92622f192.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+对于diffuse的着色点
+<img src="/61906060646c451ea4507355c81d049c.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+<img src="/8b3469f01c7546d088ef523d2d9597d7.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+></p>
+<h1 id="在屏幕空间的全局光照">在屏幕空间的全局光照
+</h1><p>屏幕空间：只使用屏幕信息，对图像进行后期处理</p>
+<h2 id="screen-space-ambient-occlusionssao">Screen Space Ambient Occlusion（SSAO）
+</h2><p><img src="/56bc741125b449aeb02dcb7691457023.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+一种全局光照的近似
+key diea 1：</p>
+<ul>
+<li>不知道间接光照，假设为一个常数</li>
+<li>但不是所有方向都能接收到，会被别的物体挡住<img src="/91ab1bf16ed347ce8f6a49dec439081f.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>显然AO的环境光更好
+<img src="/4aa8c4784dea406687ddf64cf70cfdc9.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+经典从渲染方程中解释
+<img src="/f97c2f56c99243c0928e57f99cb7133e.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+把V项拆出去了，拆出去的（蓝色）项就像当于把四面八方的可见行进行了平均，剩下的（橙色）项中L项在SSAO中已经假设为常数，另外还假设BRDF是diffuse的，所以全是常数了
+<img src="/cbdf6a3b5ade4bfa91f88e43bdef746c.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+其中cossita还没解释
+<img src="/fe152b585bab4a6cb848b69c823abc63.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+用cos项把球面上的积分转为圆面上的积分（把立体角的面积投影到底面圆上进行积分）
+<img src="/4ea39dbe9d82466bbb29d4b4d6c62f8e.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+数学结束，SSAO就是把间接光当常数、BRDF也是diffuse的
+<img src="/e2559823e91b41d498df2568ba8fef70.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+理论分析结束，现在问题就是如何在屏幕空间求一个着色点四面八方看哪些地方被挡住了
+SSAO假设任何一个着色点在周围半径为R的球中进行采样，每个点与对应像素的zbuffer进行比较，如果大，说明这个点被挡住了就是红色
+<img src="/a2ae51e1e3074681afe946734ca315e7.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+但是上图有一个点判断错了
+<img src="/8b7b0125d751451c84405fdce82bfe1e.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+用一整个球来采样还有问题，墙体内部的点不需要考虑，只需要半球采样即可</li>
+</ul>
+<p>采样越多越准确
+AO做法是先低采样得到AO
+<img src="/bb3cb2f09f44419aa22db16b12ba2773.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+然后进行模糊
+<img src="/7311644636be470bacf2a14f92c2465f.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+SSAO的一个问题是会出现假遮挡现象，因为在摄像机视角下，看着被遮挡了，但实际上两者距离是很远的 <img src="/892c0a689792446bb1b561513c12f82e.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+进一步有技术叫HBAO，只考虑一定范围内的遮挡</p>
+<h2 id="screen-space-directional-occlusionssdo">Screen Space Directional Occlusion(SSDO)
+</h2><p>是对SSAO的提升，SSAO考虑间接光照是是一样的，但是通过RSM，我们是可以求出间接光照的</p>
+<p>下图看出AO只是简单的变暗，而DO考虑的反射物的颜色，让阴影变蓝了</p>
+<p><img src="/b41c74d2bb4d41c18c1ab0f4f4b06ab8.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+></p>
+<p><img src="/e9e995b1cba644f6b023dbb2c8684d44.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+与SSAO想法相反，DO认为如果打出去的光线没有物体挡住，那它才应该没有间接光照的贡献，只有直接光照的贡献，反而打到的物体才会反射回来光
+<img src="/336fbc7a6a6349a693aa486c7d80ff5f.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+实际做法也和SSAO一样，半球面采样，使用Zbuffer来判断采样点是否被挡住，下图ABD点都得到是被遮挡了
+<img src="/a382ce63d49e4a8c8a0232fe4adea01d.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+考虑ABD的间接光照对C点的贡献
+<img src="/b08750c3b5dd4533a955928233ee4b81.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+DO也有假遮挡问题，A点没有被挡住，但是从视角上看是被挡住了，所以被认为对C点有间接光照贡献
+<img src="/0f27d6026c204318a9e54c6c9068a38a.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+<img src="/eea45304538e4028b024dc72f2de4f51.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+只能做小范围的全局光照
+<img src="/1fa9977788964ba2978dec28287d5817.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+></p>
+<h2 id="screen-space-reflectionssr">Screen Space Reflection（SSR）
+</h2><p>在屏幕空间中做光线追踪
+现在在屏幕空间已经有了红框的东西，现在SSR就只需要加上白框的东西
+<img src="/31ca9120b8ef4113b05d7b14191249e7.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+SSR的思路
+<img src="/0f08d604d2fa441faf9b66cf8e4d6026.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+Linear Raymarch
+目标是找到光线与场景的交点</p>
+<ul>
+<li>选定步长，每走一步检查深度
+<img src="/0a60e020e18f413786e47b675285d3db.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+还有加速方法，首先对zbuffer生成mipmap
+但与常规mipmap不相同，上一层级的一个像素是下一层级4个像素的最小值，而不是平均值
+<img src="/20ee35ebb76147ce955c078cd4d13adb.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+存最小值的目的就是，如果一个光线与上层不相交，那下层更不用考虑了，因为下层离得更远
+<img src="/7231499200974ea9a07c253f3694367d.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+算法为首先走一步，每交点，就胆子大一点就在上一层一口气走两步，还没交点走4步，有交点了再慢慢走
+<img src="/8126d41b85f94e1086ceffc2d4c2279e.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+SSR也有问题，因为屏幕空间只有最前面的数据，所以藏在背后的但是反射出来应该能看见的物体就渲染不出来了
+<img src="/2b4fcc662dc14ea3aa48ea820c3b0a31.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+><img src="/38327ccdb1a14357b7aa1a52ebcc9e86.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+></li>
+</ul>
+
+</section>
+
+
+    <footer class="article-footer">
+    
+    <section class="article-tags">
+        
+            <a href="/tags/%E8%AF%BE%E7%A8%8B%E7%AC%94%E8%AE%B0/">课程笔记</a>
+        
+            <a href="/tags/games202/">Games202</a>
+        
+    </section>
+
+
+    
+    <section class="article-copyright">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
+</svg>
+
+
+
+        <span>Licensed under CC BY-NC-SA 4.0</span>
+    </section>
+    </footer>
+
+
+    
+        <link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css"integrity="sha384-n8MVd4RsNIU0tAv4ct0nTaAbDJwPJzDEaqSD1odI&#43;WdtXRGWt2kTvGFasHpSy3SV"crossorigin="anonymous"
+            ><script 
+                src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"integrity="sha384-XjKyOOlGwcjNTAIQHIpgOno0Hl1YQqzUOEleOLALmuqehneUG&#43;vnGctmUb0ZY0l8"crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"integrity="sha384-&#43;VBxd3r6XgURycqtZ117nYw44OOcIax56Z4dCRWbxyPt0Koah1uHoK0o4&#43;/RRE05"crossorigin="anonymous"
+                defer
+                >
+            </script><script>
+    window.addEventListener("DOMContentLoaded", () => {
+	const mainArticleElement = document.querySelector(".main-article");
+        renderMathInElement(mainArticleElement, {
+            delimiters: [
+                { left: "$$", right: "$$", display: true },
+                { left: "$", right: "$", display: false },
+                { left: "\\(", right: "\\)", display: false },
+                { left: "\\[", right: "\\]", display: true }
+            ],
+            ignoredClasses: ["gist"]
+        });})
+</script>
+
+    
+</article>
+
+    
+
+    
+
+<aside class="related-content--wrapper">
+    <h2 class="section-title">相关文章</h2>
+    <div class="related-content">
+        <div class="flex article-list--tile">
+            
+                
+<article class="article-card no-image">
+    <a href="/p/games202-games202-%E9%AB%98%E8%B4%A8%E9%87%8F%E5%AE%9E%E6%97%B6%E6%B8%B2%E6%9F%93real-time-ray-tracing/">
+        
+        
+        <div class="article-details">
+            <h2 class="article-title">GAMES202 GAMES202 高质量实时渲染（Real-Time Ray-Tracing）</h2>
+        </div>
+        
+    </a>
+
+    <style>
+     
+    .article-card {
+        background: rgba(255, 255, 255, 0.25);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        margin: 10px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .article-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    }
+
+    .article-card a {
+        display: flex;
+        flex-direction: column;
+        text-decoration: none;
+        color: inherit;
+        height: 100%;
+    }
+
+     
+    .article-image {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        overflow: hidden;
+    }
+    .article-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+    .article-image:hover img {
+        transform: scale(1.05);
+    }
+
+     
+    .article-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: rgba(0,0,0,0.3);  
+        padding: 10px;
+        box-sizing: border-box;
+        text-align: center;
+    }
+    .article-overlay .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #fff;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .article-card.no-image .article-details {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 15px;
+    }
+    .article-card.no-image .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #222;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .articles-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 20px;
+    }
+    </style>
+</article>
+            
+                
+<article class="article-card no-image">
+    <a href="/p/games202-%E9%AB%98%E8%B4%A8%E9%87%8F%E5%AE%9E%E6%97%B6%E6%B8%B2%E6%9F%93real-time-physically-based-materials/">
+        
+        
+        <div class="article-details">
+            <h2 class="article-title">GAMES202 高质量实时渲染（Real-Time Physically Based Materials）</h2>
+        </div>
+        
+    </a>
+
+    <style>
+     
+    .article-card {
+        background: rgba(255, 255, 255, 0.25);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        margin: 10px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .article-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    }
+
+    .article-card a {
+        display: flex;
+        flex-direction: column;
+        text-decoration: none;
+        color: inherit;
+        height: 100%;
+    }
+
+     
+    .article-image {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        overflow: hidden;
+    }
+    .article-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+    .article-image:hover img {
+        transform: scale(1.05);
+    }
+
+     
+    .article-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: rgba(0,0,0,0.3);  
+        padding: 10px;
+        box-sizing: border-box;
+        text-align: center;
+    }
+    .article-overlay .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #fff;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .article-card.no-image .article-details {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 15px;
+    }
+    .article-card.no-image .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #222;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .articles-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 20px;
+    }
+    </style>
+</article>
+            
+                
+<article class="article-card no-image">
+    <a href="/p/games202-%E9%AB%98%E8%B4%A8%E9%87%8F%E5%AE%9E%E6%97%B6%E6%B8%B2%E6%9F%93real-time-environment-mapping/">
+        
+        
+        <div class="article-details">
+            <h2 class="article-title">GAMES202 高质量实时渲染（Real-Time Environment Mapping）</h2>
+        </div>
+        
+    </a>
+
+    <style>
+     
+    .article-card {
+        background: rgba(255, 255, 255, 0.25);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        margin: 10px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .article-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    }
+
+    .article-card a {
+        display: flex;
+        flex-direction: column;
+        text-decoration: none;
+        color: inherit;
+        height: 100%;
+    }
+
+     
+    .article-image {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        overflow: hidden;
+    }
+    .article-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+    .article-image:hover img {
+        transform: scale(1.05);
+    }
+
+     
+    .article-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: rgba(0,0,0,0.3);  
+        padding: 10px;
+        box-sizing: border-box;
+        text-align: center;
+    }
+    .article-overlay .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #fff;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .article-card.no-image .article-details {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 15px;
+    }
+    .article-card.no-image .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #222;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .articles-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 20px;
+    }
+    </style>
+</article>
+            
+                
+<article class="article-card no-image">
+    <a href="/p/games202-%E9%AB%98%E8%B4%A8%E9%87%8F%E5%AE%9E%E6%97%B6%E6%B8%B2%E6%9F%93real-time-shadows/">
+        
+        
+        <div class="article-details">
+            <h2 class="article-title">GAMES202 高质量实时渲染（Real Time Shadows）</h2>
+        </div>
+        
+    </a>
+
+    <style>
+     
+    .article-card {
+        background: rgba(255, 255, 255, 0.25);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        margin: 10px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .article-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    }
+
+    .article-card a {
+        display: flex;
+        flex-direction: column;
+        text-decoration: none;
+        color: inherit;
+        height: 100%;
+    }
+
+     
+    .article-image {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        overflow: hidden;
+    }
+    .article-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+    .article-image:hover img {
+        transform: scale(1.05);
+    }
+
+     
+    .article-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: rgba(0,0,0,0.3);  
+        padding: 10px;
+        box-sizing: border-box;
+        text-align: center;
+    }
+    .article-overlay .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #fff;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .article-card.no-image .article-details {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 15px;
+    }
+    .article-card.no-image .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #222;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .articles-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 20px;
+    }
+    </style>
+</article>
+            
+                
+<article class="article-card no-image">
+    <a href="/p/games202-%E9%AB%98%E8%B4%A8%E9%87%8F%E5%AE%9E%E6%97%B6%E6%B8%B2%E6%9F%93assignment-3/">
+        
+        
+        <div class="article-details">
+            <h2 class="article-title">GAMES202 高质量实时渲染（Assignment 3）</h2>
+        </div>
+        
+    </a>
+
+    <style>
+     
+    .article-card {
+        background: rgba(255, 255, 255, 0.25);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        margin: 10px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .article-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    }
+
+    .article-card a {
+        display: flex;
+        flex-direction: column;
+        text-decoration: none;
+        color: inherit;
+        height: 100%;
+    }
+
+     
+    .article-image {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        overflow: hidden;
+    }
+    .article-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+    .article-image:hover img {
+        transform: scale(1.05);
+    }
+
+     
+    .article-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: rgba(0,0,0,0.3);  
+        padding: 10px;
+        box-sizing: border-box;
+        text-align: center;
+    }
+    .article-overlay .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #fff;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .article-card.no-image .article-details {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 15px;
+    }
+    .article-card.no-image .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #222;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .articles-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 20px;
+    }
+    </style>
+</article>
+            
+        </div>
+    </div>
+</aside>
+
+     
+    
+        
+    <script
+    src="https://giscus.app/client.js"
+    data-repo="sdpyy1/sdpyy1.github.io"
+    data-repo-id="R_kgDOQEycpQ"
+    data-category="Announcements"
+    data-category-id="DIC_kwDOQEycpc4Cwz7v"
+    data-mapping="pathname"
+    data-strict="0"
+    data-reactions-enabled="1"
+    data-emit-metadata="0"
+    data-input-position="top"
+    data-theme="light"
+    data-lang="en"
+    data-loading=""
+    crossorigin="anonymous"
+    async
+></script>
+<script>
+    function setGiscusTheme(theme) {
+        let giscus = document.querySelector("iframe.giscus-frame");
+        if (giscus) {
+            giscus.contentWindow.postMessage(
+                {
+                    giscus: {
+                        setConfig: {
+                            theme: theme,
+                        },
+                    },
+                },
+                "https://giscus.app"
+            );
+        }
+    }
+
+    (function () {
+        addEventListener("message", (e) => {
+            if (event.origin !== "https://giscus.app") return;
+            handler();
+        });
+        window.addEventListener("onColorSchemeChange", handler);
+
+        function handler() {
+            if (document.documentElement.dataset.scheme === "light") {
+                setGiscusTheme('light');
+            } else {
+                setGiscusTheme('light');
+            }
+        }
+    })();
+</script>
+
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+            2020 - 
+        
+        2025 爱喝东方树叶
+    </section>
+    <section style="display: flex; gap: 30px; align-items: center;">
+      
+      
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+      <span>📚 文章数: 30</span>
+      <span>✍️ 总字数: 
+        
+        
+        93.33K
+      </span>
+    </section>
+
+    <section class="powerby">
+    
+    <div class="busuanzi-footer">
+        <span id="busuanzi_container_site_pv">
+          本站总访问量<span id="busuanzi_value_site_pv"></span>次
+        </span>
+        <span id="busuanzi_container_site_uv">
+          本站访客数<span id="busuanzi_value_site_uv"></span>人次
+        </span>
+      </div></section>
+
+</footer>
+
+
+    
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    
+    <div class="pswp__bg"></div>
+
+    
+    <div class="pswp__scroll-wrap">
+
+        
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                
+                
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                        <div class="pswp__preloader__cut">
+                            <div class="pswp__preloader__donut"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div>
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js"integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo="crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js"integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU="crossorigin="anonymous"
+                defer
+                >
+            </script><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css"crossorigin="anonymous"
+            ><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css"crossorigin="anonymous"
+            >
+
+            </main>
+        </div>
+        <script 
+                src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js"integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z&#43;KMkF24hUW8WePSA9HM="crossorigin="anonymous"
+                
+                >
+            </script><script type="text/javascript" src="/ts/main.1e9a3bafd846ced4c345d084b355fb8c7bae75701c338f8a1f8a82c780137826.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>

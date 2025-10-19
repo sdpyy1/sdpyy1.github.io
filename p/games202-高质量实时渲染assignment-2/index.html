@@ -1,0 +1,1983 @@
+<!DOCTYPE html>
+<html lang="zh-cn" dir="ltr">
+    <head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'>
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+  <meta name="referrer" content="no-referrer-when-downgrade"><meta name='description' content="作业介绍 物体在不同光照下的表现不同，PRT(Precomputed Radiance Transfer) 是一个计算物体在不同光照下表现的方法。光线在一个环境中，会经历反射，折射，散射，甚至还会物体的内部进行散射。为了模拟具有真实感的渲染结果，传统的Path Tracing 方法需要考虑来自各个方向的光线、所有可能的传播形式并且收敛速度极慢。PRT 通过一种预计算方法，该方法在离线渲染的 Path Tracing 工具链中预计算 lighting 以及 light transport 并将它们用球谐函数拟合后储存，这样就将时间开销转移到了离线中。最后通过使用这些预计算好的数据，我们可以轻松达到实时渲染严苛的时间要求，同时渲染结果可以呈现出全局光照的效果。\n">
+<title>GAMES202 高质量实时渲染（Assignment 2）</title>
+
+<link rel='canonical' href='https://sdpyy1.github.io/p/games202-%E9%AB%98%E8%B4%A8%E9%87%8F%E5%AE%9E%E6%97%B6%E6%B8%B2%E6%9F%93assignment-2/'>
+
+<link rel="stylesheet" href="/scss/style.min.6a692fd055deae459f2a9767f57f3855ba80cafd5041317f24f7360f6ca47cdf.css"><meta property='og:title' content="GAMES202 高质量实时渲染（Assignment 2）">
+<meta property='og:description' content="作业介绍 物体在不同光照下的表现不同，PRT(Precomputed Radiance Transfer) 是一个计算物体在不同光照下表现的方法。光线在一个环境中，会经历反射，折射，散射，甚至还会物体的内部进行散射。为了模拟具有真实感的渲染结果，传统的Path Tracing 方法需要考虑来自各个方向的光线、所有可能的传播形式并且收敛速度极慢。PRT 通过一种预计算方法，该方法在离线渲染的 Path Tracing 工具链中预计算 lighting 以及 light transport 并将它们用球谐函数拟合后储存，这样就将时间开销转移到了离线中。最后通过使用这些预计算好的数据，我们可以轻松达到实时渲染严苛的时间要求，同时渲染结果可以呈现出全局光照的效果。\n">
+<meta property='og:url' content='https://sdpyy1.github.io/p/games202-%E9%AB%98%E8%B4%A8%E9%87%8F%E5%AE%9E%E6%97%B6%E6%B8%B2%E6%9F%93assignment-2/'>
+<meta property='og:site_name' content='wanfeng'>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='课程作业' /><meta property='article:tag' content='Games202' /><meta property='article:published_time' content='2025-10-19T14:04:46&#43;08:00'/><meta property='article:modified_time' content='2025-10-19T14:04:46&#43;08:00'/>
+<meta name="twitter:title" content="GAMES202 高质量实时渲染（Assignment 2）">
+<meta name="twitter:description" content="作业介绍 物体在不同光照下的表现不同，PRT(Precomputed Radiance Transfer) 是一个计算物体在不同光照下表现的方法。光线在一个环境中，会经历反射，折射，散射，甚至还会物体的内部进行散射。为了模拟具有真实感的渲染结果，传统的Path Tracing 方法需要考虑来自各个方向的光线、所有可能的传播形式并且收敛速度极慢。PRT 通过一种预计算方法，该方法在离线渲染的 Path Tracing 工具链中预计算 lighting 以及 light transport 并将它们用球谐函数拟合后储存，这样就将时间开销转移到了离线中。最后通过使用这些预计算好的数据，我们可以轻松达到实时渲染严苛的时间要求，同时渲染结果可以呈现出全局光照的效果。\n">
+    <link rel="shortcut icon" href="/favicon.ico" />
+
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="切换菜单">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        
+            
+            <figure class="site-avatar">
+                <a href="/">
+                
+                    
+                    
+                    
+                        
+                        <img src="/img/avatar_hu_f59158f730715054.png" width="300"
+                            height="300" class="site-logo" loading="lazy" alt="Avatar">
+                    
+                
+                </a>
+                
+                    <span class="emoji">🧐</span>
+                
+            </figure>
+            
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="/">wanfeng</a></h1>
+            <h2 class="site-description">Blog</h2>
+        </div>
+    </header><ol class="menu-social">
+            
+                <li>
+                    <a 
+                        href='https://space.bilibili.com/287473737'
+                        target="_blank"
+                        title="Bilibili"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-brand-bilibili"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 10a4 4 0 0 1 4 -4h10a4 4 0 0 1 4 4v6a4 4 0 0 1 -4 4h-10a4 4 0 0 1 -4 -4v-6z" /><path d="M8 3l2 3" /><path d="M16 3l-2 3" /><path d="M9 13v-2" /><path d="M15 11v2" /></svg>
+                        
+                    </a>
+                </li>
+            
+                <li>
+                    <a 
+                        href='https://github.com/sdpyy1'
+                        target="_blank"
+                        title="GitHub"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
+</svg>
+
+
+
+                        
+                    </a>
+                </li>
+            
+        </ol><ol class="menu" id="main-menu">
+        
+        
+        
+        <li >
+            <a href='/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>Home</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/about/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>About</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>Archives</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/search/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>Search</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/links/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5" />
+  <path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5" />
+</svg>
+
+
+
+                
+                <span>Links</span>
+            </a>
+        </li>
+        
+        <li class="menu-bottom-section">
+            <ol class="menu">
+                    
+                        <li id="i18n-switch">  
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-language" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M4 5h7" />
+  <path d="M9 3v2c0 4.418 -2.239 8 -5 8" />
+  <path d="M5 9c-.003 2.144 2.952 3.908 6.7 4" />
+  <path d="M12 20l4 -9l4 9" />
+  <path d="M19.1 18h-6.2" />
+</svg>
+
+
+
+                            <select name="language" title="language" onchange="window.location.href = this.selectedOptions[0].value">
+                                
+                                    <option value="https://sdpyy1.github.io/en/" >English</option>
+                                
+                                    <option value="https://sdpyy1.github.io/" selected>中文</option>
+                                
+                            </select>
+                        </li>
+                    
+                
+
+                
+                    <li id="dark-mode-toggle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <span>暗色模式</span>
+                    </li>
+                
+            </ol>
+        </li>
+    </ol>
+</aside>
+
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">目录</h2>
+        
+        <div class="widget--toc">
+            <nav id="TableOfContents">
+  <ol>
+    <li><a href="#作业介绍">作业介绍</a></li>
+    <li><a href="#环境光贴图预计算">环境光贴图预计算</a></li>
+    <li><a href="#传输项的预计算">传输项的预计算</a>
+      <ol>
+        <li><a href="#diffuse-unshadowed">Diffuse unshadowed</a></li>
+        <li><a href="#diffuse-shadowed">Diffuse shadowed</a></li>
+        <li><a href="#diffuse-inter-reflectionbonus">Diffuse Inter-reflection(bonus)</a></li>
+      </ol>
+    </li>
+    <li><a href="#实时球谐光照计算">实时球谐光照计算</a></li>
+  </ol>
+</nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+            <main class="main full-width">
+    <article class="main-article">
+    <header class="article-header">
+
+    <div class="article-details">
+    
+    <header class="article-category">
+        
+        
+             
+            
+            
+            
+            <div class="category-hierarchy">
+                
+                    
+                    
+                    
+                        
+                    
+                     
+                    
+                    
+                    
+                    <a href="/categories/course/" 
+                       >
+                        Course
+                    </a>
+                    
+                    
+                    
+                        <span class="category-separator">/</span>
+                    
+                
+                    
+                    
+                    
+                        
+                    
+                        
+                    
+                     
+                    
+                    
+                    
+                    <a href="/categories/course/games202/" 
+                       >
+                        Games202
+                    </a>
+                    
+                    
+                    
+                
+            </div>
+        
+             
+            
+            
+            
+            <div class="category-hierarchy">
+                
+                    
+                    
+                    
+                        
+                    
+                     
+                    
+                    
+                    
+                    <a href="/categories/assignment/" 
+                       >
+                        Assignment
+                    </a>
+                    
+                    
+                    
+                
+            </div>
+        
+    </header>
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="/p/games202-%E9%AB%98%E8%B4%A8%E9%87%8F%E5%AE%9E%E6%97%B6%E6%B8%B2%E6%9F%93assignment-2/">GAMES202 高质量实时渲染（Assignment 2）</a>
+        </h2>
+    
+        
+    </div>
+
+    
+    
+    
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published">Oct 19, 2025</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-time--reading">
+                    阅读时长: 6 分钟
+                </time>
+            </div>
+        
+
+        
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+        <span id="busuanzi_container_page_pv">本文阅读量<span id="busuanzi_value_page_pv"></span>次</span>
+    </footer>
+    
+    
+</div>
+<style>
+    .category-hierarchy {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;  
+        margin-right: 12px;  
+        margin-bottom: 8px;  
+    }
+    
+    .category-separator {
+        color: #999;
+        user-select: none;
+        font-size: 1em;  
+    }
+    
+    .article-category a {
+        text-decoration: none;
+        padding: 6px 12px;  
+        border-radius: 6px;  
+        font-size: 0.95em;  
+        transition: all 0.2s ease;
+        line-height: 1.5;  
+    }
+    
+    .article-category a:hover {
+        opacity: 0.9;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 6px rgba(0,0,0,0.1);  
+    }
+</style>
+</header>
+
+    <section class="article-content">
+    
+    
+    <h1 id="作业介绍">作业介绍
+</h1><p>物体在不同光照下的表现不同，PRT(Precomputed Radiance Transfer) 是一个计算物体在不同光照下表现的方法。光线在一个环境中，会经历反射，折射，散射，甚至还会物体的内部进行散射。为了模拟具有真实感的渲染结果，传统的Path Tracing 方法需要考虑来自各个方向的光线、所有可能的传播形式并且收敛速度极慢。PRT 通过一种预计算方法，该方法在离线渲染的 Path Tracing 工具链中预计算 lighting 以及 light transport 并将它们用球谐函数拟合后储存，这样就将时间开销转移到了离线中。最后通过使用这些预计算好的数据，我们可以轻松达到实时渲染严苛的时间要求，同时渲染结果可以呈现出全局光照的效果。</p>
+<p>PRT 方法存在的限制包括：
+• 不能计算随机动态场景的全局光照
+• 场景中物体不可变动</p>
+<p>本次作业的工作主要分为两个部分：cpp 端的离线预计算部分以及在 WebGL框架上使用预计算数据部分</p>
+<p>PRT课上最终得出的结论是对渲染方程的计算，可以先把光照和其余部分分别计算球谐展开后系数相乘（针对BRDF是diffuse的情况），所以我们只需要针对光照算球谐展开的系数，然后针对其余部分算一个球谐展开的系数，传递给顶点着色器后相乘就是顶点的着色</p>
+<h1 id="环境光贴图预计算">环境光贴图预计算
+</h1><p>要做的就是把L(wi)项用球谐函数表示，因为球谐函数都一样，不一样的只有系数，所以只需要预计算出系数，系数求法如下，针对球谐函数的任何一项求他的系数都是算一个积分
+<img src="/68ce51019876497a8d3dbb1f8017eedd.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+根据作业提示，需要完成函数，输入为天空盒的6个面图片</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl">    <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">Eigen</span><span class="o">::</span><span class="n">Array3f</span><span class="o">&gt;</span> <span class="n">PrecomputeCubemapSH</span><span class="p">(</span><span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">unique_ptr</span><span class="o">&lt;</span><span class="kt">float</span><span class="p">[]</span><span class="o">&gt;&gt;</span> <span class="o">&amp;</span><span class="n">images</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">                                                    <span class="k">const</span> <span class="kt">int</span> <span class="o">&amp;</span><span class="n">width</span><span class="p">,</span> <span class="k">const</span> <span class="kt">int</span> <span class="o">&amp;</span><span class="n">height</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">                                                    <span class="k">const</span> <span class="kt">int</span> <span class="o">&amp;</span><span class="n">channel</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>下面这一步是把6张贴图每个像素的方向向量都存起来了</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl">        <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3f</span><span class="o">&gt;</span> <span class="n">cubemapDirs</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="n">cubemapDirs</span><span class="p">.</span><span class="n">reserve</span><span class="p">(</span><span class="mi">6</span> <span class="o">*</span> <span class="n">width</span> <span class="o">*</span> <span class="n">height</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">6</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3f</span> <span class="n">faceDirX</span> <span class="o">=</span> <span class="n">cubemapFaceDirections</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">            <span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3f</span> <span class="n">faceDirY</span> <span class="o">=</span> <span class="n">cubemapFaceDirections</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">1</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">            <span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3f</span> <span class="n">faceDirZ</span> <span class="o">=</span> <span class="n">cubemapFaceDirections</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">2</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">            <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">y</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">y</span> <span class="o">&lt;</span> <span class="n">height</span><span class="p">;</span> <span class="n">y</span><span class="o">++</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">            <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">x</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">x</span> <span class="o">&lt;</span> <span class="n">width</span><span class="p">;</span> <span class="n">x</span><span class="o">++</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">                <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                    <span class="kt">float</span> <span class="n">u</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="p">((</span><span class="n">x</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">/</span> <span class="n">width</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">                    <span class="kt">float</span> <span class="n">v</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="p">((</span><span class="n">y</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">/</span> <span class="n">height</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">                    <span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3f</span> <span class="n">dir</span> <span class="o">=</span> <span class="p">(</span><span class="n">faceDirX</span> <span class="o">*</span> <span class="n">u</span> <span class="o">+</span> <span class="n">faceDirY</span> <span class="o">*</span> <span class="n">v</span> <span class="o">+</span> <span class="n">faceDirZ</span><span class="p">).</span><span class="n">normalized</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">                    <span class="n">cubemapDirs</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">dir</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">                <span class="p">}</span>
+</span></span><span class="line"><span class="cl">            <span class="p">}</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>接着对系数数组初始化</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="c1">// 表示球谐系数的个数
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="k">constexpr</span> <span class="kt">int</span> <span class="n">SHNum</span> <span class="o">=</span> <span class="p">(</span><span class="n">SHOrder</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">SHOrder</span> <span class="o">+</span> <span class="mi">1</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">Eigen</span><span class="o">::</span><span class="n">Array3f</span><span class="o">&gt;</span> <span class="n">SHCoeffiecents</span><span class="p">(</span><span class="n">SHNum</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">SHNum</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">            <span class="n">SHCoeffiecents</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">Array3f</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>最后遍历每个方向向量进行计算系数</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl">        <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">6</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">y</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">y</span> <span class="o">&lt;</span> <span class="n">height</span><span class="p">;</span> <span class="n">y</span><span class="o">++</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">            <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">x</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">x</span> <span class="o">&lt;</span> <span class="n">width</span><span class="p">;</span> <span class="n">x</span><span class="o">++</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">                <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                    <span class="c1">// TODO: here you need to compute light sh of each face of cubemap of each pixel
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                    <span class="c1">// TODO: 此处你需要计算每个像素下cubemap某个面的球谐系数
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>            <span class="o">!</span><span class="p">[</span><span class="err">请添加图片描述</span><span class="p">](</span><span class="n">f30ab4af6a6c4b1d9ba4c82953bd31d1</span><span class="p">.</span><span class="n">png</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3f</span> <span class="n">dir</span> <span class="o">=</span> <span class="n">cubemapDirs</span><span class="p">[</span><span class="n">i</span> <span class="o">*</span> <span class="n">width</span> <span class="o">*</span> <span class="n">height</span> <span class="o">+</span> <span class="n">y</span> <span class="o">*</span> <span class="n">width</span> <span class="o">+</span> <span class="n">x</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">                    <span class="kt">int</span> <span class="n">index</span> <span class="o">=</span> <span class="p">(</span><span class="n">y</span> <span class="o">*</span> <span class="n">width</span> <span class="o">+</span> <span class="n">x</span><span class="p">)</span> <span class="o">*</span> <span class="n">channel</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">                    <span class="n">Eigen</span><span class="o">::</span><span class="n">Array3f</span> <span class="n">Le</span><span class="p">(</span><span class="n">images</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">index</span> <span class="o">+</span> <span class="mi">0</span><span class="p">],</span> <span class="n">images</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">],</span>
+</span></span><span class="line"><span class="cl">                                      <span class="n">images</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">index</span> <span class="o">+</span> <span class="mi">2</span><span class="p">]);</span>
+</span></span><span class="line"><span class="cl">                <span class="p">}</span>
+</span></span><span class="line"><span class="cl">            <span class="p">}</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><img src="/b81cf47af03a44c79b93d69350ac2461.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+计算方法就是遍历每一个像素，通过黎曼积分的方法来说，每个像素点都对每个球谐函数的系数有贡献</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl">        <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">6</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">y</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">y</span> <span class="o">&lt;</span> <span class="n">height</span><span class="p">;</span> <span class="n">y</span><span class="o">++</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">            <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">x</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">x</span> <span class="o">&lt;</span> <span class="n">width</span><span class="p">;</span> <span class="n">x</span><span class="o">++</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">                <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                    <span class="c1">// TODO: here you need to compute light sh of each face of cubemap of each pixel
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                    <span class="c1">// TODO: 此处你需要计算每个像素下cubemap某个面的球谐系数
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                    <span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3f</span> <span class="n">dir</span> <span class="o">=</span> <span class="n">cubemapDirs</span><span class="p">[</span><span class="n">i</span> <span class="o">*</span> <span class="n">width</span> <span class="o">*</span> <span class="n">height</span> <span class="o">+</span> <span class="n">y</span> <span class="o">*</span> <span class="n">width</span> <span class="o">+</span> <span class="n">x</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">                    <span class="kt">int</span> <span class="n">index</span> <span class="o">=</span> <span class="p">(</span><span class="n">y</span> <span class="o">*</span> <span class="n">width</span> <span class="o">+</span> <span class="n">x</span><span class="p">)</span> <span class="o">*</span> <span class="n">channel</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">                    <span class="c1">// 当前像素的RGB值
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                    <span class="n">Eigen</span><span class="o">::</span><span class="n">Array3f</span> <span class="n">Le</span><span class="p">(</span><span class="n">images</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">index</span> <span class="o">+</span> <span class="mi">0</span><span class="p">],</span> <span class="n">images</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">],</span>
+</span></span><span class="line"><span class="cl">                                      <span class="n">images</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">index</span> <span class="o">+</span> <span class="mi">2</span><span class="p">]);</span>
+</span></span><span class="line"><span class="cl">                    <span class="c1">// 计算当前像素的面积
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                    <span class="kt">float</span> <span class="n">delta_wi</span> <span class="o">=</span> <span class="n">CalcArea</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">                    <span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3d</span> <span class="n">_dir</span><span class="p">(</span><span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3d</span><span class="p">(</span><span class="n">dir</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">dir</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">dir</span><span class="p">[</span><span class="mi">2</span><span class="p">]).</span><span class="n">normalized</span><span class="p">());</span><span class="c1">//这里dir要变成Eigen::Vector3d类型
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                    <span class="c1">// 计算当前像素点对每个基函数系数的黎曼积分求法的贡献
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                    <span class="k">for</span><span class="p">(</span><span class="kt">int</span> <span class="n">l</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span><span class="n">l</span> <span class="o">&lt;</span> <span class="n">SHNum</span><span class="p">;</span> <span class="n">l</span><span class="o">++</span><span class="p">){</span>
+</span></span><span class="line"><span class="cl">                        <span class="k">for</span><span class="p">(</span><span class="kt">int</span> <span class="n">m</span> <span class="o">=</span> <span class="o">-</span><span class="n">l</span><span class="p">;</span> <span class="n">m</span> <span class="o">&lt;=</span> <span class="n">l</span><span class="p">;</span> <span class="n">m</span><span class="o">++</span><span class="p">){</span>
+</span></span><span class="line"><span class="cl">                            <span class="n">SHCoeffiecents</span><span class="p">[</span><span class="n">sh</span><span class="o">::</span><span class="n">GetIndex</span><span class="p">(</span><span class="n">l</span><span class="p">,</span><span class="n">m</span><span class="p">)]</span> <span class="o">+=</span> <span class="n">Le</span> <span class="o">*</span> <span class="n">sh</span><span class="o">::</span><span class="n">EvalSH</span><span class="p">(</span><span class="n">l</span><span class="p">,</span><span class="n">m</span><span class="p">,</span><span class="n">_dir</span><span class="p">)</span><span class="o">*</span><span class="n">delta_wi</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">                        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">                    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">                <span class="p">}</span>
+</span></span><span class="line"><span class="cl">            <span class="p">}</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>对于作业提到的伽马矫正，可以参考我之前的博客<a class="link" href="https://blog.csdn.net/lzh804121985/article/details/147256140?spm=1001.2014.3001.5502"  target="_blank" rel="noopener"
+    >伽马矫正</a></p>
+<h1 id="传输项的预计算">传输项的预计算
+</h1><p>对于漫反射传输项来说，分为 unshadowed, shadowed, interreflection 三
+种情况，我们将分别计算这三种情况的漫反射传输球谐系数。</p>
+<h2 id="diffuse-unshadowed">Diffuse unshadowed
+</h2><p>这种情况下渲染方程的BRDF项为常数，此时渲染方程为
+<img src="/c3145424df5240929cd5f5322ef265a5.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+Li项已经处理掉了，就剩下max()项了
+<img src="/16863f3cd0d84d619ea9f84772cf18a1.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+作业中只需要写出transport部分在给定一个方向时的值</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl">                <span class="k">if</span> <span class="p">(</span><span class="n">m_Type</span> <span class="o">==</span> <span class="n">Type</span><span class="o">::</span><span class="n">Unshadowed</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">                <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                    <span class="c1">// TODO: here you need to calculate unshadowed transport term of a given direction
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                    <span class="c1">// TODO: 此处你需要计算给定方向下的unshadowed传输项球谐函数值
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">                <span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>这里就只剩一个点乘和max了</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl">                <span class="kt">float</span> <span class="n">dot_product</span> <span class="o">=</span> <span class="n">wi</span><span class="p">.</span><span class="n">dot</span><span class="p">(</span><span class="n">n</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">                <span class="k">if</span> <span class="p">(</span><span class="n">m_Type</span> <span class="o">==</span> <span class="n">Type</span><span class="o">::</span><span class="n">Unshadowed</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">                <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                    <span class="c1">// TODO: here you need to calculate unshadowed transport term of a given direction
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                    <span class="c1">// TODO: 此处你需要计算给定方向下的unshadowed传输项球谐函数值
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                    <span class="k">return</span> <span class="n">dot_product</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="o">?</span> <span class="nl">dot_product</span> <span class="p">:</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">                <span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>Indoor的数据</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="mf">0.518558</span> <span class="mf">0.510921</span> <span class="mf">0.498186</span>
+</span></span><span class="line"><span class="cl"><span class="o">-</span><span class="mf">0.0139227</span> <span class="o">-</span><span class="mf">0.0198673</span> <span class="o">-</span><span class="mf">0.0233177</span>
+</span></span><span class="line"><span class="cl"><span class="o">-</span><span class="mf">0.0229861</span> <span class="o">-</span><span class="mf">0.0361469</span> <span class="o">-</span><span class="mf">0.0237983</span>
+</span></span><span class="line"><span class="cl"><span class="mf">0.0263383</span> <span class="mf">0.0681837</span> <span class="mf">0.0585552</span>
+</span></span><span class="line"><span class="cl"><span class="o">-</span><span class="mf">0.0508792</span> <span class="o">-</span><span class="mf">0.0607283</span> <span class="o">-</span><span class="mf">0.0570984</span>
+</span></span><span class="line"><span class="cl"><span class="mf">0.0515054</span> <span class="mf">0.035726</span> <span class="mf">0.0207611</span>
+</span></span><span class="line"><span class="cl"><span class="mf">0.0147266</span> <span class="mf">0.0112063</span> <span class="o">-</span><span class="mf">0.026747</span>
+</span></span><span class="line"><span class="cl"><span class="mf">0.00411617</span> <span class="mf">0.0257427</span> <span class="mf">0.0428588</span>
+</span></span><span class="line"><span class="cl"><span class="mf">0.0642155</span> <span class="mf">0.0399902</span> <span class="mf">0.0190308</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>每一行代表一个基函数的参数，可以理解为把原光照函数投影到某一个基函数后的RGB分量分别为多少</p>
+<h2 id="diffuse-shadowed">Diffuse shadowed
+</h2><p>相对于unshadowed，就多出来一项Visibility<img src="/e0bd44c09e1e4303bd4e1e7b21a0c977.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl">                    <span class="c1">// 从顶点位置发射一条光线，与场景相交说明被遮挡了
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                    <span class="k">if</span><span class="p">(</span><span class="n">dot_product</span> <span class="o">&gt;</span> <span class="mf">0.0f</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="n">scene</span><span class="o">-&gt;</span><span class="n">rayIntersect</span><span class="p">(</span><span class="n">Ray3f</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">wi</span><span class="p">.</span><span class="n">normalized</span><span class="p">())))</span>
+</span></span><span class="line"><span class="cl">                    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                        <span class="k">return</span> <span class="n">dot_product</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">                    <span class="p">}</span><span class="k">else</span><span class="p">{</span>
+</span></span><span class="line"><span class="cl">                        <span class="k">return</span> <span class="mf">0.0f</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">                    <span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>当定义好函数后调用了</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl">            <span class="k">auto</span> <span class="n">shCoeff</span> <span class="o">=</span> <span class="n">sh</span><span class="o">::</span><span class="n">ProjectFunction</span><span class="p">(</span><span class="n">SHOrder</span><span class="p">,</span> <span class="n">shFunc</span><span class="p">,</span> <span class="n">m_SampleCount</span><span class="p">);</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>这行代码根据SH的阶数、被展开的函数、采样数来得到展开后SH的系数
+到这里 光照项和转移项都分别计算了它们的SH展开的系数并存储在txt文件中（通过跑该程序）</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="mi">7905</span>
+</span></span><span class="line"><span class="cl"><span class="mf">0.213508</span> <span class="mf">0.153329</span> <span class="mf">0.206834</span> <span class="o">-</span><span class="mf">0.0845127</span> <span class="o">-</span><span class="mf">0.060769</span> <span class="mf">0.144391</span> <span class="mf">0.0588847</span> <span class="o">-</span><span class="mf">0.0591535</span> <span class="o">-</span><span class="mf">0.0178413</span> 
+</span></span><span class="line"><span class="cl"><span class="mf">0.219123</span> <span class="mf">0.147477</span> <span class="mf">0.190788</span> <span class="o">-</span><span class="mf">0.134417</span> <span class="o">-</span><span class="mf">0.0519802</span> <span class="mf">0.135719</span> <span class="mf">0.0171978</span> <span class="o">-</span><span class="mf">0.101493</span> <span class="mf">0.0164001</span> 
+</span></span><span class="line"><span class="cl"><span class="mf">0.206635</span> <span class="mf">0.160885</span> <span class="mf">0.201914</span> <span class="o">-</span><span class="mf">0.0758193</span> <span class="o">-</span><span class="mf">0.0472086</span> <span class="mf">0.167402</span> <span class="mf">0.0471802</span> <span class="o">-</span><span class="mf">0.052247</span> <span class="o">-</span><span class="mf">0.00859244</span> 
+</span></span><span class="line"><span class="cl"><span class="mf">0.185821</span> <span class="mf">0.153003</span> <span class="mf">0.162114</span> <span class="o">-</span><span class="mf">0.119748</span> <span class="o">-</span><span class="mf">0.0931989</span> <span class="mf">0.143295</span> <span class="mf">0.00899377</span> <span class="o">-</span><span class="mf">0.0984071</span> <span class="o">-</span><span class="mf">0.0184536</span> 
+</span></span><span class="line"><span class="cl"><span class="mf">0.206635</span> <span class="mf">0.160885</span> <span class="mf">0.201914</span> <span class="o">-</span><span class="mf">0.0758193</span> <span class="o">-</span><span class="mf">0.0472086</span> <span class="mf">0.167402</span> <span class="mf">0.0471802</span> <span class="o">-</span><span class="mf">0.052247</span> <span class="o">-</span><span class="mf">0.00859244</span> 
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>每一行代表一个顶点的球谐展开系数。因为T部分不仅与入射方向有关，也与顶点的具体位置有关，所以每固定一个顶点，球谐展开系数都是不一样的</p>
+<h2 id="diffuse-inter-reflectionbonus">Diffuse Inter-reflection(bonus)
+</h2><p>这里就需要考虑光线的多次弹射，渲染方程变成
+<img src="/c9a2872a95db46b784060a8ad959019b.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+计算一个顶点的系数时，不仅考虑到来自环境光的光照，还考虑来自别的地方弹射过来的光的影响，仿照光线追踪的写法，从着色点射出采样光线，若击中物体，则把光线反过来求出它对着色点的贡献（如果递归的写就可以求出击中物体的值，递归到最后一层就是本身着色点的值）</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
+</span><span class="lnt">56
+</span><span class="lnt">57
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="n">std</span><span class="o">::</span><span class="n">unique_ptr</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;&gt;</span> <span class="n">computeInterreflectionSH</span><span class="p">(</span><span class="n">Eigen</span><span class="o">::</span><span class="n">MatrixXf</span><span class="o">*</span> <span class="n">directTSHCoeffs</span><span class="p">,</span> <span class="k">const</span> <span class="n">Point3f</span><span class="o">&amp;</span> <span class="n">pos</span><span class="p">,</span> <span class="k">const</span> <span class="n">Normal3f</span><span class="o">&amp;</span> <span class="n">normal</span><span class="p">,</span> <span class="k">const</span> <span class="n">Scene</span><span class="o">*</span> <span class="n">scene</span><span class="p">,</span> <span class="kt">int</span> <span class="n">bounces</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">std</span><span class="o">::</span><span class="n">unique_ptr</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;&gt;</span> <span class="n">coeffs</span><span class="p">(</span><span class="k">new</span> <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span><span class="p">());</span>
+</span></span><span class="line"><span class="cl">    <span class="n">coeffs</span><span class="o">-&gt;</span><span class="n">assign</span><span class="p">(</span><span class="n">SHCoeffLength</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="n">bounces</span> <span class="o">&gt;</span> <span class="n">m_Bounce</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="n">coeffs</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">const</span> <span class="kt">int</span> <span class="n">sample_side</span> <span class="o">=</span> <span class="k">static_cast</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="p">(</span><span class="n">floor</span><span class="p">(</span><span class="n">sqrt</span><span class="p">(</span><span class="n">m_SampleCount</span><span class="p">)));</span>
+</span></span><span class="line"><span class="cl">    <span class="n">std</span><span class="o">::</span><span class="n">random_device</span> <span class="n">rd</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">std</span><span class="o">::</span><span class="n">mt19937</span> <span class="n">gen</span><span class="p">(</span><span class="n">rd</span><span class="p">());</span>
+</span></span><span class="line"><span class="cl">    <span class="n">std</span><span class="o">::</span><span class="n">uniform_real_distribution</span><span class="o">&lt;&gt;</span> <span class="n">rng</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">t</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">t</span> <span class="o">&lt;</span> <span class="n">sample_side</span><span class="p">;</span> <span class="n">t</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">p</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">p</span> <span class="o">&lt;</span> <span class="n">sample_side</span><span class="p">;</span> <span class="n">p</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="kt">double</span> <span class="n">alpha</span> <span class="o">=</span> <span class="p">(</span><span class="n">t</span> <span class="o">+</span> <span class="n">rng</span><span class="p">(</span><span class="n">gen</span><span class="p">))</span> <span class="o">/</span> <span class="n">sample_side</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">            <span class="kt">double</span> <span class="n">beta</span> <span class="o">=</span> <span class="p">(</span><span class="n">p</span> <span class="o">+</span> <span class="n">rng</span><span class="p">(</span><span class="n">gen</span><span class="p">))</span> <span class="o">/</span> <span class="n">sample_side</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">            <span class="kt">double</span> <span class="n">phi</span> <span class="o">=</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">M_PI</span> <span class="o">*</span> <span class="n">beta</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">            <span class="kt">double</span> <span class="n">theta</span> <span class="o">=</span> <span class="n">acos</span><span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">alpha</span> <span class="o">-</span> <span class="mf">1.0</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	    <span class="c1">//这边模仿ProjectFunction函数写
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl">            <span class="n">Eigen</span><span class="o">::</span><span class="n">Array3d</span> <span class="n">d</span> <span class="o">=</span> <span class="n">sh</span><span class="o">::</span><span class="n">ToVector</span><span class="p">(</span><span class="n">phi</span><span class="p">,</span> <span class="n">theta</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">            <span class="k">const</span> <span class="k">auto</span> <span class="n">wi</span> <span class="o">=</span> <span class="n">Vector3f</span><span class="p">(</span><span class="n">d</span><span class="p">.</span><span class="n">x</span><span class="p">(),</span> <span class="n">d</span><span class="p">.</span><span class="n">y</span><span class="p">(),</span> <span class="n">d</span><span class="p">.</span><span class="n">z</span><span class="p">());</span>
+</span></span><span class="line"><span class="cl">            <span class="kt">double</span> <span class="n">H</span> <span class="o">=</span> <span class="n">wi</span><span class="p">.</span><span class="n">normalized</span><span class="p">().</span><span class="n">dot</span><span class="p">(</span><span class="n">normal</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">            <span class="n">Intersection</span> <span class="n">its</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">            <span class="k">if</span> <span class="p">(</span><span class="n">H</span> <span class="o">&gt;</span> <span class="mf">0.0</span> <span class="o">&amp;&amp;</span> <span class="n">scene</span><span class="o">-&gt;</span><span class="n">rayIntersect</span><span class="p">(</span><span class="n">Ray3f</span><span class="p">(</span><span class="n">pos</span><span class="p">,</span> <span class="n">wi</span><span class="p">.</span><span class="n">normalized</span><span class="p">()),</span> <span class="n">its</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">            <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                <span class="n">MatrixXf</span> <span class="n">normals</span> <span class="o">=</span> <span class="n">its</span><span class="p">.</span><span class="n">mesh</span><span class="o">-&gt;</span><span class="n">getVertexNormals</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">                <span class="n">Point3f</span> <span class="n">idx</span> <span class="o">=</span> <span class="n">its</span><span class="p">.</span><span class="n">tri_index</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">                <span class="n">Point3f</span> <span class="n">hitPos</span> <span class="o">=</span> <span class="n">its</span><span class="p">.</span><span class="n">p</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">                <span class="n">Vector3f</span> <span class="n">bary</span> <span class="o">=</span> <span class="n">its</span><span class="p">.</span><span class="n">bary</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                <span class="n">Normal3f</span> <span class="n">hitNormal</span> <span class="o">=</span>
+</span></span><span class="line"><span class="cl">                    <span class="n">Normal3f</span><span class="p">(</span><span class="n">normals</span><span class="p">.</span><span class="n">col</span><span class="p">(</span><span class="n">idx</span><span class="p">.</span><span class="n">x</span><span class="p">()).</span><span class="n">normalized</span><span class="p">()</span> <span class="o">*</span> <span class="n">bary</span><span class="p">.</span><span class="n">x</span><span class="p">()</span> <span class="o">+</span>
+</span></span><span class="line"><span class="cl">                        <span class="n">normals</span><span class="p">.</span><span class="n">col</span><span class="p">(</span><span class="n">idx</span><span class="p">.</span><span class="n">y</span><span class="p">()).</span><span class="n">normalized</span><span class="p">()</span> <span class="o">*</span> <span class="n">bary</span><span class="p">.</span><span class="n">y</span><span class="p">()</span> <span class="o">+</span>
+</span></span><span class="line"><span class="cl">                        <span class="n">normals</span><span class="p">.</span><span class="n">col</span><span class="p">(</span><span class="n">idx</span><span class="p">.</span><span class="n">z</span><span class="p">()).</span><span class="n">normalized</span><span class="p">()</span> <span class="o">*</span> <span class="n">bary</span><span class="p">.</span><span class="n">z</span><span class="p">())</span>
+</span></span><span class="line"><span class="cl">                    <span class="p">.</span><span class="n">normalized</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                <span class="k">auto</span> <span class="n">nextBouncesCoeffs</span> <span class="o">=</span> <span class="n">computeInterreflectionSH</span><span class="p">(</span><span class="n">directTSHCoeffs</span><span class="p">,</span> <span class="n">hitPos</span><span class="p">,</span> <span class="n">hitNormal</span><span class="p">,</span> <span class="n">scene</span><span class="p">,</span> <span class="n">bounces</span> <span class="o">+</span> <span class="mi">1</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">SHCoeffLength</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">                <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                    <span class="k">auto</span> <span class="n">interpolateSH</span> <span class="o">=</span> <span class="p">(</span><span class="n">directTSHCoeffs</span><span class="o">-&gt;</span><span class="n">col</span><span class="p">(</span><span class="n">idx</span><span class="p">.</span><span class="n">x</span><span class="p">()).</span><span class="n">coeffRef</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">*</span> <span class="n">bary</span><span class="p">.</span><span class="n">x</span><span class="p">()</span> <span class="o">+</span>
+</span></span><span class="line"><span class="cl">                        <span class="n">directTSHCoeffs</span><span class="o">-&gt;</span><span class="n">col</span><span class="p">(</span><span class="n">idx</span><span class="p">.</span><span class="n">y</span><span class="p">()).</span><span class="n">coeffRef</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">*</span> <span class="n">bary</span><span class="p">.</span><span class="n">y</span><span class="p">()</span> <span class="o">+</span>
+</span></span><span class="line"><span class="cl">                        <span class="n">directTSHCoeffs</span><span class="o">-&gt;</span><span class="n">col</span><span class="p">(</span><span class="n">idx</span><span class="p">.</span><span class="n">z</span><span class="p">()).</span><span class="n">coeffRef</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="o">*</span> <span class="n">bary</span><span class="p">.</span><span class="n">z</span><span class="p">());</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                    <span class="p">(</span><span class="o">*</span><span class="n">coeffs</span><span class="p">)[</span><span class="n">i</span><span class="p">]</span> <span class="o">+=</span> <span class="p">(</span><span class="n">interpolateSH</span> <span class="o">+</span> <span class="p">(</span><span class="o">*</span><span class="n">nextBouncesCoeffs</span><span class="p">)[</span><span class="n">i</span><span class="p">])</span> <span class="o">*</span> <span class="n">H</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">                <span class="p">}</span>
+</span></span><span class="line"><span class="cl">            <span class="p">}</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="p">(</span><span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">coeffs</span><span class="o">-&gt;</span><span class="n">size</span><span class="p">();</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="p">(</span><span class="o">*</span><span class="n">coeffs</span><span class="p">)[</span><span class="n">i</span><span class="p">]</span> <span class="o">/=</span> <span class="n">sample_side</span> <span class="o">*</span> <span class="n">sample_side</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">coeffs</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl">            <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">mesh</span><span class="o">-&gt;</span><span class="n">getVertexCount</span><span class="p">();</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">            <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                <span class="k">const</span> <span class="n">Point3f</span><span class="o">&amp;</span> <span class="n">v</span> <span class="o">=</span> <span class="n">mesh</span><span class="o">-&gt;</span><span class="n">getVertexPositions</span><span class="p">().</span><span class="n">col</span><span class="p">(</span><span class="n">i</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">                <span class="k">const</span> <span class="n">Normal3f</span><span class="o">&amp;</span> <span class="n">n</span> <span class="o">=</span> <span class="n">mesh</span><span class="o">-&gt;</span><span class="n">getVertexNormals</span><span class="p">().</span><span class="n">col</span><span class="p">(</span><span class="n">i</span><span class="p">).</span><span class="n">normalized</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">                <span class="k">auto</span> <span class="n">indirectCoeffs</span> <span class="o">=</span> <span class="n">computeInterreflectionSH</span><span class="p">(</span><span class="o">&amp;</span><span class="n">m_TransportSHCoeffs</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">scene</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">                <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">j</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="n">SHCoeffLength</span><span class="p">;</span> <span class="n">j</span><span class="o">++</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">                <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                    <span class="n">m_TransportSHCoeffs</span><span class="p">.</span><span class="n">col</span><span class="p">(</span><span class="n">i</span><span class="p">).</span><span class="n">coeffRef</span><span class="p">(</span><span class="n">j</span><span class="p">)</span> <span class="o">+=</span> <span class="p">(</span><span class="o">*</span><span class="n">indirectCoeffs</span><span class="p">)[</span><span class="n">j</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">                <span class="p">}</span>
+</span></span><span class="line"><span class="cl">                <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&#34;computing interreflection light sh coeffs, current vertex idx: &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">i</span> <span class="o">&lt;&lt;</span> <span class="s">&#34; total vertex idx: &#34;</span> <span class="o">&lt;&lt;</span> <span class="n">mesh</span><span class="o">-&gt;</span><span class="n">getVertexCount</span><span class="p">()</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">            <span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h1 id="实时球谐光照计算">实时球谐光照计算
+</h1><p>这里我不展示如何跑通代码，只展示主要的逻辑点。跑通代码可以参考博客：https://zhuanlan.zhihu.com/p/596050050</p>
+<p>对于预计算数据使用就是在顶点着色器中，要求一个顶点的着色，就要把光照项的每一个系数与T项对应的系数相乘后相加即可</p>
+<p>从下面代码可以看出，三个颜色通道单独计算</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="c1">//prtVertex.glsl
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl"><span class="n">attribute</span> <span class="n">vec3</span> <span class="n">aVertexPosition</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">attribute</span> <span class="n">vec3</span> <span class="n">aNormalPosition</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">attribute</span> <span class="n">mat3</span> <span class="n">aPrecomputeLT</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">uniform</span> <span class="n">mat4</span> <span class="n">uModelMatrix</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">uniform</span> <span class="n">mat4</span> <span class="n">uViewMatrix</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">uniform</span> <span class="n">mat4</span> <span class="n">uProjectionMatrix</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">uniform</span> <span class="n">mat3</span> <span class="n">uPrecomputeL</span><span class="p">[</span><span class="mi">3</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">varying</span> <span class="n">highp</span> <span class="n">vec3</span> <span class="n">vNormal</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">varying</span> <span class="n">highp</span> <span class="n">mat3</span> <span class="n">vPrecomputeLT</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">varying</span> <span class="n">highp</span> <span class="n">vec3</span> <span class="n">vColor</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">float</span> <span class="nf">L_dot_LT</span><span class="p">(</span><span class="n">mat3</span> <span class="n">PrecomputeL</span><span class="p">,</span> <span class="n">mat3</span> <span class="n">PrecomputeLT</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="n">vec3</span> <span class="n">L_0</span> <span class="o">=</span> <span class="n">PrecomputeL</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">  <span class="n">vec3</span> <span class="n">L_1</span> <span class="o">=</span> <span class="n">PrecomputeL</span><span class="p">[</span><span class="mi">1</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">  <span class="n">vec3</span> <span class="n">L_2</span> <span class="o">=</span> <span class="n">PrecomputeL</span><span class="p">[</span><span class="mi">2</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">  <span class="n">vec3</span> <span class="n">LT_0</span> <span class="o">=</span> <span class="n">PrecomputeLT</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">  <span class="n">vec3</span> <span class="n">LT_1</span> <span class="o">=</span> <span class="n">PrecomputeLT</span><span class="p">[</span><span class="mi">1</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">  <span class="n">vec3</span> <span class="n">LT_2</span> <span class="o">=</span> <span class="n">PrecomputeLT</span><span class="p">[</span><span class="mi">2</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">  <span class="k">return</span> <span class="n">dot</span><span class="p">(</span><span class="n">L_0</span><span class="p">,</span> <span class="n">LT_0</span><span class="p">)</span> <span class="o">+</span> <span class="n">dot</span><span class="p">(</span><span class="n">L_1</span><span class="p">,</span> <span class="n">LT_1</span><span class="p">)</span> <span class="o">+</span> <span class="n">dot</span><span class="p">(</span><span class="n">L_2</span><span class="p">,</span> <span class="n">LT_2</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">void</span> <span class="nf">main</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">  <span class="c1">// 无实际作用，避免aNormalPosition被优化后产生警告
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>  <span class="n">vNormal</span> <span class="o">=</span> <span class="p">(</span><span class="n">uModelMatrix</span> <span class="o">*</span> <span class="n">vec4</span><span class="p">(</span><span class="n">aNormalPosition</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)).</span><span class="n">xyz</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="k">for</span><span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">  <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">vColor</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">L_dot_LT</span><span class="p">(</span><span class="n">aPrecomputeLT</span><span class="p">,</span> <span class="n">uPrecomputeL</span><span class="p">[</span><span class="n">i</span><span class="p">]);</span>
+</span></span><span class="line"><span class="cl">  <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">  <span class="n">gl_Position</span> <span class="o">=</span> <span class="n">uProjectionMatrix</span> <span class="o">*</span> <span class="n">uViewMatrix</span> <span class="o">*</span> <span class="n">uModelMatrix</span> <span class="o">*</span> <span class="n">vec4</span><span class="p">(</span><span class="n">aVertexPosition</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>以R通道举例
+<img src="/2c95481b3a0a4a6583730d34d8d60e4b.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+<img src="/d8fa472334d246f28550c75a7d613f94.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+一行（顶点的系数）乘一列（环境光贴图系数的R通道）结果作为着色点的R通道值</p>
+<p><img src="/91eca0df3710473291dfdf1a32061647.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+<img src="/4cda862ff20a40b5a713e80f38913543.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+<img src="/1e99f72904054ad5bbfe172340ccd69e.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+至于还有一个作业要做旋转。
+我的理解是如果环境光贴图进行了旋转，其实修改的就只是环境光贴图的球谐展开的系数，其他的不会变，而且因为球谐函数的特性，很容易就能求旋转后的系数。先理解了就行</p>
+
+</section>
+
+
+    <footer class="article-footer">
+    
+    <section class="article-tags">
+        
+            <a href="/tags/%E8%AF%BE%E7%A8%8B%E4%BD%9C%E4%B8%9A/">课程作业</a>
+        
+            <a href="/tags/games202/">Games202</a>
+        
+    </section>
+
+
+    
+    <section class="article-copyright">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
+</svg>
+
+
+
+        <span>Licensed under CC BY-NC-SA 4.0</span>
+    </section>
+    </footer>
+
+
+    
+        <link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css"integrity="sha384-n8MVd4RsNIU0tAv4ct0nTaAbDJwPJzDEaqSD1odI&#43;WdtXRGWt2kTvGFasHpSy3SV"crossorigin="anonymous"
+            ><script 
+                src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"integrity="sha384-XjKyOOlGwcjNTAIQHIpgOno0Hl1YQqzUOEleOLALmuqehneUG&#43;vnGctmUb0ZY0l8"crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"integrity="sha384-&#43;VBxd3r6XgURycqtZ117nYw44OOcIax56Z4dCRWbxyPt0Koah1uHoK0o4&#43;/RRE05"crossorigin="anonymous"
+                defer
+                >
+            </script><script>
+    window.addEventListener("DOMContentLoaded", () => {
+	const mainArticleElement = document.querySelector(".main-article");
+        renderMathInElement(mainArticleElement, {
+            delimiters: [
+                { left: "$$", right: "$$", display: true },
+                { left: "$", right: "$", display: false },
+                { left: "\\(", right: "\\)", display: false },
+                { left: "\\[", right: "\\]", display: true }
+            ],
+            ignoredClasses: ["gist"]
+        });})
+</script>
+
+    
+</article>
+
+    
+
+    
+
+<aside class="related-content--wrapper">
+    <h2 class="section-title">相关文章</h2>
+    <div class="related-content">
+        <div class="flex article-list--tile">
+            
+                
+<article class="article-card no-image">
+    <a href="/p/games202-%E9%AB%98%E8%B4%A8%E9%87%8F%E5%AE%9E%E6%97%B6%E6%B8%B2%E6%9F%93assignment-3/">
+        
+        
+        <div class="article-details">
+            <h2 class="article-title">GAMES202 高质量实时渲染（Assignment 3）</h2>
+        </div>
+        
+    </a>
+
+    <style>
+     
+    .article-card {
+        background: rgba(255, 255, 255, 0.25);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        margin: 10px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .article-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    }
+
+    .article-card a {
+        display: flex;
+        flex-direction: column;
+        text-decoration: none;
+        color: inherit;
+        height: 100%;
+    }
+
+     
+    .article-image {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        overflow: hidden;
+    }
+    .article-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+    .article-image:hover img {
+        transform: scale(1.05);
+    }
+
+     
+    .article-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: rgba(0,0,0,0.3);  
+        padding: 10px;
+        box-sizing: border-box;
+        text-align: center;
+    }
+    .article-overlay .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #fff;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .article-card.no-image .article-details {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 15px;
+    }
+    .article-card.no-image .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #222;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .articles-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 20px;
+    }
+    </style>
+</article>
+            
+                
+<article class="article-card no-image">
+    <a href="/p/games202-%E9%AB%98%E8%B4%A8%E9%87%8F%E5%AE%9E%E6%97%B6%E6%B8%B2%E6%9F%93assignment-1/">
+        
+        
+        <div class="article-details">
+            <h2 class="article-title">GAMES202 高质量实时渲染（Assignment 1）</h2>
+        </div>
+        
+    </a>
+
+    <style>
+     
+    .article-card {
+        background: rgba(255, 255, 255, 0.25);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        margin: 10px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .article-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    }
+
+    .article-card a {
+        display: flex;
+        flex-direction: column;
+        text-decoration: none;
+        color: inherit;
+        height: 100%;
+    }
+
+     
+    .article-image {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        overflow: hidden;
+    }
+    .article-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+    .article-image:hover img {
+        transform: scale(1.05);
+    }
+
+     
+    .article-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: rgba(0,0,0,0.3);  
+        padding: 10px;
+        box-sizing: border-box;
+        text-align: center;
+    }
+    .article-overlay .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #fff;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .article-card.no-image .article-details {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 15px;
+    }
+    .article-card.no-image .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #222;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .articles-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 20px;
+    }
+    </style>
+</article>
+            
+                
+<article class="article-card no-image">
+    <a href="/p/games202-games202-%E9%AB%98%E8%B4%A8%E9%87%8F%E5%AE%9E%E6%97%B6%E6%B8%B2%E6%9F%93real-time-ray-tracing/">
+        
+        
+        <div class="article-details">
+            <h2 class="article-title">GAMES202 GAMES202 高质量实时渲染（Real-Time Ray-Tracing）</h2>
+        </div>
+        
+    </a>
+
+    <style>
+     
+    .article-card {
+        background: rgba(255, 255, 255, 0.25);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        margin: 10px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .article-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    }
+
+    .article-card a {
+        display: flex;
+        flex-direction: column;
+        text-decoration: none;
+        color: inherit;
+        height: 100%;
+    }
+
+     
+    .article-image {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        overflow: hidden;
+    }
+    .article-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+    .article-image:hover img {
+        transform: scale(1.05);
+    }
+
+     
+    .article-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: rgba(0,0,0,0.3);  
+        padding: 10px;
+        box-sizing: border-box;
+        text-align: center;
+    }
+    .article-overlay .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #fff;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .article-card.no-image .article-details {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 15px;
+    }
+    .article-card.no-image .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #222;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .articles-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 20px;
+    }
+    </style>
+</article>
+            
+                
+<article class="article-card no-image">
+    <a href="/p/games202-%E9%AB%98%E8%B4%A8%E9%87%8F%E5%AE%9E%E6%97%B6%E6%B8%B2%E6%9F%93real-time-physically-based-materials/">
+        
+        
+        <div class="article-details">
+            <h2 class="article-title">GAMES202 高质量实时渲染（Real-Time Physically Based Materials）</h2>
+        </div>
+        
+    </a>
+
+    <style>
+     
+    .article-card {
+        background: rgba(255, 255, 255, 0.25);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        margin: 10px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .article-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    }
+
+    .article-card a {
+        display: flex;
+        flex-direction: column;
+        text-decoration: none;
+        color: inherit;
+        height: 100%;
+    }
+
+     
+    .article-image {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        overflow: hidden;
+    }
+    .article-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+    .article-image:hover img {
+        transform: scale(1.05);
+    }
+
+     
+    .article-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: rgba(0,0,0,0.3);  
+        padding: 10px;
+        box-sizing: border-box;
+        text-align: center;
+    }
+    .article-overlay .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #fff;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .article-card.no-image .article-details {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 15px;
+    }
+    .article-card.no-image .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #222;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .articles-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 20px;
+    }
+    </style>
+</article>
+            
+                
+<article class="article-card no-image">
+    <a href="/p/games202-%E9%AB%98%E8%B4%A8%E9%87%8F%E5%AE%9E%E6%97%B6%E6%B8%B2%E6%9F%93real-time-global-illumination/">
+        
+        
+        <div class="article-details">
+            <h2 class="article-title">GAMES202 高质量实时渲染（Real-Time Global Illumination）</h2>
+        </div>
+        
+    </a>
+
+    <style>
+     
+    .article-card {
+        background: rgba(255, 255, 255, 0.25);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        margin: 10px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .article-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    }
+
+    .article-card a {
+        display: flex;
+        flex-direction: column;
+        text-decoration: none;
+        color: inherit;
+        height: 100%;
+    }
+
+     
+    .article-image {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        overflow: hidden;
+    }
+    .article-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+    .article-image:hover img {
+        transform: scale(1.05);
+    }
+
+     
+    .article-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: rgba(0,0,0,0.3);  
+        padding: 10px;
+        box-sizing: border-box;
+        text-align: center;
+    }
+    .article-overlay .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #fff;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .article-card.no-image .article-details {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 15px;
+    }
+    .article-card.no-image .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #222;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .articles-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 20px;
+    }
+    </style>
+</article>
+            
+        </div>
+    </div>
+</aside>
+
+     
+    
+        
+    <script
+    src="https://giscus.app/client.js"
+    data-repo="sdpyy1/sdpyy1.github.io"
+    data-repo-id="R_kgDOQEycpQ"
+    data-category="Announcements"
+    data-category-id="DIC_kwDOQEycpc4Cwz7v"
+    data-mapping="pathname"
+    data-strict="0"
+    data-reactions-enabled="1"
+    data-emit-metadata="0"
+    data-input-position="top"
+    data-theme="light"
+    data-lang="en"
+    data-loading=""
+    crossorigin="anonymous"
+    async
+></script>
+<script>
+    function setGiscusTheme(theme) {
+        let giscus = document.querySelector("iframe.giscus-frame");
+        if (giscus) {
+            giscus.contentWindow.postMessage(
+                {
+                    giscus: {
+                        setConfig: {
+                            theme: theme,
+                        },
+                    },
+                },
+                "https://giscus.app"
+            );
+        }
+    }
+
+    (function () {
+        addEventListener("message", (e) => {
+            if (event.origin !== "https://giscus.app") return;
+            handler();
+        });
+        window.addEventListener("onColorSchemeChange", handler);
+
+        function handler() {
+            if (document.documentElement.dataset.scheme === "light") {
+                setGiscusTheme('light');
+            } else {
+                setGiscusTheme('light');
+            }
+        }
+    })();
+</script>
+
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+            2020 - 
+        
+        2025 爱喝东方树叶
+    </section>
+    <section style="display: flex; gap: 30px; align-items: center;">
+      
+      
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+      <span>📚 文章数: 30</span>
+      <span>✍️ 总字数: 
+        
+        
+        93.33K
+      </span>
+    </section>
+
+    <section class="powerby">
+    
+    <div class="busuanzi-footer">
+        <span id="busuanzi_container_site_pv">
+          本站总访问量<span id="busuanzi_value_site_pv"></span>次
+        </span>
+        <span id="busuanzi_container_site_uv">
+          本站访客数<span id="busuanzi_value_site_uv"></span>人次
+        </span>
+      </div></section>
+
+</footer>
+
+
+    
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    
+    <div class="pswp__bg"></div>
+
+    
+    <div class="pswp__scroll-wrap">
+
+        
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                
+                
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                        <div class="pswp__preloader__cut">
+                            <div class="pswp__preloader__donut"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div>
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js"integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo="crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js"integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU="crossorigin="anonymous"
+                defer
+                >
+            </script><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css"crossorigin="anonymous"
+            ><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css"crossorigin="anonymous"
+            >
+
+            </main>
+        </div>
+        <script 
+                src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js"integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z&#43;KMkF24hUW8WePSA9HM="crossorigin="anonymous"
+                
+                >
+            </script><script type="text/javascript" src="/ts/main.1e9a3bafd846ced4c345d084b355fb8c7bae75701c338f8a1f8a82c780137826.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>

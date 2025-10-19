@@ -7,7 +7,31 @@
         <generator>Hugo -- gohugo.io</generator>
         <language>zh-cn</language>
         <copyright>爱喝东方树叶</copyright>
-        <lastBuildDate>Sun, 19 Oct 2025 13:53:52 +0800</lastBuildDate><atom:link href="https://sdpyy1.github.io/categories/index.xml" rel="self" type="application/rss+xml" /><item>
+        <lastBuildDate>Sun, 19 Oct 2025 14:05:15 +0800</lastBuildDate><atom:link href="https://sdpyy1.github.io/categories/index.xml" rel="self" type="application/rss+xml" /><item>
+        <title>Assignment</title>
+        <link>https://sdpyy1.github.io/categories/assignment/</link>
+        <pubDate>Sun, 19 Oct 2025 14:05:15 +0800</pubDate>
+        
+        <guid>https://sdpyy1.github.io/categories/assignment/</guid>
+        <description></description>
+        </item>
+        <item>
+        <title>Courses</title>
+        <link>https://sdpyy1.github.io/categories/course/</link>
+        <pubDate>Sun, 19 Oct 2025 14:05:15 +0800</pubDate>
+        
+        <guid>https://sdpyy1.github.io/categories/course/</guid>
+        <description></description>
+        </item>
+        <item>
+        <title>Games202</title>
+        <link>https://sdpyy1.github.io/categories/course/games202/</link>
+        <pubDate>Sun, 19 Oct 2025 14:05:15 +0800</pubDate>
+        
+        <guid>https://sdpyy1.github.io/categories/course/games202/</guid>
+        <description></description>
+        </item>
+        <item>
         <title>OpenGL</title>
         <link>https://sdpyy1.github.io/categories/rendering/opengl/</link>
         <pubDate>Sun, 19 Oct 2025 13:53:52 +0800</pubDate>
@@ -24,15 +48,7 @@
         <description></description>
         </item>
         <item>
-        <title>Notes</title>
-        <link>https://sdpyy1.github.io/categories/projects/tinyrender/</link>
-        <pubDate>Sun, 19 Oct 2025 13:42:48 +0800</pubDate>
-        
-        <guid>https://sdpyy1.github.io/categories/projects/tinyrender/</guid>
-        <description></description>
-        </item>
-        <item>
-        <title>TinyRender</title>
+        <title>Projects</title>
         <link>https://sdpyy1.github.io/categories/projects/</link>
         <pubDate>Sun, 19 Oct 2025 13:42:48 +0800</pubDate>
         
@@ -40,19 +56,11 @@
         <description></description>
         </item>
         <item>
-        <title>Assignment</title>
-        <link>https://sdpyy1.github.io/categories/assignment/</link>
-        <pubDate>Sun, 19 Oct 2025 13:32:46 +0800</pubDate>
+        <title>TinyRender</title>
+        <link>https://sdpyy1.github.io/categories/projects/tinyrender/</link>
+        <pubDate>Sun, 19 Oct 2025 13:42:48 +0800</pubDate>
         
-        <guid>https://sdpyy1.github.io/categories/assignment/</guid>
-        <description></description>
-        </item>
-        <item>
-        <title>Courses</title>
-        <link>https://sdpyy1.github.io/categories/course/</link>
-        <pubDate>Sun, 19 Oct 2025 13:32:46 +0800</pubDate>
-        
-        <guid>https://sdpyy1.github.io/categories/course/</guid>
+        <guid>https://sdpyy1.github.io/categories/projects/tinyrender/</guid>
         <description></description>
         </item>
         <item>
@@ -77,14 +85,6 @@
         <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
         
         <guid>https://sdpyy1.github.io/categories/course/games104/</guid>
-        <description></description>
-        </item>
-        <item>
-        <title>Games202</title>
-        <link>https://sdpyy1.github.io/categories/course/games202/</link>
-        <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-        
-        <guid>https://sdpyy1.github.io/categories/course/games202/</guid>
         <description></description>
         </item>
         <item>
