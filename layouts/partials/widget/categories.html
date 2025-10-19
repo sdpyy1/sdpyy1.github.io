@@ -1,4 +1,4 @@
-{{- $context := .Context -}}
+<!-- {{- $context := .Context -}}
 {{- $limit := default 10 .Params.limit -}}
 {{- $displayed := slice -}}
 {{- $count := 0 -}}
@@ -31,7 +31,7 @@
                     href="{{ .Page.RelPermalink }}" 
                     class="tag-cloud-item"
                     style="color: hsl({{ $hue }}, 70%, 60%);"
-                    title="{{ .Page.Title }}（{{ .Count }}篇文章）"
+                    title="{{ .Page.Title }}{{ .Count }}篇文章"
                 >
                     {{ .Page.Title }}
                     <span class="tag-count">{{ .Count }}</span>
@@ -90,4 +90,4 @@
         padding: 3px 10px;
     }
 }
-</style>
+</style> -->
