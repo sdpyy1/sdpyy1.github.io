@@ -12,7 +12,7 @@
 <meta property='og:description' content="Implicit and explicit Implicit 是并不会告诉任何点的信息，只会告诉该曲面上所有点满足的关系 $$ f(x,y,z)=0 $$ 判断所给出的隐式方程描述的是一个怎样的形状十分困难 可以十分容易的判断出一点与曲面的关系 example for Implicit 代数方法描述 Constructive Solid Geometry（CSG 通过基本几何的运算定义新的几何） Signed Distance Functions（空间任何点到物体表面的最短距离来描述，用正负表示在物体外还是内） 在2D情况，看下图就很好理解了 图片来自https://blog.csdn.net/CODE_RabbitV/article/details/140288664\n">
 <meta property='og:url' content='https://sdpyy1.github.io/p/games101-%E7%8E%B0%E4%BB%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9B%BE%E5%BD%A2%E5%AD%A6%E5%85%A5%E9%97%A8-geometry/'>
 <meta property='og:site_name' content='wanfeng'>
-<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='课程笔记' /><meta property='article:published_time' content='2025-10-19T12:37:17&#43;08:00'/><meta property='article:modified_time' content='2025-10-19T12:37:17&#43;08:00'/>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='课程笔记' /><meta property='article:tag' content='Games101' /><meta property='article:published_time' content='2025-10-19T12:37:17&#43;08:00'/><meta property='article:modified_time' content='2025-10-19T12:37:17&#43;08:00'/>
 <meta name="twitter:title" content="GAMES101 现代计算机图形学入门 Geometry">
 <meta name="twitter:description" content="Implicit and explicit Implicit 是并不会告诉任何点的信息，只会告诉该曲面上所有点满足的关系 $$ f(x,y,z)=0 $$ 判断所给出的隐式方程描述的是一个怎样的形状十分困难 可以十分容易的判断出一点与曲面的关系 example for Implicit 代数方法描述 Constructive Solid Geometry（CSG 通过基本几何的运算定义新的几何） Signed Distance Functions（空间任何点到物体表面的最短距离来描述，用正负表示在物体外还是内） 在2D情况，看下图就很好理解了 图片来自https://blog.csdn.net/CODE_RabbitV/article/details/140288664\n">
     <link rel="shortcut icon" href="/favicon.ico" />
@@ -286,30 +286,37 @@
         <div class="widget--toc">
             <nav id="TableOfContents">
   <ol>
-    <li><a href="#implicit">Implicit</a></li>
-    <li><a href="#example-for-implicit">example for Implicit</a></li>
-    <li><a href="#explicit">explicit</a></li>
-    <li><a href="#exampl-for-explicit">Exampl For Explicit</a></li>
-  </ol>
-
-  <ol>
-    <li><a href="#贝塞尔曲线bézier-curves">贝塞尔曲线（Bézier Curves）</a></li>
-  </ol>
-
-  <ol>
-    <li><a href="#贝塞尔曲面">贝塞尔曲面</a></li>
-  </ol>
-
-  <ol>
-    <li><a href="#mesh-subdivision-曲面细分">Mesh subdivision 曲面细分</a>
+    <li><a href="#implicit-and-explicit">Implicit and explicit</a>
       <ol>
-        <li><a href="#loop-subdivision">Loop Subdivision</a></li>
-        <li><a href="#catmull-clark-subdivision">Catmull-Clark Subdivision</a></li>
+        <li><a href="#implicit">Implicit</a></li>
+        <li><a href="#example-for-implicit">example for Implicit</a></li>
+        <li><a href="#explicit">explicit</a></li>
+        <li><a href="#exampl-for-explicit">Exampl For Explicit</a></li>
       </ol>
     </li>
-    <li><a href="#mesh-simplification-曲面简化">Mesh Simplification 曲面简化</a>
+    <li><a href="#curves-曲线">Curves 曲线</a>
       <ol>
-        <li><a href="#collapsing-an-edge-边坍缩">Collapsing An Edge 边坍缩</a></li>
+        <li><a href="#贝塞尔曲线bézier-curves">贝塞尔曲线（Bézier Curves）</a></li>
+      </ol>
+    </li>
+    <li><a href="#surfaces-曲面">Surfaces 曲面</a>
+      <ol>
+        <li><a href="#贝塞尔曲面">贝塞尔曲面</a></li>
+      </ol>
+    </li>
+    <li><a href="#mesh-operation">Mesh Operation</a>
+      <ol>
+        <li><a href="#mesh-subdivision-曲面细分">Mesh subdivision 曲面细分</a>
+          <ol>
+            <li><a href="#loop-subdivision">Loop Subdivision</a></li>
+            <li><a href="#catmull-clark-subdivision">Catmull-Clark Subdivision</a></li>
+          </ol>
+        </li>
+        <li><a href="#mesh-simplification-曲面简化">Mesh Simplification 曲面简化</a>
+          <ol>
+            <li><a href="#collapsing-an-edge-边坍缩">Collapsing An Edge 边坍缩</a></li>
+          </ol>
+        </li>
       </ol>
     </li>
   </ol>
@@ -970,6 +977,8 @@ C1连续就是达到了曲面光滑，实现方法看下图红线
     <section class="article-tags">
         
             <a href="/tags/%E8%AF%BE%E7%A8%8B%E7%AC%94%E8%AE%B0/">课程笔记</a>
+        
+            <a href="/tags/games101/">Games101</a>
         
     </section>
 
@@ -1650,12 +1659,18 @@ C1连续就是达到了曲面光滑，实现方法看下图红线
       
         
       
+        
+      
+        
+      
+        
+      
     
-      <span>📚 文章数: 13</span>
+      <span>📚 文章数: 16</span>
       <span>✍️ 总字数: 
         
         
-        26.09K
+        44.59K
       </span>
     </section>
 

@@ -7,10 +7,26 @@
         <generator>Hugo -- gohugo.io</generator>
         <language>zh-cn</language>
         <copyright>爱喝东方树叶</copyright>
-        <lastBuildDate>Sun, 19 Oct 2025 13:24:41 +0800</lastBuildDate><atom:link href="https://sdpyy1.github.io/categories/index.xml" rel="self" type="application/rss+xml" /><item>
+        <lastBuildDate>Sun, 19 Oct 2025 13:42:48 +0800</lastBuildDate><atom:link href="https://sdpyy1.github.io/categories/index.xml" rel="self" type="application/rss+xml" /><item>
+        <title>Notes</title>
+        <link>https://sdpyy1.github.io/categories/projects/tinyrender/</link>
+        <pubDate>Sun, 19 Oct 2025 13:42:48 +0800</pubDate>
+        
+        <guid>https://sdpyy1.github.io/categories/projects/tinyrender/</guid>
+        <description></description>
+        </item>
+        <item>
+        <title>TinyRender</title>
+        <link>https://sdpyy1.github.io/categories/projects/</link>
+        <pubDate>Sun, 19 Oct 2025 13:42:48 +0800</pubDate>
+        
+        <guid>https://sdpyy1.github.io/categories/projects/</guid>
+        <description></description>
+        </item>
+        <item>
         <title>Assignment</title>
         <link>https://sdpyy1.github.io/categories/assignment/</link>
-        <pubDate>Sun, 19 Oct 2025 13:24:41 +0800</pubDate>
+        <pubDate>Sun, 19 Oct 2025 13:32:46 +0800</pubDate>
         
         <guid>https://sdpyy1.github.io/categories/assignment/</guid>
         <description></description>
@@ -18,7 +34,7 @@
         <item>
         <title>Courses</title>
         <link>https://sdpyy1.github.io/categories/course/</link>
-        <pubDate>Sun, 19 Oct 2025 13:24:41 +0800</pubDate>
+        <pubDate>Sun, 19 Oct 2025 13:32:46 +0800</pubDate>
         
         <guid>https://sdpyy1.github.io/categories/course/</guid>
         <description></description>
@@ -26,7 +42,7 @@
         <item>
         <title>Games101</title>
         <link>https://sdpyy1.github.io/categories/course/games101/</link>
-        <pubDate>Sun, 19 Oct 2025 13:24:41 +0800</pubDate>
+        <pubDate>Sun, 19 Oct 2025 13:32:46 +0800</pubDate>
         
         <guid>https://sdpyy1.github.io/categories/course/games101/</guid>
         <description></description>
@@ -61,14 +77,6 @@
         <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
         
         <guid>https://sdpyy1.github.io/categories/notes/</guid>
-        <description></description>
-        </item>
-        <item>
-        <title>Projects</title>
-        <link>https://sdpyy1.github.io/categories/projects/</link>
-        <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-        
-        <guid>https://sdpyy1.github.io/categories/projects/</guid>
         <description></description>
         </item>
         <item>

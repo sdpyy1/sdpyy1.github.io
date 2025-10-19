@@ -12,7 +12,7 @@
 <meta property='og:description' content="什么是shading？ shading 负责计算物体表面每个采样点的颜色，具体考虑光照、材质属性、观察角度等因素，生成具有真实感的视觉效果（如漫反射、镜面高光、环境光等）\u200c，之前的光栅化将是几何图元（如三角形）转换为屏幕上的像素，确定哪些像素被图元覆盖，是几何层面的处理\n">
 <meta property='og:url' content='https://sdpyy1.github.io/p/games101-%E7%8E%B0%E4%BB%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9B%BE%E5%BD%A2%E5%AD%A6%E5%85%A5%E9%97%A8-shading/'>
 <meta property='og:site_name' content='wanfeng'>
-<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='课程笔记' /><meta property='article:published_time' content='2025-10-19T00:57:01&#43;08:00'/><meta property='article:modified_time' content='2025-10-19T00:57:01&#43;08:00'/>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='课程笔记' /><meta property='article:tag' content='Games101' /><meta property='article:published_time' content='2025-10-19T00:57:01&#43;08:00'/><meta property='article:modified_time' content='2025-10-19T00:57:01&#43;08:00'/>
 <meta name="twitter:title" content="GAMES101 现代计算机图形学入门 Shading">
 <meta name="twitter:description" content="什么是shading？ shading 负责计算物体表面每个采样点的颜色，具体考虑光照、材质属性、观察角度等因素，生成具有真实感的视觉效果（如漫反射、镜面高光、环境光等）\u200c，之前的光栅化将是几何图元（如三角形）转换为屏幕上的像素，确定哪些像素被图元覆盖，是几何层面的处理\n">
     <link rel="shortcut icon" href="/favicon.ico" />
@@ -286,30 +286,40 @@
         <div class="widget--toc">
             <nav id="TableOfContents">
   <ol>
-    <li><a href="#diffuse-reflection漫反射">Diffuse Reflection（漫反射）</a></li>
-    <li><a href="#specular-highlights高光镜面反射">Specular highlights(高光/镜面反射)</a></li>
-    <li><a href="#ambient-term环境光">Ambient Term（环境光）</a></li>
-  </ol>
-
-  <ol>
-    <li><a href="#nearest">Nearest</a></li>
-    <li><a href="#bilinear-interpolation">Bilinear Interpolation</a>
+    <li><a href="#什么是shading">什么是shading？</a></li>
+    <li><a href="#blinn-phong-reflectance-modela-simple-shading-model">Blinn-Phong Reflectance Model(A Simple Shading Model)</a>
       <ol>
-        <li><a href="#bicubic">Bicubic</a></li>
+        <li><a href="#diffuse-reflection漫反射">Diffuse Reflection（漫反射）</a></li>
+        <li><a href="#specular-highlights高光镜面反射">Specular highlights(高光/镜面反射)</a></li>
+        <li><a href="#ambient-term环境光">Ambient Term（环境光）</a></li>
       </ol>
     </li>
-    <li><a href="#texture-magnification纹理图太大">Texture Magnification（纹理图太大）</a>
+    <li><a href="#shading-frequencies着色频率">Shading Frequencies（着色频率）</a></li>
+    <li><a href="#graphicsreal-time-renderingpipeline">Graphics（Real time Rendering）Pipeline</a></li>
+    <li><a href="#texture-mapping">Texture Mapping</a></li>
+    <li><a href="#如何插值">如何插值？</a></li>
+    <li><a href="#texture-magnification纹理图太小">Texture Magnification（纹理图太小）</a>
       <ol>
-        <li><a href="#mipmap">Mipmap</a></li>
-        <li><a href="#各向异性过滤">各向异性过滤</a></li>
-      </ol>
-    </li>
-    <li><a href="#纹理的应用">纹理的应用</a>
-      <ol>
-        <li><a href="#environment-map">Environment Map</a></li>
-        <li><a href="#bump-mapping-凹凸贴图">Bump Mapping 凹凸贴图</a></li>
-        <li><a href="#displacement-mapping-位移贴图">Displacement Mapping 位移贴图</a></li>
-        <li><a href="#3维纹理">3维纹理</a></li>
+        <li><a href="#nearest">Nearest</a></li>
+        <li><a href="#bilinear-interpolation">Bilinear Interpolation</a>
+          <ol>
+            <li><a href="#bicubic">Bicubic</a></li>
+          </ol>
+        </li>
+        <li><a href="#texture-magnification纹理图太大">Texture Magnification（纹理图太大）</a>
+          <ol>
+            <li><a href="#mipmap">Mipmap</a></li>
+            <li><a href="#各向异性过滤">各向异性过滤</a></li>
+          </ol>
+        </li>
+        <li><a href="#纹理的应用">纹理的应用</a>
+          <ol>
+            <li><a href="#environment-map">Environment Map</a></li>
+            <li><a href="#bump-mapping-凹凸贴图">Bump Mapping 凹凸贴图</a></li>
+            <li><a href="#displacement-mapping-位移贴图">Displacement Mapping 位移贴图</a></li>
+            <li><a href="#3维纹理">3维纹理</a></li>
+          </ol>
+        </li>
       </ol>
     </li>
   </ol>
@@ -979,6 +989,8 @@ $$lerp(x,v_0,v_1) = v_0 + x(v_1 - v_0)$$<p>
     <section class="article-tags">
         
             <a href="/tags/%E8%AF%BE%E7%A8%8B%E7%AC%94%E8%AE%B0/">课程笔记</a>
+        
+            <a href="/tags/games101/">Games101</a>
         
     </section>
 
@@ -1659,12 +1671,18 @@ $$lerp(x,v_0,v_1) = v_0 + x(v_1 - v_0)$$<p>
       
         
       
+        
+      
+        
+      
+        
+      
     
-      <span>📚 文章数: 13</span>
+      <span>📚 文章数: 16</span>
       <span>✍️ 总字数: 
         
         
-        26.09K
+        44.59K
       </span>
     </section>
 

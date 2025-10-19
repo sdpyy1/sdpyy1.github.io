@@ -12,7 +12,7 @@
 <meta property='og:description' content="作业介绍 本期作业将在新的代码上完成，就是绘制四个控制点表示的贝塞尔曲线，本次作业的原理很简单，另外我目前并不想把时间花费到写出实现代码上，所以本次代码来自网络，会标明出处 ">
 <meta property='og:url' content='https://sdpyy1.github.io/p/games101-%E7%8E%B0%E4%BB%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9B%BE%E5%BD%A2%E5%AD%A6%E5%85%A5%E9%97%A8-assignment4/'>
 <meta property='og:site_name' content='wanfeng'>
-<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='课程作业' /><meta property='article:published_time' content='2025-10-19T13:23:42&#43;08:00'/><meta property='article:modified_time' content='2025-10-19T13:23:42&#43;08:00'/>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='课程作业' /><meta property='article:tag' content='Games101' /><meta property='article:published_time' content='2025-10-19T13:23:42&#43;08:00'/><meta property='article:modified_time' content='2025-10-19T13:23:42&#43;08:00'/>
 <meta name="twitter:title" content="GAMES101 现代计算机图形学入门 Assignment4">
 <meta name="twitter:description" content="作业介绍 本期作业将在新的代码上完成，就是绘制四个控制点表示的贝塞尔曲线，本次作业的原理很简单，另外我目前并不想把时间花费到写出实现代码上，所以本次代码来自网络，会标明出处 ">
     <link rel="shortcut icon" href="/favicon.ico" />
@@ -264,7 +264,40 @@
     </ol>
 </aside>
 
-    
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">目录</h2>
+        
+        <div class="widget--toc">
+            <nav id="TableOfContents">
+  <ol>
+    <li><a href="#作业介绍">作业介绍</a></li>
+    <li><a href="#cvpoint2f-recursive_bezierconst-stdvector-control_points-float-t">cv::Point2f recursive_bezier(const std::vectorcv::Point2f &amp;control_points, float t)</a></li>
+    <li><a href="#void-bezierconst-stdvector-control_points-cvmat-window">void bezier(const std::vectorcv::Point2f &amp;control_points, cv::Mat &amp;window)</a></li>
+  </ol>
+</nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
 
             <main class="main full-width">
     <article class="main-article">
@@ -552,6 +585,8 @@
         
             <a href="/tags/%E8%AF%BE%E7%A8%8B%E4%BD%9C%E4%B8%9A/">课程作业</a>
         
+            <a href="/tags/games101/">Games101</a>
+        
     </section>
 
 
@@ -607,6 +642,111 @@
     <h2 class="section-title">相关文章</h2>
     <div class="related-content">
         <div class="flex article-list--tile">
+            
+                
+<article class="article-card no-image">
+    <a href="/p/games101-%E7%8E%B0%E4%BB%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9B%BE%E5%BD%A2%E5%AD%A6%E5%85%A5%E9%97%A8-assignment7/">
+        
+        
+        <div class="article-details">
+            <h2 class="article-title">GAMES101 现代计算机图形学入门 Assignment7</h2>
+        </div>
+        
+    </a>
+
+    <style>
+     
+    .article-card {
+        background: rgba(255, 255, 255, 0.25);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        margin: 10px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .article-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    }
+
+    .article-card a {
+        display: flex;
+        flex-direction: column;
+        text-decoration: none;
+        color: inherit;
+        height: 100%;
+    }
+
+     
+    .article-image {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        overflow: hidden;
+    }
+    .article-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+    .article-image:hover img {
+        transform: scale(1.05);
+    }
+
+     
+    .article-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: rgba(0,0,0,0.3);  
+        padding: 10px;
+        box-sizing: border-box;
+        text-align: center;
+    }
+    .article-overlay .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #fff;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .article-card.no-image .article-details {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 15px;
+    }
+    .article-card.no-image .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #222;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .articles-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 20px;
+    }
+    </style>
+</article>
             
                 
 <article class="article-card no-image">
@@ -1028,111 +1168,6 @@
     </style>
 </article>
             
-                
-<article class="article-card no-image">
-    <a href="/p/games101-%E7%8E%B0%E4%BB%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9B%BE%E5%BD%A2%E5%AD%A6%E5%85%A5%E9%97%A8-assignment1/">
-        
-        
-        <div class="article-details">
-            <h2 class="article-title">GAMES101 现代计算机图形学入门 Assignment1</h2>
-        </div>
-        
-    </a>
-
-    <style>
-     
-    .article-card {
-        background: rgba(255, 255, 255, 0.25);
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
-        border-radius: 16px;
-        overflow: hidden;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.12);
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-        margin: 10px;
-        display: flex;
-        flex-direction: column;
-    }
-
-    .article-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
-    }
-
-    .article-card a {
-        display: flex;
-        flex-direction: column;
-        text-decoration: none;
-        color: inherit;
-        height: 100%;
-    }
-
-     
-    .article-image {
-        position: relative;
-        width: 100%;
-        aspect-ratio: 16 / 9;
-        overflow: hidden;
-    }
-    .article-image img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        transition: transform 0.5s ease;
-    }
-    .article-image:hover img {
-        transform: scale(1.05);
-    }
-
-     
-    .article-overlay {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        background: rgba(0,0,0,0.3);  
-        padding: 10px;
-        box-sizing: border-box;
-        text-align: center;
-    }
-    .article-overlay .article-title {
-        font-size: 1.5rem;
-        font-weight: 700;
-        color: #fff;
-        margin: 0;
-        line-height: 1.3;
-    }
-
-     
-    .article-card.no-image .article-details {
-        flex: 1;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        text-align: center;
-        padding: 15px;
-    }
-    .article-card.no-image .article-title {
-        font-size: 1.5rem;
-        font-weight: 700;
-        color: #222;
-        margin: 0;
-        line-height: 1.3;
-    }
-
-     
-    .articles-list {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-        gap: 20px;
-    }
-    </style>
-</article>
-            
         </div>
     </div>
 </aside>
@@ -1231,12 +1266,18 @@
       
         
       
+        
+      
+        
+      
+        
+      
     
-      <span>📚 文章数: 13</span>
+      <span>📚 文章数: 16</span>
       <span>✍️ 总字数: 
         
         
-        26.09K
+        44.59K
       </span>
     </section>
 

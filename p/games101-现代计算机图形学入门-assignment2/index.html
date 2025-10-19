@@ -12,7 +12,7 @@
 <meta property='og:description' content="作业介绍 上节课通过MVP+视口变换把三角形三个顶点从空间坐标转移到了屏幕上的坐标，并绘制三角形，这节课将通过光栅化技术，构造实心的三角形 视口变换？ 说是上节课实现了这个，但是任务中并没有，源码中已经实现了视口变换，这里就看一下它如何实现的\n">
 <meta property='og:url' content='https://sdpyy1.github.io/p/games101-%E7%8E%B0%E4%BB%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9B%BE%E5%BD%A2%E5%AD%A6%E5%85%A5%E9%97%A8-assignment2/'>
 <meta property='og:site_name' content='wanfeng'>
-<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='课程作业' /><meta property='article:published_time' content='2025-10-19T13:22:24&#43;08:00'/><meta property='article:modified_time' content='2025-10-19T13:22:24&#43;08:00'/>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='课程作业' /><meta property='article:tag' content='Games101' /><meta property='article:published_time' content='2025-10-19T13:22:24&#43;08:00'/><meta property='article:modified_time' content='2025-10-19T13:22:24&#43;08:00'/>
 <meta name="twitter:title" content="GAMES101 现代计算机图形学入门 Assignment2">
 <meta name="twitter:description" content="作业介绍 上节课通过MVP+视口变换把三角形三个顶点从空间坐标转移到了屏幕上的坐标，并绘制三角形，这节课将通过光栅化技术，构造实心的三角形 视口变换？ 说是上节课实现了这个，但是任务中并没有，源码中已经实现了视口变换，这里就看一下它如何实现的\n">
     <link rel="shortcut icon" href="/favicon.ico" />
@@ -286,13 +286,22 @@
         <div class="widget--toc">
             <nav id="TableOfContents">
   <ol>
-    <li><a href="#bounding-box">bounding box</a></li>
-    <li><a href="#如何判定像素点在三角形内部">如何判定像素点在三角形内部</a></li>
-  </ol>
-
-  <ol>
-    <li><a href="#颜色处理">颜色处理</a></li>
-    <li><a href="#z坐标处理">Z坐标处理</a></li>
+    <li><a href="#作业介绍">作业介绍</a></li>
+    <li><a href="#视口变换">视口变换？</a></li>
+    <li><a href="#源码分析">源码分析</a></li>
+    <li><a href="#光栅化">光栅化</a>
+      <ol>
+        <li><a href="#bounding-box">bounding box</a></li>
+        <li><a href="#如何判定像素点在三角形内部">如何判定像素点在三角形内部</a></li>
+      </ol>
+    </li>
+    <li><a href="#像素点处理">像素点处理</a>
+      <ol>
+        <li><a href="#颜色处理">颜色处理</a></li>
+        <li><a href="#z坐标处理">Z坐标处理</a></li>
+      </ol>
+    </li>
+    <li><a href="#完整代码">完整代码</a></li>
   </ol>
 </nav>
         </div>
@@ -799,6 +808,8 @@
         
             <a href="/tags/%E8%AF%BE%E7%A8%8B%E4%BD%9C%E4%B8%9A/">课程作业</a>
         
+            <a href="/tags/games101/">Games101</a>
+        
     </section>
 
 
@@ -854,6 +865,111 @@
     <h2 class="section-title">相关文章</h2>
     <div class="related-content">
         <div class="flex article-list--tile">
+            
+                
+<article class="article-card no-image">
+    <a href="/p/games101-%E7%8E%B0%E4%BB%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9B%BE%E5%BD%A2%E5%AD%A6%E5%85%A5%E9%97%A8-assignment7/">
+        
+        
+        <div class="article-details">
+            <h2 class="article-title">GAMES101 现代计算机图形学入门 Assignment7</h2>
+        </div>
+        
+    </a>
+
+    <style>
+     
+    .article-card {
+        background: rgba(255, 255, 255, 0.25);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        margin: 10px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .article-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    }
+
+    .article-card a {
+        display: flex;
+        flex-direction: column;
+        text-decoration: none;
+        color: inherit;
+        height: 100%;
+    }
+
+     
+    .article-image {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        overflow: hidden;
+    }
+    .article-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+    .article-image:hover img {
+        transform: scale(1.05);
+    }
+
+     
+    .article-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: rgba(0,0,0,0.3);  
+        padding: 10px;
+        box-sizing: border-box;
+        text-align: center;
+    }
+    .article-overlay .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #fff;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .article-card.no-image .article-details {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 15px;
+    }
+    .article-card.no-image .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #222;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .articles-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 20px;
+    }
+    </style>
+</article>
             
                 
 <article class="article-card no-image">
@@ -1275,111 +1391,6 @@
     </style>
 </article>
             
-                
-<article class="article-card no-image">
-    <a href="/p/games101-%E7%8E%B0%E4%BB%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9B%BE%E5%BD%A2%E5%AD%A6%E5%85%A5%E9%97%A8-assignment1/">
-        
-        
-        <div class="article-details">
-            <h2 class="article-title">GAMES101 现代计算机图形学入门 Assignment1</h2>
-        </div>
-        
-    </a>
-
-    <style>
-     
-    .article-card {
-        background: rgba(255, 255, 255, 0.25);
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
-        border-radius: 16px;
-        overflow: hidden;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.12);
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-        margin: 10px;
-        display: flex;
-        flex-direction: column;
-    }
-
-    .article-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
-    }
-
-    .article-card a {
-        display: flex;
-        flex-direction: column;
-        text-decoration: none;
-        color: inherit;
-        height: 100%;
-    }
-
-     
-    .article-image {
-        position: relative;
-        width: 100%;
-        aspect-ratio: 16 / 9;
-        overflow: hidden;
-    }
-    .article-image img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        transition: transform 0.5s ease;
-    }
-    .article-image:hover img {
-        transform: scale(1.05);
-    }
-
-     
-    .article-overlay {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        background: rgba(0,0,0,0.3);  
-        padding: 10px;
-        box-sizing: border-box;
-        text-align: center;
-    }
-    .article-overlay .article-title {
-        font-size: 1.5rem;
-        font-weight: 700;
-        color: #fff;
-        margin: 0;
-        line-height: 1.3;
-    }
-
-     
-    .article-card.no-image .article-details {
-        flex: 1;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        text-align: center;
-        padding: 15px;
-    }
-    .article-card.no-image .article-title {
-        font-size: 1.5rem;
-        font-weight: 700;
-        color: #222;
-        margin: 0;
-        line-height: 1.3;
-    }
-
-     
-    .articles-list {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-        gap: 20px;
-    }
-    </style>
-</article>
-            
         </div>
     </div>
 </aside>
@@ -1478,12 +1489,18 @@
       
         
       
+        
+      
+        
+      
+        
+      
     
-      <span>📚 文章数: 13</span>
+      <span>📚 文章数: 16</span>
       <span>✍️ 总字数: 
         
         
-        26.09K
+        44.59K
       </span>
     </section>
 

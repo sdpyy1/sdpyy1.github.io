@@ -2,11 +2,8 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
-    <loc>https://sdpyy1.github.io/categories/assignment/</loc>
-    <lastmod>2025-10-19T13:24:41+08:00</lastmod>
-  </url><url>
     <loc>https://sdpyy1.github.io/categories/</loc>
-    <lastmod>2025-10-19T13:24:41+08:00</lastmod>
+    <lastmod>2025-10-19T13:42:48+08:00</lastmod>
     <xhtml:link
                 rel="alternate"
                 hreflang="en"
@@ -18,17 +15,8 @@
                 href="https://sdpyy1.github.io/categories/"
                 />
   </url><url>
-    <loc>https://sdpyy1.github.io/categories/course/</loc>
-    <lastmod>2025-10-19T13:24:41+08:00</lastmod>
-  </url><url>
-    <loc>https://sdpyy1.github.io/categories/course/games101/</loc>
-    <lastmod>2025-10-19T13:24:41+08:00</lastmod>
-  </url><url>
-    <loc>https://sdpyy1.github.io/p/games101-%E7%8E%B0%E4%BB%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9B%BE%E5%BD%A2%E5%AD%A6%E5%85%A5%E9%97%A8-assignment6/</loc>
-    <lastmod>2025-10-19T13:24:41+08:00</lastmod>
-  </url><url>
     <loc>https://sdpyy1.github.io/</loc>
-    <lastmod>2025-10-19T13:24:41+08:00</lastmod>
+    <lastmod>2025-10-19T13:42:48+08:00</lastmod>
     <xhtml:link
                 rel="alternate"
                 hreflang="en"
@@ -40,11 +28,14 @@
                 href="https://sdpyy1.github.io/"
                 />
   </url><url>
+    <loc>https://sdpyy1.github.io/categories/projects/tinyrender/</loc>
+    <lastmod>2025-10-19T13:42:48+08:00</lastmod>
+  </url><url>
     <loc>https://sdpyy1.github.io/post/</loc>
-    <lastmod>2025-10-19T13:24:41+08:00</lastmod>
+    <lastmod>2025-10-19T13:42:48+08:00</lastmod>
   </url><url>
     <loc>https://sdpyy1.github.io/tags/</loc>
-    <lastmod>2025-10-19T13:24:41+08:00</lastmod>
+    <lastmod>2025-10-19T13:42:48+08:00</lastmod>
     <xhtml:link
                 rel="alternate"
                 hreflang="en"
@@ -56,7 +47,40 @@
                 href="https://sdpyy1.github.io/tags/"
                 />
   </url><url>
+    <loc>https://sdpyy1.github.io/categories/projects/</loc>
+    <lastmod>2025-10-19T13:42:48+08:00</lastmod>
+  </url><url>
+    <loc>https://sdpyy1.github.io/tags/tinyrender/</loc>
+    <lastmod>2025-10-19T13:42:48+08:00</lastmod>
+  </url><url>
+    <loc>https://sdpyy1.github.io/p/tinyrender%E5%BC%80%E5%8F%91%E8%AE%B0%E5%BD%95-5-7/</loc>
+    <lastmod>2025-10-19T13:42:48+08:00</lastmod>
+  </url><url>
+    <loc>https://sdpyy1.github.io/tags/%E6%B8%B2%E6%9F%93%E5%99%A8%E5%BC%80%E5%8F%91/</loc>
+    <lastmod>2025-10-19T13:42:48+08:00</lastmod>
+  </url><url>
+    <loc>https://sdpyy1.github.io/p/tinyrender%E5%BC%80%E5%8F%91%E8%AE%B0%E5%BD%95-1-4/</loc>
+    <lastmod>2025-10-19T13:37:45+08:00</lastmod>
+  </url><url>
+    <loc>https://sdpyy1.github.io/categories/assignment/</loc>
+    <lastmod>2025-10-19T13:32:46+08:00</lastmod>
+  </url><url>
+    <loc>https://sdpyy1.github.io/categories/course/</loc>
+    <lastmod>2025-10-19T13:32:46+08:00</lastmod>
+  </url><url>
+    <loc>https://sdpyy1.github.io/categories/course/games101/</loc>
+    <lastmod>2025-10-19T13:32:46+08:00</lastmod>
+  </url><url>
+    <loc>https://sdpyy1.github.io/tags/games101/</loc>
+    <lastmod>2025-10-19T13:32:46+08:00</lastmod>
+  </url><url>
+    <loc>https://sdpyy1.github.io/p/games101-%E7%8E%B0%E4%BB%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9B%BE%E5%BD%A2%E5%AD%A6%E5%85%A5%E9%97%A8-assignment7/</loc>
+    <lastmod>2025-10-19T13:32:46+08:00</lastmod>
+  </url><url>
     <loc>https://sdpyy1.github.io/tags/%E8%AF%BE%E7%A8%8B%E4%BD%9C%E4%B8%9A/</loc>
+    <lastmod>2025-10-19T13:32:46+08:00</lastmod>
+  </url><url>
+    <loc>https://sdpyy1.github.io/p/games101-%E7%8E%B0%E4%BB%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9B%BE%E5%BD%A2%E5%AD%A6%E5%85%A5%E9%97%A8-assignment6/</loc>
     <lastmod>2025-10-19T13:24:41+08:00</lastmod>
   </url><url>
     <loc>https://sdpyy1.github.io/p/games101-%E7%8E%B0%E4%BB%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9B%BE%E5%BD%A2%E5%AD%A6%E5%85%A5%E9%97%A8-assignment5/</loc>
@@ -116,8 +140,6 @@
     <loc>https://sdpyy1.github.io/links/</loc>
   </url><url>
     <loc>https://sdpyy1.github.io/categories/notes/</loc>
-  </url><url>
-    <loc>https://sdpyy1.github.io/categories/projects/</loc>
   </url><url>
     <loc>https://sdpyy1.github.io/categories/rendering/</loc>
   </url><url>

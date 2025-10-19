@@ -1,0 +1,1819 @@
+<!DOCTYPE html>
+<html lang="zh-cn" dir="ltr">
+    <head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'>
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+  <meta name="referrer" content="no-referrer-when-downgrade"><meta name='description' content="Lesson 5: Gouraud shading 本节课实现了 Gouraud shading，对三角形每个顶点用法线求光照，进一步插值到内部像素，相比于phong，phong是要对每个内部像素都需要计算光照，这里简单处理就是默认为255，255，255的白光，计算顶点法线和光照方向的夹角（注意单位化和钝角处理)，得到cos直接乘以光照，就得到了每个顶点的变暗比例，之后再插值到各个像素，关键代码如下\n">
+<title>TinyRender开发记录 5 7</title>
+
+<link rel='canonical' href='https://sdpyy1.github.io/p/tinyrender%E5%BC%80%E5%8F%91%E8%AE%B0%E5%BD%95-5-7/'>
+
+<link rel="stylesheet" href="/scss/style.min.6a692fd055deae459f2a9767f57f3855ba80cafd5041317f24f7360f6ca47cdf.css"><meta property='og:title' content="TinyRender开发记录 5 7">
+<meta property='og:description' content="Lesson 5: Gouraud shading 本节课实现了 Gouraud shading，对三角形每个顶点用法线求光照，进一步插值到内部像素，相比于phong，phong是要对每个内部像素都需要计算光照，这里简单处理就是默认为255，255，255的白光，计算顶点法线和光照方向的夹角（注意单位化和钝角处理)，得到cos直接乘以光照，就得到了每个顶点的变暗比例，之后再插值到各个像素，关键代码如下\n">
+<meta property='og:url' content='https://sdpyy1.github.io/p/tinyrender%E5%BC%80%E5%8F%91%E8%AE%B0%E5%BD%95-5-7/'>
+<meta property='og:site_name' content='wanfeng'>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='渲染器开发' /><meta property='article:tag' content='TinyRender' /><meta property='article:published_time' content='2025-10-19T13:42:48&#43;08:00'/><meta property='article:modified_time' content='2025-10-19T13:42:48&#43;08:00'/>
+<meta name="twitter:title" content="TinyRender开发记录 5 7">
+<meta name="twitter:description" content="Lesson 5: Gouraud shading 本节课实现了 Gouraud shading，对三角形每个顶点用法线求光照，进一步插值到内部像素，相比于phong，phong是要对每个内部像素都需要计算光照，这里简单处理就是默认为255，255，255的白光，计算顶点法线和光照方向的夹角（注意单位化和钝角处理)，得到cos直接乘以光照，就得到了每个顶点的变暗比例，之后再插值到各个像素，关键代码如下\n">
+    <link rel="shortcut icon" href="/favicon.ico" />
+
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="切换菜单">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        
+            
+            <figure class="site-avatar">
+                <a href="/">
+                
+                    
+                    
+                    
+                        
+                        <img src="/img/avatar_hu_f59158f730715054.png" width="300"
+                            height="300" class="site-logo" loading="lazy" alt="Avatar">
+                    
+                
+                </a>
+                
+                    <span class="emoji">🧐</span>
+                
+            </figure>
+            
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="/">wanfeng</a></h1>
+            <h2 class="site-description">Blog</h2>
+        </div>
+    </header><ol class="menu-social">
+            
+                <li>
+                    <a 
+                        href='https://space.bilibili.com/287473737'
+                        target="_blank"
+                        title="Bilibili"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-brand-bilibili"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 10a4 4 0 0 1 4 -4h10a4 4 0 0 1 4 4v6a4 4 0 0 1 -4 4h-10a4 4 0 0 1 -4 -4v-6z" /><path d="M8 3l2 3" /><path d="M16 3l-2 3" /><path d="M9 13v-2" /><path d="M15 11v2" /></svg>
+                        
+                    </a>
+                </li>
+            
+                <li>
+                    <a 
+                        href='https://github.com/sdpyy1'
+                        target="_blank"
+                        title="GitHub"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
+</svg>
+
+
+
+                        
+                    </a>
+                </li>
+            
+        </ol><ol class="menu" id="main-menu">
+        
+        
+        
+        <li >
+            <a href='/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>Home</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/about/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>About</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>Archives</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/search/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>Search</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/links/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5" />
+  <path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5" />
+</svg>
+
+
+
+                
+                <span>Links</span>
+            </a>
+        </li>
+        
+        <li class="menu-bottom-section">
+            <ol class="menu">
+                    
+                        <li id="i18n-switch">  
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-language" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M4 5h7" />
+  <path d="M9 3v2c0 4.418 -2.239 8 -5 8" />
+  <path d="M5 9c-.003 2.144 2.952 3.908 6.7 4" />
+  <path d="M12 20l4 -9l4 9" />
+  <path d="M19.1 18h-6.2" />
+</svg>
+
+
+
+                            <select name="language" title="language" onchange="window.location.href = this.selectedOptions[0].value">
+                                
+                                    <option value="https://sdpyy1.github.io/en/" >English</option>
+                                
+                                    <option value="https://sdpyy1.github.io/" selected>中文</option>
+                                
+                            </select>
+                        </li>
+                    
+                
+
+                
+                    <li id="dark-mode-toggle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <span>暗色模式</span>
+                    </li>
+                
+            </ol>
+        </li>
+    </ol>
+</aside>
+
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">目录</h2>
+        
+        <div class="widget--toc">
+            <nav id="TableOfContents">
+  <ol>
+    <li><a href="#lesson-5--gouraud-shading">Lesson 5:  Gouraud shading</a></li>
+    <li><a href="#lesson-6-shaders-for-the-software-renderer">Lesson 6: Shaders for the software renderer</a>
+      <ol>
+        <li><a href="#phongshading">phongShading</a></li>
+        <li><a href="#法线贴图">法线贴图</a></li>
+        <li><a href="#specular-mapping-高光贴图">Specular mapping 高光贴图</a></li>
+        <li><a href="#tangent-space-normal-mapping-切线空间法线贴图">tangent space normal mapping ‌切线空间法线贴图</a></li>
+      </ol>
+    </li>
+    <li><a href="#lesson-7-shadow-mapping">Lesson 7: Shadow mapping</a></li>
+  </ol>
+</nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+            <main class="main full-width">
+    <article class="main-article">
+    <header class="article-header">
+
+    <div class="article-details">
+    
+    <header class="article-category">
+        
+        
+             
+            
+            
+            
+            <div class="category-hierarchy">
+                
+                    
+                    
+                    
+                        
+                    
+                     
+                    
+                    
+                    
+                    <a href="/categories/projects/" 
+                       >
+                        Projects
+                    </a>
+                    
+                    
+                    
+                        <span class="category-separator">/</span>
+                    
+                
+                    
+                    
+                    
+                        
+                    
+                        
+                    
+                     
+                    
+                    
+                    
+                    <a href="/categories/projects/tinyrender/" 
+                       >
+                        TinyRender
+                    </a>
+                    
+                    
+                    
+                
+            </div>
+        
+    </header>
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="/p/tinyrender%E5%BC%80%E5%8F%91%E8%AE%B0%E5%BD%95-5-7/">TinyRender开发记录 5 7</a>
+        </h2>
+    
+        
+    </div>
+
+    
+    
+    
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published">Oct 19, 2025</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-time--reading">
+                    阅读时长: 11 分钟
+                </time>
+            </div>
+        
+
+        
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+        <span id="busuanzi_container_page_pv">本文阅读量<span id="busuanzi_value_page_pv"></span>次</span>
+    </footer>
+    
+    
+</div>
+<style>
+    .category-hierarchy {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;  
+        margin-right: 12px;  
+        margin-bottom: 8px;  
+    }
+    
+    .category-separator {
+        color: #999;
+        user-select: none;
+        font-size: 1em;  
+    }
+    
+    .article-category a {
+        text-decoration: none;
+        padding: 6px 12px;  
+        border-radius: 6px;  
+        font-size: 0.95em;  
+        transition: all 0.2s ease;
+        line-height: 1.5;  
+    }
+    
+    .article-category a:hover {
+        opacity: 0.9;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 6px rgba(0,0,0,0.1);  
+    }
+</style>
+</header>
+
+    <section class="article-content">
+    
+    
+    <h1 id="lesson-5--gouraud-shading">Lesson 5:  Gouraud shading
+</h1><p>本节课实现了 Gouraud shading，对三角形每个顶点用法线求光照，进一步插值到内部像素，相比于phong，phong是要对每个内部像素都需要计算光照，这里简单处理就是默认为255，255，255的白光，计算顶点法线和光照方向的夹角（注意单位化和钝角处理)，得到cos直接乘以光照，就得到了每个顶点的变暗比例，之后再插值到各个像素，关键代码如下</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="kt">void</span> <span class="n">Triangle</span><span class="o">::</span><span class="n">setShadingColor</span><span class="p">(</span><span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3f</span> <span class="n">lightDir</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">lightDir</span><span class="p">.</span><span class="n">normalize</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="n">Vector3f</span> <span class="n">basecolor</span> <span class="o">=</span> <span class="n">Vector3f</span><span class="p">(</span><span class="mi">255</span><span class="p">,</span><span class="mi">255</span><span class="p">,</span><span class="mi">255</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="p">;</span> <span class="o">++</span><span class="n">i</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// 确保法线已归一化，并限制点积结果非负
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="kt">float</span> <span class="n">intensity</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">max</span><span class="p">(</span><span class="mf">0.0f</span><span class="p">,</span> <span class="n">normal</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">normalized</span><span class="p">().</span><span class="n">dot</span><span class="p">(</span><span class="n">lightDir</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">        <span class="n">color</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">basecolor</span> <span class="o">*</span> <span class="n">intensity</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>因为我的MVP变换和课程设置不一致，所以角度不一样，下面展示 lightDir(1,-1,1)情况下的渲染
+<img src="/778af6511c364147942ed5581d92eefc.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+>
+完整代码在（Gouraud-shading分支）：https://github.com/sdpyy1/CppLearn/tree/Gouraud-shading</p>
+<h1 id="lesson-6-shaders-for-the-software-renderer">Lesson 6: Shaders for the software renderer
+</h1><h2 id="phongshading">phongShading
+</h2><p>首先是进行了PhongShading，思路就是插值出每个像素的法向量、每个像素对应的原来的位置（即着色点的位置，需要在顶点着色器中提前存储）以及光源的位置、摄像机的位置来计算高光、漫反射以及加上环境光,主要代码如下（自己实现注意颜色值的变化，防止过曝）</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3f</span> <span class="n">TGAColorToVector3f</span><span class="p">(</span><span class="k">const</span> <span class="n">TGAColor</span><span class="o">&amp;</span> <span class="n">color</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">float</span> <span class="n">r</span> <span class="o">=</span> <span class="k">static_cast</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span><span class="p">(</span><span class="n">color</span><span class="p">.</span><span class="n">bgra</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="o">/</span> <span class="mf">255.0f</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">float</span> <span class="n">g</span> <span class="o">=</span> <span class="k">static_cast</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span><span class="p">(</span><span class="n">color</span><span class="p">.</span><span class="n">bgra</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="mf">255.0f</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">float</span> <span class="n">b</span> <span class="o">=</span> <span class="k">static_cast</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span><span class="p">(</span><span class="n">color</span><span class="p">.</span><span class="n">bgra</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="mf">255.0f</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3f</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">g</span><span class="p">,</span> <span class="n">b</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="c1">// 将Eigen::Vector3f转换为TGAColor的函数
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="n">TGAColor</span> <span class="nf">Vector3fToTGAColor</span><span class="p">(</span><span class="k">const</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3f</span><span class="o">&amp;</span> <span class="n">vectorColor</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">auto</span> <span class="n">clamp</span> <span class="o">=</span> <span class="p">[](</span><span class="kt">float</span> <span class="n">v</span><span class="p">)</span> <span class="p">{</span> <span class="k">return</span> <span class="n">std</span><span class="o">::</span><span class="n">max</span><span class="p">(</span><span class="mf">0.0f</span><span class="p">,</span> <span class="n">std</span><span class="o">::</span><span class="n">min</span><span class="p">(</span><span class="mf">1.0f</span><span class="p">,</span> <span class="n">v</span><span class="p">));</span> <span class="p">};</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">unsigned</span> <span class="kt">char</span> <span class="n">r</span> <span class="o">=</span> <span class="k">static_cast</span><span class="o">&lt;</span><span class="kt">unsigned</span> <span class="kt">char</span><span class="o">&gt;</span><span class="p">(</span><span class="n">clamp</span><span class="p">(</span><span class="n">vectorColor</span><span class="p">.</span><span class="n">x</span><span class="p">())</span> <span class="o">*</span> <span class="mf">255.0f</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">unsigned</span> <span class="kt">char</span> <span class="n">g</span> <span class="o">=</span> <span class="k">static_cast</span><span class="o">&lt;</span><span class="kt">unsigned</span> <span class="kt">char</span><span class="o">&gt;</span><span class="p">(</span><span class="n">clamp</span><span class="p">(</span><span class="n">vectorColor</span><span class="p">.</span><span class="n">y</span><span class="p">())</span> <span class="o">*</span> <span class="mf">255.0f</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">unsigned</span> <span class="kt">char</span> <span class="n">b</span> <span class="o">=</span> <span class="k">static_cast</span><span class="o">&lt;</span><span class="kt">unsigned</span> <span class="kt">char</span><span class="o">&gt;</span><span class="p">(</span><span class="n">clamp</span><span class="p">(</span><span class="n">vectorColor</span><span class="p">.</span><span class="n">z</span><span class="p">())</span> <span class="o">*</span> <span class="mf">255.0f</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">TGAColor</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">g</span><span class="p">,</span> <span class="n">b</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="c1">// blinnPhongShading
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="n">TGAColor</span> <span class="nf">blinnPhongShading</span><span class="p">(</span><span class="k">const</span> <span class="n">TGAColor</span> <span class="o">&amp;</span> <span class="n">kdColor</span><span class="p">,</span><span class="k">const</span> <span class="n">Vector3f</span> <span class="o">&amp;</span> <span class="n">point</span><span class="p">,</span><span class="k">const</span> <span class="n">Vector3f</span> <span class="o">&amp;</span> <span class="n">normal</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3f</span> <span class="n">ka</span> <span class="o">=</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3f</span><span class="p">(</span><span class="mf">0.005</span><span class="p">,</span> <span class="mf">0.005</span><span class="p">,</span> <span class="mf">0.005</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3f</span> <span class="n">kd</span> <span class="o">=</span> <span class="n">TGAColorToVector3f</span><span class="p">(</span><span class="n">kdColor</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3f</span> <span class="n">ks</span> <span class="o">=</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3f</span><span class="p">(</span><span class="mf">0.7937</span><span class="p">,</span> <span class="mf">0.7937</span><span class="p">,</span> <span class="mf">0.7937</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 环境光强度
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3f</span> <span class="n">amb_light_intensity</span><span class="p">{</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">};</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 高光的指数，越大对角度越敏感
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="kt">float</span> <span class="n">p</span> <span class="o">=</span> <span class="mi">150</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 计算点到光源的向量
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3f</span> <span class="n">light_vec</span> <span class="o">=</span> <span class="n">lightDir</span> <span class="o">-</span> <span class="n">point</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 计算点到光源的距离
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="kt">float</span> <span class="n">r</span> <span class="o">=</span> <span class="n">light_vec</span><span class="p">.</span><span class="n">norm</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 归一化从点到光源的向量
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3f</span> <span class="n">light_dir</span> <span class="o">=</span> <span class="n">light_vec</span><span class="p">.</span><span class="n">normalized</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 漫反射
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3f</span> <span class="n">diffuse</span> <span class="o">=</span> <span class="n">kd</span><span class="p">.</span><span class="n">cwiseProduct</span><span class="p">(</span><span class="n">lightIntensity</span> <span class="o">/</span> <span class="p">(</span><span class="n">r</span> <span class="o">*</span> <span class="n">r</span><span class="p">))</span> <span class="o">*</span> <span class="n">std</span><span class="o">::</span><span class="n">max</span><span class="p">(</span><span class="mf">0.0f</span><span class="p">,</span> <span class="n">normal</span><span class="p">.</span><span class="n">dot</span><span class="p">(</span><span class="n">light_dir</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 高光反射
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="c1">// 计算从表面点到观察者的向量
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3f</span> <span class="n">view_dir</span> <span class="o">=</span> <span class="p">(</span><span class="n">viewDir</span> <span class="o">-</span> <span class="n">point</span><span class="p">).</span><span class="n">normalized</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 计算半程向量
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3f</span> <span class="n">halfVector</span> <span class="o">=</span> <span class="p">(</span><span class="n">light_dir</span> <span class="o">+</span> <span class="n">view_dir</span><span class="p">).</span><span class="n">normalized</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3f</span> <span class="n">specular</span> <span class="o">=</span> <span class="n">ks</span><span class="p">.</span><span class="n">cwiseProduct</span><span class="p">(</span><span class="n">lightIntensity</span> <span class="o">/</span> <span class="p">(</span><span class="n">r</span> <span class="o">*</span> <span class="n">r</span><span class="p">))</span> <span class="o">*</span> <span class="n">std</span><span class="o">::</span><span class="n">pow</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">max</span><span class="p">(</span><span class="mf">0.0f</span><span class="p">,</span> <span class="n">normal</span><span class="p">.</span><span class="n">dot</span><span class="p">(</span><span class="n">halfVector</span><span class="p">)),</span> <span class="n">p</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3f</span> <span class="n">all</span> <span class="o">=</span> <span class="n">diffuse</span> <span class="o">+</span> <span class="n">specular</span> <span class="o">+</span> <span class="n">ka</span><span class="p">.</span><span class="n">cwiseProduct</span><span class="p">(</span><span class="n">amb_light_intensity</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">Vector3fToTGAColor</span><span class="p">(</span><span class="n">all</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="法线贴图">法线贴图
+</h2><p>法线贴图是通过使用 RGB 纹理的红色、绿色和蓝色分量来存储法线的 XYZ 分量，但是存储在法线贴图中的法线是模型坐标系下的法线坐标，如果模型在空间中发生了旋转，那法线位置就会发生变化，所以如果要用法线贴图，需要对法线变换到global坐标系下才行。另外不能简单地给法线左乘一个模型变换矩阵，解释及正确做法如下（也不是一定不行，有几种模型变换是不行滴）
+<img src="/e302739d57b74492bfacc7d258946ea4.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+下面使用法线贴图作为color得到的图片
+<img src="/906cafb276b4449f84b6dd977052a20a.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+下面使用法线贴图作为phongshading的法线来渲染光照，注意贴图范围是[-1，1]，而颜色通道是[0,1]，也就是拿到的材质颜色是[0,1]的，需要先转成[-1,1]才可以使用，关键代码如下</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl">            <span class="c1">// 法线来自法线贴图
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>            <span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3f</span> <span class="n">barycentricNorm</span> <span class="o">=</span> <span class="n">TGAColorToVector3f</span><span class="p">(</span><span class="n">nm</span><span class="p">.</span><span class="n">getColor</span><span class="p">(</span><span class="n">texU</span><span class="p">,</span><span class="n">texV</span><span class="p">))</span><span class="o">*</span><span class="mi">2</span><span class="o">-</span><span class="n">Vector3f</span><span class="p">{</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">};</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>对比直接使用插值的法线和使用贴图法线的效果区别，区别还是很明显的，使用法线贴图并没有增加模型的结构，但精细程度大大提升了
+<img src="/7799600835494a2681ba86db3e992fbe.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+<img src="/ffcc9426ad114d0da59ea8fac6c7ab0a.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+></p>
+<h2 id="specular-mapping-高光贴图">Specular mapping 高光贴图
+</h2><p>在之前的设置中镜面反射系数是自己设置的，使用高光贴图就是用来获取这个参数</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl">    <span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3f</span> <span class="n">ks</span> <span class="o">=</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3f</span><span class="p">(</span><span class="mf">0.7937</span><span class="p">,</span> <span class="mf">0.7937</span><span class="p">,</span> <span class="mf">0.7937</span><span class="p">);</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>修改为从高光贴图中获得</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl">            <span class="c1">// 高光系数来自高光贴图
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>            <span class="n">TGAColor</span> <span class="n">specKd</span> <span class="o">=</span> <span class="n">spec</span><span class="p">.</span><span class="n">getColor</span><span class="p">(</span><span class="n">texU</span><span class="p">,</span><span class="n">texV</span><span class="p">);</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>最终效果如下，变化看不太出来了，主要是一些奇怪的高光点消失了
+<img src="/411cee7014ba4c0d979bd4541e58a605.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+></p>
+<h2 id="tangent-space-normal-mapping-切线空间法线贴图">tangent space normal mapping ‌切线空间法线贴图
+</h2><p>将法线方向存储在‌切线空间‌（Tangent Space）中，而非模型或世界空间。这种技术可以显著提升表面凹凸感，且对模型变形（如动画）更友好，首先解释一下切线空间
+<img src="/94a52acdc6ca46d0978954dfed295449.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+这个东西就是把法线存储在切线空间坐标下，如果需要法线就在着色器中，通过 ‌TBN矩阵‌（Tangent-Bitangent-Normal Matrix）将法线从切线空间转换到世界空间</p>
+<p><strong>为什么有了法线贴图，还需要切线法线贴图呢？</strong></p>
+<ol>
+<li>普通法线贴图与特定的模型紧密绑定的，当模型的形状、朝向或者拓扑结构发生变化时，法线贴图可能就不再适用。切线空间是每个顶点局部的一个坐标系，它由切线（Tangent）、副切线（Bitangent）和法线（Normal）三个向量定义。切线空间法线贴图中的法向量是相对于每个顶点的切线空间而言的。这种表示方式使得法线贴图具有更好的可移植性，同一个切线空间法线贴图可以应用到不同形状和朝向的模型上，只要每个模型的切线空间能够正确计算，就可以得到正确的光照效果。</li>
+<li>切线空间法线贴图能够很好地支持模型变形。因为切线空间是随着顶点一起变形的，当模型发生变形时，切线空间也会相应地改变，而切线空间法线贴图中的法向量在新的切线空间中仍然能够正确表示表面的细节。所以，即使模型在动画过程中发生了变形，光照效果依然能够保持正确。</li>
+</ol>
+<p>如果不对切线法线贴图进行转换，直接使用，效果如下哈哈哈
+<img src="/62c2dbe29bab4549940aae2f6b33c04c.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+获取到切线法线贴图后，需要左乘一个TBN矩阵，转为空间法线才能使用，第一列是三角形的切线，第二列是副切线，第三列是法线
+<img src="/41e46c065dd2466d920e4337e581759b.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+具体转化函数如下</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="c1">// 从切线法线转为法线
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3f</span> <span class="n">getNormalFromTangent</span><span class="p">(</span><span class="k">const</span> <span class="n">Triangle</span><span class="o">&amp;</span> <span class="n">triangle</span><span class="p">,</span> <span class="k">const</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3f</span><span class="o">&amp;</span> <span class="n">tangentSpaceNormal</span><span class="p">,</span> <span class="k">const</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3f</span><span class="o">&amp;</span> <span class="n">barycentricNorm</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 计算切线
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3f</span> <span class="n">edge1</span> <span class="o">=</span> <span class="n">triangle</span><span class="p">.</span><span class="n">globalCoords</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="n">head</span><span class="o">&lt;</span><span class="mi">3</span><span class="o">&gt;</span><span class="p">()</span> <span class="o">-</span> <span class="n">triangle</span><span class="p">.</span><span class="n">globalCoords</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="n">head</span><span class="o">&lt;</span><span class="mi">3</span><span class="o">&gt;</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3f</span> <span class="n">edge2</span> <span class="o">=</span> <span class="n">triangle</span><span class="p">.</span><span class="n">globalCoords</span><span class="p">[</span><span class="mi">2</span><span class="p">].</span><span class="n">head</span><span class="o">&lt;</span><span class="mi">3</span><span class="o">&gt;</span><span class="p">()</span> <span class="o">-</span> <span class="n">triangle</span><span class="p">.</span><span class="n">globalCoords</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="n">head</span><span class="o">&lt;</span><span class="mi">3</span><span class="o">&gt;</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="n">Eigen</span><span class="o">::</span><span class="n">Vector2f</span> <span class="n">deltaUV1</span> <span class="o">=</span> <span class="n">triangle</span><span class="p">.</span><span class="n">texCoords</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">triangle</span><span class="p">.</span><span class="n">texCoords</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">    <span class="n">Eigen</span><span class="o">::</span><span class="n">Vector2f</span> <span class="n">deltaUV2</span> <span class="o">=</span> <span class="n">triangle</span><span class="p">.</span><span class="n">texCoords</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">triangle</span><span class="p">.</span><span class="n">texCoords</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kt">float</span> <span class="n">f</span> <span class="o">=</span> <span class="mf">1.0f</span> <span class="o">/</span> <span class="p">(</span><span class="n">deltaUV1</span><span class="p">.</span><span class="n">x</span><span class="p">()</span> <span class="o">*</span> <span class="n">deltaUV2</span><span class="p">.</span><span class="n">y</span><span class="p">()</span> <span class="o">-</span> <span class="n">deltaUV2</span><span class="p">.</span><span class="n">x</span><span class="p">()</span> <span class="o">*</span> <span class="n">deltaUV1</span><span class="p">.</span><span class="n">y</span><span class="p">());</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3f</span> <span class="n">tangent</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">tangent</span><span class="p">.</span><span class="n">x</span><span class="p">()</span> <span class="o">=</span> <span class="n">f</span> <span class="o">*</span> <span class="p">(</span><span class="n">deltaUV2</span><span class="p">.</span><span class="n">y</span><span class="p">()</span> <span class="o">*</span> <span class="n">edge1</span><span class="p">.</span><span class="n">x</span><span class="p">()</span> <span class="o">-</span> <span class="n">deltaUV1</span><span class="p">.</span><span class="n">y</span><span class="p">()</span> <span class="o">*</span> <span class="n">edge2</span><span class="p">.</span><span class="n">x</span><span class="p">());</span>
+</span></span><span class="line"><span class="cl">    <span class="n">tangent</span><span class="p">.</span><span class="n">y</span><span class="p">()</span> <span class="o">=</span> <span class="n">f</span> <span class="o">*</span> <span class="p">(</span><span class="n">deltaUV2</span><span class="p">.</span><span class="n">y</span><span class="p">()</span> <span class="o">*</span> <span class="n">edge1</span><span class="p">.</span><span class="n">y</span><span class="p">()</span> <span class="o">-</span> <span class="n">deltaUV1</span><span class="p">.</span><span class="n">y</span><span class="p">()</span> <span class="o">*</span> <span class="n">edge2</span><span class="p">.</span><span class="n">y</span><span class="p">());</span>
+</span></span><span class="line"><span class="cl">    <span class="n">tangent</span><span class="p">.</span><span class="n">z</span><span class="p">()</span> <span class="o">=</span> <span class="n">f</span> <span class="o">*</span> <span class="p">(</span><span class="n">deltaUV2</span><span class="p">.</span><span class="n">y</span><span class="p">()</span> <span class="o">*</span> <span class="n">edge1</span><span class="p">.</span><span class="n">z</span><span class="p">()</span> <span class="o">-</span> <span class="n">deltaUV1</span><span class="p">.</span><span class="n">y</span><span class="p">()</span> <span class="o">*</span> <span class="n">edge2</span><span class="p">.</span><span class="n">z</span><span class="p">());</span>
+</span></span><span class="line"><span class="cl">    <span class="n">tangent</span><span class="p">.</span><span class="n">normalize</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// 计算副切线
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3f</span> <span class="n">bitangent</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">bitangent</span><span class="p">.</span><span class="n">x</span><span class="p">()</span> <span class="o">=</span> <span class="n">f</span> <span class="o">*</span> <span class="p">(</span><span class="o">-</span><span class="n">deltaUV2</span><span class="p">.</span><span class="n">x</span><span class="p">()</span> <span class="o">*</span> <span class="n">edge1</span><span class="p">.</span><span class="n">x</span><span class="p">()</span> <span class="o">+</span> <span class="n">deltaUV1</span><span class="p">.</span><span class="n">x</span><span class="p">()</span> <span class="o">*</span> <span class="n">edge2</span><span class="p">.</span><span class="n">x</span><span class="p">());</span>
+</span></span><span class="line"><span class="cl">    <span class="n">bitangent</span><span class="p">.</span><span class="n">y</span><span class="p">()</span> <span class="o">=</span> <span class="n">f</span> <span class="o">*</span> <span class="p">(</span><span class="o">-</span><span class="n">deltaUV2</span><span class="p">.</span><span class="n">x</span><span class="p">()</span> <span class="o">*</span> <span class="n">edge1</span><span class="p">.</span><span class="n">y</span><span class="p">()</span> <span class="o">+</span> <span class="n">deltaUV1</span><span class="p">.</span><span class="n">x</span><span class="p">()</span> <span class="o">*</span> <span class="n">edge2</span><span class="p">.</span><span class="n">y</span><span class="p">());</span>
+</span></span><span class="line"><span class="cl">    <span class="n">bitangent</span><span class="p">.</span><span class="n">z</span><span class="p">()</span> <span class="o">=</span> <span class="n">f</span> <span class="o">*</span> <span class="p">(</span><span class="o">-</span><span class="n">deltaUV2</span><span class="p">.</span><span class="n">x</span><span class="p">()</span> <span class="o">*</span> <span class="n">edge1</span><span class="p">.</span><span class="n">z</span><span class="p">()</span> <span class="o">+</span> <span class="n">deltaUV1</span><span class="p">.</span><span class="n">x</span><span class="p">()</span> <span class="o">*</span> <span class="n">edge2</span><span class="p">.</span><span class="n">z</span><span class="p">());</span>
+</span></span><span class="line"><span class="cl">    <span class="n">bitangent</span><span class="p">.</span><span class="n">normalize</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// 构建 TBN 矩阵
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">Eigen</span><span class="o">::</span><span class="n">Matrix3f</span> <span class="n">TBN</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">TBN</span><span class="p">.</span><span class="n">col</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">=</span> <span class="n">tangent</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">TBN</span><span class="p">.</span><span class="n">col</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">=</span> <span class="n">bitangent</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">TBN</span><span class="p">.</span><span class="n">col</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="o">=</span> <span class="n">barycentricNorm</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// 将切向法线转换到世界空间
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="k">return</span> <span class="n">TBN</span> <span class="o">*</span> <span class="n">tangentSpaceNormal</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>最终用转化后的切线作为像素的切线得到的图片如下<img src="/376308674cff41d0a41f4933b97538c1.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+></p>
+<h1 id="lesson-7-shadow-mapping">Lesson 7: Shadow mapping
+</h1><p>简单理解就是把光源当作摄像机，重新渲染一遍场景，但只需要记录每个点离光源最近的点，也就是哪些点能被光源照到，在正式渲染时，判断一个点颜色时，先去刚才记录的光照缓存中查看该点是否能被光照到，来决定是否进行渲染
+完成的做法是对于一个像素，先去找它原本在空间中的位置，紧接着做MVP变换和视口变换变到以光源为摄像机下的对应像素块的位置，判断该位置深度是否需要阴影，不需要阴影才去正常进行光照，我的简单做法是如果在阴影，就让光照最终结果*0.2,从而变暗，这里这样做只是为了效果好看，不过这个光照模型本身就是不准确的，我的做法并不特别准确，但是理解原理即可
+整体实现代码如下，其他未展示文件可以在仓库中找到</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">  1
+</span><span class="lnt">  2
+</span><span class="lnt">  3
+</span><span class="lnt">  4
+</span><span class="lnt">  5
+</span><span class="lnt">  6
+</span><span class="lnt">  7
+</span><span class="lnt">  8
+</span><span class="lnt">  9
+</span><span class="lnt"> 10
+</span><span class="lnt"> 11
+</span><span class="lnt"> 12
+</span><span class="lnt"> 13
+</span><span class="lnt"> 14
+</span><span class="lnt"> 15
+</span><span class="lnt"> 16
+</span><span class="lnt"> 17
+</span><span class="lnt"> 18
+</span><span class="lnt"> 19
+</span><span class="lnt"> 20
+</span><span class="lnt"> 21
+</span><span class="lnt"> 22
+</span><span class="lnt"> 23
+</span><span class="lnt"> 24
+</span><span class="lnt"> 25
+</span><span class="lnt"> 26
+</span><span class="lnt"> 27
+</span><span class="lnt"> 28
+</span><span class="lnt"> 29
+</span><span class="lnt"> 30
+</span><span class="lnt"> 31
+</span><span class="lnt"> 32
+</span><span class="lnt"> 33
+</span><span class="lnt"> 34
+</span><span class="lnt"> 35
+</span><span class="lnt"> 36
+</span><span class="lnt"> 37
+</span><span class="lnt"> 38
+</span><span class="lnt"> 39
+</span><span class="lnt"> 40
+</span><span class="lnt"> 41
+</span><span class="lnt"> 42
+</span><span class="lnt"> 43
+</span><span class="lnt"> 44
+</span><span class="lnt"> 45
+</span><span class="lnt"> 46
+</span><span class="lnt"> 47
+</span><span class="lnt"> 48
+</span><span class="lnt"> 49
+</span><span class="lnt"> 50
+</span><span class="lnt"> 51
+</span><span class="lnt"> 52
+</span><span class="lnt"> 53
+</span><span class="lnt"> 54
+</span><span class="lnt"> 55
+</span><span class="lnt"> 56
+</span><span class="lnt"> 57
+</span><span class="lnt"> 58
+</span><span class="lnt"> 59
+</span><span class="lnt"> 60
+</span><span class="lnt"> 61
+</span><span class="lnt"> 62
+</span><span class="lnt"> 63
+</span><span class="lnt"> 64
+</span><span class="lnt"> 65
+</span><span class="lnt"> 66
+</span><span class="lnt"> 67
+</span><span class="lnt"> 68
+</span><span class="lnt"> 69
+</span><span class="lnt"> 70
+</span><span class="lnt"> 71
+</span><span class="lnt"> 72
+</span><span class="lnt"> 73
+</span><span class="lnt"> 74
+</span><span class="lnt"> 75
+</span><span class="lnt"> 76
+</span><span class="lnt"> 77
+</span><span class="lnt"> 78
+</span><span class="lnt"> 79
+</span><span class="lnt"> 80
+</span><span class="lnt"> 81
+</span><span class="lnt"> 82
+</span><span class="lnt"> 83
+</span><span class="lnt"> 84
+</span><span class="lnt"> 85
+</span><span class="lnt"> 86
+</span><span class="lnt"> 87
+</span><span class="lnt"> 88
+</span><span class="lnt"> 89
+</span><span class="lnt"> 90
+</span><span class="lnt"> 91
+</span><span class="lnt"> 92
+</span><span class="lnt"> 93
+</span><span class="lnt"> 94
+</span><span class="lnt"> 95
+</span><span class="lnt"> 96
+</span><span class="lnt"> 97
+</span><span class="lnt"> 98
+</span><span class="lnt"> 99
+</span><span class="lnt">100
+</span><span class="lnt">101
+</span><span class="lnt">102
+</span><span class="lnt">103
+</span><span class="lnt">104
+</span><span class="lnt">105
+</span><span class="lnt">106
+</span><span class="lnt">107
+</span><span class="lnt">108
+</span><span class="lnt">109
+</span><span class="lnt">110
+</span><span class="lnt">111
+</span><span class="lnt">112
+</span><span class="lnt">113
+</span><span class="lnt">114
+</span><span class="lnt">115
+</span><span class="lnt">116
+</span><span class="lnt">117
+</span><span class="lnt">118
+</span><span class="lnt">119
+</span><span class="lnt">120
+</span><span class="lnt">121
+</span><span class="lnt">122
+</span><span class="lnt">123
+</span><span class="lnt">124
+</span><span class="lnt">125
+</span><span class="lnt">126
+</span><span class="lnt">127
+</span><span class="lnt">128
+</span><span class="lnt">129
+</span><span class="lnt">130
+</span><span class="lnt">131
+</span><span class="lnt">132
+</span><span class="lnt">133
+</span><span class="lnt">134
+</span><span class="lnt">135
+</span><span class="lnt">136
+</span><span class="lnt">137
+</span><span class="lnt">138
+</span><span class="lnt">139
+</span><span class="lnt">140
+</span><span class="lnt">141
+</span><span class="lnt">142
+</span><span class="lnt">143
+</span><span class="lnt">144
+</span><span class="lnt">145
+</span><span class="lnt">146
+</span><span class="lnt">147
+</span><span class="lnt">148
+</span><span class="lnt">149
+</span><span class="lnt">150
+</span><span class="lnt">151
+</span><span class="lnt">152
+</span><span class="lnt">153
+</span><span class="lnt">154
+</span><span class="lnt">155
+</span><span class="lnt">156
+</span><span class="lnt">157
+</span><span class="lnt">158
+</span><span class="lnt">159
+</span><span class="lnt">160
+</span><span class="lnt">161
+</span><span class="lnt">162
+</span><span class="lnt">163
+</span><span class="lnt">164
+</span><span class="lnt">165
+</span><span class="lnt">166
+</span><span class="lnt">167
+</span><span class="lnt">168
+</span><span class="lnt">169
+</span><span class="lnt">170
+</span><span class="lnt">171
+</span><span class="lnt">172
+</span><span class="lnt">173
+</span><span class="lnt">174
+</span><span class="lnt">175
+</span><span class="lnt">176
+</span><span class="lnt">177
+</span><span class="lnt">178
+</span><span class="lnt">179
+</span><span class="lnt">180
+</span><span class="lnt">181
+</span><span class="lnt">182
+</span><span class="lnt">183
+</span><span class="lnt">184
+</span><span class="lnt">185
+</span><span class="lnt">186
+</span><span class="lnt">187
+</span><span class="lnt">188
+</span><span class="lnt">189
+</span><span class="lnt">190
+</span><span class="lnt">191
+</span><span class="lnt">192
+</span><span class="lnt">193
+</span><span class="lnt">194
+</span><span class="lnt">195
+</span><span class="lnt">196
+</span><span class="lnt">197
+</span><span class="lnt">198
+</span><span class="lnt">199
+</span><span class="lnt">200
+</span><span class="lnt">201
+</span><span class="lnt">202
+</span><span class="lnt">203
+</span><span class="lnt">204
+</span><span class="lnt">205
+</span><span class="lnt">206
+</span><span class="lnt">207
+</span><span class="lnt">208
+</span><span class="lnt">209
+</span><span class="lnt">210
+</span><span class="lnt">211
+</span><span class="lnt">212
+</span><span class="lnt">213
+</span><span class="lnt">214
+</span><span class="lnt">215
+</span><span class="lnt">216
+</span><span class="lnt">217
+</span><span class="lnt">218
+</span><span class="lnt">219
+</span><span class="lnt">220
+</span><span class="lnt">221
+</span><span class="lnt">222
+</span><span class="lnt">223
+</span><span class="lnt">224
+</span><span class="lnt">225
+</span><span class="lnt">226
+</span><span class="lnt">227
+</span><span class="lnt">228
+</span><span class="lnt">229
+</span><span class="lnt">230
+</span><span class="lnt">231
+</span><span class="lnt">232
+</span><span class="lnt">233
+</span><span class="lnt">234
+</span><span class="lnt">235
+</span><span class="lnt">236
+</span><span class="lnt">237
+</span><span class="lnt">238
+</span><span class="lnt">239
+</span><span class="lnt">240
+</span><span class="lnt">241
+</span><span class="lnt">242
+</span><span class="lnt">243
+</span><span class="lnt">244
+</span><span class="lnt">245
+</span><span class="lnt">246
+</span><span class="lnt">247
+</span><span class="lnt">248
+</span><span class="lnt">249
+</span><span class="lnt">250
+</span><span class="lnt">251
+</span><span class="lnt">252
+</span><span class="lnt">253
+</span><span class="lnt">254
+</span><span class="lnt">255
+</span><span class="lnt">256
+</span><span class="lnt">257
+</span><span class="lnt">258
+</span><span class="lnt">259
+</span><span class="lnt">260
+</span><span class="lnt">261
+</span><span class="lnt">262
+</span><span class="lnt">263
+</span><span class="lnt">264
+</span><span class="lnt">265
+</span><span class="lnt">266
+</span><span class="lnt">267
+</span><span class="lnt">268
+</span><span class="lnt">269
+</span><span class="lnt">270
+</span><span class="lnt">271
+</span><span class="lnt">272
+</span><span class="lnt">273
+</span><span class="lnt">274
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&#34;thirdParty/tgaimage.h&#34;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&#34;model.h&#34;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;vector&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;cmath&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&#34;iostream&#34;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span><span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="k">constexpr</span> <span class="k">static</span> <span class="kt">int</span> <span class="n">width</span>  <span class="o">=</span> <span class="mi">1000</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="k">constexpr</span> <span class="k">static</span> <span class="kt">int</span> <span class="n">height</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="kt">float</span> <span class="n">angleX</span> <span class="o">=</span> <span class="mf">0.0f</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="kt">float</span> <span class="n">angleY</span> <span class="o">=</span> <span class="mf">0.0f</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="kt">float</span> <span class="n">angleZ</span> <span class="o">=</span> <span class="mf">0.0f</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="kt">float</span> <span class="n">tx</span> <span class="o">=</span> <span class="mf">0.0f</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="kt">float</span> <span class="n">ty</span> <span class="o">=</span> <span class="mf">0.0f</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="kt">float</span> <span class="n">tz</span> <span class="o">=</span> <span class="mf">0.0f</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="kt">float</span> <span class="n">sx</span> <span class="o">=</span> <span class="mf">1.0f</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="kt">float</span> <span class="n">sy</span> <span class="o">=</span> <span class="mf">1.0f</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="kt">float</span> <span class="n">sz</span> <span class="o">=</span> <span class="mf">1.0f</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3f</span> <span class="n">eye_pos</span><span class="p">{</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">3</span><span class="p">};</span>
+</span></span><span class="line"><span class="cl"><span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3f</span> <span class="n">eye_dir</span><span class="p">(</span><span class="mf">0.0f</span><span class="p">,</span> <span class="mf">0.0f</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.0f</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3f</span> <span class="n">up</span><span class="p">(</span><span class="mf">0.0f</span><span class="p">,</span> <span class="mf">1.0f</span><span class="p">,</span> <span class="mf">0.0f</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="kt">float</span> <span class="n">fovY</span> <span class="o">=</span> <span class="mf">45.0f</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="kt">float</span> <span class="n">aspectRatio</span> <span class="o">=</span> <span class="mf">1.0f</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="kt">float</span> <span class="n">near</span> <span class="o">=</span> <span class="mf">0.1f</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="kt">float</span> <span class="n">far</span> <span class="o">=</span> <span class="mf">100.0f</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3f</span> <span class="n">lightDir</span><span class="p">{</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">};</span>
+</span></span><span class="line"><span class="cl"><span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3f</span> <span class="n">lightIntensity</span><span class="p">{</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">5</span><span class="p">};</span>
+</span></span><span class="line"><span class="cl"><span class="c1">// 计算三角形面积，可能返回负数，表示背对屏幕
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="kt">float</span> <span class="nf">signed_triangle_area</span><span class="p">(</span><span class="kt">float</span> <span class="n">ax</span><span class="p">,</span> <span class="kt">float</span> <span class="n">ay</span><span class="p">,</span> <span class="kt">float</span> <span class="n">bx</span><span class="p">,</span> <span class="kt">float</span> <span class="n">by</span><span class="p">,</span> <span class="kt">float</span> <span class="n">cx</span><span class="p">,</span> <span class="kt">float</span> <span class="n">cy</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="mf">.5f</span><span class="o">*</span><span class="p">((</span><span class="n">by</span><span class="o">-</span><span class="n">ay</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="n">bx</span><span class="o">+</span><span class="n">ax</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">cy</span><span class="o">-</span><span class="n">by</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="n">cx</span><span class="o">+</span><span class="n">bx</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">ay</span><span class="o">-</span><span class="n">cy</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="n">ax</span><span class="o">+</span><span class="n">cx</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3f</span> <span class="n">TGAColorToVector3f</span><span class="p">(</span><span class="k">const</span> <span class="n">TGAColor</span><span class="o">&amp;</span> <span class="n">color</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">float</span> <span class="n">r</span> <span class="o">=</span> <span class="k">static_cast</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span><span class="p">(</span><span class="n">color</span><span class="p">.</span><span class="n">bgra</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="o">/</span> <span class="mf">255.0f</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">float</span> <span class="n">g</span> <span class="o">=</span> <span class="k">static_cast</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span><span class="p">(</span><span class="n">color</span><span class="p">.</span><span class="n">bgra</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="mf">255.0f</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">float</span> <span class="n">b</span> <span class="o">=</span> <span class="k">static_cast</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span><span class="p">(</span><span class="n">color</span><span class="p">.</span><span class="n">bgra</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="mf">255.0f</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3f</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">g</span><span class="p">,</span> <span class="n">b</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="c1">// 将Eigen::Vector3f转换为TGAColor的函数
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="n">TGAColor</span> <span class="nf">Vector3fToTGAColor</span><span class="p">(</span><span class="k">const</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3f</span><span class="o">&amp;</span> <span class="n">vectorColor</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">auto</span> <span class="n">clamp</span> <span class="o">=</span> <span class="p">[](</span><span class="kt">float</span> <span class="n">v</span><span class="p">)</span> <span class="p">{</span> <span class="k">return</span> <span class="n">std</span><span class="o">::</span><span class="n">max</span><span class="p">(</span><span class="mf">0.0f</span><span class="p">,</span> <span class="n">std</span><span class="o">::</span><span class="n">min</span><span class="p">(</span><span class="mf">1.0f</span><span class="p">,</span> <span class="n">v</span><span class="p">));</span> <span class="p">};</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">unsigned</span> <span class="kt">char</span> <span class="n">r</span> <span class="o">=</span> <span class="k">static_cast</span><span class="o">&lt;</span><span class="kt">unsigned</span> <span class="kt">char</span><span class="o">&gt;</span><span class="p">(</span><span class="n">clamp</span><span class="p">(</span><span class="n">vectorColor</span><span class="p">.</span><span class="n">x</span><span class="p">())</span> <span class="o">*</span> <span class="mf">255.0f</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">unsigned</span> <span class="kt">char</span> <span class="n">g</span> <span class="o">=</span> <span class="k">static_cast</span><span class="o">&lt;</span><span class="kt">unsigned</span> <span class="kt">char</span><span class="o">&gt;</span><span class="p">(</span><span class="n">clamp</span><span class="p">(</span><span class="n">vectorColor</span><span class="p">.</span><span class="n">y</span><span class="p">())</span> <span class="o">*</span> <span class="mf">255.0f</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">unsigned</span> <span class="kt">char</span> <span class="n">b</span> <span class="o">=</span> <span class="k">static_cast</span><span class="o">&lt;</span><span class="kt">unsigned</span> <span class="kt">char</span><span class="o">&gt;</span><span class="p">(</span><span class="n">clamp</span><span class="p">(</span><span class="n">vectorColor</span><span class="p">.</span><span class="n">z</span><span class="p">())</span> <span class="o">*</span> <span class="mf">255.0f</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">TGAColor</span><span class="p">(</span><span class="n">r</span><span class="p">,</span> <span class="n">g</span><span class="p">,</span> <span class="n">b</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="c1">// blinnPhongShading
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="n">TGAColor</span> <span class="nf">blinnPhongShading</span><span class="p">(</span><span class="k">const</span> <span class="n">TGAColor</span> <span class="o">&amp;</span> <span class="n">textureColor</span><span class="p">,</span> <span class="k">const</span> <span class="n">Vector3f</span> <span class="o">&amp;</span> <span class="n">point</span><span class="p">,</span> <span class="k">const</span> <span class="n">Vector3f</span> <span class="o">&amp;</span> <span class="n">normal</span><span class="p">,</span><span class="n">TGAColor</span> <span class="n">specKd</span><span class="p">,</span><span class="kt">bool</span> <span class="n">isShadow</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 环境光系数
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3f</span> <span class="n">ka</span> <span class="o">=</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3f</span><span class="p">(</span><span class="mf">0.005</span><span class="p">,</span> <span class="mf">0.005</span><span class="p">,</span> <span class="mf">0.005</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 漫反射系数（来自材质贴图）
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3f</span> <span class="n">kd</span> <span class="o">=</span> <span class="n">TGAColorToVector3f</span><span class="p">(</span><span class="n">textureColor</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 高光系数（来自高光贴图）
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3f</span> <span class="n">ks</span> <span class="o">=</span> <span class="n">TGAColorToVector3f</span><span class="p">(</span><span class="n">specKd</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3f</span> <span class="n">amb_light_intensity</span><span class="p">{</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">};</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// 环境光强度
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="c1">// 高光的指数，越大对角度越敏感
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="kt">float</span> <span class="n">p</span> <span class="o">=</span> <span class="mi">150</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 计算点到光源的向量
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3f</span> <span class="n">light_vec</span> <span class="o">=</span> <span class="n">lightDir</span> <span class="o">-</span> <span class="n">point</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 计算点到光源的距离
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="kt">float</span> <span class="n">r</span> <span class="o">=</span> <span class="n">light_vec</span><span class="p">.</span><span class="n">norm</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 归一化从点到光源的向量
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3f</span> <span class="n">light_dir</span> <span class="o">=</span> <span class="n">light_vec</span><span class="p">.</span><span class="n">normalized</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 漫反射
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3f</span> <span class="n">diffuse</span> <span class="o">=</span> <span class="n">kd</span><span class="p">.</span><span class="n">cwiseProduct</span><span class="p">(</span><span class="n">lightIntensity</span> <span class="o">/</span> <span class="p">(</span><span class="n">r</span> <span class="o">*</span> <span class="n">r</span><span class="p">))</span> <span class="o">*</span> <span class="n">std</span><span class="o">::</span><span class="n">max</span><span class="p">(</span><span class="mf">0.0f</span><span class="p">,</span> <span class="n">normal</span><span class="p">.</span><span class="n">dot</span><span class="p">(</span><span class="n">light_dir</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 高光反射
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="c1">// 计算从表面点到观察者的向量
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3f</span> <span class="n">view_dir</span> <span class="o">=</span> <span class="p">(</span><span class="n">eye_pos</span> <span class="o">-</span> <span class="n">point</span><span class="p">).</span><span class="n">normalized</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 计算半程向量
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3f</span> <span class="n">halfVector</span> <span class="o">=</span> <span class="p">(</span><span class="n">light_dir</span> <span class="o">+</span> <span class="n">view_dir</span><span class="p">).</span><span class="n">normalized</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3f</span> <span class="n">specular</span> <span class="o">=</span> <span class="n">ks</span><span class="p">.</span><span class="n">cwiseProduct</span><span class="p">(</span><span class="n">lightIntensity</span> <span class="o">/</span> <span class="p">(</span><span class="n">r</span> <span class="o">*</span> <span class="n">r</span><span class="p">))</span> <span class="o">*</span> <span class="n">std</span><span class="o">::</span><span class="n">pow</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">max</span><span class="p">(</span><span class="mf">0.0f</span><span class="p">,</span> <span class="n">normal</span><span class="p">.</span><span class="n">dot</span><span class="p">(</span><span class="n">halfVector</span><span class="p">)),</span> <span class="n">p</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3f</span> <span class="n">all</span> <span class="o">=</span> <span class="n">diffuse</span> <span class="o">+</span> <span class="n">specular</span> <span class="o">+</span> <span class="n">ka</span><span class="p">.</span><span class="n">cwiseProduct</span><span class="p">(</span><span class="n">amb_light_intensity</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="n">isShadow</span><span class="p">){</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="n">Vector3fToTGAColor</span><span class="p">(</span><span class="n">all</span><span class="o">*</span><span class="mf">0.2</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">Vector3fToTGAColor</span><span class="p">(</span><span class="n">all</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="c1">// 插值函数
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3f</span> <span class="n">interpolate</span><span class="p">(</span><span class="k">const</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3f</span><span class="o">&amp;</span> <span class="n">v0</span><span class="p">,</span> <span class="k">const</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3f</span><span class="o">&amp;</span> <span class="n">v1</span><span class="p">,</span> <span class="k">const</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3f</span><span class="o">&amp;</span> <span class="n">v2</span><span class="p">,</span> <span class="kt">double</span> <span class="n">alpha</span><span class="p">,</span> <span class="kt">double</span> <span class="n">beta</span><span class="p">,</span> <span class="kt">double</span> <span class="n">gamma</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">alpha</span> <span class="o">*</span> <span class="n">v0</span> <span class="o">+</span> <span class="n">beta</span> <span class="o">*</span> <span class="n">v1</span> <span class="o">+</span> <span class="n">gamma</span> <span class="o">*</span> <span class="n">v2</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="kt">float</span> <span class="nf">interpolate</span><span class="p">(</span><span class="kt">float</span> <span class="n">v0</span><span class="p">,</span> <span class="kt">float</span> <span class="n">v1</span><span class="p">,</span> <span class="kt">float</span> <span class="n">v2</span><span class="p">,</span> <span class="kt">float</span> <span class="n">alpha</span><span class="p">,</span> <span class="kt">float</span> <span class="n">beta</span><span class="p">,</span> <span class="kt">float</span> <span class="n">gamma</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">alpha</span> <span class="o">*</span> <span class="n">v0</span> <span class="o">+</span> <span class="n">beta</span> <span class="o">*</span> <span class="n">v1</span> <span class="o">+</span> <span class="n">gamma</span> <span class="o">*</span> <span class="n">v2</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// 从切线法线转为法线
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3f</span> <span class="n">getNormalFromTangent</span><span class="p">(</span><span class="k">const</span> <span class="n">Triangle</span><span class="o">&amp;</span> <span class="n">triangle</span><span class="p">,</span> <span class="k">const</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3f</span><span class="o">&amp;</span> <span class="n">tangentSpaceNormal</span><span class="p">,</span> <span class="k">const</span> <span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3f</span><span class="o">&amp;</span> <span class="n">barycentricNorm</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 计算切线
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3f</span> <span class="n">edge1</span> <span class="o">=</span> <span class="n">triangle</span><span class="p">.</span><span class="n">globalCoords</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="n">head</span><span class="o">&lt;</span><span class="mi">3</span><span class="o">&gt;</span><span class="p">()</span> <span class="o">-</span> <span class="n">triangle</span><span class="p">.</span><span class="n">globalCoords</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="n">head</span><span class="o">&lt;</span><span class="mi">3</span><span class="o">&gt;</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3f</span> <span class="n">edge2</span> <span class="o">=</span> <span class="n">triangle</span><span class="p">.</span><span class="n">globalCoords</span><span class="p">[</span><span class="mi">2</span><span class="p">].</span><span class="n">head</span><span class="o">&lt;</span><span class="mi">3</span><span class="o">&gt;</span><span class="p">()</span> <span class="o">-</span> <span class="n">triangle</span><span class="p">.</span><span class="n">globalCoords</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="n">head</span><span class="o">&lt;</span><span class="mi">3</span><span class="o">&gt;</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="n">Eigen</span><span class="o">::</span><span class="n">Vector2f</span> <span class="n">deltaUV1</span> <span class="o">=</span> <span class="n">triangle</span><span class="p">.</span><span class="n">texCoords</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">triangle</span><span class="p">.</span><span class="n">texCoords</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">    <span class="n">Eigen</span><span class="o">::</span><span class="n">Vector2f</span> <span class="n">deltaUV2</span> <span class="o">=</span> <span class="n">triangle</span><span class="p">.</span><span class="n">texCoords</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">triangle</span><span class="p">.</span><span class="n">texCoords</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kt">float</span> <span class="n">f</span> <span class="o">=</span> <span class="mf">1.0f</span> <span class="o">/</span> <span class="p">(</span><span class="n">deltaUV1</span><span class="p">.</span><span class="n">x</span><span class="p">()</span> <span class="o">*</span> <span class="n">deltaUV2</span><span class="p">.</span><span class="n">y</span><span class="p">()</span> <span class="o">-</span> <span class="n">deltaUV2</span><span class="p">.</span><span class="n">x</span><span class="p">()</span> <span class="o">*</span> <span class="n">deltaUV1</span><span class="p">.</span><span class="n">y</span><span class="p">());</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3f</span> <span class="n">tangent</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">tangent</span><span class="p">.</span><span class="n">x</span><span class="p">()</span> <span class="o">=</span> <span class="n">f</span> <span class="o">*</span> <span class="p">(</span><span class="n">deltaUV2</span><span class="p">.</span><span class="n">y</span><span class="p">()</span> <span class="o">*</span> <span class="n">edge1</span><span class="p">.</span><span class="n">x</span><span class="p">()</span> <span class="o">-</span> <span class="n">deltaUV1</span><span class="p">.</span><span class="n">y</span><span class="p">()</span> <span class="o">*</span> <span class="n">edge2</span><span class="p">.</span><span class="n">x</span><span class="p">());</span>
+</span></span><span class="line"><span class="cl">    <span class="n">tangent</span><span class="p">.</span><span class="n">y</span><span class="p">()</span> <span class="o">=</span> <span class="n">f</span> <span class="o">*</span> <span class="p">(</span><span class="n">deltaUV2</span><span class="p">.</span><span class="n">y</span><span class="p">()</span> <span class="o">*</span> <span class="n">edge1</span><span class="p">.</span><span class="n">y</span><span class="p">()</span> <span class="o">-</span> <span class="n">deltaUV1</span><span class="p">.</span><span class="n">y</span><span class="p">()</span> <span class="o">*</span> <span class="n">edge2</span><span class="p">.</span><span class="n">y</span><span class="p">());</span>
+</span></span><span class="line"><span class="cl">    <span class="n">tangent</span><span class="p">.</span><span class="n">z</span><span class="p">()</span> <span class="o">=</span> <span class="n">f</span> <span class="o">*</span> <span class="p">(</span><span class="n">deltaUV2</span><span class="p">.</span><span class="n">y</span><span class="p">()</span> <span class="o">*</span> <span class="n">edge1</span><span class="p">.</span><span class="n">z</span><span class="p">()</span> <span class="o">-</span> <span class="n">deltaUV1</span><span class="p">.</span><span class="n">y</span><span class="p">()</span> <span class="o">*</span> <span class="n">edge2</span><span class="p">.</span><span class="n">z</span><span class="p">());</span>
+</span></span><span class="line"><span class="cl">    <span class="n">tangent</span><span class="p">.</span><span class="n">normalize</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// 计算副切线
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3f</span> <span class="n">bitangent</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">bitangent</span><span class="p">.</span><span class="n">x</span><span class="p">()</span> <span class="o">=</span> <span class="n">f</span> <span class="o">*</span> <span class="p">(</span><span class="o">-</span><span class="n">deltaUV2</span><span class="p">.</span><span class="n">x</span><span class="p">()</span> <span class="o">*</span> <span class="n">edge1</span><span class="p">.</span><span class="n">x</span><span class="p">()</span> <span class="o">+</span> <span class="n">deltaUV1</span><span class="p">.</span><span class="n">x</span><span class="p">()</span> <span class="o">*</span> <span class="n">edge2</span><span class="p">.</span><span class="n">x</span><span class="p">());</span>
+</span></span><span class="line"><span class="cl">    <span class="n">bitangent</span><span class="p">.</span><span class="n">y</span><span class="p">()</span> <span class="o">=</span> <span class="n">f</span> <span class="o">*</span> <span class="p">(</span><span class="o">-</span><span class="n">deltaUV2</span><span class="p">.</span><span class="n">x</span><span class="p">()</span> <span class="o">*</span> <span class="n">edge1</span><span class="p">.</span><span class="n">y</span><span class="p">()</span> <span class="o">+</span> <span class="n">deltaUV1</span><span class="p">.</span><span class="n">x</span><span class="p">()</span> <span class="o">*</span> <span class="n">edge2</span><span class="p">.</span><span class="n">y</span><span class="p">());</span>
+</span></span><span class="line"><span class="cl">    <span class="n">bitangent</span><span class="p">.</span><span class="n">z</span><span class="p">()</span> <span class="o">=</span> <span class="n">f</span> <span class="o">*</span> <span class="p">(</span><span class="o">-</span><span class="n">deltaUV2</span><span class="p">.</span><span class="n">x</span><span class="p">()</span> <span class="o">*</span> <span class="n">edge1</span><span class="p">.</span><span class="n">z</span><span class="p">()</span> <span class="o">+</span> <span class="n">deltaUV1</span><span class="p">.</span><span class="n">x</span><span class="p">()</span> <span class="o">*</span> <span class="n">edge2</span><span class="p">.</span><span class="n">z</span><span class="p">());</span>
+</span></span><span class="line"><span class="cl">    <span class="n">bitangent</span><span class="p">.</span><span class="n">normalize</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// 构建 TBN 矩阵
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">Eigen</span><span class="o">::</span><span class="n">Matrix3f</span> <span class="n">TBN</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">TBN</span><span class="p">.</span><span class="n">col</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">=</span> <span class="n">tangent</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">TBN</span><span class="p">.</span><span class="n">col</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">=</span> <span class="n">bitangent</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">TBN</span><span class="p">.</span><span class="n">col</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="o">=</span> <span class="n">barycentricNorm</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// 将切向法线转换到世界空间
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="k">return</span> <span class="n">TBN</span> <span class="o">*</span> <span class="n">tangentSpaceNormal</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">void</span> <span class="nf">shadow</span><span class="p">(</span><span class="n">Triangle</span> <span class="o">&amp;</span><span class="n">triangle</span><span class="p">,</span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;&gt;</span> <span class="o">*</span><span class="n">shadowBuffer</span><span class="p">){</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">float</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">triangle</span><span class="p">.</span><span class="n">screenCoords</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="n">x</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">float</span> <span class="n">ay</span> <span class="o">=</span> <span class="n">triangle</span><span class="p">.</span><span class="n">screenCoords</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="n">y</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">float</span> <span class="n">bx</span> <span class="o">=</span> <span class="n">triangle</span><span class="p">.</span><span class="n">screenCoords</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="n">x</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">float</span> <span class="n">by</span> <span class="o">=</span> <span class="n">triangle</span><span class="p">.</span><span class="n">screenCoords</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="n">y</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">float</span> <span class="n">cx</span> <span class="o">=</span> <span class="n">triangle</span><span class="p">.</span><span class="n">screenCoords</span><span class="p">[</span><span class="mi">2</span><span class="p">].</span><span class="n">x</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">float</span> <span class="n">cy</span> <span class="o">=</span> <span class="n">triangle</span><span class="p">.</span><span class="n">screenCoords</span><span class="p">[</span><span class="mi">2</span><span class="p">].</span><span class="n">y</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">int</span> <span class="n">bbminx</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">floor</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">min</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">min</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">bx</span><span class="p">),</span> <span class="n">cx</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">int</span> <span class="n">bbminy</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">ceil</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">min</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">min</span><span class="p">(</span><span class="n">ay</span><span class="p">,</span> <span class="n">by</span><span class="p">),</span> <span class="n">cy</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">int</span> <span class="n">bbmaxx</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">floor</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">max</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">max</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">bx</span><span class="p">),</span> <span class="n">cx</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">int</span> <span class="n">bbmaxy</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">ceil</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">max</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">max</span><span class="p">(</span><span class="n">ay</span><span class="p">,</span> <span class="n">by</span><span class="p">),</span> <span class="n">cy</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">float</span> <span class="n">total_area</span> <span class="o">=</span> <span class="n">signed_triangle_area</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">ay</span><span class="p">,</span> <span class="n">bx</span><span class="p">,</span> <span class="n">by</span><span class="p">,</span> <span class="n">cx</span><span class="p">,</span> <span class="n">cy</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">x</span> <span class="o">=</span> <span class="n">bbminx</span><span class="p">;</span> <span class="n">x</span> <span class="o">&lt;=</span> <span class="n">bbmaxx</span><span class="p">;</span> <span class="n">x</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">y</span> <span class="o">=</span> <span class="n">bbminy</span><span class="p">;</span> <span class="n">y</span> <span class="o">&lt;=</span> <span class="n">bbmaxy</span><span class="p">;</span> <span class="n">y</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="c1">// 虽然可以把整个三角形直接剔除，但是我希望只是把屏幕外的像素剔除
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>            <span class="k">if</span> <span class="p">(</span><span class="n">x</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="o">||</span> <span class="n">x</span> <span class="o">&gt;=</span> <span class="n">width</span> <span class="o">||</span> <span class="n">y</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="o">||</span> <span class="n">y</span> <span class="o">&gt;=</span> <span class="n">height</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                <span class="k">continue</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">            <span class="p">}</span>
+</span></span><span class="line"><span class="cl">            <span class="kt">float</span> <span class="n">alpha</span> <span class="o">=</span> <span class="n">signed_triangle_area</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">bx</span><span class="p">,</span> <span class="n">by</span><span class="p">,</span> <span class="n">cx</span><span class="p">,</span> <span class="n">cy</span><span class="p">)</span> <span class="o">/</span> <span class="n">total_area</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">            <span class="kt">float</span> <span class="n">beta</span> <span class="o">=</span> <span class="n">signed_triangle_area</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">cx</span><span class="p">,</span> <span class="n">cy</span><span class="p">,</span> <span class="n">ax</span><span class="p">,</span> <span class="n">ay</span><span class="p">)</span> <span class="o">/</span> <span class="n">total_area</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">            <span class="kt">float</span> <span class="n">gamma</span> <span class="o">=</span> <span class="n">signed_triangle_area</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">ax</span><span class="p">,</span> <span class="n">ay</span><span class="p">,</span> <span class="n">bx</span><span class="p">,</span> <span class="n">by</span><span class="p">)</span> <span class="o">/</span> <span class="n">total_area</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">            <span class="k">if</span> <span class="p">(</span><span class="n">alpha</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="o">||</span> <span class="n">beta</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="o">||</span> <span class="n">gamma</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="k">continue</span><span class="p">;</span> <span class="c1">// 说明当前像素不在三角形内部
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>            <span class="kt">float</span> <span class="n">barycentricZ</span> <span class="o">=</span> <span class="n">interpolate</span><span class="p">(</span><span class="n">triangle</span><span class="p">.</span><span class="n">screenCoords</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="n">z</span><span class="p">(),</span> <span class="n">triangle</span><span class="p">.</span><span class="n">screenCoords</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="n">z</span><span class="p">(),</span><span class="n">triangle</span><span class="p">.</span><span class="n">screenCoords</span><span class="p">[</span><span class="mi">2</span><span class="p">].</span><span class="n">z</span><span class="p">(),</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">gamma</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">            <span class="k">if</span> <span class="p">(</span><span class="n">shadowBuffer</span><span class="o">-&gt;</span><span class="n">at</span><span class="p">(</span><span class="n">x</span><span class="p">).</span><span class="n">at</span><span class="p">(</span><span class="n">y</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">barycentricZ</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                <span class="n">shadowBuffer</span><span class="o">-&gt;</span><span class="n">at</span><span class="p">(</span><span class="n">x</span><span class="p">).</span><span class="n">at</span><span class="p">(</span><span class="n">y</span><span class="p">)</span> <span class="o">=</span> <span class="n">barycentricZ</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">            <span class="p">}</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// 绘制一个三角形
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="kt">void</span> <span class="nf">drawTriangle</span><span class="p">(</span><span class="n">Triangle</span> <span class="o">&amp;</span><span class="n">triangle</span><span class="p">,</span> <span class="n">TGAImage</span> <span class="o">&amp;</span><span class="n">framebuffer</span><span class="p">,</span> <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;&gt;</span> <span class="o">*</span><span class="n">zBuffer</span><span class="p">,</span> <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;&gt;</span> <span class="o">*</span><span class="n">shadowBuffer</span><span class="p">,</span><span class="n">Texture</span> <span class="o">&amp;</span><span class="n">texture</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">                 <span class="n">Texture</span> <span class="o">&amp;</span><span class="n">nm</span><span class="p">,</span> <span class="n">Texture</span> <span class="o">&amp;</span><span class="n">spec</span><span class="p">,</span> <span class="n">Texture</span> <span class="o">&amp;</span><span class="n">nm_tangent</span><span class="p">,</span><span class="n">Eigen</span><span class="o">::</span><span class="n">Matrix4f</span> <span class="n">mvpForShadow</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">float</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">triangle</span><span class="p">.</span><span class="n">screenCoords</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="n">x</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">float</span> <span class="n">ay</span> <span class="o">=</span> <span class="n">triangle</span><span class="p">.</span><span class="n">screenCoords</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="n">y</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">float</span> <span class="n">bx</span> <span class="o">=</span> <span class="n">triangle</span><span class="p">.</span><span class="n">screenCoords</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="n">x</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">float</span> <span class="n">by</span> <span class="o">=</span> <span class="n">triangle</span><span class="p">.</span><span class="n">screenCoords</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="n">y</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">float</span> <span class="n">cx</span> <span class="o">=</span> <span class="n">triangle</span><span class="p">.</span><span class="n">screenCoords</span><span class="p">[</span><span class="mi">2</span><span class="p">].</span><span class="n">x</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">float</span> <span class="n">cy</span> <span class="o">=</span> <span class="n">triangle</span><span class="p">.</span><span class="n">screenCoords</span><span class="p">[</span><span class="mi">2</span><span class="p">].</span><span class="n">y</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">int</span> <span class="n">bbminx</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">floor</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">min</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">min</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">bx</span><span class="p">),</span> <span class="n">cx</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">int</span> <span class="n">bbminy</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">ceil</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">min</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">min</span><span class="p">(</span><span class="n">ay</span><span class="p">,</span> <span class="n">by</span><span class="p">),</span> <span class="n">cy</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">int</span> <span class="n">bbmaxx</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">floor</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">max</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">max</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">bx</span><span class="p">),</span> <span class="n">cx</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">int</span> <span class="n">bbmaxy</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">ceil</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">max</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">max</span><span class="p">(</span><span class="n">ay</span><span class="p">,</span> <span class="n">by</span><span class="p">),</span> <span class="n">cy</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="c1">// 如果面积为负数，背对屏幕，被裁剪
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="kt">float</span> <span class="n">total_area</span> <span class="o">=</span> <span class="n">signed_triangle_area</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">ay</span><span class="p">,</span> <span class="n">bx</span><span class="p">,</span> <span class="n">by</span><span class="p">,</span> <span class="n">cx</span><span class="p">,</span> <span class="n">cy</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="p">(</span><span class="n">total_area</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">)</span> <span class="k">return</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="cp">#pragma omp parallel for
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>        <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">x</span> <span class="o">=</span> <span class="n">bbminx</span><span class="p">;</span> <span class="n">x</span> <span class="o">&lt;=</span> <span class="n">bbmaxx</span><span class="p">;</span> <span class="n">x</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">y</span> <span class="o">=</span> <span class="n">bbminy</span><span class="p">;</span> <span class="n">y</span> <span class="o">&lt;=</span> <span class="n">bbmaxy</span><span class="p">;</span> <span class="n">y</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                <span class="c1">// 虽然可以把整个三角形直接剔除，但是我希望只是把屏幕外的像素剔除
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                <span class="k">if</span> <span class="p">(</span><span class="n">x</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="o">||</span> <span class="n">x</span> <span class="o">&gt;=</span> <span class="n">width</span> <span class="o">||</span> <span class="n">y</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="o">||</span> <span class="n">y</span> <span class="o">&gt;=</span> <span class="n">height</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                    <span class="k">continue</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">                <span class="p">}</span>
+</span></span><span class="line"><span class="cl">                <span class="kt">float</span> <span class="n">alpha</span> <span class="o">=</span> <span class="n">signed_triangle_area</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">bx</span><span class="p">,</span> <span class="n">by</span><span class="p">,</span> <span class="n">cx</span><span class="p">,</span> <span class="n">cy</span><span class="p">)</span> <span class="o">/</span> <span class="n">total_area</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">                <span class="kt">float</span> <span class="n">beta</span> <span class="o">=</span> <span class="n">signed_triangle_area</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">cx</span><span class="p">,</span> <span class="n">cy</span><span class="p">,</span> <span class="n">ax</span><span class="p">,</span> <span class="n">ay</span><span class="p">)</span> <span class="o">/</span> <span class="n">total_area</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">                <span class="kt">float</span> <span class="n">gamma</span> <span class="o">=</span> <span class="n">signed_triangle_area</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">ax</span><span class="p">,</span> <span class="n">ay</span><span class="p">,</span> <span class="n">bx</span><span class="p">,</span> <span class="n">by</span><span class="p">)</span> <span class="o">/</span> <span class="n">total_area</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">                <span class="k">if</span> <span class="p">(</span><span class="n">alpha</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="o">||</span> <span class="n">beta</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="o">||</span> <span class="n">gamma</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="k">continue</span><span class="p">;</span> <span class="c1">// 说明当前像素不在三角形内部
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                <span class="kt">float</span> <span class="n">barycentricZ</span> <span class="o">=</span> <span class="n">interpolate</span><span class="p">(</span><span class="n">triangle</span><span class="p">.</span><span class="n">screenCoords</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="n">z</span><span class="p">(),</span> <span class="n">triangle</span><span class="p">.</span><span class="n">screenCoords</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="n">z</span><span class="p">(),</span><span class="n">triangle</span><span class="p">.</span><span class="n">screenCoords</span><span class="p">[</span><span class="mi">2</span><span class="p">].</span><span class="n">z</span><span class="p">(),</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">gamma</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">                <span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3f</span> <span class="n">barycentricGlobalCoord</span> <span class="o">=</span> <span class="n">interpolate</span><span class="p">(</span><span class="n">triangle</span><span class="p">.</span><span class="n">globalCoords</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="n">head</span><span class="o">&lt;</span><span class="mi">3</span><span class="o">&gt;</span><span class="p">(),</span><span class="n">triangle</span><span class="p">.</span><span class="n">globalCoords</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="n">head</span><span class="o">&lt;</span><span class="mi">3</span><span class="o">&gt;</span><span class="p">(),</span><span class="n">triangle</span><span class="p">.</span><span class="n">globalCoords</span><span class="p">[</span><span class="mi">2</span><span class="p">].</span><span class="n">head</span><span class="o">&lt;</span><span class="mi">3</span><span class="o">&gt;</span><span class="p">(),</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span><span class="n">gamma</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">                <span class="kt">float</span> <span class="n">texU</span> <span class="o">=</span> <span class="n">interpolate</span><span class="p">(</span><span class="n">triangle</span><span class="p">.</span><span class="n">texCoords</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="n">x</span><span class="p">(),</span> <span class="n">triangle</span><span class="p">.</span><span class="n">texCoords</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="n">x</span><span class="p">(),</span><span class="n">triangle</span><span class="p">.</span><span class="n">texCoords</span><span class="p">[</span><span class="mi">2</span><span class="p">].</span><span class="n">x</span><span class="p">(),</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">gamma</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">                <span class="kt">float</span> <span class="n">texV</span> <span class="o">=</span> <span class="n">interpolate</span><span class="p">(</span><span class="n">triangle</span><span class="p">.</span><span class="n">texCoords</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="n">y</span><span class="p">(),</span> <span class="n">triangle</span><span class="p">.</span><span class="n">texCoords</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="n">y</span><span class="p">(),</span><span class="n">triangle</span><span class="p">.</span><span class="n">texCoords</span><span class="p">[</span><span class="mi">2</span><span class="p">].</span><span class="n">y</span><span class="p">(),</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">gamma</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">                <span class="n">TGAColor</span> <span class="n">texColor</span> <span class="o">=</span> <span class="n">texture</span><span class="p">.</span><span class="n">getColor</span><span class="p">(</span><span class="n">texU</span><span class="p">,</span> <span class="n">texV</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">                <span class="n">Eigen</span><span class="o">::</span><span class="n">Vector3f</span> <span class="n">barycentricNorm</span> <span class="o">=</span> <span class="n">interpolate</span><span class="p">(</span><span class="n">triangle</span><span class="p">.</span><span class="n">normal</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">triangle</span><span class="p">.</span><span class="n">normal</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="n">triangle</span><span class="p">.</span><span class="n">normal</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">gamma</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">                <span class="c1">// 法线来自法线贴图
+</span></span></span><span class="line"><span class="cl"><span class="c1">//            Eigen::Vector3f barycentricNorm = TGAColorToVector3f(nm.getColor(texU,texV))*2-Vector3f{1,1,1};
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                <span class="c1">// 切线法线贴图
+</span></span></span><span class="line"><span class="cl"><span class="c1">//                Eigen::Vector3f barycentricNmTangent =TGAColorToVector3f(nm_tangent.getColor(texU, texV)) * 2 - Vector3f{1, 1, 1};
+</span></span></span><span class="line"><span class="cl"><span class="c1">//                barycentricNmTangent = getNormalFromTangent(triangle, barycentricNmTangent, barycentricNorm);
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                <span class="c1">// 高光系数来自高光贴图
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                <span class="n">TGAColor</span> <span class="n">specKd</span> <span class="o">=</span> <span class="n">spec</span><span class="p">.</span><span class="n">getColor</span><span class="p">(</span><span class="n">texU</span><span class="p">,</span> <span class="n">texV</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">                <span class="c1">// zbuffer中缓存的渲染物体距离小于当前渲染物体的距离时，才覆盖渲染
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                <span class="k">if</span> <span class="p">(</span><span class="n">zBuffer</span><span class="o">-&gt;</span><span class="n">at</span><span class="p">(</span><span class="n">x</span><span class="p">).</span><span class="n">at</span><span class="p">(</span><span class="n">y</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">barycentricZ</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                    <span class="n">zBuffer</span><span class="o">-&gt;</span><span class="n">at</span><span class="p">(</span><span class="n">x</span><span class="p">).</span><span class="n">at</span><span class="p">(</span><span class="n">y</span><span class="p">)</span> <span class="o">=</span> <span class="n">barycentricZ</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">                    <span class="c1">// 阴影处理
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                    <span class="c1">// 1. 找到该像素对应物体在原空间的位置
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                    <span class="n">Eigen</span><span class="o">::</span><span class="n">Vector4f</span> <span class="n">locationInShaowBuffer</span> <span class="o">=</span> <span class="n">mvpForShadow</span> <span class="o">*</span> <span class="p">(</span><span class="n">barycentricGlobalCoord</span><span class="p">.</span><span class="n">homogeneous</span><span class="p">());</span>
+</span></span><span class="line"><span class="cl">                    <span class="n">locationInShaowBuffer</span><span class="p">.</span><span class="n">x</span><span class="p">()</span> <span class="o">/=</span> <span class="n">locationInShaowBuffer</span><span class="p">.</span><span class="n">w</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">                    <span class="n">locationInShaowBuffer</span><span class="p">.</span><span class="n">y</span><span class="p">()</span> <span class="o">/=</span> <span class="n">locationInShaowBuffer</span><span class="p">.</span><span class="n">w</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">                    <span class="n">locationInShaowBuffer</span><span class="p">.</span><span class="n">z</span><span class="p">()</span> <span class="o">/=</span> <span class="n">locationInShaowBuffer</span><span class="p">.</span><span class="n">w</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">                    <span class="n">locationInShaowBuffer</span><span class="p">.</span><span class="n">x</span><span class="p">()</span> <span class="o">=</span> <span class="mf">0.5</span><span class="o">*</span><span class="n">width</span><span class="o">*</span><span class="p">(</span><span class="n">locationInShaowBuffer</span><span class="p">.</span><span class="n">x</span><span class="p">()</span><span class="o">+</span><span class="mi">1</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">                    <span class="n">locationInShaowBuffer</span><span class="p">.</span><span class="n">y</span><span class="p">()</span> <span class="o">=</span> <span class="mf">0.5</span><span class="o">*</span><span class="n">height</span><span class="o">*</span><span class="p">(</span><span class="n">locationInShaowBuffer</span><span class="p">.</span><span class="n">y</span><span class="p">()</span><span class="o">+</span><span class="mi">1</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">                    <span class="kt">bool</span> <span class="n">isShadow</span> <span class="o">=</span> <span class="nb">false</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">                    <span class="c1">// 在阴影中
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                    <span class="k">if</span> <span class="p">(</span><span class="n">locationInShaowBuffer</span><span class="p">.</span><span class="n">z</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">shadowBuffer</span><span class="o">-&gt;</span><span class="n">at</span><span class="p">(</span><span class="n">locationInShaowBuffer</span><span class="p">.</span><span class="n">x</span><span class="p">()).</span><span class="n">at</span><span class="p">(</span><span class="n">locationInShaowBuffer</span><span class="p">.</span><span class="n">y</span><span class="p">())){</span>
+</span></span><span class="line"><span class="cl">                        <span class="n">isShadow</span> <span class="o">=</span> <span class="nb">true</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">                    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">                    <span class="c1">// 直接使用贴图
+</span></span></span><span class="line"><span class="cl"><span class="c1">//                framebuffer.set(x,y, texture.getColor(texU,texV));
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                    <span class="c1">// 使用phongshading光照模型
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                    <span class="n">framebuffer</span><span class="p">.</span><span class="n">set</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span> <span class="n">blinnPhongShading</span><span class="p">(</span><span class="n">texColor</span><span class="p">,</span><span class="n">barycentricGlobalCoord</span><span class="p">,</span><span class="n">barycentricNorm</span><span class="p">,</span><span class="n">specKd</span><span class="p">,</span><span class="n">isShadow</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">                    <span class="c1">// 直接使用法线贴图
+</span></span></span><span class="line"><span class="cl"><span class="c1">//                framebuffer.set(x,y, nm.getColor(texU,texV));
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                    <span class="c1">// 使用法线贴图的法线配合phongshading
+</span></span></span><span class="line"><span class="cl"><span class="c1">//                framebuffer.set(x,y, blinnPhongShading(texColor,barycentricGlobalCoord,barycentricNorm,specKd));
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                    <span class="c1">// 使用切线法线贴图配合phongshaing
+</span></span></span><span class="line"><span class="cl"><span class="c1">//                    framebuffer.set(x, y,blinnPhongShading(texColor, barycentricGlobalCoord, barycentricNmTangent, specKd));
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                <span class="p">}</span>
+</span></span><span class="line"><span class="cl">            <span class="p">}</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kt">int</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">Model</span> <span class="n">model</span><span class="p">(</span><span class="s">&#34;./obj/diablo3_pose/diablo3_pose.obj&#34;</span><span class="p">,</span> <span class="s">&#34;./obj/diablo3_pose/diablo3_pose_diffuse.tga&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">TGAImage</span> <span class="n">framebuffer</span><span class="p">(</span><span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="p">,</span> <span class="n">TGAImage</span><span class="o">::</span><span class="n">RGB</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// 定义一个zBuffer,并设置全部数据为最小负数
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="k">auto</span> <span class="o">*</span><span class="n">zBuffer</span> <span class="o">=</span> <span class="k">new</span> <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;&gt;</span><span class="p">(</span><span class="n">width</span><span class="p">,</span> <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span><span class="p">(</span><span class="n">height</span><span class="p">,</span><span class="n">std</span><span class="o">::</span><span class="n">numeric_limits</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;::</span><span class="n">lowest</span><span class="p">()));</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// 用于shadow
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="k">auto</span> <span class="o">*</span><span class="n">shadowBuffer</span> <span class="o">=</span> <span class="k">new</span> <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;&gt;</span><span class="p">(</span><span class="n">width</span><span class="p">,</span> <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span><span class="p">(</span><span class="n">height</span><span class="p">,</span><span class="n">std</span><span class="o">::</span><span class="n">numeric_limits</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;::</span><span class="n">lowest</span><span class="p">()));</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// 获取法线贴图
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">Texture</span> <span class="n">nm</span><span class="p">(</span><span class="s">&#34;./obj/diablo3_pose/diablo3_pose_nm.tga&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">Texture</span> <span class="n">spec</span><span class="p">(</span><span class="s">&#34;./obj/diablo3_pose/diablo3_pose_spec.tga&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">Texture</span> <span class="n">nm_tangent</span><span class="p">(</span><span class="s">&#34;./obj/diablo3_pose/diablo3_pose_nm_tangent.tga&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="c1">// 首先先从光源位置渲染，来赋值shadowBuffer
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">model</span><span class="p">.</span><span class="n">setModelTransformation</span><span class="p">(</span><span class="n">angleX</span><span class="p">,</span> <span class="n">angleY</span><span class="p">,</span> <span class="n">angleZ</span><span class="p">,</span> <span class="n">tx</span><span class="p">,</span> <span class="n">ty</span><span class="p">,</span> <span class="n">tz</span><span class="p">,</span> <span class="n">sx</span><span class="p">,</span> <span class="n">sy</span><span class="p">,</span> <span class="n">sz</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">model</span><span class="p">.</span><span class="n">setViewTransformation</span><span class="p">(</span><span class="n">lightDir</span><span class="o">*</span><span class="mi">4</span><span class="p">,</span> <span class="n">eye_dir</span><span class="p">,</span> <span class="n">up</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">model</span><span class="p">.</span><span class="n">setProjectionTransformation</span><span class="p">(</span><span class="n">fovY</span><span class="p">,</span> <span class="n">aspectRatio</span><span class="p">,</span> <span class="n">near</span><span class="p">,</span> <span class="n">far</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// 获取所有变换矩阵
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">Eigen</span><span class="o">::</span><span class="n">Matrix4f</span> <span class="n">mvpForShadow</span> <span class="o">=</span> <span class="n">model</span><span class="p">.</span><span class="n">getMVP</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">        <span class="k">for</span> <span class="p">(</span><span class="n">Triangle</span> <span class="nl">triangle</span><span class="p">:</span> <span class="n">model</span><span class="p">.</span><span class="n">triangleList</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="c1">// 坐标投影
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>            <span class="n">triangle</span><span class="p">.</span><span class="n">setScreenCoords</span><span class="p">(</span><span class="n">mvpForShadow</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">            <span class="c1">// 绘制三角形
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>            <span class="n">shadow</span><span class="p">(</span><span class="n">triangle</span><span class="p">,</span> <span class="n">shadowBuffer</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="c1">// 转回正常视角，进行渲染
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">model</span><span class="p">.</span><span class="n">setModelTransformation</span><span class="p">(</span><span class="n">angleX</span><span class="p">,</span> <span class="n">angleY</span><span class="p">,</span> <span class="n">angleZ</span><span class="p">,</span> <span class="n">tx</span><span class="p">,</span> <span class="n">ty</span><span class="p">,</span> <span class="n">tz</span><span class="p">,</span> <span class="n">sx</span><span class="p">,</span> <span class="n">sy</span><span class="p">,</span> <span class="n">sz</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">model</span><span class="p">.</span><span class="n">setViewTransformation</span><span class="p">(</span><span class="n">eye_pos</span><span class="p">,</span> <span class="n">eye_dir</span><span class="p">,</span> <span class="n">up</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">model</span><span class="p">.</span><span class="n">setProjectionTransformation</span><span class="p">(</span><span class="n">fovY</span><span class="p">,</span> <span class="n">aspectRatio</span><span class="p">,</span> <span class="n">near</span><span class="p">,</span> <span class="n">far</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// 获取所有变换矩阵
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">Eigen</span><span class="o">::</span><span class="n">Matrix4f</span> <span class="n">mvp</span> <span class="o">=</span> <span class="n">model</span><span class="p">.</span><span class="n">getMVP</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="c1">// 遍历obj文件中的每个三角形
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="k">for</span> <span class="p">(</span><span class="n">Triangle</span> <span class="nl">triangle</span><span class="p">:</span> <span class="n">model</span><span class="p">.</span><span class="n">triangleList</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="c1">// 坐标投影
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>            <span class="n">triangle</span><span class="p">.</span><span class="n">setScreenCoords</span><span class="p">(</span><span class="n">mvp</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">            <span class="c1">// 摄像机空间点转光源空间点的矩阵
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>            <span class="n">Eigen</span><span class="o">::</span><span class="n">Matrix4f</span> <span class="n">viewToLightTrans</span> <span class="o">=</span> <span class="n">mvpForShadow</span> <span class="o">*</span> <span class="p">(</span><span class="n">mvp</span><span class="p">.</span><span class="n">inverse</span><span class="p">());</span>
+</span></span><span class="line"><span class="cl">            <span class="c1">// 绘制三角形
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>            <span class="n">drawTriangle</span><span class="p">(</span><span class="n">triangle</span><span class="p">,</span> <span class="n">framebuffer</span><span class="p">,</span> <span class="n">zBuffer</span><span class="p">,</span><span class="n">shadowBuffer</span><span class="p">,</span> <span class="n">model</span><span class="p">.</span><span class="n">texture</span><span class="p">,</span> <span class="n">nm</span><span class="p">,</span> <span class="n">spec</span><span class="p">,</span> <span class="n">nm_tangent</span><span class="p">,</span><span class="n">mvpForShadow</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">        <span class="n">framebuffer</span><span class="p">.</span><span class="n">write_tga_file</span><span class="p">(</span><span class="s">&#34;framebuffer.tga&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="k">delete</span> <span class="p">(</span><span class="n">zBuffer</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="k">delete</span> <span class="p">(</span><span class="n">shadowBuffer</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>最终呈现效果如下，很合理哈，因为右手并未被挡住，所以还是亮的
+<img src="/4e40987343c54ccd8f85bb15ed75aaf5.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+下图通过过曝来展示哪些像素被阴影化了，还是蛮合理的～
+<img src="/94e11dd82b4a40e3a13075aaf915dd91.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+在使用普通的材质贴图下效果比较好
+<img src="/6bc2b6001d9a42d1834c05bd2a824915.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+></p>
+<p>对于出现的不合理的黑色纹路解释来自别的博客：</p>
+<blockquote>
+<p>原文链接：https://blog.csdn.net/qq_42987967/article/details/125011820
+上述照片脖子部位下面有很明显的z-fighting痕迹，主要是因为浮点数精度不足导致的冲突(即当前的点可能索引到附近的点了，而附近的点的shadowbuffer值比该点大造成误判)，毕竟连续的像素位置很接近，则有的像素大于shadow map，有的则小于shadow map，从而产生了离散的显示。此处采用一个解决z-fighting问题的暴力解法，即对于每一个像素投影光源的z轴值都进行一个偏移，只要在该偏移位置不存在连续像素即可展示不错的画面。</p>
+</blockquote>
+<p>我需要将最终比较的z值加一个很小的偏移量，瞬间这些黑色条纹就消失了～</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl">                <span class="k">if</span> <span class="p">(</span><span class="n">locationInShadowBuffer</span><span class="p">.</span><span class="n">z</span><span class="p">()</span><span class="o">+</span><span class="mf">0.005</span> <span class="o">&lt;</span> <span class="n">shadowBuffer</span><span class="o">-&gt;</span><span class="n">at</span><span class="p">(</span><span class="n">locationInShadowBuffer</span><span class="p">.</span><span class="n">x</span><span class="p">()).</span><span class="n">at</span><span class="p">(</span><span class="n">locationInShadowBuffer</span><span class="p">.</span><span class="n">y</span><span class="p">())){</span>
+</span></span><span class="line"><span class="cl">                    <span class="n">isShadow</span> <span class="o">=</span> <span class="nb">true</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">                <span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><img src="/23afe9a8003a44a788f6448c182b6b68.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+ai给出的解释：这种现象叫做自阴影</p>
+<ul>
+<li>深度图的精度限制‌：Shadow Mapping 需要从光源视角生成深度图（Shadow Map）。由于深度图的分辨率有限，物体表面在光源视角下的离散采样可能导致实际连续的几何表面在深度图中被“阶梯化”。当从摄像机视角比较深度时，同一表面的不同片段可能被错误判定为处于阴影中。</li>
+<li>浮点数精度误差‌：深度值存储为浮点数，计算时可能因精度不足导致比较错误。例如，光源视角和摄像机视角的深度计算存在微小差异，导致同一位置被误判为“低于”深度图记录的深度，从而触发阴影。</li>
+</ul>
+
+</section>
+
+
+    <footer class="article-footer">
+    
+    <section class="article-tags">
+        
+            <a href="/tags/%E6%B8%B2%E6%9F%93%E5%99%A8%E5%BC%80%E5%8F%91/">渲染器开发</a>
+        
+            <a href="/tags/tinyrender/">TinyRender</a>
+        
+    </section>
+
+
+    
+    <section class="article-copyright">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
+</svg>
+
+
+
+        <span>Licensed under CC BY-NC-SA 4.0</span>
+    </section>
+    </footer>
+
+
+    
+        <link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css"integrity="sha384-n8MVd4RsNIU0tAv4ct0nTaAbDJwPJzDEaqSD1odI&#43;WdtXRGWt2kTvGFasHpSy3SV"crossorigin="anonymous"
+            ><script 
+                src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"integrity="sha384-XjKyOOlGwcjNTAIQHIpgOno0Hl1YQqzUOEleOLALmuqehneUG&#43;vnGctmUb0ZY0l8"crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"integrity="sha384-&#43;VBxd3r6XgURycqtZ117nYw44OOcIax56Z4dCRWbxyPt0Koah1uHoK0o4&#43;/RRE05"crossorigin="anonymous"
+                defer
+                >
+            </script><script>
+    window.addEventListener("DOMContentLoaded", () => {
+	const mainArticleElement = document.querySelector(".main-article");
+        renderMathInElement(mainArticleElement, {
+            delimiters: [
+                { left: "$$", right: "$$", display: true },
+                { left: "$", right: "$", display: false },
+                { left: "\\(", right: "\\)", display: false },
+                { left: "\\[", right: "\\]", display: true }
+            ],
+            ignoredClasses: ["gist"]
+        });})
+</script>
+
+    
+</article>
+
+    
+
+    
+
+<aside class="related-content--wrapper">
+    <h2 class="section-title">相关文章</h2>
+    <div class="related-content">
+        <div class="flex article-list--tile">
+            
+                
+<article class="article-card no-image">
+    <a href="/p/tinyrender%E5%BC%80%E5%8F%91%E8%AE%B0%E5%BD%95-1-4/">
+        
+        
+        <div class="article-details">
+            <h2 class="article-title">TinyRender开发记录 1-4</h2>
+        </div>
+        
+    </a>
+
+    <style>
+     
+    .article-card {
+        background: rgba(255, 255, 255, 0.25);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        margin: 10px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .article-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    }
+
+    .article-card a {
+        display: flex;
+        flex-direction: column;
+        text-decoration: none;
+        color: inherit;
+        height: 100%;
+    }
+
+     
+    .article-image {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        overflow: hidden;
+    }
+    .article-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+    .article-image:hover img {
+        transform: scale(1.05);
+    }
+
+     
+    .article-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: rgba(0,0,0,0.3);  
+        padding: 10px;
+        box-sizing: border-box;
+        text-align: center;
+    }
+    .article-overlay .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #fff;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .article-card.no-image .article-details {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 15px;
+    }
+    .article-card.no-image .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #222;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .articles-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 20px;
+    }
+    </style>
+</article>
+            
+        </div>
+    </div>
+</aside>
+
+     
+    
+        
+    <script
+    src="https://giscus.app/client.js"
+    data-repo="sdpyy1/sdpyy1.github.io"
+    data-repo-id="R_kgDOQEycpQ"
+    data-category="Announcements"
+    data-category-id="DIC_kwDOQEycpc4Cwz7v"
+    data-mapping="pathname"
+    data-strict="0"
+    data-reactions-enabled="1"
+    data-emit-metadata="0"
+    data-input-position="top"
+    data-theme="light"
+    data-lang="en"
+    data-loading=""
+    crossorigin="anonymous"
+    async
+></script>
+<script>
+    function setGiscusTheme(theme) {
+        let giscus = document.querySelector("iframe.giscus-frame");
+        if (giscus) {
+            giscus.contentWindow.postMessage(
+                {
+                    giscus: {
+                        setConfig: {
+                            theme: theme,
+                        },
+                    },
+                },
+                "https://giscus.app"
+            );
+        }
+    }
+
+    (function () {
+        addEventListener("message", (e) => {
+            if (event.origin !== "https://giscus.app") return;
+            handler();
+        });
+        window.addEventListener("onColorSchemeChange", handler);
+
+        function handler() {
+            if (document.documentElement.dataset.scheme === "light") {
+                setGiscusTheme('light');
+            } else {
+                setGiscusTheme('light');
+            }
+        }
+    })();
+</script>
+
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+            2020 - 
+        
+        2025 爱喝东方树叶
+    </section>
+    <section style="display: flex; gap: 30px; align-items: center;">
+      
+      
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+      <span>📚 文章数: 16</span>
+      <span>✍️ 总字数: 
+        
+        
+        44.59K
+      </span>
+    </section>
+
+    <section class="powerby">
+    
+    <div class="busuanzi-footer">
+        <span id="busuanzi_container_site_pv">
+          本站总访问量<span id="busuanzi_value_site_pv"></span>次
+        </span>
+        <span id="busuanzi_container_site_uv">
+          本站访客数<span id="busuanzi_value_site_uv"></span>人次
+        </span>
+      </div></section>
+
+</footer>
+
+
+    
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    
+    <div class="pswp__bg"></div>
+
+    
+    <div class="pswp__scroll-wrap">
+
+        
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                
+                
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                        <div class="pswp__preloader__cut">
+                            <div class="pswp__preloader__donut"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div>
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js"integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo="crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js"integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU="crossorigin="anonymous"
+                defer
+                >
+            </script><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css"crossorigin="anonymous"
+            ><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css"crossorigin="anonymous"
+            >
+
+            </main>
+        </div>
+        <script 
+                src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js"integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z&#43;KMkF24hUW8WePSA9HM="crossorigin="anonymous"
+                
+                >
+            </script><script type="text/javascript" src="/ts/main.1e9a3bafd846ced4c345d084b355fb8c7bae75701c338f8a1f8a82c780137826.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>
