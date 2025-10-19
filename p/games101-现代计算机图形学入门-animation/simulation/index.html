@@ -1,0 +1,1648 @@
+<!DOCTYPE html>
+<html lang="zh-cn" dir="ltr">
+    <head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'>
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+  <meta name="referrer" content="no-referrer-when-downgrade"><meta name='description' content="一些科普 Keyframe Animator Physical Simulation 利用物理公式来模拟 质点弹簧系统 Mass Spring Rope 下面开始描述这个系统 胡克定律描述弹簧或弹性体所受的回复力 F 与形变量 x 成正比， $k_s$是劲度系数，但是弹簧本身也有长度 考虑弹簧原始长度 ，$\\frac{b - a}{|b - a|}$这个向量用来表示方向，但问题是这样写，弹簧一旦拉开就不会不停的运动下去（动能和势能相互转化），所以还需要引入摩擦力 引入摩擦力之前先引入一些符号表示位置、速度、加速度 给物体一个相反与速度方向的力，但还有问题，这样会导致所有的运动都停下来，假设AB两个物体同步向右走，他俩都有速度，但相对之间没有速度，所以应该没摩擦力，但是用下面的公式，只要物体有速度，就会受到摩擦力而停止 我们在逐渐完善弹簧系统，摩擦力应该跟着物体AB的相对运动而产生，下图用两个物体速度差来表示相对速度，另外还需要考虑这个速度差是沿着弹簧方向才行，所以点乘$\\frac{b - a}{|b - a|}$来投影到ba方向 下面看一些弹簧结构 模型的行为是由结构连接来决定的，下面看如果一块布这样设计，很明显是不合理的，图中展示了2种原因（布可以抵抗切变力但这个结构不行，布会对抗对折） 先来改进切变，加入蓝色弹簧来抵抗 再加另外一个方向，但不能解决第二个问题 最终版 ">
+<title>GAMES101 现代计算机图形学入门 Animation/Simulation</title>
+
+<link rel='canonical' href='https://sdpyy1.github.io/p/games101-%E7%8E%B0%E4%BB%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9B%BE%E5%BD%A2%E5%AD%A6%E5%85%A5%E9%97%A8-animation/simulation/'>
+
+<link rel="stylesheet" href="/scss/style.min.6a692fd055deae459f2a9767f57f3855ba80cafd5041317f24f7360f6ca47cdf.css"><meta property='og:title' content="GAMES101 现代计算机图形学入门 Animation/Simulation">
+<meta property='og:description' content="一些科普 Keyframe Animator Physical Simulation 利用物理公式来模拟 质点弹簧系统 Mass Spring Rope 下面开始描述这个系统 胡克定律描述弹簧或弹性体所受的回复力 F 与形变量 x 成正比， $k_s$是劲度系数，但是弹簧本身也有长度 考虑弹簧原始长度 ，$\\frac{b - a}{|b - a|}$这个向量用来表示方向，但问题是这样写，弹簧一旦拉开就不会不停的运动下去（动能和势能相互转化），所以还需要引入摩擦力 引入摩擦力之前先引入一些符号表示位置、速度、加速度 给物体一个相反与速度方向的力，但还有问题，这样会导致所有的运动都停下来，假设AB两个物体同步向右走，他俩都有速度，但相对之间没有速度，所以应该没摩擦力，但是用下面的公式，只要物体有速度，就会受到摩擦力而停止 我们在逐渐完善弹簧系统，摩擦力应该跟着物体AB的相对运动而产生，下图用两个物体速度差来表示相对速度，另外还需要考虑这个速度差是沿着弹簧方向才行，所以点乘$\\frac{b - a}{|b - a|}$来投影到ba方向 下面看一些弹簧结构 模型的行为是由结构连接来决定的，下面看如果一块布这样设计，很明显是不合理的，图中展示了2种原因（布可以抵抗切变力但这个结构不行，布会对抗对折） 先来改进切变，加入蓝色弹簧来抵抗 再加另外一个方向，但不能解决第二个问题 最终版 ">
+<meta property='og:url' content='https://sdpyy1.github.io/p/games101-%E7%8E%B0%E4%BB%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9B%BE%E5%BD%A2%E5%AD%A6%E5%85%A5%E9%97%A8-animation/simulation/'>
+<meta property='og:site_name' content='wanfeng'>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='课程笔记' /><meta property='article:published_time' content='2025-10-19T12:48:02&#43;08:00'/><meta property='article:modified_time' content='2025-10-19T12:48:02&#43;08:00'/>
+<meta name="twitter:title" content="GAMES101 现代计算机图形学入门 Animation/Simulation">
+<meta name="twitter:description" content="一些科普 Keyframe Animator Physical Simulation 利用物理公式来模拟 质点弹簧系统 Mass Spring Rope 下面开始描述这个系统 胡克定律描述弹簧或弹性体所受的回复力 F 与形变量 x 成正比， $k_s$是劲度系数，但是弹簧本身也有长度 考虑弹簧原始长度 ，$\\frac{b - a}{|b - a|}$这个向量用来表示方向，但问题是这样写，弹簧一旦拉开就不会不停的运动下去（动能和势能相互转化），所以还需要引入摩擦力 引入摩擦力之前先引入一些符号表示位置、速度、加速度 给物体一个相反与速度方向的力，但还有问题，这样会导致所有的运动都停下来，假设AB两个物体同步向右走，他俩都有速度，但相对之间没有速度，所以应该没摩擦力，但是用下面的公式，只要物体有速度，就会受到摩擦力而停止 我们在逐渐完善弹簧系统，摩擦力应该跟着物体AB的相对运动而产生，下图用两个物体速度差来表示相对速度，另外还需要考虑这个速度差是沿着弹簧方向才行，所以点乘$\\frac{b - a}{|b - a|}$来投影到ba方向 下面看一些弹簧结构 模型的行为是由结构连接来决定的，下面看如果一块布这样设计，很明显是不合理的，图中展示了2种原因（布可以抵抗切变力但这个结构不行，布会对抗对折） 先来改进切变，加入蓝色弹簧来抵抗 再加另外一个方向，但不能解决第二个问题 最终版 ">
+    <link rel="shortcut icon" href="/favicon.ico" />
+
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="切换菜单">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        
+            
+            <figure class="site-avatar">
+                <a href="/">
+                
+                    
+                    
+                    
+                        
+                        <img src="/img/avatar_hu_f59158f730715054.png" width="300"
+                            height="300" class="site-logo" loading="lazy" alt="Avatar">
+                    
+                
+                </a>
+                
+                    <span class="emoji">🧐</span>
+                
+            </figure>
+            
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="/">wanfeng</a></h1>
+            <h2 class="site-description">Blog</h2>
+        </div>
+    </header><ol class="menu-social">
+            
+                <li>
+                    <a 
+                        href='https://space.bilibili.com/287473737'
+                        target="_blank"
+                        title="Bilibili"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-brand-bilibili"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 10a4 4 0 0 1 4 -4h10a4 4 0 0 1 4 4v6a4 4 0 0 1 -4 4h-10a4 4 0 0 1 -4 -4v-6z" /><path d="M8 3l2 3" /><path d="M16 3l-2 3" /><path d="M9 13v-2" /><path d="M15 11v2" /></svg>
+                        
+                    </a>
+                </li>
+            
+                <li>
+                    <a 
+                        href='https://github.com/sdpyy1'
+                        target="_blank"
+                        title="GitHub"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
+</svg>
+
+
+
+                        
+                    </a>
+                </li>
+            
+        </ol><ol class="menu" id="main-menu">
+        
+        
+        
+        <li >
+            <a href='/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>Home</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/about/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>About</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>Archives</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/search/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>Search</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/links/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5" />
+  <path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5" />
+</svg>
+
+
+
+                
+                <span>Links</span>
+            </a>
+        </li>
+        
+        <li class="menu-bottom-section">
+            <ol class="menu">
+                    
+                        <li id="i18n-switch">  
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-language" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M4 5h7" />
+  <path d="M9 3v2c0 4.418 -2.239 8 -5 8" />
+  <path d="M5 9c-.003 2.144 2.952 3.908 6.7 4" />
+  <path d="M12 20l4 -9l4 9" />
+  <path d="M19.1 18h-6.2" />
+</svg>
+
+
+
+                            <select name="language" title="language" onchange="window.location.href = this.selectedOptions[0].value">
+                                
+                                    <option value="https://sdpyy1.github.io/en/" >English</option>
+                                
+                                    <option value="https://sdpyy1.github.io/" selected>中文</option>
+                                
+                            </select>
+                        </li>
+                    
+                
+
+                
+                    <li id="dark-mode-toggle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <span>暗色模式</span>
+                    </li>
+                
+            </ol>
+        </li>
+    </ol>
+</aside>
+
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">目录</h2>
+        
+        <div class="widget--toc">
+            <nav id="TableOfContents">
+  <ol>
+    <li><a href="#keyframe-animator">Keyframe Animator</a></li>
+    <li><a href="#physical-simulation">Physical Simulation</a></li>
+    <li><a href="#质点弹簧系统-mass-spring-rope">质点弹簧系统 Mass Spring Rope</a></li>
+    <li><a href="#粒子系统">粒子系统</a></li>
+    <li><a href="#运动学-forward-kinematics">运动学 Forward Kinematics</a></li>
+    <li><a href="#逆运动学inverse-kinematics">逆运动学Inverse Kinematics</a></li>
+    <li><a href="#rigging">Rigging</a></li>
+    <li><a href="#motion-capture">Motion Capture</a></li>
+  </ol>
+
+  <ol>
+    <li><a href="#single-particle-simulation">Single Particle Simulation</a></li>
+    <li><a href="#流体模拟-fluid-simulation">流体模拟 Fluid Simulation</a></li>
+  </ol>
+</nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+            <main class="main full-width">
+    <article class="main-article">
+    <header class="article-header">
+
+    <div class="article-details">
+    
+    <header class="article-category">
+        
+        
+             
+            
+            
+            
+            <div class="category-hierarchy">
+                
+                    
+                    
+                    
+                        
+                    
+                     
+                    
+                    
+                    
+                    <a href="/categories/course/" 
+                       >
+                        Course
+                    </a>
+                    
+                    
+                    
+                        <span class="category-separator">/</span>
+                    
+                
+                    
+                    
+                    
+                        
+                    
+                        
+                    
+                     
+                    
+                    
+                    
+                    <a href="/categories/course/games101/" 
+                       >
+                        Games101
+                    </a>
+                    
+                    
+                    
+                
+            </div>
+        
+    </header>
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="/p/games101-%E7%8E%B0%E4%BB%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9B%BE%E5%BD%A2%E5%AD%A6%E5%85%A5%E9%97%A8-animation/simulation/">GAMES101 现代计算机图形学入门 Animation/Simulation</a>
+        </h2>
+    
+        
+    </div>
+
+    
+    
+    
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published">Oct 19, 2025</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-time--reading">
+                    阅读时长: 2 分钟
+                </time>
+            </div>
+        
+
+        
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+        <span id="busuanzi_container_page_pv">本文阅读量<span id="busuanzi_value_page_pv"></span>次</span>
+    </footer>
+    
+    
+</div>
+<style>
+    .category-hierarchy {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;  
+        margin-right: 12px;  
+        margin-bottom: 8px;  
+    }
+    
+    .category-separator {
+        color: #999;
+        user-select: none;
+        font-size: 1em;  
+    }
+    
+    .article-category a {
+        text-decoration: none;
+        padding: 6px 12px;  
+        border-radius: 6px;  
+        font-size: 0.95em;  
+        transition: all 0.2s ease;
+        line-height: 1.5;  
+    }
+    
+    .article-category a:hover {
+        opacity: 0.9;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 6px rgba(0,0,0,0.1);  
+    }
+</style>
+</header>
+
+    <section class="article-content">
+    
+    
+    <h1 id="一些科普">一些科普
+</h1><h2 id="keyframe-animator">Keyframe Animator
+</h2><p><img src="/254f33ee74a74430a5be6baf38e5d1f5.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+></p>
+<h2 id="physical-simulation">Physical Simulation
+</h2><p>利用物理公式来模拟
+<img src="/91f335168e244e1ea749d0d67d302687.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+></p>
+<h2 id="质点弹簧系统-mass-spring-rope">质点弹簧系统 Mass Spring Rope
+</h2><p>下面开始描述这个系统
+胡克定律描述弹簧或弹性体所受的回复力 F 与形变量 x 成正比， $k_s$是劲度系数，但是弹簧本身也有长度
+<img src="/25049f6423a34d6a898ad8f34f17e20d.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>考虑弹簧原始长度 ，$\frac{b - a}{|b - a|}$这个向量用来表示方向，但问题是这样写，弹簧一旦拉开就不会不停的运动下去（动能和势能相互转化），所以还需要引入摩擦力
+<img src="/110547693de240849dbc157c4afa95ce.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+引入摩擦力之前先引入一些符号表示位置、速度、加速度
+<img src="/1a0fdeee467b47318d4eccd8e33ae216.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+给物体一个相反与速度方向的力，但还有问题，这样会导致所有的运动都停下来，假设AB两个物体同步向右走，他俩都有速度，但相对之间没有速度，所以应该没摩擦力，但是用下面的公式，只要物体有速度，就会受到摩擦力而停止
+<img src="/14a447de54d34ed391bbf45e9f856c14.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+我们在逐渐完善弹簧系统，摩擦力应该跟着物体AB的相对运动而产生，下图用两个物体速度差来表示相对速度，另外还需要考虑这个速度差是沿着弹簧方向才行，所以点乘$\frac{b - a}{|b - a|}$来投影到ba方向
+<img src="/a1438c4208f446f6b6af25aefb047a62.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+下面看一些弹簧结构<img src="/bf8f492757154e20ae44b810420dfcb7.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+模型的行为是由结构连接来决定的，下面看如果一块布这样设计，很明显是不合理的，图中展示了2种原因（布可以抵抗切变力但这个结构不行，布会对抗对折）
+<img src="/6b48a3875c18466e8ebc2c0aed92d4fd.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+先来改进切变，加入蓝色弹簧来抵抗<img src="/fc36d6c0ec0b45e9b18956c7bad91719.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+再加另外一个方向，但不能解决第二个问题
+<img src="/b0a5fe3bed954fa284c3e6d218d2bab8.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+最终版
+<img src="/39275121565e476a9ff80c4325673c09.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+></p>
+<h2 id="粒子系统">粒子系统
+</h2><p><img src="/48203561654e46c1b304d23a609f9e96.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+<img src="/2e6cc29304194f129916e28fdba8bae2.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+></p>
+<h2 id="运动学-forward-kinematics">运动学 Forward Kinematics
+</h2><p><img src="/800e646fb8dc48c7b31d322eded58823.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+已知角度求P的位置
+<img src="/703cbcdc115340778d35738f211ec57e.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+></p>
+<h2 id="逆运动学inverse-kinematics">逆运动学Inverse Kinematics
+</h2><p>已知P的位置求角度
+<img src="/b62327776513418c87a405914d33ddba.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+></p>
+<h2 id="rigging">Rigging
+</h2><p><img src="/1f420e4a8bde4f1db3da9f9895c7b114.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+></p>
+<p><img src="/49ba0bbdd1d24a848de86f532c675a7e.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+></p>
+<h2 id="motion-capture">Motion Capture
+</h2><p>![请添<img src="/bf2d01f5eb5f4bcd8eae491584418063.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+></p>
+<h1 id="第二次课-cont">第二次课 cont.
+</h1><h2 id="single-particle-simulation">Single Particle Simulation
+</h2><p>首先学习单粒子运动，假设粒子的运动由一个速度向量场决定，速度向量场的速度由位置和时间决定
+<img src="/f02f0ad1b7cd45e98ac0935b806f85b6.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+>
+要计算粒子在某个时间的位置，需要解下图所示的常微分方程
+<img src="/de4f27953eb44c24917d53b78be5046f.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+>
+用欧拉公式来解微分方程，用上一步的数据来计算下一步的位置
+<img src="/a107c18e085447c09e0242d062cd108d.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+>
+欧拉方程的误差与步长大小有关
+<img src="/16f272e6dc224dba89340ffb8d8a7eff.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+>
+欧拉方程的不稳定性，在一个螺旋速度场中，本来应该旋转，但是不管步长选的多小都一定会飞出去。第二幅图的运动模拟也不合理。
+<img src="/5830c8a8200546aeac8aa4f58bce0b4f.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+>
+如何解决呢，有人提出了中点法，先用欧拉算出a点，但不用a点，取中点b，考虑b点的速度，应用b点的速度回去重新算欧拉
+<img src="/e32beae8a0994f9d83cecac488b87535.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+>
+进一步，有人用中点思想，算两次欧拉方法，不是回原点重新算，而是去中点算，如果算出来和第一次算出来差不多就不算了，说明步长够小了
+<img src="/d577bca230be4e05aba92260bee39e42.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+>
+还有隐式的欧拉方法
+<img src="/a3bde1586cb94a169354526f9e18eaa1.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+>
+Runge-Kutta Families
+<img src="/6505e56ffe404bcd8a17749f9b9b7f9f.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+>
+Position-Based / Verlet Integration
+<img src="/30ea8e236c8b4792a83b6a0cf536de57.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+>
+刚体（不会发生形变）模拟
+<img src="/32fd87b928d640f8ad20b95caa79d2d8.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+></p>
+<h2 id="流体模拟-fluid-simulation">流体模拟 Fluid Simulation
+</h2><p><img src="/f0dc6630895540ebbe11b9880dd7c8dc.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+>
+<img src="/050ad9b02d4449e6a2605cbe04ca9999.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+>
+<img src="/35a97b81986e4258bb49b15dedacf91f.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+>
+这门课的动画模拟更多都是在科普。</p>
+
+</section>
+
+
+    <footer class="article-footer">
+    
+    <section class="article-tags">
+        
+            <a href="/tags/%E8%AF%BE%E7%A8%8B%E7%AC%94%E8%AE%B0/">课程笔记</a>
+        
+    </section>
+
+
+    
+    <section class="article-copyright">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
+</svg>
+
+
+
+        <span>Licensed under CC BY-NC-SA 4.0</span>
+    </section>
+    </footer>
+
+
+    
+        <link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css"integrity="sha384-n8MVd4RsNIU0tAv4ct0nTaAbDJwPJzDEaqSD1odI&#43;WdtXRGWt2kTvGFasHpSy3SV"crossorigin="anonymous"
+            ><script 
+                src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"integrity="sha384-XjKyOOlGwcjNTAIQHIpgOno0Hl1YQqzUOEleOLALmuqehneUG&#43;vnGctmUb0ZY0l8"crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"integrity="sha384-&#43;VBxd3r6XgURycqtZ117nYw44OOcIax56Z4dCRWbxyPt0Koah1uHoK0o4&#43;/RRE05"crossorigin="anonymous"
+                defer
+                >
+            </script><script>
+    window.addEventListener("DOMContentLoaded", () => {
+	const mainArticleElement = document.querySelector(".main-article");
+        renderMathInElement(mainArticleElement, {
+            delimiters: [
+                { left: "$$", right: "$$", display: true },
+                { left: "$", right: "$", display: false },
+                { left: "\\(", right: "\\)", display: false },
+                { left: "\\[", right: "\\]", display: true }
+            ],
+            ignoredClasses: ["gist"]
+        });})
+</script>
+
+    
+</article>
+
+    
+
+    
+
+<aside class="related-content--wrapper">
+    <h2 class="section-title">相关文章</h2>
+    <div class="related-content">
+        <div class="flex article-list--tile">
+            
+                
+<article class="article-card no-image">
+    <a href="/p/games101-%E7%8E%B0%E4%BB%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9B%BE%E5%BD%A2%E5%AD%A6%E5%85%A5%E9%97%A8-camera-lenses-light-fields-color-and-perception/">
+        
+        
+        <div class="article-details">
+            <h2 class="article-title">GAMES101 现代计算机图形学入门 Camera Lenses Light Fields Color and Perception</h2>
+        </div>
+        
+    </a>
+
+    <style>
+     
+    .article-card {
+        background: rgba(255, 255, 255, 0.25);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        margin: 10px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .article-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    }
+
+    .article-card a {
+        display: flex;
+        flex-direction: column;
+        text-decoration: none;
+        color: inherit;
+        height: 100%;
+    }
+
+     
+    .article-image {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        overflow: hidden;
+    }
+    .article-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+    .article-image:hover img {
+        transform: scale(1.05);
+    }
+
+     
+    .article-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: rgba(0,0,0,0.3);  
+        padding: 10px;
+        box-sizing: border-box;
+        text-align: center;
+    }
+    .article-overlay .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #fff;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .article-card.no-image .article-details {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 15px;
+    }
+    .article-card.no-image .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #222;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .articles-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 20px;
+    }
+    </style>
+</article>
+            
+                
+<article class="article-card no-image">
+    <a href="/p/games101-%E7%8E%B0%E4%BB%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9B%BE%E5%BD%A2%E5%AD%A6%E5%85%A5%E9%97%A8-ray-tracing/">
+        
+        
+        <div class="article-details">
+            <h2 class="article-title">GAMES101 现代计算机图形学入门 Ray Tracing</h2>
+        </div>
+        
+    </a>
+
+    <style>
+     
+    .article-card {
+        background: rgba(255, 255, 255, 0.25);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        margin: 10px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .article-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    }
+
+    .article-card a {
+        display: flex;
+        flex-direction: column;
+        text-decoration: none;
+        color: inherit;
+        height: 100%;
+    }
+
+     
+    .article-image {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        overflow: hidden;
+    }
+    .article-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+    .article-image:hover img {
+        transform: scale(1.05);
+    }
+
+     
+    .article-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: rgba(0,0,0,0.3);  
+        padding: 10px;
+        box-sizing: border-box;
+        text-align: center;
+    }
+    .article-overlay .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #fff;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .article-card.no-image .article-details {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 15px;
+    }
+    .article-card.no-image .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #222;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .articles-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 20px;
+    }
+    </style>
+</article>
+            
+                
+<article class="article-card no-image">
+    <a href="/p/games101-%E7%8E%B0%E4%BB%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9B%BE%E5%BD%A2%E5%AD%A6%E5%85%A5%E9%97%A8-geometry/">
+        
+        
+        <div class="article-details">
+            <h2 class="article-title">GAMES101 现代计算机图形学入门 Geometry</h2>
+        </div>
+        
+    </a>
+
+    <style>
+     
+    .article-card {
+        background: rgba(255, 255, 255, 0.25);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        margin: 10px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .article-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    }
+
+    .article-card a {
+        display: flex;
+        flex-direction: column;
+        text-decoration: none;
+        color: inherit;
+        height: 100%;
+    }
+
+     
+    .article-image {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        overflow: hidden;
+    }
+    .article-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+    .article-image:hover img {
+        transform: scale(1.05);
+    }
+
+     
+    .article-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: rgba(0,0,0,0.3);  
+        padding: 10px;
+        box-sizing: border-box;
+        text-align: center;
+    }
+    .article-overlay .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #fff;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .article-card.no-image .article-details {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 15px;
+    }
+    .article-card.no-image .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #222;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .articles-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 20px;
+    }
+    </style>
+</article>
+            
+                
+<article class="article-card no-image">
+    <a href="/p/games101-%E7%8E%B0%E4%BB%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9B%BE%E5%BD%A2%E5%AD%A6%E5%85%A5%E9%97%A8-shading/">
+        
+        
+        <div class="article-details">
+            <h2 class="article-title">GAMES101 现代计算机图形学入门 Shading</h2>
+        </div>
+        
+    </a>
+
+    <style>
+     
+    .article-card {
+        background: rgba(255, 255, 255, 0.25);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        margin: 10px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .article-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    }
+
+    .article-card a {
+        display: flex;
+        flex-direction: column;
+        text-decoration: none;
+        color: inherit;
+        height: 100%;
+    }
+
+     
+    .article-image {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        overflow: hidden;
+    }
+    .article-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+    .article-image:hover img {
+        transform: scale(1.05);
+    }
+
+     
+    .article-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: rgba(0,0,0,0.3);  
+        padding: 10px;
+        box-sizing: border-box;
+        text-align: center;
+    }
+    .article-overlay .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #fff;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .article-card.no-image .article-details {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 15px;
+    }
+    .article-card.no-image .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #222;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .articles-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 20px;
+    }
+    </style>
+</article>
+            
+                
+<article class="article-card no-image">
+    <a href="/p/games101-%E7%8E%B0%E4%BB%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9B%BE%E5%BD%A2%E5%AD%A6%E5%85%A5%E9%97%A8-transformation-rasterization/">
+        
+        
+        <div class="article-details">
+            <h2 class="article-title">GAMES101 现代计算机图形学入门 Transformation &amp; Rasterization</h2>
+        </div>
+        
+    </a>
+
+    <style>
+     
+    .article-card {
+        background: rgba(255, 255, 255, 0.25);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        margin: 10px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .article-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    }
+
+    .article-card a {
+        display: flex;
+        flex-direction: column;
+        text-decoration: none;
+        color: inherit;
+        height: 100%;
+    }
+
+     
+    .article-image {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        overflow: hidden;
+    }
+    .article-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+    .article-image:hover img {
+        transform: scale(1.05);
+    }
+
+     
+    .article-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: rgba(0,0,0,0.3);  
+        padding: 10px;
+        box-sizing: border-box;
+        text-align: center;
+    }
+    .article-overlay .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #fff;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .article-card.no-image .article-details {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 15px;
+    }
+    .article-card.no-image .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #222;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .articles-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 20px;
+    }
+    </style>
+</article>
+            
+        </div>
+    </div>
+</aside>
+
+     
+    
+        
+    <script
+    src="https://giscus.app/client.js"
+    data-repo="sdpyy1/sdpyy1.github.io"
+    data-repo-id="R_kgDOQEycpQ"
+    data-category="Announcements"
+    data-category-id="DIC_kwDOQEycpc4Cwz7v"
+    data-mapping="pathname"
+    data-strict="0"
+    data-reactions-enabled="1"
+    data-emit-metadata="0"
+    data-input-position="top"
+    data-theme="light"
+    data-lang="en"
+    data-loading=""
+    crossorigin="anonymous"
+    async
+></script>
+<script>
+    function setGiscusTheme(theme) {
+        let giscus = document.querySelector("iframe.giscus-frame");
+        if (giscus) {
+            giscus.contentWindow.postMessage(
+                {
+                    giscus: {
+                        setConfig: {
+                            theme: theme,
+                        },
+                    },
+                },
+                "https://giscus.app"
+            );
+        }
+    }
+
+    (function () {
+        addEventListener("message", (e) => {
+            if (event.origin !== "https://giscus.app") return;
+            handler();
+        });
+        window.addEventListener("onColorSchemeChange", handler);
+
+        function handler() {
+            if (document.documentElement.dataset.scheme === "light") {
+                setGiscusTheme('light');
+            } else {
+                setGiscusTheme('light');
+            }
+        }
+    })();
+</script>
+
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+            2020 - 
+        
+        2025 爱喝东方树叶
+    </section>
+    <section style="display: flex; gap: 30px; align-items: center;">
+      
+      
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+      <span>📚 文章数: 13</span>
+      <span>✍️ 总字数: 
+        
+        
+        26.09K
+      </span>
+    </section>
+
+    <section class="powerby">
+    
+    <div class="busuanzi-footer">
+        <span id="busuanzi_container_site_pv">
+          本站总访问量<span id="busuanzi_value_site_pv"></span>次
+        </span>
+        <span id="busuanzi_container_site_uv">
+          本站访客数<span id="busuanzi_value_site_uv"></span>人次
+        </span>
+      </div></section>
+
+</footer>
+
+
+    
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    
+    <div class="pswp__bg"></div>
+
+    
+    <div class="pswp__scroll-wrap">
+
+        
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                
+                
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                        <div class="pswp__preloader__cut">
+                            <div class="pswp__preloader__donut"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div>
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js"integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo="crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js"integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU="crossorigin="anonymous"
+                defer
+                >
+            </script><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css"crossorigin="anonymous"
+            ><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css"crossorigin="anonymous"
+            >
+
+            </main>
+        </div>
+        <script 
+                src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js"integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z&#43;KMkF24hUW8WePSA9HM="crossorigin="anonymous"
+                
+                >
+            </script><script type="text/javascript" src="/ts/main.1e9a3bafd846ced4c345d084b355fb8c7bae75701c338f8a1f8a82c780137826.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>

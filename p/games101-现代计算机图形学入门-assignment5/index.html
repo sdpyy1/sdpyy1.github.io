@@ -1,0 +1,2014 @@
+<!DOCTYPE html>
+<html lang="zh-cn" dir="ltr">
+    <head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'>
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+  <meta name="referrer" content="no-referrer-when-downgrade"><meta name='description' content="作业介绍 eye ray（计算像素坐标实际对应的空间坐标） 这里首先需要回顾一下光栅化过程中的各种space转换\nModel Space 模型自身的局部坐标系，类如.obj文件中定义的顶点位置，并不会随着在空间中移动而修改 World Space 全局坐标系，所有物体在此空间中进行定位和交互 View Space 以摄像机为原点的坐标系，看向-Z方向 Clip Space 经投影矩阵（Projection Matrix）变换后的标准化坐标空间（范围[-1,1]） Screen Space 经过视口转换映射到屏幕上 Raster Space 用于表示最终渲染图像中每个像素的位置\u200c 遍历像素是在Raster Space中进行的，第一步要计算摄像机看向每个像素时，实际上看向的空间坐标。（在这里意识到之前学习的一个误区，经过视口变化后，xy坐标范围从[-1,1]变化为[0,width/heigth]，而z坐标并不是变成从0开始，然后向-z变化，而是主要看最大深度和最小深度是如何设置的）\n">
+<title>GAMES101 现代计算机图形学入门 Assignment5</title>
+
+<link rel='canonical' href='https://sdpyy1.github.io/p/games101-%E7%8E%B0%E4%BB%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9B%BE%E5%BD%A2%E5%AD%A6%E5%85%A5%E9%97%A8-assignment5/'>
+
+<link rel="stylesheet" href="/scss/style.min.6a692fd055deae459f2a9767f57f3855ba80cafd5041317f24f7360f6ca47cdf.css"><meta property='og:title' content="GAMES101 现代计算机图形学入门 Assignment5">
+<meta property='og:description' content="作业介绍 eye ray（计算像素坐标实际对应的空间坐标） 这里首先需要回顾一下光栅化过程中的各种space转换\nModel Space 模型自身的局部坐标系，类如.obj文件中定义的顶点位置，并不会随着在空间中移动而修改 World Space 全局坐标系，所有物体在此空间中进行定位和交互 View Space 以摄像机为原点的坐标系，看向-Z方向 Clip Space 经投影矩阵（Projection Matrix）变换后的标准化坐标空间（范围[-1,1]） Screen Space 经过视口转换映射到屏幕上 Raster Space 用于表示最终渲染图像中每个像素的位置\u200c 遍历像素是在Raster Space中进行的，第一步要计算摄像机看向每个像素时，实际上看向的空间坐标。（在这里意识到之前学习的一个误区，经过视口变化后，xy坐标范围从[-1,1]变化为[0,width/heigth]，而z坐标并不是变成从0开始，然后向-z变化，而是主要看最大深度和最小深度是如何设置的）\n">
+<meta property='og:url' content='https://sdpyy1.github.io/p/games101-%E7%8E%B0%E4%BB%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9B%BE%E5%BD%A2%E5%AD%A6%E5%85%A5%E9%97%A8-assignment5/'>
+<meta property='og:site_name' content='wanfeng'>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='课程作业' /><meta property='article:published_time' content='2025-10-19T13:24:12&#43;08:00'/><meta property='article:modified_time' content='2025-10-19T13:24:12&#43;08:00'/>
+<meta name="twitter:title" content="GAMES101 现代计算机图形学入门 Assignment5">
+<meta name="twitter:description" content="作业介绍 eye ray（计算像素坐标实际对应的空间坐标） 这里首先需要回顾一下光栅化过程中的各种space转换\nModel Space 模型自身的局部坐标系，类如.obj文件中定义的顶点位置，并不会随着在空间中移动而修改 World Space 全局坐标系，所有物体在此空间中进行定位和交互 View Space 以摄像机为原点的坐标系，看向-Z方向 Clip Space 经投影矩阵（Projection Matrix）变换后的标准化坐标空间（范围[-1,1]） Screen Space 经过视口转换映射到屏幕上 Raster Space 用于表示最终渲染图像中每个像素的位置\u200c 遍历像素是在Raster Space中进行的，第一步要计算摄像机看向每个像素时，实际上看向的空间坐标。（在这里意识到之前学习的一个误区，经过视口变化后，xy坐标范围从[-1,1]变化为[0,width/heigth]，而z坐标并不是变成从0开始，然后向-z变化，而是主要看最大深度和最小深度是如何设置的）\n">
+    <link rel="shortcut icon" href="/favicon.ico" />
+
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="切换菜单">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        
+            
+            <figure class="site-avatar">
+                <a href="/">
+                
+                    
+                    
+                    
+                        
+                        <img src="/img/avatar_hu_f59158f730715054.png" width="300"
+                            height="300" class="site-logo" loading="lazy" alt="Avatar">
+                    
+                
+                </a>
+                
+                    <span class="emoji">🧐</span>
+                
+            </figure>
+            
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="/">wanfeng</a></h1>
+            <h2 class="site-description">Blog</h2>
+        </div>
+    </header><ol class="menu-social">
+            
+                <li>
+                    <a 
+                        href='https://space.bilibili.com/287473737'
+                        target="_blank"
+                        title="Bilibili"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-brand-bilibili"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 10a4 4 0 0 1 4 -4h10a4 4 0 0 1 4 4v6a4 4 0 0 1 -4 4h-10a4 4 0 0 1 -4 -4v-6z" /><path d="M8 3l2 3" /><path d="M16 3l-2 3" /><path d="M9 13v-2" /><path d="M15 11v2" /></svg>
+                        
+                    </a>
+                </li>
+            
+                <li>
+                    <a 
+                        href='https://github.com/sdpyy1'
+                        target="_blank"
+                        title="GitHub"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
+</svg>
+
+
+
+                        
+                    </a>
+                </li>
+            
+        </ol><ol class="menu" id="main-menu">
+        
+        
+        
+        <li >
+            <a href='/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>Home</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/about/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>About</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>Archives</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/search/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>Search</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/links/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5" />
+  <path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5" />
+</svg>
+
+
+
+                
+                <span>Links</span>
+            </a>
+        </li>
+        
+        <li class="menu-bottom-section">
+            <ol class="menu">
+                    
+                        <li id="i18n-switch">  
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-language" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M4 5h7" />
+  <path d="M9 3v2c0 4.418 -2.239 8 -5 8" />
+  <path d="M5 9c-.003 2.144 2.952 3.908 6.7 4" />
+  <path d="M12 20l4 -9l4 9" />
+  <path d="M19.1 18h-6.2" />
+</svg>
+
+
+
+                            <select name="language" title="language" onchange="window.location.href = this.selectedOptions[0].value">
+                                
+                                    <option value="https://sdpyy1.github.io/en/" >English</option>
+                                
+                                    <option value="https://sdpyy1.github.io/" selected>中文</option>
+                                
+                            </select>
+                        </li>
+                    
+                
+
+                
+                    <li id="dark-mode-toggle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <span>暗色模式</span>
+                    </li>
+                
+            </ol>
+        </li>
+    </ol>
+</aside>
+
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">目录</h2>
+        
+        <div class="widget--toc">
+            <nav id="TableOfContents">
+  <ol>
+    <li><a href="#object及其派生">Object及其派生</a></li>
+  </ol>
+
+  <ol>
+    <li><a href="#trace">trace</a></li>
+    <li><a href="#castray">castRay</a></li>
+  </ol>
+</nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+            <main class="main full-width">
+    <article class="main-article">
+    <header class="article-header">
+
+    <div class="article-details">
+    
+    <header class="article-category">
+        
+        
+             
+            
+            
+            
+            <div class="category-hierarchy">
+                
+                    
+                    
+                    
+                        
+                    
+                     
+                    
+                    
+                    
+                    <a href="/categories/course/" 
+                       >
+                        Course
+                    </a>
+                    
+                    
+                    
+                        <span class="category-separator">/</span>
+                    
+                
+                    
+                    
+                    
+                        
+                    
+                        
+                    
+                     
+                    
+                    
+                    
+                    <a href="/categories/course/games101/" 
+                       >
+                        Games101
+                    </a>
+                    
+                    
+                    
+                
+            </div>
+        
+             
+            
+            
+            
+            <div class="category-hierarchy">
+                
+                    
+                    
+                    
+                        
+                    
+                     
+                    
+                    
+                    
+                    <a href="/categories/assignment/" 
+                       >
+                        Assignment
+                    </a>
+                    
+                    
+                    
+                
+            </div>
+        
+    </header>
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="/p/games101-%E7%8E%B0%E4%BB%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9B%BE%E5%BD%A2%E5%AD%A6%E5%85%A5%E9%97%A8-assignment5/">GAMES101 现代计算机图形学入门 Assignment5</a>
+        </h2>
+    
+        
+    </div>
+
+    
+    
+    
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published">Oct 19, 2025</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-time--reading">
+                    阅读时长: 7 分钟
+                </time>
+            </div>
+        
+
+        
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+        <span id="busuanzi_container_page_pv">本文阅读量<span id="busuanzi_value_page_pv"></span>次</span>
+    </footer>
+    
+    
+</div>
+<style>
+    .category-hierarchy {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;  
+        margin-right: 12px;  
+        margin-bottom: 8px;  
+    }
+    
+    .category-separator {
+        color: #999;
+        user-select: none;
+        font-size: 1em;  
+    }
+    
+    .article-category a {
+        text-decoration: none;
+        padding: 6px 12px;  
+        border-radius: 6px;  
+        font-size: 0.95em;  
+        transition: all 0.2s ease;
+        line-height: 1.5;  
+    }
+    
+    .article-category a:hover {
+        opacity: 0.9;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 6px rgba(0,0,0,0.1);  
+    }
+</style>
+</header>
+
+    <section class="article-content">
+    
+    
+    <h1 id="作业介绍">作业介绍
+</h1><p><img src="/d4bca87d0cc845e78962e550baedf970.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+></p>
+<h1 id="eye-ray计算像素坐标实际对应的空间坐标">eye ray（计算像素坐标实际对应的空间坐标）
+</h1><p>这里首先需要回顾一下光栅化过程中的各种space转换</p>
+<ol>
+<li>Model Space 模型自身的局部坐标系，类如.obj文件中定义的顶点位置，并不会随着在空间中移动而修改</li>
+<li>World Space 全局坐标系，所有物体在此空间中进行定位和交互</li>
+<li>View Space 以摄像机为原点的坐标系，看向-Z方向</li>
+<li>Clip Space 经投影矩阵（Projection Matrix）变换后的标准化坐标空间（范围[-1,1]）</li>
+<li>Screen Space 经过视口转换映射到屏幕上</li>
+<li>Raster Space 用于表示最终渲染图像中每个像素的位置‌</li>
+</ol>
+<p>遍历像素是在Raster Space中进行的，<strong>第一步要计算摄像机看向每个像素时，实际上看向的空间坐标</strong>。（在这里意识到之前学习的一个误区，经过视口变化后，xy坐标范围从[-1,1]变化为[0,width/heigth]，而z坐标并不是变成从0开始，然后向-z变化，而是主要看最大深度和最小深度是如何设置的）</p>
+<ol>
+<li>x和y都加0.5移动到像素中心</li>
+<li>$x+0.5/width，y+0.5/height$ 缩小到[0,1]</li>
+<li>下一步 $2 * ( i+0.5 )/width - 1$,扩大2倍左移一个单位，这样就移动到了[-1,1] （由于屏幕原点在左上角，y越往下越大，但是在NDC空间，y越往下越小，所以要反转y坐标）</li>
+<li>因为原来屏幕不一定是正方形，需要给x*宽高比（此时已经在NDC坐标下）</li>
+<li>最后将NDC坐标转换为摄像机视角下的坐标（给了fov，就是给了znear的位置），给x、y乘以tan(deg2rad(scene.fov * 0.5f)），这样就得到了当眼睛看向一个像素时，它实际上在znear上的位置</li>
+<li>确实没有必要继续逆转换了，因为znear上的坐标在透视投影过程中并不会变化
+<img src="/cdd4afd4f01c403baebd748d025ad72b.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+>
+给出这部分的完整代码</li>
+</ol>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl">    <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">j</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="n">scene</span><span class="p">.</span><span class="n">height</span><span class="p">;</span> <span class="o">++</span><span class="n">j</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">scene</span><span class="p">.</span><span class="n">width</span><span class="p">;</span> <span class="o">++</span><span class="n">i</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="c1">// generate primary ray direction
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>            <span class="kt">float</span> <span class="n">x</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">            <span class="kt">float</span> <span class="n">y</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">            <span class="c1">// TODO: Find the x and y positions of the current pixel to get the direction
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>            <span class="c1">// vector that passes through it.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>            <span class="c1">// Also, don&#39;t forget to multiply both of them with the variable *scale*, and
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>            <span class="c1">// x (horizontal) variable with the *imageAspectRatio*
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>            <span class="c1">// 映射到[-1,1]
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>            <span class="n">x</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">/</span> <span class="n">scene</span><span class="p">.</span><span class="n">width</span> <span class="o">-</span> <span class="mi">1</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">            <span class="n">y</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">j</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">/</span> <span class="n">scene</span><span class="p">.</span><span class="n">height</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">            <span class="c1">// 找到对应znear的坐标
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>            <span class="n">x</span> <span class="o">=</span> <span class="n">x</span> <span class="o">*</span> <span class="n">scale</span> <span class="o">*</span> <span class="n">imageAspectRatio</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">            <span class="n">y</span> <span class="o">=</span> <span class="n">y</span> <span class="o">*</span> <span class="n">scale</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">            <span class="n">Vector3f</span> <span class="n">dir</span> <span class="o">=</span> <span class="n">Vector3f</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">);</span> <span class="c1">// Don&#39;t forget to normalize this direction!
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>            <span class="n">normalize</span><span class="p">(</span><span class="n">dir</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">            <span class="n">framebuffer</span><span class="p">[</span><span class="n">m</span><span class="o">++</span><span class="p">]</span> <span class="o">=</span> <span class="n">castRay</span><span class="p">(</span><span class="n">eye_pos</span><span class="p">,</span> <span class="n">dir</span><span class="p">,</span> <span class="n">scene</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">        <span class="n">UpdateProgress</span><span class="p">(</span><span class="n">j</span> <span class="o">/</span> <span class="p">(</span><span class="kt">float</span><span class="p">)</span><span class="n">scene</span><span class="p">.</span><span class="n">height</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h1 id="raytriangleintersect-三角形与光线求交">rayTriangleIntersect 三角形与光线求交
+</h1><p>这里比较容易，因为有现成的公式，如果有交点，那这个交点可以用重心坐标表示，所以可以得出图中的等式，直接代码实现即可，最后记得判断结果的合理性（t要大于0，重心坐标三个分量都要大于0，等式已经限定了三者相加为1）
+<img src="/0d9b97e41094499aa8462e282d491ec1.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+完整代码</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="kt">bool</span> <span class="nf">rayTriangleIntersect</span><span class="p">(</span><span class="k">const</span> <span class="n">Vector3f</span><span class="o">&amp;</span> <span class="n">v0</span><span class="p">,</span> <span class="k">const</span> <span class="n">Vector3f</span><span class="o">&amp;</span> <span class="n">v1</span><span class="p">,</span> <span class="k">const</span> <span class="n">Vector3f</span><span class="o">&amp;</span> <span class="n">v2</span><span class="p">,</span> <span class="k">const</span> <span class="n">Vector3f</span><span class="o">&amp;</span> <span class="n">orig</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">                          <span class="k">const</span> <span class="n">Vector3f</span><span class="o">&amp;</span> <span class="n">dir</span><span class="p">,</span> <span class="kt">float</span><span class="o">&amp;</span> <span class="n">tnear</span><span class="p">,</span> <span class="kt">float</span><span class="o">&amp;</span> <span class="n">u</span><span class="p">,</span> <span class="kt">float</span><span class="o">&amp;</span> <span class="n">v</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">Vector3f</span> <span class="n">e1</span> <span class="o">=</span> <span class="n">v1</span><span class="o">-</span><span class="n">v0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">Vector3f</span> <span class="n">e2</span> <span class="o">=</span> <span class="n">v2</span><span class="o">-</span><span class="n">v0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">Vector3f</span> <span class="n">s</span> <span class="o">=</span> <span class="n">orig</span> <span class="o">-</span> <span class="n">v0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">Vector3f</span> <span class="n">s1</span> <span class="o">=</span> <span class="n">crossProduct</span><span class="p">(</span><span class="n">dir</span><span class="p">,</span><span class="n">e2</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">Vector3f</span> <span class="n">s2</span> <span class="o">=</span> <span class="n">crossProduct</span><span class="p">(</span><span class="n">s</span><span class="p">,</span><span class="n">e1</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">Vector3f</span> <span class="n">tmp</span><span class="p">(</span><span class="n">dotProduct</span><span class="p">(</span><span class="n">s2</span><span class="p">,</span><span class="n">e2</span><span class="p">),</span> <span class="n">dotProduct</span><span class="p">(</span><span class="n">s1</span><span class="p">,</span><span class="n">s</span><span class="p">),</span> <span class="n">dotProduct</span><span class="p">(</span><span class="n">s2</span><span class="p">,</span><span class="n">dir</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">    <span class="n">Vector3f</span> <span class="n">ans</span> <span class="o">=</span> <span class="n">tmp</span><span class="o">/</span> <span class="n">dotProduct</span><span class="p">(</span><span class="n">s1</span><span class="p">,</span><span class="n">e1</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">tnear</span> <span class="o">=</span> <span class="n">ans</span><span class="p">.</span><span class="n">x</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">u</span> <span class="o">=</span> <span class="n">ans</span><span class="p">.</span><span class="n">y</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">v</span> <span class="o">=</span> <span class="n">ans</span><span class="p">.</span><span class="n">z</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="n">tnear</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="o">&amp;&amp;</span> <span class="n">u</span><span class="o">&gt;=</span><span class="mi">0</span> <span class="o">&amp;&amp;</span> <span class="n">v</span><span class="o">&gt;=</span><span class="mi">0</span> <span class="o">&amp;&amp;</span> <span class="mi">1</span><span class="o">-</span><span class="n">u</span><span class="o">-</span><span class="n">v</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">){</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="nb">true</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="nb">false</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>上边两步做完后，作业就结束了，输出的图如下
+<img src="/596150ce910e433694d4bb76ebe253f6.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="在这里插入图片描述"
+	
+	
+></p>
+<h1 id="其他代码">其他代码
+</h1><h2 id="object及其派生">Object及其派生
+</h2><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="k">class</span> <span class="nc">Object</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl"><span class="k">public</span><span class="o">:</span>
+</span></span><span class="line"><span class="cl">    <span class="n">Object</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">        <span class="o">:</span> <span class="n">materialType</span><span class="p">(</span><span class="n">DIFFUSE_AND_GLOSSY</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="p">,</span> <span class="n">ior</span><span class="p">(</span><span class="mf">1.3</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="p">,</span> <span class="n">Kd</span><span class="p">(</span><span class="mf">0.8</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="p">,</span> <span class="n">Ks</span><span class="p">(</span><span class="mf">0.2</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="p">,</span> <span class="n">diffuseColor</span><span class="p">(</span><span class="mf">0.2</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="p">,</span> <span class="n">specularExponent</span><span class="p">(</span><span class="mi">25</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{}</span>
+</span></span><span class="line"><span class="cl">    <span class="k">virtual</span> <span class="o">~</span><span class="n">Object</span><span class="p">()</span> <span class="o">=</span> <span class="k">default</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 光线与Object是否有交点
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="k">virtual</span> <span class="kt">bool</span> <span class="nf">intersect</span><span class="p">(</span><span class="k">const</span> <span class="n">Vector3f</span><span class="o">&amp;</span><span class="p">,</span> <span class="k">const</span> <span class="n">Vector3f</span><span class="o">&amp;</span><span class="p">,</span> <span class="kt">float</span><span class="o">&amp;</span><span class="p">,</span> <span class="kt">uint32_t</span><span class="o">&amp;</span><span class="p">,</span> <span class="n">Vector2f</span><span class="o">&amp;</span><span class="p">)</span> <span class="k">const</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 负责计算交点处的表面属性
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="k">virtual</span> <span class="kt">void</span> <span class="nf">getSurfaceProperties</span><span class="p">(</span><span class="k">const</span> <span class="n">Vector3f</span><span class="o">&amp;</span><span class="p">,</span> <span class="k">const</span> <span class="n">Vector3f</span><span class="o">&amp;</span><span class="p">,</span> <span class="k">const</span> <span class="kt">uint32_t</span><span class="o">&amp;</span><span class="p">,</span> <span class="k">const</span> <span class="n">Vector2f</span><span class="o">&amp;</span><span class="p">,</span> <span class="n">Vector3f</span><span class="o">&amp;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">                                      <span class="n">Vector2f</span><span class="o">&amp;</span><span class="p">)</span> <span class="k">const</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 返回Object的漫反射颜色
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="k">virtual</span> <span class="n">Vector3f</span> <span class="nf">evalDiffuseColor</span><span class="p">(</span><span class="k">const</span> <span class="n">Vector2f</span><span class="o">&amp;</span><span class="p">)</span> <span class="k">const</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="n">diffuseColor</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// material properties
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">MaterialType</span> <span class="n">materialType</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 折射率
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="kt">float</span> <span class="n">ior</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 漫反射和高光反射系数
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="kt">float</span> <span class="n">Kd</span><span class="p">,</span> <span class="n">Ks</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 漫反射颜色
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">Vector3f</span> <span class="n">diffuseColor</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 高光指数（Phong模型参数），控制高光区域的大小和锐利程度（值越大，高光越集中）‌
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="kt">float</span> <span class="n">specularExponent</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">};</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>Object有两个实现类Sphere和MeshTriangle
+首先看看 Sphere</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="k">class</span> <span class="nc">Sphere</span> <span class="o">:</span> <span class="k">public</span> <span class="n">Object</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl"><span class="k">public</span><span class="o">:</span>
+</span></span><span class="line"><span class="cl">    <span class="n">Sphere</span><span class="p">(</span><span class="k">const</span> <span class="n">Vector3f</span><span class="o">&amp;</span> <span class="n">c</span><span class="p">,</span> <span class="k">const</span> <span class="kt">float</span><span class="o">&amp;</span> <span class="n">r</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="o">:</span> <span class="n">center</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="p">,</span> <span class="n">radius</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="p">,</span> <span class="n">radius2</span><span class="p">(</span><span class="n">r</span> <span class="o">*</span> <span class="n">r</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{}</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 实现求交 就是光线的方程与球的隐式方程联立求解
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="kt">bool</span> <span class="nf">intersect</span><span class="p">(</span><span class="k">const</span> <span class="n">Vector3f</span><span class="o">&amp;</span> <span class="n">orig</span><span class="p">,</span> <span class="k">const</span> <span class="n">Vector3f</span><span class="o">&amp;</span> <span class="n">dir</span><span class="p">,</span> <span class="kt">float</span><span class="o">&amp;</span> <span class="n">tnear</span><span class="p">,</span> <span class="kt">uint32_t</span><span class="o">&amp;</span><span class="p">,</span> <span class="n">Vector2f</span><span class="o">&amp;</span><span class="p">)</span> <span class="k">const</span> <span class="k">override</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// analytic solution
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">Vector3f</span> <span class="n">L</span> <span class="o">=</span> <span class="n">orig</span> <span class="o">-</span> <span class="n">center</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">float</span> <span class="n">a</span> <span class="o">=</span> <span class="n">dotProduct</span><span class="p">(</span><span class="n">dir</span><span class="p">,</span> <span class="n">dir</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">float</span> <span class="n">b</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">dotProduct</span><span class="p">(</span><span class="n">dir</span><span class="p">,</span> <span class="n">L</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">float</span> <span class="n">c</span> <span class="o">=</span> <span class="n">dotProduct</span><span class="p">(</span><span class="n">L</span><span class="p">,</span> <span class="n">L</span><span class="p">)</span> <span class="o">-</span> <span class="n">radius2</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">float</span> <span class="n">t0</span><span class="p">,</span> <span class="n">t1</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">solveQuadratic</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">t0</span><span class="p">,</span> <span class="n">t1</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">            <span class="k">return</span> <span class="nb">false</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="p">(</span><span class="n">t0</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">            <span class="n">t0</span> <span class="o">=</span> <span class="n">t1</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="p">(</span><span class="n">t0</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">            <span class="k">return</span> <span class="nb">false</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="n">tnear</span> <span class="o">=</span> <span class="n">t0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="nb">true</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 返回的是法线
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="kt">void</span> <span class="nf">getSurfaceProperties</span><span class="p">(</span><span class="k">const</span> <span class="n">Vector3f</span><span class="o">&amp;</span> <span class="n">P</span><span class="p">,</span> <span class="k">const</span> <span class="n">Vector3f</span><span class="o">&amp;</span><span class="p">,</span> <span class="k">const</span> <span class="kt">uint32_t</span><span class="o">&amp;</span><span class="p">,</span> <span class="k">const</span> <span class="n">Vector2f</span><span class="o">&amp;</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">                              <span class="n">Vector3f</span><span class="o">&amp;</span> <span class="n">N</span><span class="p">,</span> <span class="n">Vector2f</span><span class="o">&amp;</span><span class="p">)</span> <span class="k">const</span> <span class="k">override</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// 球表面一点的法线就是这一点与圆心连接的线
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">N</span> <span class="o">=</span> <span class="n">normalize</span><span class="p">(</span><span class="n">P</span> <span class="o">-</span> <span class="n">center</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="n">Vector3f</span> <span class="n">center</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">float</span> <span class="n">radius</span><span class="p">,</span> <span class="n">radius2</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">};</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>其中求交问题参考下图，就是联立求解，<code>solveQuadratic</code>用来求二次方程的根
+<img src="/4fc1a32d8fc740099ff75ec4aa6da3e6.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+紧接着看一下MeshTriangle</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
+</span><span class="lnt">56
+</span><span class="lnt">57
+</span><span class="lnt">58
+</span><span class="lnt">59
+</span><span class="lnt">60
+</span><span class="lnt">61
+</span><span class="lnt">62
+</span><span class="lnt">63
+</span><span class="lnt">64
+</span><span class="lnt">65
+</span><span class="lnt">66
+</span><span class="lnt">67
+</span><span class="lnt">68
+</span><span class="lnt">69
+</span><span class="lnt">70
+</span><span class="lnt">71
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="k">class</span> <span class="nc">MeshTriangle</span> <span class="o">:</span> <span class="k">public</span> <span class="n">Object</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl"><span class="k">public</span><span class="o">:</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 参数为顶点数组、索引数组、三角形数量、对应的纹理坐标
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">MeshTriangle</span><span class="p">(</span><span class="k">const</span> <span class="n">Vector3f</span><span class="o">*</span> <span class="n">verts</span><span class="p">,</span> <span class="k">const</span> <span class="kt">uint32_t</span><span class="o">*</span> <span class="n">vertsIndex</span><span class="p">,</span> <span class="k">const</span> <span class="kt">uint32_t</span><span class="o">&amp;</span> <span class="n">numTris</span><span class="p">,</span> <span class="k">const</span> <span class="n">Vector2f</span><span class="o">*</span> <span class="n">st</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">uint32_t</span> <span class="n">maxIndex</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="k">for</span> <span class="p">(</span><span class="kt">uint32_t</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">numTris</span> <span class="o">*</span> <span class="mi">3</span><span class="p">;</span> <span class="o">++</span><span class="n">i</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">            <span class="k">if</span> <span class="p">(</span><span class="n">vertsIndex</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">maxIndex</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">                <span class="n">maxIndex</span> <span class="o">=</span> <span class="n">vertsIndex</span><span class="p">[</span><span class="n">i</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">        <span class="n">maxIndex</span> <span class="o">+=</span> <span class="mi">1</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="n">vertices</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">unique_ptr</span><span class="o">&lt;</span><span class="n">Vector3f</span><span class="p">[]</span><span class="o">&gt;</span><span class="p">(</span><span class="k">new</span> <span class="n">Vector3f</span><span class="p">[</span><span class="n">maxIndex</span><span class="p">]);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">memcpy</span><span class="p">(</span><span class="n">vertices</span><span class="p">.</span><span class="n">get</span><span class="p">(),</span> <span class="n">verts</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">Vector3f</span><span class="p">)</span> <span class="o">*</span> <span class="n">maxIndex</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">vertexIndex</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">unique_ptr</span><span class="o">&lt;</span><span class="kt">uint32_t</span><span class="p">[]</span><span class="o">&gt;</span><span class="p">(</span><span class="k">new</span> <span class="kt">uint32_t</span><span class="p">[</span><span class="n">numTris</span> <span class="o">*</span> <span class="mi">3</span><span class="p">]);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">memcpy</span><span class="p">(</span><span class="n">vertexIndex</span><span class="p">.</span><span class="n">get</span><span class="p">(),</span> <span class="n">vertsIndex</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="kt">uint32_t</span><span class="p">)</span> <span class="o">*</span> <span class="n">numTris</span> <span class="o">*</span> <span class="mi">3</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">numTriangles</span> <span class="o">=</span> <span class="n">numTris</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="n">stCoordinates</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">unique_ptr</span><span class="o">&lt;</span><span class="n">Vector2f</span><span class="p">[]</span><span class="o">&gt;</span><span class="p">(</span><span class="k">new</span> <span class="n">Vector2f</span><span class="p">[</span><span class="n">maxIndex</span><span class="p">]);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">memcpy</span><span class="p">(</span><span class="n">stCoordinates</span><span class="p">.</span><span class="n">get</span><span class="p">(),</span> <span class="n">st</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">Vector2f</span><span class="p">)</span> <span class="o">*</span> <span class="n">maxIndex</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 求交 就是上边实现的功能
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="kt">bool</span> <span class="nf">intersect</span><span class="p">(</span><span class="k">const</span> <span class="n">Vector3f</span><span class="o">&amp;</span> <span class="n">orig</span><span class="p">,</span> <span class="k">const</span> <span class="n">Vector3f</span><span class="o">&amp;</span> <span class="n">dir</span><span class="p">,</span> <span class="kt">float</span><span class="o">&amp;</span> <span class="n">tnear</span><span class="p">,</span> <span class="kt">uint32_t</span><span class="o">&amp;</span> <span class="n">index</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">                   <span class="n">Vector2f</span><span class="o">&amp;</span> <span class="n">uv</span><span class="p">)</span> <span class="k">const</span> <span class="k">override</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">bool</span> <span class="n">intersect</span> <span class="o">=</span> <span class="nb">false</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="k">for</span> <span class="p">(</span><span class="kt">uint32_t</span> <span class="n">k</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">k</span> <span class="o">&lt;</span> <span class="n">numTriangles</span><span class="p">;</span> <span class="o">++</span><span class="n">k</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="k">const</span> <span class="n">Vector3f</span><span class="o">&amp;</span> <span class="n">v0</span> <span class="o">=</span> <span class="n">vertices</span><span class="p">[</span><span class="n">vertexIndex</span><span class="p">[</span><span class="n">k</span> <span class="o">*</span> <span class="mi">3</span><span class="p">]];</span>
+</span></span><span class="line"><span class="cl">            <span class="k">const</span> <span class="n">Vector3f</span><span class="o">&amp;</span> <span class="n">v1</span> <span class="o">=</span> <span class="n">vertices</span><span class="p">[</span><span class="n">vertexIndex</span><span class="p">[</span><span class="n">k</span> <span class="o">*</span> <span class="mi">3</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]];</span>
+</span></span><span class="line"><span class="cl">            <span class="k">const</span> <span class="n">Vector3f</span><span class="o">&amp;</span> <span class="n">v2</span> <span class="o">=</span> <span class="n">vertices</span><span class="p">[</span><span class="n">vertexIndex</span><span class="p">[</span><span class="n">k</span> <span class="o">*</span> <span class="mi">3</span> <span class="o">+</span> <span class="mi">2</span><span class="p">]];</span>
+</span></span><span class="line"><span class="cl">            <span class="kt">float</span> <span class="n">t</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">            <span class="k">if</span> <span class="p">(</span><span class="n">rayTriangleIntersect</span><span class="p">(</span><span class="n">v0</span><span class="p">,</span> <span class="n">v1</span><span class="p">,</span> <span class="n">v2</span><span class="p">,</span> <span class="n">orig</span><span class="p">,</span> <span class="n">dir</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="n">t</span> <span class="o">&lt;</span> <span class="n">tnear</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">            <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                <span class="n">tnear</span> <span class="o">=</span> <span class="n">t</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">                <span class="n">uv</span><span class="p">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">u</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">                <span class="n">uv</span><span class="p">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">v</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">                <span class="n">index</span> <span class="o">=</span> <span class="n">k</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">                <span class="n">intersect</span> <span class="o">|=</span> <span class="nb">true</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">            <span class="p">}</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="n">intersect</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kt">void</span> <span class="nf">getSurfaceProperties</span><span class="p">(</span><span class="k">const</span> <span class="n">Vector3f</span><span class="o">&amp;</span><span class="p">,</span> <span class="k">const</span> <span class="n">Vector3f</span><span class="o">&amp;</span><span class="p">,</span> <span class="k">const</span> <span class="kt">uint32_t</span><span class="o">&amp;</span> <span class="n">index</span><span class="p">,</span> <span class="k">const</span> <span class="n">Vector2f</span><span class="o">&amp;</span> <span class="n">uv</span><span class="p">,</span> <span class="n">Vector3f</span><span class="o">&amp;</span> <span class="n">N</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">                              <span class="n">Vector2f</span><span class="o">&amp;</span> <span class="n">st</span><span class="p">)</span> <span class="k">const</span> <span class="k">override</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">const</span> <span class="n">Vector3f</span><span class="o">&amp;</span> <span class="n">v0</span> <span class="o">=</span> <span class="n">vertices</span><span class="p">[</span><span class="n">vertexIndex</span><span class="p">[</span><span class="n">index</span> <span class="o">*</span> <span class="mi">3</span><span class="p">]];</span>
+</span></span><span class="line"><span class="cl">        <span class="k">const</span> <span class="n">Vector3f</span><span class="o">&amp;</span> <span class="n">v1</span> <span class="o">=</span> <span class="n">vertices</span><span class="p">[</span><span class="n">vertexIndex</span><span class="p">[</span><span class="n">index</span> <span class="o">*</span> <span class="mi">3</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]];</span>
+</span></span><span class="line"><span class="cl">        <span class="k">const</span> <span class="n">Vector3f</span><span class="o">&amp;</span> <span class="n">v2</span> <span class="o">=</span> <span class="n">vertices</span><span class="p">[</span><span class="n">vertexIndex</span><span class="p">[</span><span class="n">index</span> <span class="o">*</span> <span class="mi">3</span> <span class="o">+</span> <span class="mi">2</span><span class="p">]];</span>
+</span></span><span class="line"><span class="cl">        <span class="n">Vector3f</span> <span class="n">e0</span> <span class="o">=</span> <span class="n">normalize</span><span class="p">(</span><span class="n">v1</span> <span class="o">-</span> <span class="n">v0</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">Vector3f</span> <span class="n">e1</span> <span class="o">=</span> <span class="n">normalize</span><span class="p">(</span><span class="n">v2</span> <span class="o">-</span> <span class="n">v1</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// 直接用了顶点法线作为内部的法线
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">N</span> <span class="o">=</span> <span class="n">normalize</span><span class="p">(</span><span class="n">crossProduct</span><span class="p">(</span><span class="n">e0</span><span class="p">,</span> <span class="n">e1</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">        <span class="k">const</span> <span class="n">Vector2f</span><span class="o">&amp;</span> <span class="n">st0</span> <span class="o">=</span> <span class="n">stCoordinates</span><span class="p">[</span><span class="n">vertexIndex</span><span class="p">[</span><span class="n">index</span> <span class="o">*</span> <span class="mi">3</span><span class="p">]];</span>
+</span></span><span class="line"><span class="cl">        <span class="k">const</span> <span class="n">Vector2f</span><span class="o">&amp;</span> <span class="n">st1</span> <span class="o">=</span> <span class="n">stCoordinates</span><span class="p">[</span><span class="n">vertexIndex</span><span class="p">[</span><span class="n">index</span> <span class="o">*</span> <span class="mi">3</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]];</span>
+</span></span><span class="line"><span class="cl">        <span class="k">const</span> <span class="n">Vector2f</span><span class="o">&amp;</span> <span class="n">st2</span> <span class="o">=</span> <span class="n">stCoordinates</span><span class="p">[</span><span class="n">vertexIndex</span><span class="p">[</span><span class="n">index</span> <span class="o">*</span> <span class="mi">3</span> <span class="o">+</span> <span class="mi">2</span><span class="p">]];</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// 插值出来的纹理坐标
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">st</span> <span class="o">=</span> <span class="n">st0</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">uv</span><span class="p">.</span><span class="n">x</span> <span class="o">-</span> <span class="n">uv</span><span class="p">.</span><span class="n">y</span><span class="p">)</span> <span class="o">+</span> <span class="n">st1</span> <span class="o">*</span> <span class="n">uv</span><span class="p">.</span><span class="n">x</span> <span class="o">+</span> <span class="n">st2</span> <span class="o">*</span> <span class="n">uv</span><span class="p">.</span><span class="n">y</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 生成一个缩放后的棋盘格纹理，颜色在橙色和黄色之间交替
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">Vector3f</span> <span class="nf">evalDiffuseColor</span><span class="p">(</span><span class="k">const</span> <span class="n">Vector2f</span><span class="o">&amp;</span> <span class="n">st</span><span class="p">)</span> <span class="k">const</span> <span class="k">override</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">float</span> <span class="n">scale</span> <span class="o">=</span> <span class="mi">5</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">float</span> <span class="n">pattern</span> <span class="o">=</span> <span class="p">(</span><span class="n">fmodf</span><span class="p">(</span><span class="n">st</span><span class="p">.</span><span class="n">x</span> <span class="o">*</span> <span class="n">scale</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">^</span> <span class="p">(</span><span class="n">fmodf</span><span class="p">(</span><span class="n">st</span><span class="p">.</span><span class="n">y</span> <span class="o">*</span> <span class="n">scale</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">0.5</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="n">lerp</span><span class="p">(</span><span class="n">Vector3f</span><span class="p">(</span><span class="mf">0.815</span><span class="p">,</span> <span class="mf">0.235</span><span class="p">,</span> <span class="mf">0.031</span><span class="p">),</span> <span class="n">Vector3f</span><span class="p">(</span><span class="mf">0.937</span><span class="p">,</span> <span class="mf">0.937</span><span class="p">,</span> <span class="mf">0.231</span><span class="p">),</span> <span class="n">pattern</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="n">std</span><span class="o">::</span><span class="n">unique_ptr</span><span class="o">&lt;</span><span class="n">Vector3f</span><span class="p">[]</span><span class="o">&gt;</span> <span class="n">vertices</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">uint32_t</span> <span class="n">numTriangles</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">std</span><span class="o">::</span><span class="n">unique_ptr</span><span class="o">&lt;</span><span class="kt">uint32_t</span><span class="p">[]</span><span class="o">&gt;</span> <span class="n">vertexIndex</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">std</span><span class="o">::</span><span class="n">unique_ptr</span><span class="o">&lt;</span><span class="n">Vector2f</span><span class="p">[]</span><span class="o">&gt;</span> <span class="n">stCoordinates</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">};</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h1 id="renerercpp">Renerer.cpp
+</h1><p>这里就是实现整体渲染逻辑的地方</p>
+<h2 id="trace">trace
+</h2><p>求交运行的地方，从代码可以看出每个像素都需要和场景中的每个物体进行求交，效率较低，下一次作业就是加速这快东西</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="n">std</span><span class="o">::</span><span class="n">optional</span><span class="o">&lt;</span><span class="n">hit_payload</span><span class="o">&gt;</span> <span class="n">trace</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">        <span class="k">const</span> <span class="n">Vector3f</span> <span class="o">&amp;</span><span class="n">orig</span><span class="p">,</span> <span class="k">const</span> <span class="n">Vector3f</span> <span class="o">&amp;</span><span class="n">dir</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">unique_ptr</span><span class="o">&lt;</span><span class="n">Object</span><span class="o">&gt;</span> <span class="o">&gt;</span> <span class="o">&amp;</span><span class="n">objects</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">float</span> <span class="n">tNear</span> <span class="o">=</span> <span class="n">kInfinity</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">std</span><span class="o">::</span><span class="n">optional</span><span class="o">&lt;</span><span class="n">hit_payload</span><span class="o">&gt;</span> <span class="n">payload</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 用场景中所有的物体与光线进行求交
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="k">for</span> <span class="p">(</span><span class="k">const</span> <span class="k">auto</span> <span class="o">&amp;</span> <span class="nl">object</span> <span class="p">:</span> <span class="n">objects</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">float</span> <span class="n">tNearK</span> <span class="o">=</span> <span class="n">kInfinity</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">uint32_t</span> <span class="n">indexK</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="n">Vector2f</span> <span class="n">uvK</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="p">(</span><span class="n">object</span><span class="o">-&gt;</span><span class="n">intersect</span><span class="p">(</span><span class="n">orig</span><span class="p">,</span> <span class="n">dir</span><span class="p">,</span> <span class="n">tNearK</span><span class="p">,</span> <span class="n">indexK</span><span class="p">,</span> <span class="n">uvK</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="n">tNearK</span> <span class="o">&lt;</span> <span class="n">tNear</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">payload</span><span class="p">.</span><span class="n">emplace</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">            <span class="n">payload</span><span class="o">-&gt;</span><span class="n">hit_obj</span> <span class="o">=</span> <span class="n">object</span><span class="p">.</span><span class="n">get</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">            <span class="n">payload</span><span class="o">-&gt;</span><span class="n">tNear</span> <span class="o">=</span> <span class="n">tNearK</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">            <span class="n">payload</span><span class="o">-&gt;</span><span class="n">index</span> <span class="o">=</span> <span class="n">indexK</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">            <span class="n">payload</span><span class="o">-&gt;</span><span class="n">uv</span> <span class="o">=</span> <span class="n">uvK</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">            <span class="n">tNear</span> <span class="o">=</span> <span class="n">tNearK</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">payload</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="castray">castRay
+</h2><p>光线追踪的整体逻辑，递归函数很好理解，出口也很明显，具体逻辑都写注释了</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
+</span><span class="lnt">56
+</span><span class="lnt">57
+</span><span class="lnt">58
+</span><span class="lnt">59
+</span><span class="lnt">60
+</span><span class="lnt">61
+</span><span class="lnt">62
+</span><span class="lnt">63
+</span><span class="lnt">64
+</span><span class="lnt">65
+</span><span class="lnt">66
+</span><span class="lnt">67
+</span><span class="lnt">68
+</span><span class="lnt">69
+</span><span class="lnt">70
+</span><span class="lnt">71
+</span><span class="lnt">72
+</span><span class="lnt">73
+</span><span class="lnt">74
+</span><span class="lnt">75
+</span><span class="lnt">76
+</span><span class="lnt">77
+</span><span class="lnt">78
+</span><span class="lnt">79
+</span><span class="lnt">80
+</span><span class="lnt">81
+</span><span class="lnt">82
+</span><span class="lnt">83
+</span><span class="lnt">84
+</span><span class="lnt">85
+</span><span class="lnt">86
+</span><span class="lnt">87
+</span><span class="lnt">88
+</span><span class="lnt">89
+</span><span class="lnt">90
+</span><span class="lnt">91
+</span><span class="lnt">92
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="n">Vector3f</span> <span class="nf">castRay</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">        <span class="k">const</span> <span class="n">Vector3f</span> <span class="o">&amp;</span><span class="n">orig</span><span class="p">,</span> <span class="k">const</span> <span class="n">Vector3f</span> <span class="o">&amp;</span><span class="n">dir</span><span class="p">,</span> <span class="k">const</span> <span class="n">Scene</span><span class="o">&amp;</span> <span class="n">scene</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">int</span> <span class="n">depth</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="c1">// 递归出口
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="k">if</span> <span class="p">(</span><span class="n">depth</span> <span class="o">&gt;</span> <span class="n">scene</span><span class="p">.</span><span class="n">maxDepth</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="n">Vector3f</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">,</span><span class="mf">0.0</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">Vector3f</span> <span class="n">hitColor</span> <span class="o">=</span> <span class="n">scene</span><span class="p">.</span><span class="n">backgroundColor</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="k">auto</span> <span class="n">payload</span> <span class="o">=</span> <span class="n">trace</span><span class="p">(</span><span class="n">orig</span><span class="p">,</span> <span class="n">dir</span><span class="p">,</span> <span class="n">scene</span><span class="p">.</span><span class="n">get_objects</span><span class="p">());</span> <span class="n">payload</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">Vector3f</span> <span class="n">hitPoint</span> <span class="o">=</span> <span class="n">orig</span> <span class="o">+</span> <span class="n">dir</span> <span class="o">*</span> <span class="n">payload</span><span class="o">-&gt;</span><span class="n">tNear</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="n">Vector3f</span> <span class="n">N</span><span class="p">;</span> <span class="c1">// normal
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">Vector2f</span> <span class="n">st</span><span class="p">;</span> <span class="c1">// st coordinates
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="c1">// 获取该点位的法线和纹理坐标
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="n">payload</span><span class="o">-&gt;</span><span class="n">hit_obj</span><span class="o">-&gt;</span><span class="n">getSurfaceProperties</span><span class="p">(</span><span class="n">hitPoint</span><span class="p">,</span> <span class="n">dir</span><span class="p">,</span> <span class="n">payload</span><span class="o">-&gt;</span><span class="n">index</span><span class="p">,</span> <span class="n">payload</span><span class="o">-&gt;</span><span class="n">uv</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">st</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// 根据材质不同进行不同的处理
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="k">switch</span> <span class="p">(</span><span class="n">payload</span><span class="o">-&gt;</span><span class="n">hit_obj</span><span class="o">-&gt;</span><span class="n">materialType</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="c1">// 反射+折射
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>            <span class="k">case</span> <span class="nl">REFLECTION_AND_REFRACTION</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">            <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                <span class="c1">// 获得反射方向
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                <span class="n">Vector3f</span> <span class="n">reflectionDirection</span> <span class="o">=</span> <span class="n">normalize</span><span class="p">(</span><span class="n">reflect</span><span class="p">(</span><span class="n">dir</span><span class="p">,</span> <span class="n">N</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">                <span class="c1">// 获得折射方向
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                <span class="n">Vector3f</span> <span class="n">refractionDirection</span> <span class="o">=</span> <span class="n">normalize</span><span class="p">(</span><span class="n">refract</span><span class="p">(</span><span class="n">dir</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">payload</span><span class="o">-&gt;</span><span class="n">hit_obj</span><span class="o">-&gt;</span><span class="n">ior</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">                <span class="c1">// 当光线击中物体表面后，反射光线的起点如果直接使用 hitPoint（命中点），由于浮点数精度限制，新光线可能会误判为与同一物体再次相交（即“自交”），导致渲染错误（如表面黑斑或无限递归）。 根据反射方向与表面法线 N 的关系，将起点沿法线方向 ‌轻微偏移‌，使其略微离开原始表面，避免自交。
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                <span class="n">Vector3f</span> <span class="n">reflectionRayOrig</span> <span class="o">=</span> <span class="p">(</span><span class="n">dotProduct</span><span class="p">(</span><span class="n">reflectionDirection</span><span class="p">,</span> <span class="n">N</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="o">?</span>
+</span></span><span class="line"><span class="cl">                                             <span class="n">hitPoint</span> <span class="o">-</span> <span class="n">N</span> <span class="o">*</span> <span class="n">scene</span><span class="p">.</span><span class="nl">epsilon</span> <span class="p">:</span>
+</span></span><span class="line"><span class="cl">                                             <span class="n">hitPoint</span> <span class="o">+</span> <span class="n">N</span> <span class="o">*</span> <span class="n">scene</span><span class="p">.</span><span class="n">epsilon</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">                <span class="n">Vector3f</span> <span class="n">refractionRayOrig</span> <span class="o">=</span> <span class="p">(</span><span class="n">dotProduct</span><span class="p">(</span><span class="n">refractionDirection</span><span class="p">,</span> <span class="n">N</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="o">?</span>
+</span></span><span class="line"><span class="cl">                                             <span class="n">hitPoint</span> <span class="o">-</span> <span class="n">N</span> <span class="o">*</span> <span class="n">scene</span><span class="p">.</span><span class="nl">epsilon</span> <span class="p">:</span>
+</span></span><span class="line"><span class="cl">                                             <span class="n">hitPoint</span> <span class="o">+</span> <span class="n">N</span> <span class="o">*</span> <span class="n">scene</span><span class="p">.</span><span class="n">epsilon</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">                <span class="c1">// 递归计算这次反射和折射后映射到该位置的颜色
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                <span class="n">Vector3f</span> <span class="n">reflectionColor</span> <span class="o">=</span> <span class="n">castRay</span><span class="p">(</span><span class="n">reflectionRayOrig</span><span class="p">,</span> <span class="n">reflectionDirection</span><span class="p">,</span> <span class="n">scene</span><span class="p">,</span> <span class="n">depth</span> <span class="o">+</span> <span class="mi">1</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">                <span class="n">Vector3f</span> <span class="n">refractionColor</span> <span class="o">=</span> <span class="n">castRay</span><span class="p">(</span><span class="n">refractionRayOrig</span><span class="p">,</span> <span class="n">refractionDirection</span><span class="p">,</span> <span class="n">scene</span><span class="p">,</span> <span class="n">depth</span> <span class="o">+</span> <span class="mi">1</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">                <span class="c1">// 菲涅尔效应（Fresnel Effect）动态混合反射和折射颜色。菲涅尔效应表明，光线与表面交互时，反射和折射的比例取决于入射角：当光线 ‌垂直入射‌（入射角接近 0°）时，反射比例 kr 较小，折射占主导。
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                <span class="kt">float</span> <span class="n">kr</span> <span class="o">=</span> <span class="n">fresnel</span><span class="p">(</span><span class="n">dir</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">payload</span><span class="o">-&gt;</span><span class="n">hit_obj</span><span class="o">-&gt;</span><span class="n">ior</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">                <span class="n">hitColor</span> <span class="o">=</span> <span class="n">reflectionColor</span> <span class="o">*</span> <span class="n">kr</span> <span class="o">+</span> <span class="n">refractionColor</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">kr</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">                <span class="k">break</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">            <span class="p">}</span>
+</span></span><span class="line"><span class="cl">            <span class="c1">// 只有反射
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>            <span class="k">case</span> <span class="nl">REFLECTION</span><span class="p">:</span>
+</span></span><span class="line"><span class="cl">            <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                <span class="kt">float</span> <span class="n">kr</span> <span class="o">=</span> <span class="n">fresnel</span><span class="p">(</span><span class="n">dir</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">payload</span><span class="o">-&gt;</span><span class="n">hit_obj</span><span class="o">-&gt;</span><span class="n">ior</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">                <span class="n">Vector3f</span> <span class="n">reflectionDirection</span> <span class="o">=</span> <span class="n">reflect</span><span class="p">(</span><span class="n">dir</span><span class="p">,</span> <span class="n">N</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">                <span class="n">Vector3f</span> <span class="n">reflectionRayOrig</span> <span class="o">=</span> <span class="p">(</span><span class="n">dotProduct</span><span class="p">(</span><span class="n">reflectionDirection</span><span class="p">,</span> <span class="n">N</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="o">?</span>
+</span></span><span class="line"><span class="cl">                                             <span class="n">hitPoint</span> <span class="o">+</span> <span class="n">N</span> <span class="o">*</span> <span class="n">scene</span><span class="p">.</span><span class="nl">epsilon</span> <span class="p">:</span>
+</span></span><span class="line"><span class="cl">                                             <span class="n">hitPoint</span> <span class="o">-</span> <span class="n">N</span> <span class="o">*</span> <span class="n">scene</span><span class="p">.</span><span class="n">epsilon</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">                <span class="n">hitColor</span> <span class="o">=</span> <span class="n">castRay</span><span class="p">(</span><span class="n">reflectionRayOrig</span><span class="p">,</span> <span class="n">reflectionDirection</span><span class="p">,</span> <span class="n">scene</span><span class="p">,</span> <span class="n">depth</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">kr</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">                <span class="k">break</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">            <span class="p">}</span>
+</span></span><span class="line"><span class="cl">            <span class="c1">// BPhong光照模型了进行默认，这里重点要看一下阴影是如何产生的
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>            <span class="k">default</span><span class="o">:</span>
+</span></span><span class="line"><span class="cl">            <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                <span class="c1">// [comment]
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                <span class="c1">// We use the Phong illumation model int the default case. The phong model
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                <span class="c1">// is composed of a diffuse and a specular reflection component.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                <span class="c1">// [/comment]
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                <span class="n">Vector3f</span> <span class="n">lightAmt</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">specularColor</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">                <span class="n">Vector3f</span> <span class="n">shadowPointOrig</span> <span class="o">=</span> <span class="p">(</span><span class="n">dotProduct</span><span class="p">(</span><span class="n">dir</span><span class="p">,</span> <span class="n">N</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="o">?</span>
+</span></span><span class="line"><span class="cl">                                           <span class="n">hitPoint</span> <span class="o">+</span> <span class="n">N</span> <span class="o">*</span> <span class="n">scene</span><span class="p">.</span><span class="nl">epsilon</span> <span class="p">:</span>
+</span></span><span class="line"><span class="cl">                                           <span class="n">hitPoint</span> <span class="o">-</span> <span class="n">N</span> <span class="o">*</span> <span class="n">scene</span><span class="p">.</span><span class="n">epsilon</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">                <span class="c1">// [comment]
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                <span class="c1">// Loop over all lights in the scene and sum their contribution up
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                <span class="c1">// We also apply the lambert cosine law
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                <span class="c1">// [/comment]
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                <span class="k">for</span> <span class="p">(</span><span class="k">auto</span><span class="o">&amp;</span> <span class="nl">light</span> <span class="p">:</span> <span class="n">scene</span><span class="p">.</span><span class="n">get_lights</span><span class="p">())</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                    <span class="n">Vector3f</span> <span class="n">lightDir</span> <span class="o">=</span> <span class="n">light</span><span class="o">-&gt;</span><span class="n">position</span> <span class="o">-</span> <span class="n">hitPoint</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">                    <span class="c1">// square of the distance between hitPoint and the light
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                    <span class="kt">float</span> <span class="n">lightDistance2</span> <span class="o">=</span> <span class="n">dotProduct</span><span class="p">(</span><span class="n">lightDir</span><span class="p">,</span> <span class="n">lightDir</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">                    <span class="n">lightDir</span> <span class="o">=</span> <span class="n">normalize</span><span class="p">(</span><span class="n">lightDir</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">                    <span class="kt">float</span> <span class="n">LdotN</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">max</span><span class="p">(</span><span class="mf">0.f</span><span class="p">,</span> <span class="n">dotProduct</span><span class="p">(</span><span class="n">lightDir</span><span class="p">,</span> <span class="n">N</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">                    <span class="c1">// is the point in shadow, and is the nearest occluding object closer to the object than the light itself?
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                    <span class="c1">// 在一个只考虑光照模型的hitpoint上，以这个点为起始点，向光源方向发出光线，查看是否被遮挡，如果遮挡物距离比光影距离近，则生成阴影
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                    <span class="k">auto</span> <span class="n">shadow_res</span> <span class="o">=</span> <span class="n">trace</span><span class="p">(</span><span class="n">shadowPointOrig</span><span class="p">,</span> <span class="n">lightDir</span><span class="p">,</span> <span class="n">scene</span><span class="p">.</span><span class="n">get_objects</span><span class="p">());</span>
+</span></span><span class="line"><span class="cl">                    <span class="kt">bool</span> <span class="n">inShadow</span> <span class="o">=</span> <span class="n">shadow_res</span> <span class="o">&amp;&amp;</span> <span class="p">(</span><span class="n">shadow_res</span><span class="o">-&gt;</span><span class="n">tNear</span> <span class="o">*</span> <span class="n">shadow_res</span><span class="o">-&gt;</span><span class="n">tNear</span> <span class="o">&lt;</span> <span class="n">lightDistance2</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">                    <span class="c1">// 如果被遮挡，则漫反射贡献将变为0
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                    <span class="n">lightAmt</span> <span class="o">+=</span> <span class="n">inShadow</span> <span class="o">?</span> <span class="mi">0</span> <span class="o">:</span> <span class="n">light</span><span class="o">-&gt;</span><span class="n">intensity</span> <span class="o">*</span> <span class="n">LdotN</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">                    <span class="n">Vector3f</span> <span class="n">reflectionDirection</span> <span class="o">=</span> <span class="n">reflect</span><span class="p">(</span><span class="o">-</span><span class="n">lightDir</span><span class="p">,</span> <span class="n">N</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                    <span class="n">specularColor</span> <span class="o">+=</span> <span class="n">powf</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">max</span><span class="p">(</span><span class="mf">0.f</span><span class="p">,</span> <span class="o">-</span><span class="n">dotProduct</span><span class="p">(</span><span class="n">reflectionDirection</span><span class="p">,</span> <span class="n">dir</span><span class="p">)),</span>
+</span></span><span class="line"><span class="cl">                        <span class="n">payload</span><span class="o">-&gt;</span><span class="n">hit_obj</span><span class="o">-&gt;</span><span class="n">specularExponent</span><span class="p">)</span> <span class="o">*</span> <span class="n">light</span><span class="o">-&gt;</span><span class="n">intensity</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">                <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">                <span class="n">hitColor</span> <span class="o">=</span> <span class="n">lightAmt</span> <span class="o">*</span> <span class="n">payload</span><span class="o">-&gt;</span><span class="n">hit_obj</span><span class="o">-&gt;</span><span class="n">evalDiffuseColor</span><span class="p">(</span><span class="n">st</span><span class="p">)</span> <span class="o">*</span> <span class="n">payload</span><span class="o">-&gt;</span><span class="n">hit_obj</span><span class="o">-&gt;</span><span class="n">Kd</span> <span class="o">+</span> <span class="n">specularColor</span> <span class="o">*</span> <span class="n">payload</span><span class="o">-&gt;</span><span class="n">hit_obj</span><span class="o">-&gt;</span><span class="n">Ks</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">                <span class="k">break</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">            <span class="p">}</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">hitColor</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div>
+</section>
+
+
+    <footer class="article-footer">
+    
+    <section class="article-tags">
+        
+            <a href="/tags/%E8%AF%BE%E7%A8%8B%E4%BD%9C%E4%B8%9A/">课程作业</a>
+        
+    </section>
+
+
+    
+    <section class="article-copyright">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
+</svg>
+
+
+
+        <span>Licensed under CC BY-NC-SA 4.0</span>
+    </section>
+    </footer>
+
+
+    
+        <link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css"integrity="sha384-n8MVd4RsNIU0tAv4ct0nTaAbDJwPJzDEaqSD1odI&#43;WdtXRGWt2kTvGFasHpSy3SV"crossorigin="anonymous"
+            ><script 
+                src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"integrity="sha384-XjKyOOlGwcjNTAIQHIpgOno0Hl1YQqzUOEleOLALmuqehneUG&#43;vnGctmUb0ZY0l8"crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"integrity="sha384-&#43;VBxd3r6XgURycqtZ117nYw44OOcIax56Z4dCRWbxyPt0Koah1uHoK0o4&#43;/RRE05"crossorigin="anonymous"
+                defer
+                >
+            </script><script>
+    window.addEventListener("DOMContentLoaded", () => {
+	const mainArticleElement = document.querySelector(".main-article");
+        renderMathInElement(mainArticleElement, {
+            delimiters: [
+                { left: "$$", right: "$$", display: true },
+                { left: "$", right: "$", display: false },
+                { left: "\\(", right: "\\)", display: false },
+                { left: "\\[", right: "\\]", display: true }
+            ],
+            ignoredClasses: ["gist"]
+        });})
+</script>
+
+    
+</article>
+
+    
+
+    
+
+<aside class="related-content--wrapper">
+    <h2 class="section-title">相关文章</h2>
+    <div class="related-content">
+        <div class="flex article-list--tile">
+            
+                
+<article class="article-card no-image">
+    <a href="/p/games101-%E7%8E%B0%E4%BB%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9B%BE%E5%BD%A2%E5%AD%A6%E5%85%A5%E9%97%A8-assignment6/">
+        
+        
+        <div class="article-details">
+            <h2 class="article-title">GAMES101 现代计算机图形学入门 Assignment6</h2>
+        </div>
+        
+    </a>
+
+    <style>
+     
+    .article-card {
+        background: rgba(255, 255, 255, 0.25);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        margin: 10px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .article-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    }
+
+    .article-card a {
+        display: flex;
+        flex-direction: column;
+        text-decoration: none;
+        color: inherit;
+        height: 100%;
+    }
+
+     
+    .article-image {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        overflow: hidden;
+    }
+    .article-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+    .article-image:hover img {
+        transform: scale(1.05);
+    }
+
+     
+    .article-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: rgba(0,0,0,0.3);  
+        padding: 10px;
+        box-sizing: border-box;
+        text-align: center;
+    }
+    .article-overlay .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #fff;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .article-card.no-image .article-details {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 15px;
+    }
+    .article-card.no-image .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #222;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .articles-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 20px;
+    }
+    </style>
+</article>
+            
+                
+<article class="article-card no-image">
+    <a href="/p/games101-%E7%8E%B0%E4%BB%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9B%BE%E5%BD%A2%E5%AD%A6%E5%85%A5%E9%97%A8-assignment4/">
+        
+        
+        <div class="article-details">
+            <h2 class="article-title">GAMES101 现代计算机图形学入门 Assignment4</h2>
+        </div>
+        
+    </a>
+
+    <style>
+     
+    .article-card {
+        background: rgba(255, 255, 255, 0.25);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        margin: 10px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .article-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    }
+
+    .article-card a {
+        display: flex;
+        flex-direction: column;
+        text-decoration: none;
+        color: inherit;
+        height: 100%;
+    }
+
+     
+    .article-image {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        overflow: hidden;
+    }
+    .article-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+    .article-image:hover img {
+        transform: scale(1.05);
+    }
+
+     
+    .article-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: rgba(0,0,0,0.3);  
+        padding: 10px;
+        box-sizing: border-box;
+        text-align: center;
+    }
+    .article-overlay .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #fff;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .article-card.no-image .article-details {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 15px;
+    }
+    .article-card.no-image .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #222;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .articles-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 20px;
+    }
+    </style>
+</article>
+            
+                
+<article class="article-card no-image">
+    <a href="/p/games101-%E7%8E%B0%E4%BB%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9B%BE%E5%BD%A2%E5%AD%A6%E5%85%A5%E9%97%A8-assignment3/">
+        
+        
+        <div class="article-details">
+            <h2 class="article-title">GAMES101 现代计算机图形学入门 Assignment3</h2>
+        </div>
+        
+    </a>
+
+    <style>
+     
+    .article-card {
+        background: rgba(255, 255, 255, 0.25);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        margin: 10px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .article-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    }
+
+    .article-card a {
+        display: flex;
+        flex-direction: column;
+        text-decoration: none;
+        color: inherit;
+        height: 100%;
+    }
+
+     
+    .article-image {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        overflow: hidden;
+    }
+    .article-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+    .article-image:hover img {
+        transform: scale(1.05);
+    }
+
+     
+    .article-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: rgba(0,0,0,0.3);  
+        padding: 10px;
+        box-sizing: border-box;
+        text-align: center;
+    }
+    .article-overlay .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #fff;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .article-card.no-image .article-details {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 15px;
+    }
+    .article-card.no-image .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #222;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .articles-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 20px;
+    }
+    </style>
+</article>
+            
+                
+<article class="article-card no-image">
+    <a href="/p/games101-%E7%8E%B0%E4%BB%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9B%BE%E5%BD%A2%E5%AD%A6%E5%85%A5%E9%97%A8-assignment2/">
+        
+        
+        <div class="article-details">
+            <h2 class="article-title">GAMES101 现代计算机图形学入门 Assignment2</h2>
+        </div>
+        
+    </a>
+
+    <style>
+     
+    .article-card {
+        background: rgba(255, 255, 255, 0.25);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        margin: 10px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .article-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    }
+
+    .article-card a {
+        display: flex;
+        flex-direction: column;
+        text-decoration: none;
+        color: inherit;
+        height: 100%;
+    }
+
+     
+    .article-image {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        overflow: hidden;
+    }
+    .article-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+    .article-image:hover img {
+        transform: scale(1.05);
+    }
+
+     
+    .article-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: rgba(0,0,0,0.3);  
+        padding: 10px;
+        box-sizing: border-box;
+        text-align: center;
+    }
+    .article-overlay .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #fff;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .article-card.no-image .article-details {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 15px;
+    }
+    .article-card.no-image .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #222;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .articles-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 20px;
+    }
+    </style>
+</article>
+            
+                
+<article class="article-card no-image">
+    <a href="/p/games101-%E7%8E%B0%E4%BB%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9B%BE%E5%BD%A2%E5%AD%A6%E5%85%A5%E9%97%A8-assignment1/">
+        
+        
+        <div class="article-details">
+            <h2 class="article-title">GAMES101 现代计算机图形学入门 Assignment1</h2>
+        </div>
+        
+    </a>
+
+    <style>
+     
+    .article-card {
+        background: rgba(255, 255, 255, 0.25);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        margin: 10px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .article-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    }
+
+    .article-card a {
+        display: flex;
+        flex-direction: column;
+        text-decoration: none;
+        color: inherit;
+        height: 100%;
+    }
+
+     
+    .article-image {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        overflow: hidden;
+    }
+    .article-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+    .article-image:hover img {
+        transform: scale(1.05);
+    }
+
+     
+    .article-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: rgba(0,0,0,0.3);  
+        padding: 10px;
+        box-sizing: border-box;
+        text-align: center;
+    }
+    .article-overlay .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #fff;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .article-card.no-image .article-details {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 15px;
+    }
+    .article-card.no-image .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #222;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .articles-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 20px;
+    }
+    </style>
+</article>
+            
+        </div>
+    </div>
+</aside>
+
+     
+    
+        
+    <script
+    src="https://giscus.app/client.js"
+    data-repo="sdpyy1/sdpyy1.github.io"
+    data-repo-id="R_kgDOQEycpQ"
+    data-category="Announcements"
+    data-category-id="DIC_kwDOQEycpc4Cwz7v"
+    data-mapping="pathname"
+    data-strict="0"
+    data-reactions-enabled="1"
+    data-emit-metadata="0"
+    data-input-position="top"
+    data-theme="light"
+    data-lang="en"
+    data-loading=""
+    crossorigin="anonymous"
+    async
+></script>
+<script>
+    function setGiscusTheme(theme) {
+        let giscus = document.querySelector("iframe.giscus-frame");
+        if (giscus) {
+            giscus.contentWindow.postMessage(
+                {
+                    giscus: {
+                        setConfig: {
+                            theme: theme,
+                        },
+                    },
+                },
+                "https://giscus.app"
+            );
+        }
+    }
+
+    (function () {
+        addEventListener("message", (e) => {
+            if (event.origin !== "https://giscus.app") return;
+            handler();
+        });
+        window.addEventListener("onColorSchemeChange", handler);
+
+        function handler() {
+            if (document.documentElement.dataset.scheme === "light") {
+                setGiscusTheme('light');
+            } else {
+                setGiscusTheme('light');
+            }
+        }
+    })();
+</script>
+
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+            2020 - 
+        
+        2025 爱喝东方树叶
+    </section>
+    <section style="display: flex; gap: 30px; align-items: center;">
+      
+      
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+      <span>📚 文章数: 13</span>
+      <span>✍️ 总字数: 
+        
+        
+        26.09K
+      </span>
+    </section>
+
+    <section class="powerby">
+    
+    <div class="busuanzi-footer">
+        <span id="busuanzi_container_site_pv">
+          本站总访问量<span id="busuanzi_value_site_pv"></span>次
+        </span>
+        <span id="busuanzi_container_site_uv">
+          本站访客数<span id="busuanzi_value_site_uv"></span>人次
+        </span>
+      </div></section>
+
+</footer>
+
+
+    
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    
+    <div class="pswp__bg"></div>
+
+    
+    <div class="pswp__scroll-wrap">
+
+        
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                
+                
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                        <div class="pswp__preloader__cut">
+                            <div class="pswp__preloader__donut"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div>
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js"integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo="crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js"integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU="crossorigin="anonymous"
+                defer
+                >
+            </script><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css"crossorigin="anonymous"
+            ><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css"crossorigin="anonymous"
+            >
+
+            </main>
+        </div>
+        <script 
+                src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js"integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z&#43;KMkF24hUW8WePSA9HM="crossorigin="anonymous"
+                
+                >
+            </script><script type="text/javascript" src="/ts/main.1e9a3bafd846ced4c345d084b355fb8c7bae75701c338f8a1f8a82c780137826.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>

@@ -7,7 +7,750 @@
         <generator>Hugo -- gohugo.io</generator>
         <language>zh-cn</language>
         <copyright>爱喝东方树叶</copyright>
-        <lastBuildDate>Sun, 19 Oct 2025 12:43:12 +0800</lastBuildDate><atom:link href="https://sdpyy1.github.io/tags/%E8%AF%BE%E7%A8%8B%E7%AC%94%E8%AE%B0/index.xml" rel="self" type="application/rss+xml" /><item>
+        <lastBuildDate>Sun, 19 Oct 2025 12:49:13 +0800</lastBuildDate><atom:link href="https://sdpyy1.github.io/tags/%E8%AF%BE%E7%A8%8B%E7%AC%94%E8%AE%B0/index.xml" rel="self" type="application/rss+xml" /><item>
+        <title>GAMES101 现代计算机图形学入门 Camera Lenses Light Fields Color and Perception</title>
+        <link>https://sdpyy1.github.io/p/games101-%E7%8E%B0%E4%BB%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9B%BE%E5%BD%A2%E5%AD%A6%E5%85%A5%E9%97%A8-camera-lenses-light-fields-color-and-perception/</link>
+        <pubDate>Sun, 19 Oct 2025 12:49:13 +0800</pubDate>
+        
+        <guid>https://sdpyy1.github.io/p/games101-%E7%8E%B0%E4%BB%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9B%BE%E5%BD%A2%E5%AD%A6%E5%85%A5%E9%97%A8-camera-lenses-light-fields-color-and-perception/</guid>
+        <description>&lt;h1 id=&#34;cameras&#34;&gt;Cameras
+&lt;/h1&gt;&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/0212feac63754038823e0e1ee55c74c7.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;在这里插入图片描述&#34;
+	
+	
+&gt;
+小孔成像
+&lt;img src=&#34;https://sdpyy1.github.io/277a3299df2c4a7a840c225aa53392a6.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;在这里插入图片描述&#34;
+	
+	
+&gt;
+&lt;img src=&#34;https://sdpyy1.github.io/481a70553db447f9adc33467f40f0247.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;在这里插入图片描述&#34;
+	
+	
+&gt;
+&lt;img src=&#34;https://sdpyy1.github.io/05414f77c7904ed5851265148aa16f58.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;在这里插入图片描述&#34;
+	
+	
+&gt;
+小孔成像是可以拍照的，但是没有景深效果&lt;/p&gt;
+&lt;h2 id=&#34;视场-field-of-view-fov&#34;&gt;视场 Field of View (FOV)
+&lt;/h2&gt;&lt;p&gt;传感器的高度与传感器和小孔之间的距离决定FOV的大小
+&lt;img src=&#34;https://sdpyy1.github.io/46be80e1be924712a035c98cad524c71.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;在这里插入图片描述&#34;
+	
+	
+&gt;
+通常都是固定传感器尺寸，控制焦距来控制FOV
+&lt;img src=&#34;https://sdpyy1.github.io/57c59165023649119dd1e9678e725133.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;在这里插入图片描述&#34;
+	
+	
+&gt;
+不同焦距下的视场
+&lt;img src=&#34;https://sdpyy1.github.io/644ab57a421f444cbad7e74b50e6861a.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;在这里插入图片描述&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;h2 id=&#34;曝光-exposure&#34;&gt;曝光 Exposure
+&lt;/h2&gt;&lt;p&gt;决定曝光的变量
+&lt;img src=&#34;https://sdpyy1.github.io/09cbb038e7bf4d7bb9065eb0629adb82.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;在这里插入图片描述&#34;
+	
+	
+&gt;
+在摄像机中决定曝光的变量
+&lt;img src=&#34;https://sdpyy1.github.io/12951eeafae74efe92248e404fb4aa0f.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;在这里插入图片描述&#34;
+	
+	
+&gt;
+第一行是光圈、第二行是快门速度、第三行是IOS设置
+&lt;img src=&#34;https://sdpyy1.github.io/25ffc05ea69c460b93b5082c98567983.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;在这里插入图片描述&#34;
+	
+	
+&gt;
+IOS的介绍
+&lt;img src=&#34;https://sdpyy1.github.io/30db89edd702486d8aa0803a229109ac.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;在这里插入图片描述&#34;
+	
+	
+&gt;
+光圈，N越大直径越小
+&lt;img src=&#34;https://sdpyy1.github.io/688f2ee9555c48eb921b90412c3248c3.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;在这里插入图片描述&#34;
+	
+	
+&gt;
+快门
+&lt;img src=&#34;https://sdpyy1.github.io/4646427f788448058de608465730cfb4.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;在这里插入图片描述&#34;
+	
+	
+&gt;
+因为快门打开需要时间，那高速运动物体就会出问题&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/d198f47b40a64f8d8b6cb4d9146b8d3c.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;在这里插入图片描述&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;h2 id=&#34;镜头&#34;&gt;镜头
+&lt;/h2&gt;&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/8660f05786d74a46b24339783ded405b.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;在这里插入图片描述&#34;
+	
+	
+&gt;
+理想情况
+&lt;img src=&#34;https://sdpyy1.github.io/5548fd95da8d4ac1ba2a22de2ddc5e59.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;在这里插入图片描述&#34;
+	
+	
+&gt;
+焦距物距像距的关系
+&lt;img src=&#34;https://sdpyy1.github.io/8384f6f89d914a039d371693feec8818.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;在这里插入图片描述&#34;
+	
+	
+&gt;
+&lt;img src=&#34;https://sdpyy1.github.io/2f335c402e9049ca98c2262b67c140aa.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;在这里插入图片描述&#34;
+	
+	
+&gt;
+景深就是像距没有落到感光元件上
+&lt;img src=&#34;https://sdpyy1.github.io/9743de7b29944420b98b0f4530aab3f3.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;在这里插入图片描述&#34;
+	
+	
+&gt;
+这节主要是科普摄像机的东西&lt;/p&gt;
+&lt;h1 id=&#34;光场-light-field&#34;&gt;光场 Light Field
+&lt;/h1&gt;&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/c3e7349ff74e44b6951d6426226d813a.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;在这里插入图片描述&#34;
+	
+	
+&gt;
+人眼前放一块幕布，投影这个图形，对人来说看到的是一样的
+&lt;img src=&#34;https://sdpyy1.github.io/594d74a32b7842b3aa08a5277edf00fa.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;在这里插入图片描述&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;h2 id=&#34;全光函数&#34;&gt;全光函数
+&lt;/h2&gt;&lt;p&gt;用全光函数表示人能看到的东西
+&lt;img src=&#34;https://sdpyy1.github.io/e1a3a5871dd942d49af14e46f4fd0ea0.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;加粗样式&#34;
+	
+	
+&gt;
+从简单来看
+&lt;img src=&#34;https://sdpyy1.github.io/d628c3573ceb47e4959ac0204624a5e4.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;在这里插入图片描述&#34;
+	
+	
+&gt;
+引入颜色
+&lt;img src=&#34;https://sdpyy1.github.io/e1b7c163732848649b19280a2787a3de.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;在这里插入图片描述&#34;
+	
+	
+&gt;
+引入时间，变为电影
+&lt;img src=&#34;https://sdpyy1.github.io/eae45b0a46324553adca0b8bf95a1252.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;在这里插入图片描述&#34;
+	
+	
+&gt;
+引入位置。全息电影
+&lt;img src=&#34;https://sdpyy1.github.io/d7a3e97a98b44d0fa496f694e0927d49.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;在这里插入图片描述&#34;
+	
+	
+&gt;
+用七个维度衡量看到的所有东西，光场从这里开始&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/e4d5f2f6fff4402cb2bd86865a278a62.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;在这里插入图片描述&#34;
+	
+	
+&gt;
+从任意一个位置看向任何一个位置，都可以从光场中提取光的信息
+&lt;img src=&#34;https://sdpyy1.github.io/8750ede794b14384bb225606075f4a3a.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;在这里插入图片描述&#34;
+	
+	
+&gt;
+并不需要知道光场内是什么物体，只需要光场的信息，在盒子表面任何一点任何一个位置的信息
+&lt;img src=&#34;https://sdpyy1.github.io/4c9c6bc46c3440a4ba0a250c6aa883c4.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;在这里插入图片描述&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;h1 id=&#34;颜色-color&#34;&gt;颜色 Color
+&lt;/h1&gt;&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/626e79e259a946daa88de4a32306b39f.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;在这里插入图片描述&#34;
+	
+	
+&gt;
+&lt;img src=&#34;https://sdpyy1.github.io/f5d27f54201d4d869024a66c55c45c33.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;在这里插入图片描述&#34;
+	
+	
+&gt;
+&lt;img src=&#34;https://sdpyy1.github.io/88fc3df638544ab9a2303199d48f7b1c.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;在这里插入图片描述&#34;
+	
+	
+&gt;&lt;/p&gt;
+</description>
+        </item>
+        <item>
+        <title>GAMES101 现代计算机图形学入门 Animation/Simulation</title>
+        <link>https://sdpyy1.github.io/p/games101-%E7%8E%B0%E4%BB%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9B%BE%E5%BD%A2%E5%AD%A6%E5%85%A5%E9%97%A8-animation/simulation/</link>
+        <pubDate>Sun, 19 Oct 2025 12:48:02 +0800</pubDate>
+        
+        <guid>https://sdpyy1.github.io/p/games101-%E7%8E%B0%E4%BB%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9B%BE%E5%BD%A2%E5%AD%A6%E5%85%A5%E9%97%A8-animation/simulation/</guid>
+        <description>&lt;h1 id=&#34;一些科普&#34;&gt;一些科普
+&lt;/h1&gt;&lt;h2 id=&#34;keyframe-animator&#34;&gt;Keyframe Animator
+&lt;/h2&gt;&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/254f33ee74a74430a5be6baf38e5d1f5.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;请添加图片描述&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;h2 id=&#34;physical-simulation&#34;&gt;Physical Simulation
+&lt;/h2&gt;&lt;p&gt;利用物理公式来模拟
+&lt;img src=&#34;https://sdpyy1.github.io/91f335168e244e1ea749d0d67d302687.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;请添加图片描述&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;h2 id=&#34;质点弹簧系统-mass-spring-rope&#34;&gt;质点弹簧系统 Mass Spring Rope
+&lt;/h2&gt;&lt;p&gt;下面开始描述这个系统
+胡克定律描述弹簧或弹性体所受的回复力 F 与形变量 x 成正比， $k_s$是劲度系数，但是弹簧本身也有长度
+&lt;img src=&#34;https://sdpyy1.github.io/25049f6423a34d6a898ad8f34f17e20d.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;请添加图片描述&#34;
+	
+	
+&gt;考虑弹簧原始长度 ，$\frac{b - a}{|b - a|}$这个向量用来表示方向，但问题是这样写，弹簧一旦拉开就不会不停的运动下去（动能和势能相互转化），所以还需要引入摩擦力
+&lt;img src=&#34;https://sdpyy1.github.io/110547693de240849dbc157c4afa95ce.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;请添加图片描述&#34;
+	
+	
+&gt;
+引入摩擦力之前先引入一些符号表示位置、速度、加速度
+&lt;img src=&#34;https://sdpyy1.github.io/1a0fdeee467b47318d4eccd8e33ae216.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;请添加图片描述&#34;
+	
+	
+&gt;
+给物体一个相反与速度方向的力，但还有问题，这样会导致所有的运动都停下来，假设AB两个物体同步向右走，他俩都有速度，但相对之间没有速度，所以应该没摩擦力，但是用下面的公式，只要物体有速度，就会受到摩擦力而停止
+&lt;img src=&#34;https://sdpyy1.github.io/14a447de54d34ed391bbf45e9f856c14.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;请添加图片描述&#34;
+	
+	
+&gt;
+我们在逐渐完善弹簧系统，摩擦力应该跟着物体AB的相对运动而产生，下图用两个物体速度差来表示相对速度，另外还需要考虑这个速度差是沿着弹簧方向才行，所以点乘$\frac{b - a}{|b - a|}$来投影到ba方向
+&lt;img src=&#34;https://sdpyy1.github.io/a1438c4208f446f6b6af25aefb047a62.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;请添加图片描述&#34;
+	
+	
+&gt;
+下面看一些弹簧结构&lt;img src=&#34;https://sdpyy1.github.io/bf8f492757154e20ae44b810420dfcb7.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;请添加图片描述&#34;
+	
+	
+&gt;
+模型的行为是由结构连接来决定的，下面看如果一块布这样设计，很明显是不合理的，图中展示了2种原因（布可以抵抗切变力但这个结构不行，布会对抗对折）
+&lt;img src=&#34;https://sdpyy1.github.io/6b48a3875c18466e8ebc2c0aed92d4fd.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;请添加图片描述&#34;
+	
+	
+&gt;
+先来改进切变，加入蓝色弹簧来抵抗&lt;img src=&#34;https://sdpyy1.github.io/fc36d6c0ec0b45e9b18956c7bad91719.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;请添加图片描述&#34;
+	
+	
+&gt;
+再加另外一个方向，但不能解决第二个问题
+&lt;img src=&#34;https://sdpyy1.github.io/b0a5fe3bed954fa284c3e6d218d2bab8.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;请添加图片描述&#34;
+	
+	
+&gt;
+最终版
+&lt;img src=&#34;https://sdpyy1.github.io/39275121565e476a9ff80c4325673c09.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;请添加图片描述&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;h2 id=&#34;粒子系统&#34;&gt;粒子系统
+&lt;/h2&gt;&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/48203561654e46c1b304d23a609f9e96.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;请添加图片描述&#34;
+	
+	
+&gt;
+&lt;img src=&#34;https://sdpyy1.github.io/2e6cc29304194f129916e28fdba8bae2.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;请添加图片描述&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;h2 id=&#34;运动学-forward-kinematics&#34;&gt;运动学 Forward Kinematics
+&lt;/h2&gt;&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/800e646fb8dc48c7b31d322eded58823.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;请添加图片描述&#34;
+	
+	
+&gt;
+已知角度求P的位置
+&lt;img src=&#34;https://sdpyy1.github.io/703cbcdc115340778d35738f211ec57e.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;请添加图片描述&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;h2 id=&#34;逆运动学inverse-kinematics&#34;&gt;逆运动学Inverse Kinematics
+&lt;/h2&gt;&lt;p&gt;已知P的位置求角度
+&lt;img src=&#34;https://sdpyy1.github.io/b62327776513418c87a405914d33ddba.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;请添加图片描述&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;h2 id=&#34;rigging&#34;&gt;Rigging
+&lt;/h2&gt;&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/1f420e4a8bde4f1db3da9f9895c7b114.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;请添加图片描述&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/49ba0bbdd1d24a848de86f532c675a7e.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;请添加图片描述&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;h2 id=&#34;motion-capture&#34;&gt;Motion Capture
+&lt;/h2&gt;&lt;p&gt;![请添&lt;img src=&#34;https://sdpyy1.github.io/bf2d01f5eb5f4bcd8eae491584418063.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;请添加图片描述&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;h1 id=&#34;第二次课-cont&#34;&gt;第二次课 cont.
+&lt;/h1&gt;&lt;h2 id=&#34;single-particle-simulation&#34;&gt;Single Particle Simulation
+&lt;/h2&gt;&lt;p&gt;首先学习单粒子运动，假设粒子的运动由一个速度向量场决定，速度向量场的速度由位置和时间决定
+&lt;img src=&#34;https://sdpyy1.github.io/f02f0ad1b7cd45e98ac0935b806f85b6.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;在这里插入图片描述&#34;
+	
+	
+&gt;
+要计算粒子在某个时间的位置，需要解下图所示的常微分方程
+&lt;img src=&#34;https://sdpyy1.github.io/de4f27953eb44c24917d53b78be5046f.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;在这里插入图片描述&#34;
+	
+	
+&gt;
+用欧拉公式来解微分方程，用上一步的数据来计算下一步的位置
+&lt;img src=&#34;https://sdpyy1.github.io/a107c18e085447c09e0242d062cd108d.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;在这里插入图片描述&#34;
+	
+	
+&gt;
+欧拉方程的误差与步长大小有关
+&lt;img src=&#34;https://sdpyy1.github.io/16f272e6dc224dba89340ffb8d8a7eff.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;在这里插入图片描述&#34;
+	
+	
+&gt;
+欧拉方程的不稳定性，在一个螺旋速度场中，本来应该旋转，但是不管步长选的多小都一定会飞出去。第二幅图的运动模拟也不合理。
+&lt;img src=&#34;https://sdpyy1.github.io/5830c8a8200546aeac8aa4f58bce0b4f.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;在这里插入图片描述&#34;
+	
+	
+&gt;
+如何解决呢，有人提出了中点法，先用欧拉算出a点，但不用a点，取中点b，考虑b点的速度，应用b点的速度回去重新算欧拉
+&lt;img src=&#34;https://sdpyy1.github.io/e32beae8a0994f9d83cecac488b87535.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;在这里插入图片描述&#34;
+	
+	
+&gt;
+进一步，有人用中点思想，算两次欧拉方法，不是回原点重新算，而是去中点算，如果算出来和第一次算出来差不多就不算了，说明步长够小了
+&lt;img src=&#34;https://sdpyy1.github.io/d577bca230be4e05aba92260bee39e42.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;在这里插入图片描述&#34;
+	
+	
+&gt;
+还有隐式的欧拉方法
+&lt;img src=&#34;https://sdpyy1.github.io/a3bde1586cb94a169354526f9e18eaa1.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;在这里插入图片描述&#34;
+	
+	
+&gt;
+Runge-Kutta Families
+&lt;img src=&#34;https://sdpyy1.github.io/6505e56ffe404bcd8a17749f9b9b7f9f.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;在这里插入图片描述&#34;
+	
+	
+&gt;
+Position-Based / Verlet Integration
+&lt;img src=&#34;https://sdpyy1.github.io/30ea8e236c8b4792a83b6a0cf536de57.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;在这里插入图片描述&#34;
+	
+	
+&gt;
+刚体（不会发生形变）模拟
+&lt;img src=&#34;https://sdpyy1.github.io/32fd87b928d640f8ad20b95caa79d2d8.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;在这里插入图片描述&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;h2 id=&#34;流体模拟-fluid-simulation&#34;&gt;流体模拟 Fluid Simulation
+&lt;/h2&gt;&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/f0dc6630895540ebbe11b9880dd7c8dc.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;在这里插入图片描述&#34;
+	
+	
+&gt;
+&lt;img src=&#34;https://sdpyy1.github.io/050ad9b02d4449e6a2605cbe04ca9999.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;在这里插入图片描述&#34;
+	
+	
+&gt;
+&lt;img src=&#34;https://sdpyy1.github.io/35a97b81986e4258bb49b15dedacf91f.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;在这里插入图片描述&#34;
+	
+	
+&gt;
+这门课的动画模拟更多都是在科普。&lt;/p&gt;
+</description>
+        </item>
+        <item>
         <title>GAMES101 现代计算机图形学入门 Ray Tracing</title>
         <link>https://sdpyy1.github.io/p/games101-%E7%8E%B0%E4%BB%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9B%BE%E5%BD%A2%E5%AD%A6%E5%85%A5%E9%97%A8-ray-tracing/</link>
         <pubDate>Sun, 19 Oct 2025 12:43:12 +0800</pubDate>
