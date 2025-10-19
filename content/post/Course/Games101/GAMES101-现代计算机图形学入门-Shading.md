@@ -8,33 +8,33 @@ categories = ["Course/Games202"]
 # 什么是shading？
 shading 负责计算物体表面每个采样点的颜色，具体考虑光照、材质属性、观察角度等因素，生成具有真实感的视觉效果（如漫反射、镜面高光、环境光等）‌，之前的光栅化将是几何图元（如三角形）转换为屏幕上的像素，确定哪些像素被图元覆盖，是几何层面的处理
 # Blinn-Phong Reflectance Model(A Simple Shading Model)
-Blinn-Phong 反射模型（Blinn-Phong Reflectance Model）是一种用于计算机图形学中模拟物体表面光照效果的着色模型.该模型主要由**环境光(Ambient)、漫反射(Diffuse)和高光反射(Specular)**三部分组成。![请添加图片描述](https://i-blog.csdnimg.cn/direct/92975763af4c45deacbe6332c3f2d16b.png)
+Blinn-Phong 反射模型（Blinn-Phong Reflectance Model）是一种用于计算机图形学中模拟物体表面光照效果的着色模型.该模型主要由**环境光(Ambient)、漫反射(Diffuse)和高光反射(Specular)**三部分组成。![请添加图片描述](92975763af4c45deacbe6332c3f2d16b.png)
 定义一些基本向量，默认为单位向量：
 - `Viewer Direction` ：观察方向,用`v`	表示
 - `Surface normal`：法线方向，使用`n`表示
 - `Light direction`：光线方向，用`l`表示
- ![请添加图片描述](https://i-blog.csdnimg.cn/direct/7b8e79b519294907b6730677c6933da2.png)
+ ![请添加图片描述](7b8e79b519294907b6730677c6933da2.png)
  ## Diffuse Reflection（漫反射）
  是投射在粗糙表面上的光向各个方向反射的现象。当一束平行的入射光线射到粗糙的表面时，表面会把光线向着四面八方反射，所以入射线虽然互相平行，由于各点的法线方向不一致，造成反射光线向不同的方向无规则地反射，这种反射称之为“漫反射”或“漫射”。正是因为反射是完全随机的，因此可以认为漫反射光在任何反射方向上的分布都是一样的。
- ![请添加图片描述](https://i-blog.csdnimg.cn/direct/536d9f34abe444b6864d43a98691793b.png)
+ ![请添加图片描述](536d9f34abe444b6864d43a98691793b.png)
  漫反射强度影响因素：
  1. 入射光线与法线的夹角
 `lambert's cosine law`: 当夹角为θ时，能量要乘`cosθ = l.dot(v)`(单位向量)
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/ab18d5ca508a49a0b207f2a4755b3942.png)
+![请添加图片描述](ab18d5ca508a49a0b207f2a4755b3942.png)
  2. 入射光线自身的强度
-入射光自身的强度与距离有关 ![请添加图片描述](https://i-blog.csdnimg.cn/direct/e0e28606ee0f45e7b31cbbdea8a1ee12.png)
+入射光自身的强度与距离有关 ![请添加图片描述](e0e28606ee0f45e7b31cbbdea8a1ee12.png)
 结合两个影响因素，得到漫反射能量公式
 $$L_d = k_d (I / r^2) \max(0, \mathbf{n} \cdot \mathbf{l})$$
 
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/59bc96822aeb4792901933319aa199b0.png)
+![请添加图片描述](59bc96822aeb4792901933319aa199b0.png)
 其中$k_d$表示反射系数指光（入射光）投向物体时，其表面反射光的强度与入射光的强度之比值，受入射光的投射角度、强度、波长、物体表面材料的性质以及反射光的测量角度等因素影响。一般来讲，在颜色系列中，黑色的反射系数较小，为0.03，白色的反射系数较大，为0.8
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/72ad4013378a455397a40b15611554e8.png)
+![请添加图片描述](72ad4013378a455397a40b15611554e8.png)
  最后，漫反射与观察方向`v`没有关系，漫反射能量会均匀反射到各个方向上去。
   ## Specular highlights(高光/镜面反射)
   若物体表面很光滑，光线会被反射，如图所示`R`为镜面反射方向，观察方向`v`与反射方向`R`接近时，能看见反射光，反射光强度与`R`和`v`的夹角有关
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/7a8efb9ae9544cc6b84f38e78a19849f.png)
+![请添加图片描述](7a8efb9ae9544cc6b84f38e78a19849f.png)
 `R`和`v`的夹角 **等价于**`l`和`v`的half vector与法线方向`n`之间的夹角，通过向量相加的平行四边形法则获取到half vector，再单位化
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/9d8198ee92e340ff8c5b953692887771.png)![请添加图片描述](https://i-blog.csdnimg.cn/direct/5b4efb68c51d4f6792da743a7c374394.png)
+![请添加图片描述](9d8198ee92e340ff8c5b953692887771.png)![请添加图片描述](5b4efb68c51d4f6792da743a7c374394.png)
 最终得到镜面反射能量公式
 $$
 \begin{align*}
@@ -45,93 +45,93 @@ $$
 其中$k_s$为镜面反射系数，通常取白色的系数
 
 因为镜面反射对角度很敏感，所以设置参数p来控制夹角的影响
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/382d5aa80fa342ddbb2fb7f7e2a08cf2.png)
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/cd3c5483732b4f65bb2a6199c51b69c3.png)
+![请添加图片描述](382d5aa80fa342ddbb2fb7f7e2a08cf2.png)
+![请添加图片描述](cd3c5483732b4f65bb2a6199c51b69c3.png)
 ## Ambient Term（环境光）
 环境光不依赖任何项，任何方向射入，任何方向观察都不影响环境光的强度（该模型的简化，精确计算需要用到全局光照技术）
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/beb39f55be6248edad0bf167089248dd.png)
+![请添加图片描述](beb39f55be6248edad0bf167089248dd.png)
 最后，展示结合效果
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/6218a369afe94437bb81dfb0420e1b39.png)
+![请添加图片描述](6218a369afe94437bb81dfb0420e1b39.png)
 
 # Shading Frequencies（着色频率）
 3个几何形状完全相同的球，为什么着色结果各不相同？计算作色的频率不同，球1一个平面取一个法线，做一次着色，球3每个像素都求法线后都做一次着色
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/67eb9331c2f04237ba3ae48c01e76f40.png)
+![请添加图片描述](67eb9331c2f04237ba3ae48c01e76f40.png)
 - shade each triangle(flat shading)：每个三角形求一个法线（边向量叉积），对整个三角形进行相同的shading，当三角形面很多，效果也不一定差，反而计算量少
 - shade each vertex（Gouraud shading）：三角形的三个顶点都求法线，三个顶点进行shading，三角形内部用插值填充
 - shade each pixel(Phong shading)：每个像素都求法线，每个像素都进行shading
 
-如何求顶点的法线？利用顶点关联的面的法线进行加权平均![请添加图片描述](https://i-blog.csdnimg.cn/direct/8f2e024b74cd409ba1b6d43604a60d15.png)
+如何求顶点的法线？利用顶点关联的面的法线进行加权平均![请添加图片描述](8f2e024b74cd409ba1b6d43604a60d15.png)
 # Graphics（Real time Rendering）Pipeline
-`Pipeline`：从场景到图的流程![请添加图片描述](https://i-blog.csdnimg.cn/direct/2fb691f7ae274fa88e39ed8201439dfb.png)
+`Pipeline`：从场景到图的流程![请添加图片描述](2fb691f7ae274fa88e39ed8201439dfb.png)
 ⚠️：Shading根据Shading Frequencies（着色频率）的不同发生在不同阶段，如果是每个顶点进行着色，就发生在顶点处理阶段，如果是每个像素shading么就在光栅化之后，下面图也解释的shader编程中的vertexShader和fragmentShader
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/aba7ce94e1894472ae4b1f697106576d.png)
+![请添加图片描述](aba7ce94e1894472ae4b1f697106576d.png)
 GPU模型
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/e5b95abc7b0b48eb9a8cccce0aab5c97.png)
+![请添加图片描述](e5b95abc7b0b48eb9a8cccce0aab5c97.png)
 # Texture Mapping
 考虑球和地板，不同的位置有不同的颜色，每个位置都有自己的漫反射系数，引入纹理映射对每一个点定义不同的属性
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/8794c0d329d24aca97c68998d2945da5.png)
+![请添加图片描述](8794c0d329d24aca97c68998d2945da5.png)
 模型上任意一个三角形的顶点，都能在纹理图找到对应的顶点。 至于如何一一对应，是美工的任务。
 纹理图通过UV坐标来进行定位（UV取值范围都是0-1之间），这样每个三角形的顶点都对应一个UV坐标
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/e1b8430b6af44f74bea4eeefb3af4d96.png)
+![请添加图片描述](e1b8430b6af44f74bea4eeefb3af4d96.png)
 如果我已经知道每个三角形顶点对于的UV坐标，那如何知道三角形内部每个点的UV坐标呢？ （插值解决）
 # 如何插值？
 为什么要用插值？因为我们希望处理完顶点后，三角形内部进行平滑的过度
 首先引入**重心坐标 Barycentric Coordinates** 重心坐标可以表示为顶点的线性组合（如下图所示），三角形内任意一点的坐标(x,y)，找到满足$\alpha+\beta+\gamma=1$ 和 (x, y) = $\alpha A + \beta B + \gamma C$的（$\alpha$,$\beta$,$\gamma$）, 就可以用（$\alpha$,$\beta$,$\gamma$）表示该点的重心坐标
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/517b089099a44139ae749739315b7713.png)
+![请添加图片描述](517b089099a44139ae749739315b7713.png)
 重心坐标（$\alpha$,$\beta$,$\gamma$）可以通过面积比求出，如下图
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/9f827fde268a47c4bc84ea6b54573ca1.png)
-由此可得三角形的重心的重心坐标为(1/3,1/3,1/3), 除此之外，也有直接的公式求出任意一点的重心坐标，如下图![请添加图片描述](https://i-blog.csdnimg.cn/direct/32f3c44f1aaf4457ab19517910e03bac.png)
+![请添加图片描述](9f827fde268a47c4bc84ea6b54573ca1.png)
+由此可得三角形的重心的重心坐标为(1/3,1/3,1/3), 除此之外，也有直接的公式求出任意一点的重心坐标，如下图![请添加图片描述](32f3c44f1aaf4457ab19517910e03bac.png)
  其实重心坐标显示出的内容就是该点对于三角形三个顶点的权重应该是多少。（$\alpha$,$\beta$,$\gamma$）就分别是A、B、C顶点的权重。
  ⚠️：投影后重心坐标会变化
  # Texture Magnification（纹理图太小）
  A pixel on a texture - a texel(纹理元素、纹素)
  场景：纹理图片2*2，但需要把它渲染到4*4的屏幕，那在渲染中间像素时，他的UV坐标无法对应texel，所以需要处理，下图为三种处理方式
- ![请添加图片描述](https://i-blog.csdnimg.cn/direct/e9aa4e162f6442d39accc2a3b712be12.png)
+ ![请添加图片描述](e9aa4e162f6442d39accc2a3b712be12.png)
 ## Nearest
 落在哪个texel附近，就选择哪个texel
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/09ba75ab4b774ad68d34aa2ca946fac8.png)
+![请添加图片描述](09ba75ab4b774ad68d34aa2ca946fac8.png)
 ## Bilinear Interpolation
 综合考虑周围4个texel的值，水平方向得到两个插值，再垂直方向再做一次插值，所以叫双线性插值，插值函数就是 $$lerp(x,v_0,v_1) = v_0 + x(v_1 - v_0)$$
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/717b972334db44758f07c7e0fe803292.png)
+![请添加图片描述](717b972334db44758f07c7e0fe803292.png)
 ### Bicubic
 更复杂的插值，取周围16的texel
 
 ## Texture Magnification（纹理图太大）
 例如纹理图被重复使用用来帖地板
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/b07a70e13acf492ea9426eb388d797bc.png)如果只进行简单操作，得到结果为![请添加图片描述](https://i-blog.csdnimg.cn/direct/d008434c555a4cfab877a258e29584be.png)
+![请添加图片描述](b07a70e13acf492ea9426eb388d797bc.png)如果只进行简单操作，得到结果为![请添加图片描述](d008434c555a4cfab877a258e29584be.png)
 问题的原因：在远处一个Pixel就覆盖了多个texel，下图大框是Pixel，在远处，一个像素就覆盖了多个纹理，很大范围只采样一次，就会导致信息丢失，导致走样。最简单解决思路就是Supersampling，采样点增多，获得的信息就多，但计算量太大
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/1b1ea995cd5f4eefa26ca339f6c4b7f4.png)
+![请添加图片描述](1b1ea995cd5f4eefa26ca339f6c4b7f4.png)
 ### Mipmap
 为一张纹理图生成多个低分辨率纹理图，每次分辨率减半，将4个相邻像素点求均值合为一个像素点。从存储容量上看，根据等比数列求和，存储只增加了$1/3$
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/bf9cf2d5e45e47e6960504a48231cbf4.png)
+![请添加图片描述](bf9cf2d5e45e47e6960504a48231cbf4.png)
 那在映射时应该选择哪一Level 作为纹理呢？利用屏幕相邻的像素点的距离估计纹理的大小，如图红色像素距离上和右两个像素的距离反应到纹理图上的距离变大的程度来选择，取最大
 
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/15e4c9a36001452196577fd5d56451b1.png)
+![请添加图片描述](15e4c9a36001452196577fd5d56451b1.png)
 但通过$D = log_2L$计算的是一个连续值，并不一定直接表面使用第几层，如何处理？
 使用三线性插值，例如D=1.8，就在第1层和第2层分别做一次双线性插值，最后根据D的大小，对两次插值结果再插值一次
 
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/85612818317b45fb9f6573afd11e35af.png)
+![请添加图片描述](85612818317b45fb9f6573afd11e35af.png)
 使用该技术得到结果，如下图所示，远处仍然比较模糊
 
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/c983fcf64bcb45629909889ac856342f.png)
+![请添加图片描述](c983fcf64bcb45629909889ac856342f.png)
 ### 各向异性过滤
 Mipmap所规定的区域查询
 必须是正方形，而纹理映射中可不仅仅只有正方形，如下图所示，某些像素对应的纹理图位置并不是正方形，针对这种情况，有时候需要水平方向的高Level，有时候需要竖直方向上的高Level，因此也启发了各向异性过滤，生成各种方向上压缩的材质，最终存储容量收敛到原来的3倍
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/a159d9343186494fba48b180ddc7b9a6.png)
+![请添加图片描述](a159d9343186494fba48b180ddc7b9a6.png)
 看下图一个像素点在纹理上对应的并不是一个正方形区域，使用Mipmap就不合适了
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/a2694a17e4324c34b7b7844a9fcd9959.png)
+![请添加图片描述](a2694a17e4324c34b7b7844a9fcd9959.png)
 
 ## 纹理的应用
  ### Environment Map
  纹理不一定非得一副图片，可以用纹理描述环境光效果
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/8c14a0abbde44a91baaef5af594efec3.png)
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/215575e087ee43d39e809f0a70a6f259.png)
+![请添加图片描述](8c14a0abbde44a91baaef5af594efec3.png)
+![请添加图片描述](215575e087ee43d39e809f0a70a6f259.png)
 ### Bump Mapping 凹凸贴图
 欺骗人眼，看着像是用模型做出来的凹凸效果，其实只是材质的原因。在贴图上定义每个点的高度进而改变法向量，这就回影响shading，因为法线参与了color生成过程。
 
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/f152f87a28e243db85b3c98c4a11d9ec.png)
+![请添加图片描述](f152f87a28e243db85b3c98c4a11d9ec.png)
 ### Displacement Mapping 位移贴图
 真的去移动了顶点，Bump会露馅，因为最外圈显然是一个完整的球。Bump Maps是逻辑上的高度改变，它实则并没有改变内部的模型，是假的改变；而Displacement Map则是物理上的高度改变。它真正改变了模型。二者的区别就在此处，可以通过物体阴影的边缘发现这点
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/d3136e29f86748cfb3269debba2f2f33.png)
+![请添加图片描述](d3136e29f86748cfb3269debba2f2f33.png)
 ### 3维纹理
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/a0540dee9994499282928a5f85dd36fa.png)
+![请添加图片描述](a0540dee9994499282928a5f85dd36fa.png)
