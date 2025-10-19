@@ -1,4 +1,4 @@
 ---
-title: "Notes"
-description: "经典书籍笔记"
+title: "TinyRender"
+description: "CPU软光栅开发记录"
 ---
