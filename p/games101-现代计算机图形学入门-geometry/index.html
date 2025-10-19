@@ -1,0 +1,1546 @@
+<!DOCTYPE html>
+<html lang="zh-cn" dir="ltr">
+    <head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'>
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+  <meta name="referrer" content="no-referrer-when-downgrade"><meta name='description' content="Implicit and explicit Implicit 是并不会告诉任何点的信息，只会告诉该曲面上所有点满足的关系 $$ f(x,y,z)=0 $$ 判断所给出的隐式方程描述的是一个怎样的形状十分困难 可以十分容易的判断出一点与曲面的关系 example for Implicit 代数方法描述 Constructive Solid Geometry（CSG 通过基本几何的运算定义新的几何） Signed Distance Functions（空间任何点到物体表面的最短距离来描述，用正负表示在物体外还是内） 在2D情况，看下图就很好理解了 图片来自https://blog.csdn.net/CODE_RabbitV/article/details/140288664\n">
+<title>GAMES101 现代计算机图形学入门 Geometry</title>
+
+<link rel='canonical' href='https://sdpyy1.github.io/p/games101-%E7%8E%B0%E4%BB%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9B%BE%E5%BD%A2%E5%AD%A6%E5%85%A5%E9%97%A8-geometry/'>
+
+<link rel="stylesheet" href="/scss/style.min.6a692fd055deae459f2a9767f57f3855ba80cafd5041317f24f7360f6ca47cdf.css"><meta property='og:title' content="GAMES101 现代计算机图形学入门 Geometry">
+<meta property='og:description' content="Implicit and explicit Implicit 是并不会告诉任何点的信息，只会告诉该曲面上所有点满足的关系 $$ f(x,y,z)=0 $$ 判断所给出的隐式方程描述的是一个怎样的形状十分困难 可以十分容易的判断出一点与曲面的关系 example for Implicit 代数方法描述 Constructive Solid Geometry（CSG 通过基本几何的运算定义新的几何） Signed Distance Functions（空间任何点到物体表面的最短距离来描述，用正负表示在物体外还是内） 在2D情况，看下图就很好理解了 图片来自https://blog.csdn.net/CODE_RabbitV/article/details/140288664\n">
+<meta property='og:url' content='https://sdpyy1.github.io/p/games101-%E7%8E%B0%E4%BB%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9B%BE%E5%BD%A2%E5%AD%A6%E5%85%A5%E9%97%A8-geometry/'>
+<meta property='og:site_name' content='wanfeng'>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='课程笔记' /><meta property='article:published_time' content='2025-10-19T12:37:17&#43;08:00'/><meta property='article:modified_time' content='2025-10-19T12:37:17&#43;08:00'/>
+<meta name="twitter:title" content="GAMES101 现代计算机图形学入门 Geometry">
+<meta name="twitter:description" content="Implicit and explicit Implicit 是并不会告诉任何点的信息，只会告诉该曲面上所有点满足的关系 $$ f(x,y,z)=0 $$ 判断所给出的隐式方程描述的是一个怎样的形状十分困难 可以十分容易的判断出一点与曲面的关系 example for Implicit 代数方法描述 Constructive Solid Geometry（CSG 通过基本几何的运算定义新的几何） Signed Distance Functions（空间任何点到物体表面的最短距离来描述，用正负表示在物体外还是内） 在2D情况，看下图就很好理解了 图片来自https://blog.csdn.net/CODE_RabbitV/article/details/140288664\n">
+    <link rel="shortcut icon" href="/favicon.ico" />
+
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="切换菜单">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        
+            
+            <figure class="site-avatar">
+                <a href="/">
+                
+                    
+                    
+                    
+                        
+                        <img src="/img/avatar_hu_f59158f730715054.png" width="300"
+                            height="300" class="site-logo" loading="lazy" alt="Avatar">
+                    
+                
+                </a>
+                
+                    <span class="emoji">🧐</span>
+                
+            </figure>
+            
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="/">wanfeng</a></h1>
+            <h2 class="site-description">Blog</h2>
+        </div>
+    </header><ol class="menu-social">
+            
+                <li>
+                    <a 
+                        href='https://space.bilibili.com/287473737'
+                        target="_blank"
+                        title="Bilibili"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-brand-bilibili"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 10a4 4 0 0 1 4 -4h10a4 4 0 0 1 4 4v6a4 4 0 0 1 -4 4h-10a4 4 0 0 1 -4 -4v-6z" /><path d="M8 3l2 3" /><path d="M16 3l-2 3" /><path d="M9 13v-2" /><path d="M15 11v2" /></svg>
+                        
+                    </a>
+                </li>
+            
+                <li>
+                    <a 
+                        href='https://github.com/sdpyy1'
+                        target="_blank"
+                        title="GitHub"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
+</svg>
+
+
+
+                        
+                    </a>
+                </li>
+            
+        </ol><ol class="menu" id="main-menu">
+        
+        
+        
+        <li >
+            <a href='/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>Home</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/about/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>About</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>Archives</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/search/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>Search</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/links/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5" />
+  <path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5" />
+</svg>
+
+
+
+                
+                <span>Links</span>
+            </a>
+        </li>
+        
+        <li class="menu-bottom-section">
+            <ol class="menu">
+                    
+                        <li id="i18n-switch">  
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-language" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M4 5h7" />
+  <path d="M9 3v2c0 4.418 -2.239 8 -5 8" />
+  <path d="M5 9c-.003 2.144 2.952 3.908 6.7 4" />
+  <path d="M12 20l4 -9l4 9" />
+  <path d="M19.1 18h-6.2" />
+</svg>
+
+
+
+                            <select name="language" title="language" onchange="window.location.href = this.selectedOptions[0].value">
+                                
+                                    <option value="https://sdpyy1.github.io/en/" >English</option>
+                                
+                                    <option value="https://sdpyy1.github.io/" selected>中文</option>
+                                
+                            </select>
+                        </li>
+                    
+                
+
+                
+                    <li id="dark-mode-toggle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <span>暗色模式</span>
+                    </li>
+                
+            </ol>
+        </li>
+    </ol>
+</aside>
+
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">目录</h2>
+        
+        <div class="widget--toc">
+            <nav id="TableOfContents">
+  <ol>
+    <li><a href="#implicit">Implicit</a></li>
+    <li><a href="#example-for-implicit">example for Implicit</a></li>
+    <li><a href="#explicit">explicit</a></li>
+    <li><a href="#exampl-for-explicit">Exampl For Explicit</a></li>
+  </ol>
+
+  <ol>
+    <li><a href="#贝塞尔曲线bézier-curves">贝塞尔曲线（Bézier Curves）</a></li>
+  </ol>
+
+  <ol>
+    <li><a href="#贝塞尔曲面">贝塞尔曲面</a></li>
+  </ol>
+
+  <ol>
+    <li><a href="#mesh-subdivision-曲面细分">Mesh subdivision 曲面细分</a>
+      <ol>
+        <li><a href="#loop-subdivision">Loop Subdivision</a></li>
+        <li><a href="#catmull-clark-subdivision">Catmull-Clark Subdivision</a></li>
+      </ol>
+    </li>
+    <li><a href="#mesh-simplification-曲面简化">Mesh Simplification 曲面简化</a>
+      <ol>
+        <li><a href="#collapsing-an-edge-边坍缩">Collapsing An Edge 边坍缩</a></li>
+      </ol>
+    </li>
+  </ol>
+</nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+            <main class="main full-width">
+    <article class="main-article">
+    <header class="article-header">
+
+    <div class="article-details">
+    
+    <header class="article-category">
+        
+        
+             
+            
+            
+            
+            <div class="category-hierarchy">
+                
+                    
+                    
+                    
+                        
+                    
+                     
+                    
+                    
+                    
+                    <a href="/categories/course/" 
+                       >
+                        Course
+                    </a>
+                    
+                    
+                    
+                        <span class="category-separator">/</span>
+                    
+                
+                    
+                    
+                    
+                        
+                    
+                        
+                    
+                     
+                    
+                    
+                    
+                    <a href="/categories/course/games101/" 
+                       >
+                        Games101
+                    </a>
+                    
+                    
+                    
+                
+            </div>
+        
+    </header>
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="/p/games101-%E7%8E%B0%E4%BB%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9B%BE%E5%BD%A2%E5%AD%A6%E5%85%A5%E9%97%A8-geometry/">GAMES101 现代计算机图形学入门 Geometry</a>
+        </h2>
+    
+        
+    </div>
+
+    
+    
+    
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published">Oct 19, 2025</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-time--reading">
+                    阅读时长: 4 分钟
+                </time>
+            </div>
+        
+
+        
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+        <span id="busuanzi_container_page_pv">本文阅读量<span id="busuanzi_value_page_pv"></span>次</span>
+    </footer>
+    
+    
+</div>
+<style>
+    .category-hierarchy {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;  
+        margin-right: 12px;  
+        margin-bottom: 8px;  
+    }
+    
+    .category-separator {
+        color: #999;
+        user-select: none;
+        font-size: 1em;  
+    }
+    
+    .article-category a {
+        text-decoration: none;
+        padding: 6px 12px;  
+        border-radius: 6px;  
+        font-size: 0.95em;  
+        transition: all 0.2s ease;
+        line-height: 1.5;  
+    }
+    
+    .article-category a:hover {
+        opacity: 0.9;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 6px rgba(0,0,0,0.1);  
+    }
+</style>
+</header>
+
+    <section class="article-content">
+    
+    
+    <h1 id="implicit-and-explicit">Implicit and explicit
+</h1><h2 id="implicit">Implicit
+</h2><p><strong>是并不会告诉任何点的信息，只会告诉该曲面上所有点满足的关系</strong>
+</p>
+$$
+f(x,y,z)=0
+$$<ul>
+<li>判断所给出的隐式方程描述的是一个怎样的形状十分困难</li>
+<li>可以十分容易的判断出一点与曲面的关系</li>
+</ul>
+<h2 id="example-for-implicit">example for Implicit
+</h2><ul>
+<li>代数方法描述
+<img src="/3b0a2bb693ef4b20a6ca0414d87ae566.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+></li>
+<li>Constructive Solid Geometry（CSG 通过基本几何的运算定义新的几何）<img src="/915046f3adaf4541acd90f58d2e10e72.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+></li>
+<li>Signed Distance Functions（空间任何点到物体表面的最短距离来描述，用正负表示在物体外还是内）
+<img src="/fed751784b27497d83ac9cf0c4effeb9.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+在2D情况，看下图就很好理解了</li>
+</ul>
+<blockquote>
+<p>图片来自https://blog.csdn.net/CODE_RabbitV/article/details/140288664</p>
+</blockquote>
+<p><img src="/1b337361748244289c895e5ffcc7e0eb.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+当两个距离函数进行融合后后，找到所有值为0的位置，就是融合后的物体表面</p>
+<ul>
+<li>分形
+<img src="/f3f9e209b7f14b4a928a81d254e4e45b.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+></li>
+</ul>
+<h2 id="explicit">explicit
+</h2><p><strong>所有曲面的点被直接给出，或者可以通过映射关系直接得到</strong>
+例如：
+</p>
+$$
+f(u,v) = ((2+cosu)cosv,(2+cosu)sinv,sinu)
+$$<p>
+把uv都遍历一遍就可以拿到所有的(x,y,z)</p>
+<p>因根据需要选择一种表达方式</p>
+<h2 id="exampl-for-explicit">Exampl For Explicit
+</h2><ul>
+<li>Point Cloud（点云）全是点组成的模型
+<img src="/94b7d310b92b4e40913f3077ea4bc24b.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+></li>
+<li>Polygon Mesh（多边形面）
+<img src="/e57ef4ac7f744642a46910ebb8565b9a.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+计算机中用三角形面表示的文件  .obj文件
+<img src="/21899e3590134bc6bdf71158675cec07.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+<img src="/4137942384e84a358dc39d80de8d06a7.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+></li>
+</ul>
+<h1 id="curves-曲线">Curves 曲线
+</h1><h2 id="贝塞尔曲线bézier-curves">贝塞尔曲线（Bézier Curves）
+</h2><p>给定一系列控制点，画出曲线，下图是实际例子<img src="/234520fa01e7457881cec852c42a5e3f.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+de Casteljau实现
+考虑3个控制点（quadratic Bezier）
+<img src="/aafe3981bd3a467b9357ff241a7797cc.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+给定一个比例t，把两个线段都根据t截开</p>
+<p><img src="/468fe6effeaa46669390545ce276a9cc.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+得到的两个点连起来再执行相同操作<img src="/f393f2c7ef3446bf8a3fe6d05b21a921.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+最后只有一个点了，就确定了曲线一个点的位置
+<img src="/2fc428c252f34015b1347933ea9f08de.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+把所有的t都找一遍，就画出了曲线，见下图，想象一下绿色和蓝色的线跟着t的变化一直变化，就会画出蓝色的线
+<img src="/ff2990a596f0475db8ed0914572b83f2.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+可以用表达式表达出每个点，用t去截线段，其实就是做一个插值计算
+<img src="/f2d6c928cc9a4084b3da9e78b6d28c5e.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+最终总结，给定n+1个控制点，比例t的情况下，可以得到n阶的贝塞尔曲线
+<img src="/e9179f932eef40e9b943caa95ef7b554.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+贝塞尔曲线的一些性质：</p>
+<ul>
+<li>必定经过起始与终止控制点</li>
+<li>必定经与起始与终止线段相切</li>
+<li>具有仿射变换性质，可以通过移动控制点移动整条曲线</li>
+<li>凸包性质，曲线一定不会超出所有控制点构成的多边形范围
+什么是凸包（convex hull）？想象墙上有许多图钉，我们需要用一根橡皮筋把这些图钉围住，于是我们开始会让橡皮筋尽可能的撑大，然后松手放开橡皮筋，它所形成的多边形即为凸包，如图中蓝色曲线所示</li>
+</ul>
+<p><img src="/a3e4cb077a784263869be2e1dc4d9100.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+贝塞尔曲线在控制点过多时，不好控制，如下图所示
+<img src="/2b86fc74c1c347708ed070ecc1a64be5.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+于是就有了Piecewise Bézier Curves，取一部分点做，然后结合起来，如下图
+<img src="/96f0bf8b2087482dbee33323963f68cc.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+<img src="/a9815cef4bb04294aff41b81bc115ead.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+贝塞尔曲线的连续性
+C0连续，就是控制点重合
+<img src="/4879f6270b3c41d884707108e63c4e48.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+C1连续就是达到了曲面光滑，实现方法看下图红线
+<img src="/77526950457d450a802ba7a1e2ba4663.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+></p>
+<h1 id="surfaces-曲面">Surfaces 曲面
+</h1><h2 id="贝塞尔曲面">贝塞尔曲面
+</h2><p><img src="/368fc069555e4e199be6927666bc7f8a.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+通过贝塞尔曲线获得贝塞尔曲面的方法：
+如下图已经画出了四条贝塞尔曲线，在t取某一值下生成的4个点，<strong>把这4个点作为控制点再画一条曲线</strong>，这样t变化时，这条线就绘制成了一个面
+<img src="/255480476961421ab0879d50907a6d78.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+></p>
+<h1 id="mesh-operation">Mesh Operation
+</h1><p><img src="/d528394fa4364aafa05f82a8c729deb1.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+></p>
+<h2 id="mesh-subdivision-曲面细分">Mesh subdivision 曲面细分
+</h2><p>引入更多的三角形，
+<img src="/394499c9b19e4ebaa468f216e4682a7b.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+></p>
+<h3 id="loop-subdivision">Loop Subdivision
+</h3><ol>
+<li>
+<p>增多三角形数量，如下如
+<img src="/c401784eedfb4804b0e2cc41b1d88b43.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+></p>
+</li>
+<li>
+<p>调整细分后新的三角形顶点处理，更新一条边的中心点，如下图的白点，对这个点的处理，通过上下左右四个顶点加权平均（这个权重是具体的算法，这里不做解释）
+<img src="/78b60ed6955642369eb2b5034aa67ad2.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+></p>
+</li>
+<li>
+<p>旧的顶点呢，如下图白点就是一个旧顶点，更新算法包括自己本来的位置，以及周围顶点进行加权平均
+<img src="/88179a67c70b45b394f0108254151717.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+></p>
+</li>
+</ol>
+<h3 id="catmull-clark-subdivision">Catmull-Clark Subdivision
+</h3><p>一般的模型不一定全是三角形，就没法用loop subdivision，Catmull-Clark可用于一般情况，如下图有正方形也有三角形
+<img src="/d2a36872c41244c5946af77bd3427c06.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+先定义两个表达，非四边形面和奇异点（度不等于 4的点）
+<img src="/f8b7071330a44f75ba1733991aac29ab.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+如上图框所示，每条边和每个面都取钟中点，然后把这些点连起来，如下图所示
+<img src="/02bb2646bc284ffb8d04ffd8831f6d2b.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+连接后，奇异点变多了，非四边形都消失了，此时奇异点是4个，但是如果继续细分，奇异点数目并不会继续增加，如下图还是4个
+<img src="/3c2c267ffd014712ae9c1a86e7983b1e.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+与loop一样，调整完后需要对顶点位置进行处理，处理方法如下
+<img src="/0a5d2d7623f34e598f546e0caac7f418.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+下图为两种方法对比
+<img src="/8774493823fb49108527661615ff1f5a.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+></p>
+<h2 id="mesh-simplification-曲面简化">Mesh Simplification 曲面简化
+</h2><p>当模型距离很远时，模型的细节就没必要表现出来</p>
+<h3 id="collapsing-an-edge-边坍缩">Collapsing An Edge 边坍缩
+</h3><p><img src="/f7c0115a0d124a3b98dae744161a1177.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+那哪些边可以进行坍缩，如果度量呢？下图进行了度量，首先5个顶点进行平均效果并不好， 用2次误差方法来实现：即坍缩之后蓝色新顶点所在的位置与原来各个平面的垂直距离之和。</p>
+<ol>
+<li>为模型每条边赋值，其值为坍缩这条边之后，代替两个老顶点的新顶点所能得到的最小二次误差度量</li>
+<li>选取权值最小的边做坍缩，新顶点位置为原来计算得出使得二次误差最小的位置</li>
+<li>坍缩完之后，与之相连其他的边的位置会改动，更新这些边的权值</li>
+<li>重复上述步骤，直到到达终止条件
+<img src="/ad8ca52871de45ff98abfb35d33ee169.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+一些坍缩的实例
+<img src="/69166ee4014448b3b2543619933435f9.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="请添加图片描述"
+	
+	
+>
+几何部分就这些东西了～</li>
+</ol>
+
+</section>
+
+
+    <footer class="article-footer">
+    
+    <section class="article-tags">
+        
+            <a href="/tags/%E8%AF%BE%E7%A8%8B%E7%AC%94%E8%AE%B0/">课程笔记</a>
+        
+    </section>
+
+
+    
+    <section class="article-copyright">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
+</svg>
+
+
+
+        <span>Licensed under CC BY-NC-SA 4.0</span>
+    </section>
+    </footer>
+
+
+    
+        <link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css"integrity="sha384-n8MVd4RsNIU0tAv4ct0nTaAbDJwPJzDEaqSD1odI&#43;WdtXRGWt2kTvGFasHpSy3SV"crossorigin="anonymous"
+            ><script 
+                src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"integrity="sha384-XjKyOOlGwcjNTAIQHIpgOno0Hl1YQqzUOEleOLALmuqehneUG&#43;vnGctmUb0ZY0l8"crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"integrity="sha384-&#43;VBxd3r6XgURycqtZ117nYw44OOcIax56Z4dCRWbxyPt0Koah1uHoK0o4&#43;/RRE05"crossorigin="anonymous"
+                defer
+                >
+            </script><script>
+    window.addEventListener("DOMContentLoaded", () => {
+	const mainArticleElement = document.querySelector(".main-article");
+        renderMathInElement(mainArticleElement, {
+            delimiters: [
+                { left: "$$", right: "$$", display: true },
+                { left: "$", right: "$", display: false },
+                { left: "\\(", right: "\\)", display: false },
+                { left: "\\[", right: "\\]", display: true }
+            ],
+            ignoredClasses: ["gist"]
+        });})
+</script>
+
+    
+</article>
+
+    
+
+    
+
+<aside class="related-content--wrapper">
+    <h2 class="section-title">相关文章</h2>
+    <div class="related-content">
+        <div class="flex article-list--tile">
+            
+                
+<article class="article-card no-image">
+    <a href="/p/games101-%E7%8E%B0%E4%BB%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9B%BE%E5%BD%A2%E5%AD%A6%E5%85%A5%E9%97%A8-ray-tracing/">
+        
+        
+        <div class="article-details">
+            <h2 class="article-title">GAMES101 现代计算机图形学入门 Ray Tracing</h2>
+        </div>
+        
+    </a>
+
+    <style>
+     
+    .article-card {
+        background: rgba(255, 255, 255, 0.25);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        margin: 10px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .article-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    }
+
+    .article-card a {
+        display: flex;
+        flex-direction: column;
+        text-decoration: none;
+        color: inherit;
+        height: 100%;
+    }
+
+     
+    .article-image {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        overflow: hidden;
+    }
+    .article-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+    .article-image:hover img {
+        transform: scale(1.05);
+    }
+
+     
+    .article-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: rgba(0,0,0,0.3);  
+        padding: 10px;
+        box-sizing: border-box;
+        text-align: center;
+    }
+    .article-overlay .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #fff;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .article-card.no-image .article-details {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 15px;
+    }
+    .article-card.no-image .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #222;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .articles-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 20px;
+    }
+    </style>
+</article>
+            
+                
+<article class="article-card no-image">
+    <a href="/p/games101-%E7%8E%B0%E4%BB%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9B%BE%E5%BD%A2%E5%AD%A6%E5%85%A5%E9%97%A8-shading/">
+        
+        
+        <div class="article-details">
+            <h2 class="article-title">GAMES101 现代计算机图形学入门 Shading</h2>
+        </div>
+        
+    </a>
+
+    <style>
+     
+    .article-card {
+        background: rgba(255, 255, 255, 0.25);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        margin: 10px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .article-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    }
+
+    .article-card a {
+        display: flex;
+        flex-direction: column;
+        text-decoration: none;
+        color: inherit;
+        height: 100%;
+    }
+
+     
+    .article-image {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        overflow: hidden;
+    }
+    .article-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+    .article-image:hover img {
+        transform: scale(1.05);
+    }
+
+     
+    .article-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: rgba(0,0,0,0.3);  
+        padding: 10px;
+        box-sizing: border-box;
+        text-align: center;
+    }
+    .article-overlay .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #fff;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .article-card.no-image .article-details {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 15px;
+    }
+    .article-card.no-image .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #222;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .articles-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 20px;
+    }
+    </style>
+</article>
+            
+                
+<article class="article-card no-image">
+    <a href="/p/games101-%E7%8E%B0%E4%BB%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%9B%BE%E5%BD%A2%E5%AD%A6%E5%85%A5%E9%97%A8-transformation-rasterization/">
+        
+        
+        <div class="article-details">
+            <h2 class="article-title">GAMES101 现代计算机图形学入门 Transformation &amp; Rasterization</h2>
+        </div>
+        
+    </a>
+
+    <style>
+     
+    .article-card {
+        background: rgba(255, 255, 255, 0.25);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        margin: 10px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .article-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    }
+
+    .article-card a {
+        display: flex;
+        flex-direction: column;
+        text-decoration: none;
+        color: inherit;
+        height: 100%;
+    }
+
+     
+    .article-image {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        overflow: hidden;
+    }
+    .article-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+    .article-image:hover img {
+        transform: scale(1.05);
+    }
+
+     
+    .article-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: rgba(0,0,0,0.3);  
+        padding: 10px;
+        box-sizing: border-box;
+        text-align: center;
+    }
+    .article-overlay .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #fff;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .article-card.no-image .article-details {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 15px;
+    }
+    .article-card.no-image .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #222;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .articles-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 20px;
+    }
+    </style>
+</article>
+            
+        </div>
+    </div>
+</aside>
+
+     
+    
+        
+    <script
+    src="https://giscus.app/client.js"
+    data-repo="sdpyy1/sdpyy1.github.io"
+    data-repo-id="R_kgDOQEycpQ"
+    data-category="Announcements"
+    data-category-id="DIC_kwDOQEycpc4Cwz7v"
+    data-mapping="pathname"
+    data-strict="0"
+    data-reactions-enabled="1"
+    data-emit-metadata="0"
+    data-input-position="top"
+    data-theme="light"
+    data-lang="en"
+    data-loading=""
+    crossorigin="anonymous"
+    async
+></script>
+<script>
+    function setGiscusTheme(theme) {
+        let giscus = document.querySelector("iframe.giscus-frame");
+        if (giscus) {
+            giscus.contentWindow.postMessage(
+                {
+                    giscus: {
+                        setConfig: {
+                            theme: theme,
+                        },
+                    },
+                },
+                "https://giscus.app"
+            );
+        }
+    }
+
+    (function () {
+        addEventListener("message", (e) => {
+            if (event.origin !== "https://giscus.app") return;
+            handler();
+        });
+        window.addEventListener("onColorSchemeChange", handler);
+
+        function handler() {
+            if (document.documentElement.dataset.scheme === "light") {
+                setGiscusTheme('light');
+            } else {
+                setGiscusTheme('light');
+            }
+        }
+    })();
+</script>
+
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+            2020 - 
+        
+        2025 爱喝东方树叶
+    </section>
+    <section style="display: flex; gap: 30px; align-items: center;">
+      
+      
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+      <span>📚 文章数: 4</span>
+      <span>✍️ 总字数: 
+        
+        
+        12.25K
+      </span>
+    </section>
+
+    <section class="powerby">
+    
+    <div class="busuanzi-footer">
+        <span id="busuanzi_container_site_pv">
+          本站总访问量<span id="busuanzi_value_site_pv"></span>次
+        </span>
+        <span id="busuanzi_container_site_uv">
+          本站访客数<span id="busuanzi_value_site_uv"></span>人次
+        </span>
+      </div></section>
+
+</footer>
+
+
+    
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    
+    <div class="pswp__bg"></div>
+
+    
+    <div class="pswp__scroll-wrap">
+
+        
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                
+                
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                        <div class="pswp__preloader__cut">
+                            <div class="pswp__preloader__donut"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div>
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js"integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo="crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js"integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU="crossorigin="anonymous"
+                defer
+                >
+            </script><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css"crossorigin="anonymous"
+            ><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css"crossorigin="anonymous"
+            >
+
+            </main>
+        </div>
+        <script 
+                src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js"integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z&#43;KMkF24hUW8WePSA9HM="crossorigin="anonymous"
+                
+                >
+            </script><script type="text/javascript" src="/ts/main.1e9a3bafd846ced4c345d084b355fb8c7bae75701c338f8a1f8a82c780137826.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>
