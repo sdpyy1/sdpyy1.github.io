@@ -1,11 +1,11 @@
-name: 部署博客网站
+name: 部署博客网站并提交修改
 
 on:
   push:
     branches: [ main ]
 
 permissions:
-  contents: write
+  contents: write  # 确保有写入代码仓库的权限
 
 jobs:
   deploy:
@@ -16,6 +16,8 @@ jobs:
         with:
           submodules: true
           fetch-depth: 0
+          # 配置凭证，用于后续推送修改
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 处理 CSDN 图片链接（支持多格式）
         run: |
@@ -109,6 +111,24 @@ jobs:
           find ./content/post -type f \( -name "*.png" -o -name "*.jpeg" -o -name "*.jpg" -o -name "*.gif" -o -name "*.webp" \) -exec cp {} ./static/ 2>/dev/null \;
           echo -e "\n已复制到 static 目录的图片文件："
           ls -l ./static/*.{png,jpeg,jpg,gif,webp} 2>/dev/null || echo "  无额外本地图片需要复制"
+
+      - name: 提交修改后的 md 文件和图片
+        run: |
+          # 配置Git身份（用于提交）
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          
+          # 检查是否有修改
+          git add ./content/post/*.md ./content/post/**/*.md  # 递归添加所有修改的md文件
+          git add ./static/*.{png,jpeg,jpg,gif,webp}  # 添加下载的图片
+          
+          # 只有存在修改时才提交
+          if git diff --cached --quiet; then
+              echo "无修改内容，无需提交"
+          else
+              git commit -m "自动替换CSDN图片链接为本地链接"
+              git push origin main  # 推送到main分支
+          fi
 
       - name: 安装Hugo
         uses: peaceiris/actions-hugo@v2
