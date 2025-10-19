@@ -140,13 +140,13 @@ params:
             siteName: "" # You must insert a unique identifier here matching the one you registered (See https://cactus.chat/docs/getting-started/quick-start/#register-your-site)
 
         giscus:
-            repo:
-            repoID:
-            category:
-            categoryID:
-            mapping:
-            lightTheme:
-            darkTheme:
+            repo: "sdpyy1/sdpyy1.github.io"
+            repoID: "R_kgDOQEycpQ"
+            category: "Announcements"
+            categoryID: "DIC_kwDOQEycpc4Cwz7v"
+            mapping: "pathname"
+            lightTheme: "light"
+            darkTheme: "light"
             reactionsEnabled: 1
             emitMetadata: 0
 
