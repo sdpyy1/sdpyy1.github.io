@@ -1,0 +1,209 @@
++++
+date = '2025-10-19T14:24:24+08:00'
+draft = false
+title = 'GAMES105 计算机角色动画基础（数学基础）'
+categories = ["Course/Games105"]
+tags = ["课程笔记","Games105"]
++++
+# 线性代数
+## 向量
+![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/fb83138d7956486cb1748166b3de3f4d.png)
+### 点乘 Dot Product
+![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/32ad6a4c37154960a5ba407341b77c52.png)
+### 叉乘 Cross Product
+![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/d7c4056ffe324e3c9318ad447a4040e0.png)
+叉乘作用:寻找同时与AB都垂直的方向(AB平面的法线方向)
+
+### 向量旋转(叉乘应用)
+![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/12c919dcfe1842aaa671849798f8e6ea.png)
+理论上在ab两个向量的角平分面上任何一个方向都可以作为旋转轴来进行旋转
+![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/0205672ffc514736a7e7efd51f4fdfba.png)
+**这时候找ab叉乘方向作为轴进行旋转,旋转最少**
+![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/9cea876219ce4047878cd1f38e87cd71.png)
+#### 如何旋转一个向量
+例如绕着u为轴进行旋转
+![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/ad08bc4c5cfb4c21b40cfdba0d369c43.png)
+可以把旋转拆分成两部分
+![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/61fae3dcd0204da4aad549c3ee2d6771.png)
+v方向是 UcrossA的方向(其实就是圆盘的切线方向,也就是说叉乘可以求切线方向),t方向是UcrossV(与切线垂直)
+从俯视图来看
+![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/636ae78154a24416b670d568f3954615.png)
+这个推导结果就是**Rodrigues's rotation formula(罗德里格斯旋转公式)**
+![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/6315cc28c88c4d3cac6f2b52fd071225.png)
+### 正交基
+正交基的要求
+![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/3dc83de22bf848a48592fe057885e85c.png)
+一个向量可以用正交基的线性组合来表示![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/f77dfa63b358474db12660fe64cf322d.png)
+两个向量的点乘可以展开
+![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/c8930d9c53d64b06bef16e4b40d23e33.png)
+最后一项为0了
+![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/73a8917905cf4d8dbcc3c13d751aaf52.png)
+叉乘也可以,去掉叉乘自己=0的项,化简后
+![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/a00107d9a5ba4065907eb65159564bf9.png)
+
+## 矩阵
+一些会用到的特殊矩阵(单位/对角/对称/反对称)
+![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/d71d9c449b6d40078da65ed98d47cb96.png)
+### 转置
+![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/b6c0daee7ce940de8906ff8e6067385c.png)
+### 运算
+![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/c6f8d89202994454b60c0d757010c953.png)
+一些运算工具
+![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/67e7006b26a24d7e86e62f846ee11776.png)
+叉乘计算可以用矩阵来表示,这里的a用一个反对称阵来表示了
+![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/4e01ede975794ecb872e79f4f946ea22.png)
+把叉乘计算转为矩阵运算后,旋转一个向量的罗德里格斯旋转公式可以表示为Ra,这里的R就是空间中沿着某个单位轴u,旋转的旋转矩阵 ![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/3b312865659644aa80a6e31f39653bf4.png)
+## 正交矩阵
+定义:矩阵的每一列都是互相正交的向量
+![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/87508c370a934d67972cb1f99d33f23b.png)
+正交阵的逆=正交阵的转置    正交阵转置*正交阵 = 单位阵
+![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/9de404ba5a344656a10f05f3f3ebde73.png)
+
+## 矩阵的行列式
+三×四列矩阵的行列式怎么算😄
+![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/a13710f87d9343f9ad498d92259a9697.png)
+行列式的性质
+![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/a2b16e828939415ba96c6e436e7e125e.png)
+叉乘同样可以用行列式来计算![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/4c3d7311239c4a70b46459e48f0b0aec.png)
+## 特征值
+![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/4077c06db4414891bb73f2c6f59db989.png)
+比较重要的结论是,3x3的正交阵肯定有一个特征值是1或-1
+![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/78b74e7b6c284a2aa2b600a95942dbc7.png)
+
+# 刚体变换 Rigid Transformation
+![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/8d8f84e5267f4e509620f721791476ab.png)
+## 缩放
+相当于把向量乘以一个对角阵,每一行表示缩放比例
+![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/78a50fdf420d48208511eb5192a72864.png)
+## 平移
+![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/697bf32a43404daeadb64e6c91c121f0.png)
+平移可以直接加
+![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/4fc2cdc1cce24246ac7cc3dffb31b9d8.png)
+## 旋转
+![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/abebfc1d75b74793a98906dfdab30440.png)
+旋转矩阵有一些性质.旋转矩阵是正交阵,行列式一定是+1,刚性变化,不会改变向量的模长
+![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/8b695c3c0f064d3abb46dc1a7b27a7c5.png)
+旋转的组合,毕竟是左乘肯定得反着写
+![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/44b7f04c70cd443f8d55b1ce01e4ba26.png)
+沿着坐标轴旋转的旋转矩阵
+![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/2ad8acd7690045ebb63a747aced47200.png)
+分别沿着3个轴旋转结果,与沿着某个计算出来的轴旋转可以得到一样的结果![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/358390ab9bf24cbda1b31726c4bc040c.png)
+旋转矩阵肯定有一个特征值为1的特征值. RU=1*U(特征值的概念),这里的特征向量U在左乘R后保持不变,可以理解为U方向就是旋转轴
+![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/b3f6cff754de4c81a2800035b4ad3cf1.png)
+旋转轴和旋转角度可以通过各种线性代数公式推导出来.R-1=RT所以左右同乘以RT.得到某个反对称阵 * 对称轴U = 0.
+![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/408c478f2fc34766b3b28c616f45d9b0.png)
+反对称阵可以写成叉乘
+![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/2c2ce7416ff7446e98228ca09f358316.png)
+叉乘=0表示两个向量共线
+![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/cae05423d252482688692d89db769df9.png)
+所以说这个反对称阵对应的叉乘的u'单位化后就是对称轴.谁想出来的😄
+
+## 坐标转换
+全局和模型坐标系的转换![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/eec68540dcce403bb344330c63b97df5.png)
+# 3D旋转
+旋转的插值不能线性插值.下面这种插值是错的
+![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/83709e62216641c38aadf97153876a57.png)
+![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/df027292243b4907bf8f1a5cde6a427d.png)
+得出结论,用旋转矩阵来表达旋转时的缺点
+![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/8a48d5d5d9e340079c2d88d082dc4e7d.png)
+## 欧拉角（Euler Angles）来表示旋转
+欧拉角（Euler Angles）是 3D 旋转中最直观的表示方式（通过绕三个正交轴的依次旋转角度定义）
+![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/3cf4aed0958c4a3e8f014421b0deabb1.png)
+但它存在一个致命缺陷 ——万向锁（Gimbal Lock，也称 Gimbal Lock）
+![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/d09c49a161cc4bc18748bb109f3596e1.png)
+万向锁把中间变换设置为90°时,另外两个旋转变换都只会在同一个方向上进行旋转,这就是万向锁.    
+	`https://www.bilibili.com/video/BV1Nr4y1j7kn/?spm_id_from=333.337.search-card.all.click&vd_source=9df9034e2f1978b1018f5b387ec3eacd`解释的很好,其实调整第一个轴,结果却在最后一个轴上旋转的原因是: 调整第一个轴本来就是在第一个轴上旋转,但是调整后又经过第二个轴的旋转,把他带到了第三个轴的旋转上看上去就像是在第三个轴旋转. 
+
+欧拉角的优缺点:
+![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/2a6497721ea64aedbbdbfc0366445358.png)
+
+## 旋转轴和旋转角度来表示旋转
+前边说过了
+优缺点:
+![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/cbf41520915546318cfd98eef13bd375.png)
+
+## 四元数 Quaternions
+### 复数与二维旋转
+复数表示为
+
+![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/2aafe47dcd0e4baab5ea329024b45de8.png)
+复数用向量来表示就是
+![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/eb3517f19a1b49499da65e40fd251811.png)
+复平面:x轴为实轴,y轴为虚轴
+![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/8f9dd344a8ad462b9a194f42ef381962.png)
+复数的乘法:
+![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/1fd4859fd1104d219c6d542df7e9d523.png)
+可以看出复数的可以写出一个矩阵和一个向量的结果.矩阵代表z1,向量代表z2.
+也就是说**z1乘以z2等价于给z2左乘一个变换矩阵**
+
+把表示z1的这个变换矩阵做一个变形
+![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/3a9e36afe811439fb6d93e76c641df19.png)
+从下图可以看出根号下平方和表示这个复数的模长
+![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/13d1909759a349e9a67981bc6464aff8.png)
+并且![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/0e8719c89d114dcb82d768acc6fe434e.png)
+![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/2858b395fd4e4b3faa9129e27d27b72e.png)
+带入刚才的矩阵
+![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/f8c8f4263ab942be87be2d794f8df2b5.png)
+左边部分是一个缩放矩阵,右边刚好是2D旋转公式.  **所以说一个复数可以看作是先旋转角度再缩放的变换矩阵**
+
+所以 我们要对一个向量旋转时,先把他看成一个复数![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/292e796c0f664e8ca93bdb1f4fd80d7d.png)
+给他左乘一个复数就能达到旋转效果
+![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/cf8aac76a1334806b9da7367624f5271.png)
+或者可以理解为2D旋转公式![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/d19452b13b7c49c982e251f247137fff.png)
+中的这个旋转矩阵是可以写出复数形式的![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/f76b61c59291499badafd9f1c93a4dd1.png)
+
+### 三维旋转
+轴角式:绕着某个旋转轴进行旋转
+欧拉角:就是上边讲的那个,用它的缺点就是有万向锁,四元数来解决它
+![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/7d41248d5b344218b3106f94c9ae9e58.png)
+在轴角表示法中,确定一个旋转需要一个旋转轴(3个自由度)旋转角度(1个自由度),四个自由度来表示
+
+旋转分解:把向量v分解为平行于旋转轴和垂直于旋转轴的两个分量![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/40848779533b495284577555a2ac9d1f.png)
+![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/c43adcf985b44bf4b555b3bbff85468a.png)
+分解过程有具体公式实现
+![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/b500c3c7c083418bb651ca1e1ea2ca67.png)
+![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/84dd75694c1f49a0a0260ac8f72f1931.png)
+下面就只需要分别讨论两个分量的旋转
+对于垂直分量,就是在底面投影形成的一个圆形上的旋转,w可以通过叉乘获得
+![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/c678650860c74c29bcebfa5b23261f65.png)
+在底盘上可以把旋转结果分解到垂直的两个方向上![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/c4896fabece7444d884392261d1233c7.png)
+对于平行分量来说,它并没有旋转,所以![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/8a80cc17db4f4210acca4b1a4d29191c.png)
+最终组合两个分量并化简
+![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/08991e86251d49f38b642ab3c232b297.png)
+![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/58c4c7e15c9245a6bf8edb74657f97d0.png)
+额,其实就是上边讲的Rodrigues旋转公式(⊙﹏⊙)
+### 四元数定义
+![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/4d7104b9b0b14cf298086f0163f3b769.png)
+四元数的性质:
+![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/6b1362d9806142e4bdcb64e2aee6049c.png)
+![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/2d01895bcc874673b5176b496e83b551.png)
+四元数可以写出一个向量
+![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/7730b7c705234a4092328c578943ade0.png)
+可以用四元数来表示向量和标量
+![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/a262db4aa5274a9b970df4e22d8ad539.png)
+用向量表示后,乘法就表示为 
+![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/882e517993314792b980ecd83ad2190e.png)
+ 四元数没有交换律,有结合律
+![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/2506fdbdcfff47c6a06ed8068265fbbf.png)
+单位四元数的逆=共轭
+![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/24cd2d7708904ac2b3c41bee9b07560f.png)
+类似于单位复数可以组成复平面的一个圆,单位四元数也可以组成4D空间的球壳
+![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/3b196a4e3b4442cbbde5dba693f8accc.png)
+对于任何一个单位四元数都可以写出下面这个形式
+![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/c6d971f9da1942398c80ae8567d82db8.png)
+**它和轴角表示的u和斯塔有相同的信息量.这样的对应可得 一个轴角表示可以转化为一个四元数表示**
+
+如果把一个需要被旋转的向量表示为纯四元数(标量=0),那么旋转q作用到它的计算方式为
+ ![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/f59990a1db6b4fc4ba9c74d75d308437.png)
+四元数可以旋转叠加
+![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/fa71d31b0db54b6faf6973bba1f9bfd2.png)
+### 四元数的插值
+在球壳上才是合法的单位四元数,所以线性插值的qt是不合法的
+![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/827f7dd64379433e9c106bad81570ca3.png)
+所以每次插值都需要进行单位化,但是插值速度是不恒定的![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/bed468d5fbb04da9a6ba3ea78d7fd821.png)
+为了实现常数速度的插值,需要用slerp
+![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/601526dbe5484eb9a29458b2f28c6167.png)
+其中a和b可以推导出来
+![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/79632e1c113944f6b48114f3cfeb9df0.png)
+四元数的优点
+![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/86c8f18c7fe64417b8062bb2b2f3ec18.png)
