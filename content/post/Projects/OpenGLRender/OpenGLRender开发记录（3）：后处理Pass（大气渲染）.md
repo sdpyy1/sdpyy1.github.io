@@ -7,47 +7,47 @@ tags = ["渲染器开发","OpenGLRender","OpenGL"]
 +++
 # 大气渲染
 ## 渲染方法分析
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/55e17d90959d44a9b5a55d89fb02d6a2.png)
+![请添加图片描述](55e17d90959d44a9b5a55d89fb02d6a2.png)
 光如何与Participating Media Particles（包括小粒子（气体分子），大粒子（气溶胶、水滴、烟雾）） 交互？
 - 吸收
 - 外散射
 - 自发光
 - 内散射
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/ab8a5edb87fe46e8af1ba0222bed318a.png)
+![请添加图片描述](ab8a5edb87fe46e8af1ba0222bed318a.png)
 M点为着色点，那从P点看向M点时，需要计算两个值（1）**Transmittance**(透光度):有多少光能透过来(2) **Scattering**：粒子会把来自各个方向的光散射到观察方向
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/f2ceb0e7af2248c1a21442839c4559b9.png)
+![请添加图片描述](f2ceb0e7af2248c1a21442839c4559b9.png)
 ## 真实大气物理
 太阳光由不同波长的光组成，人眼把这些波长光的组合定义成了白色而已
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/6fde5a562a3240e4a7fdbcef10d7c62b.png)
+![请添加图片描述](6fde5a562a3240e4a7fdbcef10d7c62b.png)
 大气中包含两种粒子：气体分子一般小于这些光的波长，其他的气溶胶大于这些波长
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/6e6096be052e4f2485be21ea8ebcf5d2.png)
+![请添加图片描述](6e6096be052e4f2485be21ea8ebcf5d2.png)
 有两种完全不同的散射模型来末说这两种粒子的散射
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/560c3a5ec0b644d3a48a06331a1f1ab0.png)
+![请添加图片描述](560c3a5ec0b644d3a48a06331a1f1ab0.png)
  
 ### 瑞利散射 Rayleigh Scattering （针对气体分子）
 散射特点：对波长敏感，短波长（蓝光）更容易被散射，所以天空是蓝色。
 各种波长光散射形状差不多，但是强度不同，各个方向上散射大致相同
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/d3afafea17f54e31861513b63192af3b.png)
+![请添加图片描述](d3afafea17f54e31861513b63192af3b.png)
 具体的模型公式有两部分，前半部分是各种系数、后半部分是模型形状（花生形状）。公式表达含义是在在散射方向 θ上的散射光强，它与光的波长、海拔高度有关
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/31f41d3de1e742e0965de3791e0f17fd.png)
+![请添加图片描述](31f41d3de1e742e0965de3791e0f17fd.png)
 直观理解天空为什么是蓝色，太阳直射时，大量的蓝光被散射开来，红光散射比较弱。太阳落山时，大量的蓝光散射到了太空和地面，红光的散射效果体现了出来
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/cf3bc303c42b45088912b2448fac59c8.png)
+![请添加图片描述](cf3bc303c42b45088912b2448fac59c8.png)
 ### 米氏散射 Mie scattering （针对大分子）
 米氏散射对波长依赖弱 → 散射几乎不偏色，所以雾和云看起来白色或灰色
 所有波长的光一视同仁，但是不同的散射方向能力有巨大差异
 奇怪的形状。
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/0c91ffff137b4299b4e6a89be0e0ff47.png)
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/d0bfdd32879246e6853957e43d733e9b.png)
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/255d8eedeeee4547b84758f97a4eea2d.png)
+![请添加图片描述](0c91ffff137b4299b4e6a89be0e0ff47.png)
+![请添加图片描述](d0bfdd32879246e6853957e43d733e9b.png)
+![请添加图片描述](255d8eedeeee4547b84758f97a4eea2d.png)
 ### 光的吸收
 这两种气体会吸收光，但模型过于复杂，在渲染中假设他们均匀分布
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/1d31945b45f846bb87737725157e3639.png)
+![请添加图片描述](1d31945b45f846bb87737725157e3639.png)
 ## 单次散射和多次散射
 单次散射只考虑太阳光到一个粒子后散射到摄像机
 多次散射就是考虑一个粒子散射到另一个粒子这样不停散射最终到达摄像机
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/21e08dd48b654638a5d1e50058570a09.png)
+![请添加图片描述](21e08dd48b654638a5d1e50058570a09.png)
 主要看山的背面，多次散射才能表达出这种感觉
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/9ba65d1cd6644e6ea8a76e85f023defc.png)
+![请添加图片描述](9ba65d1cd6644e6ea8a76e85f023defc.png)
 ## 大气渲染实践
 ###  瑞利散射和米氏散射建模
 参考别的论文，他们是用h = 0时求出的解作为基准，用一个高度衰减函数进行高度衰减。函数都有两部分，一部分求解散射系数一部分求解相函数
@@ -128,7 +128,7 @@ vec3 OzoneAbsorption(AtmosphereParameter param, float h)
 ```
 ## 透光率
 透光率与经过的路径和吸收有关，由于每个点的吸收不同，所以采样处理
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/5e93becb036f43c69a7719acdcd1ae23.png)
+![请添加图片描述](5e93becb036f43c69a7719acdcd1ae23.png)
 
 ```cpp
 vec3 Transmittance(in AtmosphereParameter param, vec3 p1, vec3 p2)
@@ -181,7 +181,7 @@ float RayIntersectSphere(vec3 center, float radius, vec3 rayStart, vec3 rayDir)
 }
 ```
 对于单次散射而言，从摄像机位置RM获得每一个采样点，每一个采样点进行光照计算，最后汇总	
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/09f8735a0ed04a82a164dfca191dc5c1.png)
+![在这里插入图片描述](09f8735a0ed04a82a164dfca191dc5c1.png)
 
 ```cpp
 vec3 singleScatterSkyColor(vec3 camPosInPlanet, AtmosphereParameter param, vec3 viewDir){
@@ -222,23 +222,23 @@ vec3 singleScatterSkyColor(vec3 camPosInPlanet, AtmosphereParameter param, vec3 
 ## 透射率预计算
 对于T2，因为每次都是固定在一个方向上进行透射率累加，所以一边计算一边缓存即可，不用每次都从头开始计算透射率，主要来看T1的预计算（因为每次计算太阳光到采样点的透射率都是一个全新的方向，不能利用之前的数据）
 地球是圆的，大气层具有对称性，所以左右晃动不会影响透射率
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/d876678d9886498c98e821aa14e3e99b.png)
+![请添加图片描述](d876678d9886498c98e821aa14e3e99b.png)
 也就是说，对于某一高度的着色点，不同方向上的透射率只和天顶角有关。高度和天顶角两个参数就能确定透射率。（待实现，可参考https://zhuanlan.zhihu.com/p/595576594）
 
 ## 展示
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/d8f2037921a14f98b2f3349d4ea4d7aa.png)
+![请添加图片描述](d8f2037921a14f98b2f3349d4ea4d7aa.png)
 
 
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/eccc71af70bb4589a8e954f8adcaf499.png)
+![请添加图片描述](eccc71af70bb4589a8e954f8adcaf499.png)
 
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/025e7da8dd62453095a4739f7c3d15ed.png)
+![请添加图片描述](025e7da8dd62453095a4739f7c3d15ed.png)
 这里还有一点点遮挡关系没有出来，不过不是重点
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/2620c8616a784ec08d4b970669011ba4.png)
+![请添加图片描述](2620c8616a784ec08d4b970669011ba4.png)
 
 ## 多重散射
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/9d7d4eb1114643fc8aeb6b856a534ad7.png)
+![请添加图片描述](9d7d4eb1114643fc8aeb6b856a534ad7.png)
 就像渲染方程，除了来自光源的直接光照+散射，场景中其他方向的粒子也会散射，也会对着色点有贡献，所以要积分获得整个球面上所有方向上的贡献之和，同时还有大量预计算这就做到了多重散射。这块的实现暂时放弃，同样可参考https://zhuanlan.zhihu.com/p/595576594
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/0a0ce02d672f445cb8ba76594ac0869a.png)
+![请添加图片描述](0a0ce02d672f445cb8ba76594ac0869a.png)
 
 
 

@@ -7,7 +7,7 @@ tags = ["渲染器开发","OpenGLRender","OpenGL"]
 +++
 # 已实现功能
 除了上次实现IBL之外，项目目前新增了imGUI的渲染，更方便地进行调试
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/43b440e64570447284673faa81f9d7c3.png)
+![在这里插入图片描述](43b440e64570447284673faa81f9d7c3.png)
 可以随意切换IBL贴图、模型控制、灯光控制灯。 并且添加了一个PBR材质的地板。下一步就是实现阴影
 
 # 阴影
@@ -159,8 +159,8 @@ float ShadowCalculation(vec3 fragPosWorld, vec3 normal) {
     vec3 Lo = (kD * albedo / PI + specular) * radiance * NdotL * (1-ShadowCalculation(WorldPos, N));
 ```
 结果如下，经典的自阴影现象，主要原因就是shadowMap的分辨率不足，一些不在同一高度的位置被记录了相同高度，在主摄像机渲染时，某个位置在shadowMap存储的高度比自己本来还要高，就会被认为是阴影（但是这种情况下很好分辨光源摄像机的覆盖范围，方便调试🙂）
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/f9a7f82cac9341d7b71182468c7b8669.png)
-当我把shadowMap的分辨率提高后，自然就消失了，但这肯定不是最优![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/8fc5a7ff20754435b2406ee17682bef0.png)
+![在这里插入图片描述](f9a7f82cac9341d7b71182468c7b8669.png)
+当我把shadowMap的分辨率提高后，自然就消失了，但这肯定不是最优![在这里插入图片描述](8fc5a7ff20754435b2406ee17682bef0.png)
 通常的做法是加一个自偏移，也就是说shadowMap存的高度和我用来比较的高度差异不超过bias，就认为没有阴影
 
 ```cpp
@@ -184,11 +184,11 @@ float ShadowCalculation(vec3 fragPosWorld, vec3 normal) {
     return (currentDepth - bias) > closestDepth ? 1.0 : 0.0;
 }
 ```
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/d25ead0022f94b40b17555069a33eb02.png)
+![在这里插入图片描述](d25ead0022f94b40b17555069a33eb02.png)
 ## PCF
 阴影问题解决了，下面就是提升效果，当前的阴影是硬阴影，锯齿很严重
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/e1c8eaf988934e7d99ac2452f4677a60.png)
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/690d8b10741a4eefb5041ea8e20fa7c8.png)
+![在这里插入图片描述](e1c8eaf988934e7d99ac2452f4677a60.png)
+![在这里插入图片描述](690d8b10741a4eefb5041ea8e20fa7c8.png)
 PCF思路就是取周围像素的shadow来取平均，柔化阴影边界
 
 ```cpp
@@ -209,7 +209,7 @@ PCF思路就是取周围像素的shadow来取平均，柔化阴影边界
         shadow /= float(samples);
         return shadow;
 ```
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/ea284627b91e470ca9d774b3a1bc7aa7.png)
+![在这里插入图片描述](ea284627b91e470ca9d774b3a1bc7aa7.png)
 ## PCSS
 三步走，一些参数我已经提取出去当uniform，可以控制第一步的搜索半径、第二步的半影大小、以及控制一下最大的滤波核大小
 ```cpp
@@ -319,4 +319,4 @@ float ShadowCalculation(vec3 fragPosWorld, vec3 normal) {
 }
 
 ```
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/976b5ef841fd4cda9621c4812dd3dba4.png)
+![在这里插入图片描述](976b5ef841fd4cda9621c4812dd3dba4.png)

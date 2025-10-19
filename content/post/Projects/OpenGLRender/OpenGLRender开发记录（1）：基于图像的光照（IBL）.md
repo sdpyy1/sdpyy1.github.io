@@ -7,7 +7,7 @@ tags = ["渲染器开发","OpenGLRender","OpenGL"]
 +++
 # 已实现功能
 前边基础架构部分就不专门写了。这里展示一下已有的功能
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/6bfe7e20425141cb9d93df67104526e8.png)
+![请添加图片描述](6bfe7e20425141cb9d93df67104526e8.png)
 - 延迟渲染管线
 - G-Buffer的可视化调试
 - PBR材质直接光照渲染
@@ -21,69 +21,69 @@ tags = ["渲染器开发","OpenGLRender","OpenGL"]
 下面看看IBL是如何避免积分运算的
 ## 避免积分运算
   首先渲染方程的形式如下，已经被分成了漫反射和镜面反射两部分
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/5128c95cc38244c59fc70e015a99a179.png)
+![请添加图片描述](5128c95cc38244c59fc70e015a99a179.png)
 进一步把+号拆开，可以拆成两个积分
 ### 漫反射部分
 首先来看漫反射部分，这里用的BRDF是Lambertian模型，它是一个常数，所以可以直接提出去，分子代表颜色
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/b654ab3fa9a24586b42145958f30cb90.png)
+![请添加图片描述](b654ab3fa9a24586b42145958f30cb90.png)
 另外kd的计算，基本原理就是先算出漫反射的比例，再进一步去除金属度的影响（金属没有漫反射），为什么这样设计，我查AI应该是迪士尼的论文提出的。
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/77b5acdc72cb412b886c1d7355ae47df.png)
-kd与光线方向有关系（因为F的计算需要wi），所以不能移出积分，做一个近似操作，本来F需要wi和半程向量来计算，改为用摄像机观察方向w0和法线方向来近似，这样就可以挪出去了![请添加图片描述](https://i-blog.csdnimg.cn/direct/41fea5cb39694814881a09b3a2b876e1.png)
+![请添加图片描述](77b5acdc72cb412b886c1d7355ae47df.png)
+kd与光线方向有关系（因为F的计算需要wi），所以不能移出积分，做一个近似操作，本来F需要wi和半程向量来计算，改为用摄像机观察方向w0和法线方向来近似，这样就可以挪出去了![请添加图片描述](41fea5cb39694814881a09b3a2b876e1.png)
 其中
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/a82b0d27043a424e9beb39a4ead3392f.png)（F0表示垂直入射时的反射率）
+![请添加图片描述](a82b0d27043a424e9beb39a4ead3392f.png)（F0表示垂直入射时的反射率）
 
 最终
 
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/e1ceef5770fb433a8f1d3a7f0fa3f577.png)
+![请添加图片描述](e1ceef5770fb433a8f1d3a7f0fa3f577.png)
 积分内部就只有光源和cos了。 到现在对于不同的法线方向n，就可以预计算一个积分值。
 也就是说这张贴图存储的是不同法线方向上的积分值
 **这样分析半天，其实从理论上想，也应该这样，我不管从什么方向上看（即不同的w0，irrandance是方向无关的）当我观察一个点时，环境贴图对他的贡献都是它法线为中心形成的半球上的光对他的贡献之和（因为是漫反射）**
 
 因此我们可以预计算这个积分值，得到一个 cubemap，称为 irradiance map。积分方法就是蒙特卡洛积分，我们可以简单的在半球面上均匀采样。下面给出learnOpenGL的采样方案
 首先改为球面坐标系
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/89543478e77a4255b8ac9550cb030cdf.png)
+![在这里插入图片描述](89543478e77a4255b8ac9550cb030cdf.png)
 用黎曼积分来近似
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/05c721bde2e04767b7f6deb83049e182.png)
+![在这里插入图片描述](05c721bde2e04767b7f6deb83049e182.png)
 
 
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/30890454984d43738f9f55fdb0fb508c.png)
+![在这里插入图片描述](30890454984d43738f9f55fdb0fb508c.png)
 注意 实际场景中 = 多个局部环境（多个“局部场景”）
 在全局场景下：
 每个区域（Probe volume）都有自己的局部环境 map；
 然后通过探针插值（或者 voxel GI）做出空间连续的光照过渡。
 比如室内室外的map肯定得不一样才对，即使法线方向一致。 这就是为什么要用探针
 ### 镜面反射部分
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/99426fad1b254cac841b3e8859ef3f88.png)
+![请添加图片描述](99426fad1b254cac841b3e8859ef3f88.png)
 这部分比较夸张，与w0、法线方向、以及BRDF中各种参数有关，即使一个方向向量用球面坐标系，也有9个因素。所以不能直接预计算。
 首先基本思路是蒙特卡罗积分，但是当前采样方法实时太慢
 Epic提出了很好的解决方案：**分割求和近似法（split sum approximation）**
 
 首先思路是把积分中的光照项提出来
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/32146083b44d4f1183be29d08d6f6073.png)
+![请添加图片描述](32146083b44d4f1183be29d08d6f6073.png)
 如果想求解提出来的这一项Lc(wo)是什么，就需要进行蒙特卡洛积分运算，运算通过法线分布函数进行采样化简，化简过程如下（本质是把法线分布函数的PDF求出来带进去，进行分子分母化简，得到最终结果）
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/e61ab656259b421cbf5fb6e064b0f87c.png)
+![请添加图片描述](e61ab656259b421cbf5fb6e064b0f87c.png)
 进一步近似，F对结果影响不大，直接去掉了
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/7bf48fe4f84f466180a6bf4ad70ec3ed.png)
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/286ace494f844d7cb3a9b74fa821049f.png)
+![在这里插入图片描述](7bf48fe4f84f466180a6bf4ad70ec3ed.png)
+![在这里插入图片描述](286ace494f844d7cb3a9b74fa821049f.png)
 
 再近似，把w0和法线方向都近似成R(反射方向)，这样预计算就与观察无关了（把摄像机方向、法线方向全部换成反射方向R来计算），这样处理会让掠射角处理出问题
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/4d3d2c6ee4a44c878f22f8e8badc8c28.png)
+![在这里插入图片描述](4d3d2c6ee4a44c878f22f8e8badc8c28.png)
 
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/d6caa74484bc4b37a851dfcae98bd627.png)
+![在这里插入图片描述](d6caa74484bc4b37a851dfcae98bd627.png)
 总结来说就是利用了各种近似手段把这个积分拆成了两部分，第一部分放在坐标，剩余放在右边，通过各种化简近似出第一部分是什么，然后放回原式
 第一部分的预计算其实就是在**以反射方向为中心，整个半球的光照进行积分的预计算**，但是需要通过粗糙度来进行mipmap，因为各种近似的前提是法线分布函数，他是由粗糙度参与控制的，越粗糙的表面，越要用level更高的mipmap
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/0effc346b0594f13b9a2c5537ccbb2cf.png)
+![在这里插入图片描述](0effc346b0594f13b9a2c5537ccbb2cf.png)
 
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/ecd749c875d14026a191622061c9a7b0.png)
+![请添加图片描述](ecd749c875d14026a191622061c9a7b0.png)
 
 
 第一部分通过在法线分布函数上进行采样蒙特卡洛积分进行预计算
 下面看第二部分
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/2c1c80d366d14f128277a03c03b38e79.png)，他的参数包括w0,n,F0(通过金属度和albedo决定)和粗糙度。 F0是常数，看看怎么挪出去
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/4b33803f1ff24eb98cbca9ea7210e60e.png)
+![请添加图片描述](2c1c80d366d14f128277a03c03b38e79.png)，他的参数包括w0,n,F0(通过金属度和albedo决定)和粗糙度。 F0是常数，看看怎么挪出去
+![请添加图片描述](4b33803f1ff24eb98cbca9ea7210e60e.png)
 又是一个拆分，把积分拆成两项（这里就是拆加法，没有近似），然后把F0挪出去，得到关于scale和bias两项的计算
 这两项用法线分布函数进行蒙特卡洛积分，可以抵消很多项。拆掉F0后，积分结果只和cos和粗糙度了，用一个2D纹理的两个通道存储结果即可。
-![请添加图片描述](https://i-blog.csdnimg.cn/direct/1b521f7eb5de439eb8b3dfb123c87a55.png)
+![请添加图片描述](1b521f7eb5de439eb8b3dfb123c87a55.png)
 这个预计算部分叫做LUT，这个 LUT 是由 BRDF 决定的，所以确定的 BRDF 就有确定的 LUT。
 
 
@@ -281,7 +281,7 @@ void main()
 ```
 到这里就得到了立方体贴图和天空盒渲染
 
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/4169c313778b46d0abf6f480df7a7663.png)
+![在这里插入图片描述](4169c313778b46d0abf6f480df7a7663.png)
 
 ## irradance Map
 预计算对于每个方向来说对半球进行积分的结果，当计算好后，每次需要漫反射，就可以通过法线方向得到漫反射值
@@ -289,7 +289,7 @@ void main()
 vec3 irradiance = texture(irradianceMap, N);
 ```
 这一步的做法与生成cubemap的做法一致，只是片段着色器不一致。由于辐照度图对所有周围的辐射值取了平均值，因此它丢失了大部分高频细节，所以我们可以以较低的分辨率（32x32）存储，我可以把它渲染成天空盒来看看，基本没有场景信息了，所以不需要高分辨率
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/c8cab1dade0a4f46bbab34102e0f4166.png)
+![在这里插入图片描述](c8cab1dade0a4f46bbab34102e0f4166.png)
 
 ```cpp
 GLuint preComputer::computeIrradianceMap(GLuint envCubemap)
@@ -612,12 +612,12 @@ GLuint preComputer::computePrefilterMap(GLuint envCubemap)
 }
 ```
 用prefilterMap渲染天空盒的结果
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/ff5f2a56329e4e48968493c09dd8f380.png)
+![在这里插入图片描述](ff5f2a56329e4e48968493c09dd8f380.png)
 ## LUT
 现在渲染方程就剩最后一部分积分的预计算了
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/f7e7146546e14ba9b43581ee76bf592c.png)
+![在这里插入图片描述](f7e7146546e14ba9b43581ee76bf592c.png)
 通过一系列变换变成了
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/bc007755829d4870a19b17c15f7509af.png)
+![在这里插入图片描述](bc007755829d4870a19b17c15f7509af.png)
 这个式子只和观察方向与法线的夹角以及粗糙都有关，所以用一张2D贴图存储，采样计算积分仍然使用GGX重要性采样
 
 ```cpp
@@ -850,11 +850,11 @@ void main()
 }
 ```
 # 效果展示
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/dd5fff327899417ebf1e93e1cebb7eb2.png)
+![在这里插入图片描述](dd5fff327899417ebf1e93e1cebb7eb2.png)
 
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/2f1801dcdef447ec9d65eeaea7025c86.png)
+![在这里插入图片描述](2f1801dcdef447ec9d65eeaea7025c86.png)
 切换为ACES Filmic Tone Mapping
-![在这里插入图片描述](https://i-blog.csdnimg.cn/direct/bbcca62cc5b24dc29f8a6396d10b8572.png)
+![在这里插入图片描述](bbcca62cc5b24dc29f8a6396d10b8572.png)
 ```cpp
 vec3 RRTAndODTFit(vec3 v)
 {
