@@ -1,0 +1,93 @@
+{{- $context := .Context -}}
+{{- $limit := default 10 .Params.limit -}}
+{{- $displayed := slice -}}
+{{- $count := 0 -}}
+
+<section class="widget tagCloud">
+    <div class="widget-icon">
+        {{ partial "helper/icon" "categories" }}
+    </div>
+    <h2 class="widget-title section-title">{{ T "widget.categoriesCloud.title" }}</h2>
+
+    <div class="tagCloud-tags">
+        {{ range $context.Site.Taxonomies.categories.ByCount }}
+            {{- $categoryKey := .Page.File.Path -}}
+            {{- if and (not (in $displayed $categoryKey)) (lt $count $limit) -}}
+                {{- $displayed = $displayed | append $categoryKey -}}
+                {{- $count = add $count 1 -}}
+                
+                {{/* 按文章数量渐变的颜色 */}}
+                {{- $maxCount := 0 -}}
+                {{- $minCount := 1000 -}}
+                {{ range $context.Site.Taxonomies.categories.ByCount }}
+                    {{ if gt .Count $maxCount }}{{ $maxCount = .Count }}{{ end }}
+                    {{ if lt .Count $minCount }}{{ $minCount = .Count }}{{ end }}
+                {{ end }}
+                {{ if eq $maxCount $minCount }}{{ $maxCount = add $minCount 1 }}{{ end }}
+                {{- $ratio := div (sub .Count $minCount) (sub $maxCount $minCount) -}}
+                {{- $hue := add 180 (mul $ratio 120) | int -}}
+
+                <a 
+                    href="{{ .Page.RelPermalink }}" 
+                    class="tag-cloud-item"
+                    style="color: hsl({{ $hue }}, 70%, 60%);"
+                    title="{{ .Page.Title }}（{{ .Count }}篇文章）"
+                >
+                    {{ .Page.Title }}
+                    <span class="tag-count">{{ .Count }}</span>
+                </a>
+            {{- end -}}
+        {{ end }}
+    </div>
+</section>
+
+<style>
+.tagCloud-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px; /* 标签间距 */
+    padding: 15px 0; /* 取消左右内边距，避免挤压 */
+    justify-content: flex-start; /* 关键：强制靠左对齐 */
+    align-items: center; /* 垂直方向居中，避免标签上下错位 */
+}
+
+.tag-cloud-item {
+    text-decoration: none;
+    font-size: 14px; /* 统一文字大小 */
+    padding: 5px 12px;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+
+.tag-cloud-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+    background: rgba(255, 255, 255, 0.1);
+    border-color: currentColor;
+}
+
+.tag-count {
+    display: inline-block;
+    margin-left: 6px;
+    font-size: 11px;
+    background: rgba(0, 0, 0, 0.1);
+    padding: 0 5px;
+    border-radius: 8px;
+    opacity: 0.7;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+    .tagCloud-tags {
+        gap: 6px;
+        padding: 10px 0;
+    }
+    .tag-cloud-item {
+        font-size: 13px;
+        padding: 3px 10px;
+    }
+}
+</style>

@@ -2,7 +2,7 @@
 date = '2025-10-19T00:57:01+08:00'
 draft = false
 title = 'GAMES101 现代计算机图形学入门 Shading'
-categories = ["Games202"]
+categories = ["Course/Games202","Engines"]
 math = true
 +++
 @[TOC](目录)

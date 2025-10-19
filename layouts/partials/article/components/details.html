@@ -1,10 +1,34 @@
 <div class="article-details">
     {{ if .Params.categories }}
     <header class="article-category">
-        {{ range (.GetTerms "categories") }}
-            <a href="{{ .RelPermalink }}" {{ with .Params.style }}style="background-color: {{ .background }}; color: {{ .color }};"{{ end }}>
-                {{ .LinkTitle }}
-            </a>
+        {{/* 直接读取原始分类数组（不经过 Hugo 的分类处理） */}}
+        {{ range .Params.categories }}
+            {{ $fullCategory := . }} {{/* 这里拿到的是原始字符串 "Course/Games202" */}}
+            {{ $levels := split $fullCategory "/" }}
+            {{ $levelCount := len $levels }}
+            
+            <div class="category-hierarchy">
+                {{ range $index, $level := $levels }}
+                    {{/* 拼接当前层级的完整路径（用于生成正确链接） */}}
+                    {{ $currentPath := slice }}
+                    {{ range first (add $index 1) $levels }}
+                        {{ $currentPath = $currentPath | append . }}
+                    {{ end }}
+                    {{ $currentSlug := delimit $currentPath "/" | urlize }} {{/* 转义特殊字符 */}}
+                    {{ $currentTerm := $.Site.GetPage (printf "/categories/%s" $currentSlug) }}
+                    
+                    {{/* 显示当前层级 */}}
+                    <a href="{{ with $currentTerm }}{{ .RelPermalink }}{{ else }}#{{ end }}" 
+                       {{ with $currentTerm.Params.style }}style="background-color: {{ .background }}; color: {{ .color }};"{{ end }}>
+                        {{ $level }}
+                    </a>
+                    
+                    {{/* 分隔符（最后一级不显示） */}}
+                    {{ if ne (add $index 1) $levelCount }}
+                        <span class="category-separator">/</span>
+                    {{ end }}
+                {{ end }}
+            </div>
         {{ end }}
     </header>
     {{ end }}
@@ -64,3 +88,33 @@
         </footer>
     {{ end }}
 </div>
+<style>
+    .category-hierarchy {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px; /* 层级之间的间距放大（原6px） */
+        margin-right: 12px; /* 多个分类之间的间距放大（原10px） */
+        margin-bottom: 8px; /* 新增：分类区域与标题的间距，避免拥挤 */
+    }
+    
+    .category-separator {
+        color: #999;
+        user-select: none;
+        font-size: 1em; /* 分隔符字体放大（原0.9em） */
+    }
+    
+    .article-category a {
+        text-decoration: none;
+        padding: 6px 12px; /* 内边距放大（原3px 8px），卡片更饱满 */
+        border-radius: 6px; /* 圆角稍大，视觉更协调（原4px） */
+        font-size: 0.95em; /* 字体放大（原0.85em） */
+        transition: all 0.2s ease;
+        line-height: 1.5; /* 行高优化，避免文字拥挤 */
+    }
+    
+    .article-category a:hover {
+        opacity: 0.9;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 6px rgba(0,0,0,0.1); /* 新增悬停阴影，更有立体感 */
+    }
+</style>
