@@ -36,10 +36,6 @@ jobs:
               os.makedirs(static_dir, exist_ok=True)
 
               # 匹配CSDN图片链接（支持png、jpeg、jpg格式）
-              # 正则说明：
-              # - (.*?) 匹配图片描述（非贪婪模式）
-              # - (\w+) 匹配图片唯一ID
-              # - (png|jpeg|jpg) 匹配图片后缀（可扩展其他格式）
               pattern = r'!\[(.*?)\]\(https://i-blog.csdnimg.cn/direct/(\w+)\.(png|jpeg|jpg)\)'
 
               # 递归查找所有md文件
@@ -109,10 +105,11 @@ jobs:
       - name: 复制 post 中的图片到 static 目录
         run: |
           mkdir -p ./static
-          # 复制所有图片格式（扩展常见格式）
-          find ./content/post -type f -name "*.png" -o -name "*.jpeg" -o -name "*.jpg" -o -name "*.gif" -o -name "*.webp" -exec cp {} ./static/ \;
-          echo "已复制的图片文件："
-          ls -l ./static/*.png ./static/*.jpeg ./static/*.jpg 2>/dev/null
+          # 复制所有常见图片格式（容错：即使无对应格式也不报错）
+          find ./content/post -type f \( -name "*.png" -o -name "*.jpeg" -o -name "*.jpg" -o -name "*.gif" -o -name "*.webp" \) -exec cp {} ./static/ 2>/dev/null \;
+          echo -e "\n已复制到 static 目录的图片文件："
+          # 优化ls命令：用通配符匹配所有图片，不存在时不报错（2>/dev/null屏蔽错误）
+          ls -l ./static/*.{png,jpeg,jpg,gif,webp} 2>/dev/null || echo "  无额外本地图片需要复制"
 
       - name: 安装Hugo
         uses: peaceiris/actions-hugo@v2
