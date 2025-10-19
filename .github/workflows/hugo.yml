@@ -1,13 +1,3 @@
-name: 部署博客网站
-
-# 表示什么时候触发部署
-on:
-  push:
-    branches: [ main ]
-
-permissions:
-  contents: write
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -17,6 +7,17 @@ jobs:
         with:
           submodules: true
           fetch-depth: 0
+
+      # 新增：复制 content/post 下的所有 xxxx.png 到 static 文件夹
+      - name: 复制 post 中的 png 图片到 static 目录
+        run: |
+          # 创建 static 文件夹（防止不存在时报错）
+          mkdir -p ./static
+          # 递归查找 ./content/post 下所有 .png 文件，复制到 ./static（保持原文件名，重复文件会覆盖）
+          find ./content/post -type f -name "*.png" -exec cp {} ./static/ \;
+          # 可选：输出复制结果，方便调试（查看复制了哪些文件）
+          echo "已复制的图片文件："
+          ls -l ./static/*.png
 
       - name: 安装Hugo
         uses: peaceiris/actions-hugo@v2
