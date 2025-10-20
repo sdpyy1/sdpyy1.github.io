@@ -13,7 +13,7 @@
         <pubDate>Mon, 20 Oct 2025 11:41:15 +0800</pubDate>
         
         <guid>https://sdpyy1.github.io/p/physically-based-shading-1-%E5%85%89%E4%B8%8E%E9%A2%9C%E8%89%B2/</guid>
-        <description>&lt;h1 id=&#34;light-and-color-光与颜色&#34;&gt;Light and Color 光与颜色
+        <description>&lt;img src="https://sdpyy1.github.io/202306132029525.png" alt="Featured image of post Physically Based Shading (1) 光与颜色" /&gt;&lt;h1 id=&#34;light-and-color-光与颜色&#34;&gt;Light and Color 光与颜色
 &lt;/h1&gt;&lt;blockquote&gt;
 &lt;p&gt;这一章节除了辐射度量学，toneMapping、颜色分级我感觉会用到，其他更多是科普内容，比如为什么用RGB就能代替可见光&lt;/p&gt;
 &lt;/blockquote&gt;
