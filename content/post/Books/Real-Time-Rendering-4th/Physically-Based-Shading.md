@@ -4,6 +4,7 @@ draft = false
 title = 'Physically Based Shading (1) 光与颜色' 
 categories = ["Books/Real-Time Rendering 4th"]
 tags = ["看书笔记","实时渲染","Real-Time Rendering 4th"]
+image = '202306132029525.png'
 
 +++
 
