@@ -5,7 +5,7 @@ on:
     branches: [ main ]
 
 permissions:
-  contents: write  # 授予内容写入权限，确保机器人可提交
+  contents: write
 
 jobs:
   deploy:
@@ -18,100 +18,58 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: 处理图片与空格问题
+      - name: 处理 md 文件和本地图片（统一去空格）
         run: |
-          pip install requests
-
-          cat > process_images.py << 'EOF'
+          cat > process_local_images.py << 'EOF'
           import re
           import os
-          import requests
           from pathlib import Path
 
-          def process_md_files():
-              md_root = "./content/post"
-              static_dir = "./static"
-              os.makedirs(static_dir, exist_ok=True)
+          md_root = "./content/post"
+          image_exts = ["png", "jpeg", "jpg", "gif", "webp"]
 
-              pattern_csdn = r'!\[(.*?)\]\(https://i-blog.csdnimg.cn/direct/(\w+)\.(png|jpeg|jpg)\)'
-              pattern_local = r'!\[(.*?)\]\((.*?)\.(png|jpeg|jpg|gif|webp)\)'
+          def sanitize_filename(name):
+              return name.replace(" ", "-")
 
-              md_files = list(Path(md_root).rglob("*.md"))
-              if not md_files:
-                  print("未找到.md文件")
-                  return
+          # 遍历所有 md 文件，替换图片链接空格
+          for md_file in Path(md_root).rglob("*.md"):
+              content = md_file.read_text(encoding='utf-8')
+              pattern = r'!\[(.*?)\]\((.*?)\)'
+              matches = re.findall(pattern, content)
+              for desc, path in matches:
+                  new_path = sanitize_filename(path)
+                  if path != new_path:
+                      content = content.replace(f']({path})', f']({new_path})')
+              md_file.write_text(content, encoding='utf-8')
 
-              for md_file in md_files:
-                  print(f"处理文件: {md_file}")
-                  try:
-                      content = md_file.read_text(encoding='utf-8')
-                  except Exception as e:
-                      print(f"  读取文件失败: {e}")
-                      continue
-
-                  # 处理CSDN图片
-                  matches_csdn = re.findall(pattern_csdn, content)
-                  for desc, img_id, ext in matches_csdn:
-                      img_filename = f"{img_id}.{ext}"
-                      img_url = f"https://i-blog.csdnimg.cn/direct/{img_filename}"
-                      local_path = os.path.join(static_dir, img_filename)
-                      if not os.path.exists(local_path):
-                          try:
-                              headers = {"User-Agent": "Mozilla/5.0"}
-                              resp = requests.get(img_url, timeout=15, headers=headers)
-                              resp.raise_for_status()
-                              with open(local_path, 'wb') as f:
-                                  f.write(resp.content)
-                              print(f"  下载成功: {img_filename}")
-                          except Exception as e:
-                              print(f"  下载失败: {img_url}，错误: {e}")
-                              continue
-                      content = content.replace(f"![{desc}]({img_url})", f"![{desc}]({img_filename})")
-
-                  # 处理本地图片空格
-                  matches_local = re.findall(pattern_local, content)
-                  for desc, img_path, ext in matches_local:
-                      old_filename = f"{img_path}.{ext}"
-                      new_filename = old_filename.replace(' ', '-')
-                      if old_filename != new_filename:
-                          content = content.replace(old_filename, new_filename)
-                          md_dir = md_file.parent
-                          old_file_path = md_dir / old_filename
-                          if old_file_path.exists():
-                              new_file_path = md_dir / new_filename
-                              print(f"  重命名图片: {old_file_path} -> {new_file_path}")
-                              old_file_path.rename(new_file_path)
-
-                  try:
-                      md_file.write_text(content, encoding='utf-8')
-                      print(f"  文件更新完成: {md_file}")
-                  except Exception as e:
-                      print(f"  保存文件失败: {e}")
-
-          if __name__ == "__main__":
-              process_md_files()
+          # 遍历所有图片文件，重命名去空格
+          for ext in image_exts:
+              for img_file in Path(md_root).rglob(f"*.{ext}"):
+                  new_name = sanitize_filename(img_file.name)
+                  new_path = img_file.parent / new_name
+                  if img_file != new_path:
+                      os.rename(img_file, new_path)
           EOF
+          python process_local_images.py
 
-          python process_images.py
-
-      - name: 复制 post 中的图片到 static 目录
+      - name: 复制 post 中的图片到 static 目录（不改名）
         run: |
           mkdir -p ./static
-          find ./content/post -type f \( -name "*.png" -o -name "*.jpeg" -o -name "*.jpg" -o -name "*.gif" -o -name "*.webp" \) -exec cp {} ./static/ 2>/dev/null \;
-          echo -e "\n已复制到 static 目录的图片文件："
-          ls -l ./static/*.{png,jpeg,jpg,gif,webp} 2>/dev/null || echo "  无额外本地图片需要复制"
+          find ./content/post -type f \( -name "*.png" -o -name "*.jpeg" -o -name "*.jpg" -o -name "*.gif" -o -name "*.webp" \) -exec cp {} ./static/ \;
+          echo "已复制到 static 目录"
 
       - name: 提交修改后的 md 文件和图片
         run: |
           shopt -s nullglob
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          find ./content/post -type f -name "*.md" -print0 | xargs -0 git add 2>/dev/null
-          git add ./static/*.png ./static/*.jpeg ./static/*.jpg ./static/*.gif ./static/*.webp 2>/dev/null
+          find ./content/post -type f -name "*.md" -print0 | xargs -0 git add
+          git add ./content/post/*.{png,jpeg,jpg,gif,webp} 2>/dev/null
+          git add ./static/*.{png,jpeg,jpg,gif,webp} 2>/dev/null
           if git diff --cached --quiet; then
               echo "无修改内容，无需提交"
           else
-              git commit -m "自动替换CSDN图片链接并修改空格图片名"
+              git commit -m "统一去空格并更新图片链接"
               git push origin main
           fi
 
@@ -121,10 +79,10 @@ jobs:
           hugo-version: '0.151.2'
           extended: true
 
-      - name: 生成public文件夹
+      - name: 生成 public 文件夹
         run: hugo
 
-      - name: 部署到GitHub Pages
+      - name: 部署到 GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
