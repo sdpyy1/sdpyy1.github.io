@@ -5,7 +5,7 @@ on:
     branches: [ main ]
 
 permissions:
-  contents: write
+  contents: write  # 允许提交修改
 
 jobs:
   deploy:
@@ -18,10 +18,14 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: 处理 md 文件和本地图片（统一去空格）
+      - name: 安装 Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: 统一 md 与图片文件名（空格改为 -）
         run: |
-          cat > process_local_images.py << 'EOF'
-          import re
+          cat > sanitize_images.py << 'EOF'
           import os
           from pathlib import Path
 
@@ -31,49 +35,60 @@ jobs:
           def sanitize_filename(name):
               return name.replace(" ", "-")
 
-          # 遍历所有 md 文件，替换图片链接空格
-          for md_file in Path(md_root).rglob("*.md"):
-              content = md_file.read_text(encoding='utf-8')
-              pattern = r'!\[(.*?)\]\((.*?)\)'
-              matches = re.findall(pattern, content)
-              for desc, path in matches:
-                  new_path = sanitize_filename(path)
-                  if path != new_path:
-                      content = content.replace(f']({path})', f']({new_path})')
-              md_file.write_text(content, encoding='utf-8')
-
-          # 遍历所有图片文件，重命名去空格
+          # 1. 遍历所有图片文件，重命名带空格的文件
           for ext in image_exts:
               for img_file in Path(md_root).rglob(f"*.{ext}"):
                   new_name = sanitize_filename(img_file.name)
                   new_path = img_file.parent / new_name
                   if img_file != new_path:
-                      os.rename(img_file, new_path)
-          EOF
-          python process_local_images.py
+                      if new_path.exists():
+                          print(f"跳过已有文件: {new_path}")
+                          continue
+                      img_file.rename(new_path)
+                      print(f"重命名图片: {img_file} -> {new_path}")
 
-      - name: 复制 post 中的图片到 static 目录（不改名）
+          # 2. 遍历 md 文件，替换其中的图片路径空格
+          for md_file in Path(md_root).rglob("*.md"):
+              content = md_file.read_text(encoding="utf-8")
+              original_content = content
+              for ext in image_exts:
+                  # 替换 .png 等前面的文件名空格
+                  import re
+                  content = re.sub(r'!\[([^\]]*)\]\(([^\)]+)\)', 
+                                   lambda m: f'![{m.group(1)}]({sanitize_filename(m.group(2))})', 
+                                   content)
+              if content != original_content:
+                  md_file.write_text(content, encoding="utf-8")
+                  print(f"更新 md 文件: {md_file}")
+
+          EOF
+
+          python sanitize_images.py
+
+      - name: 复制 post 中的图片到 static 目录
         run: |
           mkdir -p ./static
-          find ./content/post -type f \( -name "*.png" -o -name "*.jpeg" -o -name "*.jpg" -o -name "*.gif" -o -name "*.webp" \) -exec cp {} ./static/ \;
-          echo "已复制到 static 目录"
+          image_exts="png jpeg jpg gif webp"
+          for ext in $image_exts; do
+            find ./content/post -type f -name "*.$ext" -exec cp {} ./static/ \;
+          done
+          echo "图片已复制到 static 目录"
 
       - name: 提交修改后的 md 文件和图片
         run: |
-          shopt -s nullglob
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          find ./content/post -type f -name "*.md" -print0 | xargs -0 git add
-          git add ./content/post/*.{png,jpeg,jpg,gif,webp} 2>/dev/null
-          git add ./static/*.{png,jpeg,jpg,gif,webp} 2>/dev/null
+          
+          git add ./content/post ./static
+          
           if git diff --cached --quiet; then
               echo "无修改内容，无需提交"
           else
-              git commit -m "统一去空格并更新图片链接"
+              git commit -m "自动统一图片文件名及 md 引用，空格改为 -"
               git push origin main
           fi
 
-      - name: 安装Hugo
+      - name: 安装 Hugo
         uses: peaceiris/actions-hugo@v2
         with:
           hugo-version: '0.151.2'
