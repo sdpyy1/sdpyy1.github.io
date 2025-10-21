@@ -7,7 +7,600 @@
         <generator>Hugo -- gohugo.io</generator>
         <language>zh-cn</language>
         <copyright>爱喝东方树叶</copyright>
-        <lastBuildDate>Mon, 20 Oct 2025 11:41:15 +0800</lastBuildDate><atom:link href="https://sdpyy1.github.io/categories/books/real-time-rendering-4th/index.xml" rel="self" type="application/rss+xml" /><item>
+        <lastBuildDate>Mon, 20 Oct 2025 13:29:19 +0800</lastBuildDate><atom:link href="https://sdpyy1.github.io/categories/books/real-time-rendering-4th/index.xml" rel="self" type="application/rss+xml" /><item>
+        <title>Physically Based Shading(2) 基于物理的着色</title>
+        <link>https://sdpyy1.github.io/p/physically-based-shading2-%E5%9F%BA%E4%BA%8E%E7%89%A9%E7%90%86%E7%9A%84%E7%9D%80%E8%89%B2/</link>
+        <pubDate>Mon, 20 Oct 2025 13:29:19 +0800</pubDate>
+        
+        <guid>https://sdpyy1.github.io/p/physically-based-shading2-%E5%9F%BA%E4%BA%8E%E7%89%A9%E7%90%86%E7%9A%84%E7%9D%80%E8%89%B2/</guid>
+        <description>&lt;img src="https://sdpyy1.github.io/20230611105147.png" alt="Featured image of post Physically Based Shading(2) 基于物理的着色" /&gt;&lt;h1 id=&#34;概括&#34;&gt;概括
+&lt;/h1&gt;&lt;ul&gt;
+&lt;li&gt;理解了渲染方程设计理由&lt;/li&gt;
+&lt;li&gt;分清楚了表面反射（镜面反射）和局部次表面反射（漫反射）&lt;/li&gt;
+&lt;li&gt;知道了常用的BRDF，以及漫反射BRDF项还有很多更好的模型&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h1 id=&#34;光的物理学&#34;&gt;光的物理学
+&lt;/h1&gt;&lt;h2 id=&#34;光的本质&#34;&gt;光的本质
+&lt;/h2&gt;&lt;ul&gt;
+&lt;li&gt;在&lt;strong&gt;物理光学&lt;/strong&gt;中，光被视为一种&lt;strong&gt;电磁横波&lt;/strong&gt;，即由&lt;strong&gt;电场&lt;/strong&gt;和&lt;strong&gt;磁场&lt;/strong&gt;的振荡组成；&lt;/li&gt;
+&lt;li&gt;电场与磁场：
+&lt;ul&gt;
+&lt;li&gt;相互垂直；&lt;/li&gt;
+&lt;li&gt;都垂直于光的传播方向；&lt;/li&gt;
+&lt;li&gt;振幅比值恒定；&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;这种波的传播速度称为&lt;strong&gt;相位速度（phase velocity）&lt;/strong&gt;，在真空中就是&lt;strong&gt;光速 c ≈ 3×10⁵ km/s&lt;/strong&gt;。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;hr&gt;
+&lt;ul&gt;
+&lt;li&gt;光的波长决定颜色：
+可见光波长范围约为 &lt;strong&gt;400–700 nm&lt;/strong&gt;；&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;单色光（monochromatic light）&lt;/strong&gt;：只有一个波长（如理想化的正弦波）；&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;多色光（polychromatic light）&lt;/strong&gt;：包含多个波长，是现实中的常见情况；&lt;/li&gt;
+&lt;li&gt;例如蜘蛛丝约为 1 µm，约等于 2–3 个波长大小。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;hr&gt;
+&lt;h2 id=&#34;光的能量与电场强度&#34;&gt;光的能量与电场强度
+&lt;/h2&gt;&lt;ul&gt;
+&lt;li&gt;光波携带能量；&lt;/li&gt;
+&lt;li&gt;能量流强度（irradiance, $E$）与&lt;strong&gt;电场振幅的平方成正比&lt;/strong&gt;；&lt;/li&gt;
+&lt;li&gt;渲染中关注的是&lt;strong&gt;时间平均能量流&lt;/strong&gt;，即平均 irradiance；&lt;/li&gt;
+&lt;li&gt;因为电场比磁场对物质的影响更大，渲染只关注电场部分。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;hr&gt;
+&lt;h2 id=&#34;波的叠加与干涉&#34;&gt;波的叠加与干涉
+&lt;/h2&gt;&lt;ul&gt;
+&lt;li&gt;光波可以&lt;strong&gt;线性叠加&lt;/strong&gt;；&lt;/li&gt;
+&lt;li&gt;不同相位的叠加导致不同结果：
+&lt;ol&gt;
+&lt;li&gt;&lt;strong&gt;相长干涉&lt;/strong&gt;（constructive interference）：
+&lt;ul&gt;
+&lt;li&gt;相位一致 → 叠加强；&lt;/li&gt;
+&lt;li&gt;irradiance 增为 $n^2$ 倍；&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;相消干涉&lt;/strong&gt;（destructive interference）：
+&lt;ul&gt;
+&lt;li&gt;相位相反 → 互相抵消；&lt;/li&gt;
+&lt;li&gt;irradiance 变为 0；&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;不相干叠加&lt;/strong&gt;（incoherent addition）：
+&lt;ul&gt;
+&lt;li&gt;相位随机；&lt;/li&gt;
+&lt;li&gt;irradiance 线性叠加为 $nE_1$，即“1+1=2”。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/li&gt;
+&lt;li&gt;这些现象并不违反能量守恒，因为：
+&lt;ul&gt;
+&lt;li&gt;在空间不同位置上会交替出现相长与相消；&lt;/li&gt;
+&lt;li&gt;总能量守恒。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;n个具有相同频率、相同偏振和相同振幅的单色光，它们以三种不同的方式进行叠加。从左到右分别是：相长干涉，相消干涉和不相干叠加。每种情况的下面都展示了对应组合波的振幅和irradiance&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/20230611103901.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;img&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;hr&gt;
+&lt;h2 id=&#34;光与物质的相互作用&#34;&gt;光与物质的相互作用
+&lt;/h2&gt;&lt;ul&gt;
+&lt;li&gt;当物体中的&lt;strong&gt;电荷振荡&lt;/strong&gt;时会发出电磁波（即发光）；
+&lt;ul&gt;
+&lt;li&gt;能量形式如热能、电能被转化为光能；&lt;/li&gt;
+&lt;li&gt;渲染中将其视为&lt;strong&gt;光源&lt;/strong&gt;；&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;当光照射到物质上：
+&lt;ul&gt;
+&lt;li&gt;电场驱动物质内电荷振荡；&lt;/li&gt;
+&lt;li&gt;振荡电荷再次发出光 → &lt;strong&gt;散射（scattering）&lt;/strong&gt;；&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;散射出的光与原光&lt;strong&gt;频率相同&lt;/strong&gt;（除荧光、磷光等少数情况）；&lt;/li&gt;
+&lt;li&gt;一个分子会向各方向散射，但多数光保持接近原传播方向；&lt;/li&gt;
+&lt;li&gt;散射效率依赖于&lt;strong&gt;波长&lt;/strong&gt;；&lt;/li&gt;
+&lt;li&gt;实际中光与&lt;strong&gt;分子群体&lt;/strong&gt;相互作用，可能产生&lt;strong&gt;相干干涉效应&lt;/strong&gt;；&lt;/li&gt;
+&lt;li&gt;这些多分子散射的情况是之后章节的重点。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;粒子&#34;&gt;粒子
+&lt;/h2&gt;&lt;p&gt;这里讲的是瑞丽散射和米氏散射，不同的散射情况与粒子大小与光的波长的比较有关，我在OpenGL渲染器的大气渲染原理部分已经记录过了&lt;/p&gt;
+&lt;h2 id=&#34;介质&#34;&gt;介质
+&lt;/h2&gt;&lt;p&gt;光在均匀介质（homogeneous medium）中进行传播是另一种重要的情况，均匀介质是指一个充满均匀分布的相同分子的空间。这里所说的均匀分布，并不是指分子间距要像晶体一样完全规则，如果液体和非晶体是纯净物（所有的分子都是相同的），并且没有间隙或者气泡的话，也可以认为它们在光学上是均匀的。&lt;/p&gt;
+&lt;p&gt;在均匀介质中，光的传播核心特点是&lt;strong&gt;散射波的相消干涉&lt;/strong&gt;：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;分子散射产生的次级波会整齐排列，除原始传播方向外，所有其他方向的散射波会因相位相反相互抵消（相消干涉）；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;原始波与所有单分子散射波叠加后，最终波形与原始波基本一致，仅&lt;strong&gt;相位速度&lt;/strong&gt;和（部分情况下的）&lt;strong&gt;振幅&lt;/strong&gt;发生改变；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;相消干涉完全抑制了散射现象，因此均匀介质不会表现出明显的散射效果。&lt;/p&gt;
+&lt;p&gt;四个装有不同吸收性质液体的小容器。从左到右分别是：纯净水，石榴汁，茶，咖啡&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/20230611103936.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;img&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;非均匀介质可简化为 “&lt;strong&gt;嵌有散射粒子的均匀介质&lt;/strong&gt;”，其光学行为的核心是 “相消干涉的破坏”：&lt;/p&gt;
+&lt;p&gt;从左到右分别是：水，加了几滴牛奶的水，加了大约10%牛奶的水，全脂牛奶，乳白色玻璃。大多数牛奶的散射粒子都要比可见光的波长大，因此它的散射主要是无色的，在中间的图像上有明显的淡蓝色。在最右侧图像中，乳白色玻璃中的散射粒子要比可见光的波长小，因此蓝光的散射强度要比红光强；同时由于明暗背景的分割，透射光在左边更加明显，而散射光则在右边更加明显。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/20230611103950.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;img&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;介质对光的影响本质是&lt;strong&gt;散射与吸收的组合效应&lt;/strong&gt;：均匀介质通过相消干涉抑制散射，其光学性质由复折射率（&lt;em&gt;n&lt;/em&gt;+&lt;em&gt;iκ&lt;/em&gt;）描述；非均匀介质因结构无序破坏相消干涉，散射成为主要特征，且散射 / 吸收的效果均与尺度、粒子尺寸、波长密切相关。这一规律是理解自然现象（如天空蓝、水的蓝色、牛奶的白色）和渲染技术中介质模拟的基础。&lt;/p&gt;
+&lt;p&gt;散射和吸收现象都与尺度有关。在小场景中不产生任何明显散射的介质，在较大的尺度上也可能会有相当明显的散射现象。例如：当在房间内观察一杯水时，光在空气中的散射与在水中的吸收是几乎不可见的；然而在一个较大尺度的环境中，这两种效果可能都会十分显著，如图9.7所示。&lt;/p&gt;
+&lt;p&gt;左图中：在超过几米的范围内，水会对光产生强烈的吸收作用，尤其是红光，因此整体看起来会很蓝。右图中：光在没有严重空气污染或者雾的情况下，也会在数英里尺度的空气中发生散射。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/20230611104004.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;img&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;具有不同吸收作用和散射作用组合的液体容器。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/20230611104018.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;img&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;h2 id=&#34;表面&#34;&gt;表面
+&lt;/h2&gt;&lt;p&gt;从光学角度来看，物体的表面（surface）是一个二维界面，它分隔了具有不同折射率的空间体积。在一般的渲染情况下，由空气组成的外部空间，其折射率约为1.003，为简单起见，通常假设空气的折射率为1；而内部空间的折射率则取决于构成物体的物质。&lt;/p&gt;
+&lt;p&gt;一个光波撞击一个平面，平面两侧物质的折射率分别为n_1 和n_2。左侧图展示了入射波的侧视图，这个入射波从左上角进入，红色的强度代表了波的相位。表面下方的波间距与(n_1/n_2)成正比，本例中为0.5。相位沿着表面排列，因此间距的变化会弯曲（折射）透射波的方向。图中三角形的构造展示了Snell定律的推导过程。为了清晰起见，右上方的图显示了反射波的情况，它与入射波具有相同的波间距，因此其方向与表面法线具有相同的夹角。右下方展示了入射波、透射波和反射波方向的矢量图。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/20230611104043.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;img&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;最终结果如图9.9所示。反射波和入射波的方向，与表面法线之间具有相同的夹角$\theta_i$；透射波的方向会以$\theta_t$的角度进行弯曲（折射），它与$\theta_{i}$的关系如下：&lt;/p&gt;
+$$
+\sin \left(\theta_{t}\right)=\frac{n_{1}}{n_{2}} \sin \left(\theta_{i}\right).
+\tag{9.1}
+$$&lt;p&gt;
+上边主要描述了在光在表面发生的反射与折射，下面描述的是微表面模型&lt;/p&gt;
+&lt;p&gt;左侧展示了两个表面的照片，右侧使用示意图的形式，展示了它们所对应的微观几何结构。上方的表面拥有略微粗糙的微观几何形状，入射光线击中了表面上不同的点，每个点的法线方向略有差异，并在一个狭窄的锥形方向上被反射，其宏观效果是具有轻微模糊的反射。下方表面具有更加粗糙的微观几何形状，入射光线照射到的表面点，具有明显不同的法线方向，反射光线会以一个较宽的锥体进行扩散，从而导致宏观的反射效果变得更加模糊。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/20230611104132.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;img&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;在渲染中，我们并不会对微观几何形状进行明确的建模，而是会以一种统计的方式对其进行处理，将该表面视为一个具有微观结构法线的随机分布。因此，我们将表面建模为，会在一个连续方向上（译者注：一定的立体角范围内），对光线进行反射和折射。其中这个连续方向的宽度（锥形范围的大小，或者是立体角的大小），以及反射细节和折射细节的模糊程度，取决于微观几何法线的统计方差，即表面微尺度的粗糙度（roughness），如图9.13所示。&lt;img src=&#34;https://sdpyy1.github.io/20230611104146.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;img&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;h2 id=&#34;次表面散射&#34;&gt;次表面散射
+&lt;/h2&gt;&lt;p&gt;进入物体内部的折射光线，会继续与内部物质发生相互作用。前面我们提到，金属具有较高的吸收率和较高的反射率，即金属表面会反射大部分的入射光线，进入金属内部的折射光线也会被迅速吸收；相比之下，非金属物体则会表现出广泛的散射行为和吸收行为&lt;img src=&#34;https://sdpyy1.github.io/20230611104159-20251020141135227.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;img&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;这种次表面散射（subsurface scatter）的光线，会以相对于入射点的不同距离从表面射出，这个进出距离（entry-exit distances）的分布取决于材料中散射粒子的密度和性质，这些距离与着色尺度（像素的大小，以及着色样本之间的距离）之间的关系是很重要的。如果这个进出距离比着色尺度要小，那么可以假定它们为零，这样我们就可以将次表面散射与表面反射整合到同一个局部着色模型中，即某个着色点上的出射光线，只依赖于该点的入射光线。由于次表面散射与表面反射具有明显不同的外观表现，因此可以很容易地将它们划分为单独的着色选项，使用镜面项（specular term）控制表面反射现象，使用漫反射项（diffuse term）控制局部次表面散射（local subsurface scattering）现象。&lt;/p&gt;
+&lt;p&gt;就是说镜面项是表面反射结果，漫反射项是次表面反射的结果（前提是光进入表面的距离很小）。光线进出的距离很长（＞着色尺度）—— 比如牛奶、蜡烛、玉石、厚玻璃这些材料，光在内部跑了毫米级甚至厘米级距离才出来（比如用手电筒照牛奶杯，对面会透出光，还会有颜色渐变）；这种 “远距离的次表面散射”，就不能再用简单的漫反射项模拟了，需要专门的次表面散射模型（比如 SSS 材质、BSSRDF 模型），因为它的出射光不仅和入射点有关，还和周围区域的入射光有关（比如玉石的 “通透感”“温润感”，就是这种长距离 SSS 的效果）。&lt;/p&gt;
+&lt;p&gt;值得注意的是，局部次表面散射技术和全局次表面散射技术模拟的是完全相同的物理现象。每种情况下的最佳选择（即到底使用哪种模型和技术），不仅取决于材质的属性，还取决于观察的尺度。例如：当渲染一个孩子在玩塑料玩具的场景时，我们很可能需要使用全局次表面散射技术来准确地渲染孩子的皮肤，而对于塑料玩具而言，可能一个局部的漫反射着色模型就足够了。这是因为皮肤中的散射距离，要比在塑料中的散射距离大得多，但是如果相机足够远的话，皮肤的散射距离也可能会小于一个像素，此时局部的着色模型对于儿童和玩具而言都是十分准确的。相反，在一个极端的特写镜头中，塑料也可能会表现出明显的非局部次表面散射现象，这时候就需要全局次表面散射技术来对玩具进行准确地渲染。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;在观察尺度大于次表面散射尺度时，用漫反射来控制局部sss即可，但是观察尺度很小时，局部sss就不够了，需要全局sss（也就是漫反射不能只考虑当前像素，光进入物体距离大于一个像素）&lt;/strong&gt;&lt;/p&gt;
+&lt;h1 id=&#34;相机&#34;&gt;相机
+&lt;/h1&gt;&lt;p&gt;在渲染的时候，我们会&lt;strong&gt;计算从表面着色点到相机位置的radiance&lt;/strong&gt;。这模拟了一个简化了的成像系统，例如胶片相机、数码相机或者人眼。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;成像设备中都有一个&lt;strong&gt;传感器表面&lt;/strong&gt;，由许多小单元组成（像素级别）：
+&lt;ul&gt;
+&lt;li&gt;人眼 → 视杆细胞、视锥细胞；&lt;/li&gt;
+&lt;li&gt;数码相机 → 光电二极管（photodiode）；&lt;/li&gt;
+&lt;li&gt;胶片 → 感光颗粒；&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;这些传感器测量的是打到它们表面的&lt;strong&gt;irradiance（照度）&lt;/strong&gt;；
+&lt;ul&gt;
+&lt;li&gt;即单位面积上接收到的能量流强度。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;问题irradiance-本身不能直接形成图像&#34;&gt;问题：irradiance 本身不能直接形成图像
+&lt;/h2&gt;&lt;p&gt;单个传感器只能测到“有多少光打在它上面”，
+但&lt;strong&gt;它不区分光来自哪个方向&lt;/strong&gt;。
+如果不加控制（例如完全裸露的感光平面），
+所有方向的光都会混在一起，导致图像失焦或模糊。&lt;/p&gt;
+&lt;hr&gt;
+&lt;h2 id=&#34;光圈与透镜的作用&#34;&gt;光圈与透镜的作用
+&lt;/h2&gt;&lt;p&gt;为了让传感器只响应&lt;strong&gt;特定方向的光&lt;/strong&gt;，
+成像系统会加上以下结构：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;不透光外壳&lt;/strong&gt;：阻挡多余方向的光；&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;小孔（aperture, 光圈）&lt;/strong&gt;：只允许部分方向的光进入；&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;透镜（lens）&lt;/strong&gt;：将来自场景某点的光聚焦到传感器的对应像素。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;这样，每个传感器只接收来自：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;一小块场景区域&lt;/strong&gt;；&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;一小组入射方向&lt;/strong&gt;。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;换句话说，每个传感器对光具有了&lt;strong&gt;方向性响应（directionally specific）&lt;/strong&gt;。&lt;/p&gt;
+&lt;h3 id=&#34;irradiance--radiance-的关系&#34;&gt;irradiance → radiance 的关系
+&lt;/h3&gt;&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;传感器测量的irradiance，其实是：
+&lt;/p&gt;
+$$
+  E = \int L(x, \omega_i) \cos\theta_i\, d\omega_i
+  $$&lt;p&gt;
+——即所有入射方向上radiance的加权平均；&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;但由于相机光圈和镜头只允许一小范围的方向入射，
+实际上每个像素感受到的就是该方向上的平均radiance。&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h1 id=&#34;the-brdf&#34;&gt;The BRDF
+&lt;/h1&gt;&lt;p&gt;最终，基于物理的渲染可以归结为沿着一组观察射线，计算进入相机的radiance。对于一个给定的观察射线，我们需要计算的是$L_{i}(\mathbf{c},-\mathbf{v})$，其中$\mathbf{c}$是相机的位置，$-\mathbf{v}$是沿着观察射线的方向。&lt;/p&gt;
+&lt;p&gt;不考虑介质的影响，认为进入相机的radiance，与其观察方向上离开最近物体表面的radiance是相等的&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-10-21-12.15.28.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-10-21 12.15.28&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;所以着色计算就转到了计算物体表面p向方向v的radiance。&lt;/p&gt;
+&lt;p&gt;不考虑透明物体和全局次表面散射的情况；我们所关注的是局部反射现象，&lt;strong&gt;它将照射到当前着色点的光线，重新发射回外部&lt;/strong&gt;，这些现象包括&lt;strong&gt;表面反射&lt;/strong&gt;以及&lt;strong&gt;局部次表面散射&lt;/strong&gt;，它们只依赖于入射光方向$\mathbf{l}$和指向外部的观察方向$\mathbf{v}$。&lt;/p&gt;
+&lt;p&gt;双向反射分布函数（bidirectional reflectance distribution function，BRDF）描述了着色点表面的局部反射系数，记为$f(\mathbf{l}, \mathbf{v})$。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;光线的入射方向和出射方向各有两个自由度。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;一种常用的参数化表示包括两个角度：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;仰角&lt;/strong&gt; $$\theta$$：相对于表面法线 \(\mathbf{n}\)&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;方位角&lt;/strong&gt; $$\phi$$：相对于表面法线 \(\mathbf{n}\) 的水平旋转&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;在一般情况下，BRDF 是一个包含 &lt;strong&gt;四个标量变量&lt;/strong&gt; 的函数：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;两个描述入射方向 ($$\theta_i, \phi_i$$)&lt;/li&gt;
+&lt;li&gt;两个描述出射方向 ($$\theta_o, \phi_o$$)&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;各向同性 (Isotropic) BRDF&lt;/strong&gt; 是一个重要特例：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;当光线入射方向和出射方向围绕表面法线 $$\mathbf{n}$$ 旋转时，BRDF 保持不变，只依赖于入射和出射方向之间的相对角度。&lt;/li&gt;
+&lt;li&gt;对各向同性 BRDF，只需要 &lt;strong&gt;三个标量变量&lt;/strong&gt;：
+&lt;ul&gt;
+&lt;li&gt;入射方向仰角 $$\theta_i$$&lt;/li&gt;
+&lt;li&gt;出射方向仰角 $$\theta_o$$&lt;/li&gt;
+&lt;li&gt;入射与出射方向的相对方位角 $$\phi = \phi_o - \phi_i$$&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;换句话说，如果将一个具有均匀各向同性材质的物体放在转盘上旋转，在给定光线和相机条件下，物体表面在所有旋转角度上看起来都是相同的。&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/20230611105126.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;img&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;由于忽略了荧光（fluorescence）和磷光（phosphorescence）等现象，我们可以假设，给定波长的入射光会以相同波长被反射出来。&lt;/li&gt;
+&lt;li&gt;反射光的光量会根据波长变化，可以用两种方式模拟：
+&lt;ol&gt;
+&lt;li&gt;将波长视为 BRDF 的额外输入变量；&lt;/li&gt;
+&lt;li&gt;将 BRDF 视为返回光谱分布的值。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;blockquote&gt;
+&lt;p&gt;在实时渲染中，通常使用第二种方法，实时渲染器一般将光谱分布表示为一个RGB三元组，这意味着BRDF会返回一个RGB值&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;ul&gt;
+&lt;li&gt;为了计算着色点的出射光线 $$L_{o}(\mathbf{p}, \mathbf{v})$$，我们将 BRDF 项合并到反射方程（reflectance equation）中：&lt;/li&gt;
+&lt;/ul&gt;
+$$
+L_{o}(\mathbf{p}, \mathbf{v}) = \int_{\mathbf{l} \in \Omega} f(\mathbf{l}, \mathbf{v})\, L_{i}(\mathbf{p}, \mathbf{l})\, (\mathbf{n} \cdot \mathbf{l})\, d \mathbf{l}
+\tag{9.3}
+$$&lt;ul&gt;
+&lt;li&gt;公式说明：
+&lt;ul&gt;
+&lt;li&gt;积分下标 $$\mathbf{l} \in \Omega$$ 表示对以着色点 $$\mathbf{p}$$ 为球心、表面法线 $$\mathbf{n}$$ 为方向的单位半球上所有入射光方向 $$\mathbf{l}$$ 积分；&lt;/li&gt;
+&lt;li&gt;入射光方向 $$\mathbf{l}$$ 在半球范围内连续扫描，并非单一光线；&lt;/li&gt;
+&lt;li&gt;$$d\mathbf{l}$$ 表示入射方向 $$\mathbf{l}$$ 周围的单位立体角微分；&lt;/li&gt;
+&lt;li&gt;出射 radiance 等于入射 radiance 乘以 BRDF 再乘以 $$\mathbf{n} \cdot \mathbf{l}$$ 点积的积分。&lt;/li&gt;
+&lt;li&gt;$Li(\mathbf{p}, \mathbf{l})$是 &lt;strong&gt;入射 radiance&lt;/strong&gt;，表示从方向 $\mathbf{l}$ 到达点 $\mathbf{p}$ 的光强度&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;在第一行中，左侧展示了一个Lambertian BRDF（一个简单半球）；中间展示了在Lambertian项中添加了Blinn-Phong高光的结果；右侧展示了Cook-Torrance BRDF [285, 1779]，值得注意的是，镜面高光并不是最强的反射方向。在第二行中，左侧是Ward各向异性模型的特写，在这种情况下，反射方向是一个倾斜的镜面波瓣；中间展示了Hapke/Lommel-Seeliger“月面（lunar surface）”BRDF [664]，它具有强烈的后反射；右侧展示了 Lommel-Seeliger散射，尘埃表面会将光线散射到掠射角上（grazing angle）。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/20230611105147.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;img&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;h1 id=&#34;表面反射的brdf模型&#34;&gt;表面反射的BRDF模型
+&lt;/h1&gt;&lt;p&gt;这部分LearnOpenGL的PBR模型部分已经记录，就是NDF项如何建模使用&lt;/p&gt;
+&lt;h1 id=&#34;次表面散射的brdf模型&#34;&gt;次表面散射的BRDF模型
+&lt;/h1&gt;&lt;p&gt;这里知道了BRDF的漫反射部分（也就是这本书中介绍的局部次表面散射部分）除了最简单的Lambertian漫反射模型，还有很多更复杂的模型，但是实时渲染用Lambertian足够了&lt;/p&gt;
+&lt;p&gt;对于 Lambertian 漫反射，BRDF 定义为：
+&lt;/p&gt;
+$$
+f_r(\mathbf{l}, \mathbf{v}) = \frac{\rho}{\pi}
+$$&lt;p&gt;
+其中：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;$\mathbf{l}$ = 入射光方向&lt;/li&gt;
+&lt;li&gt;$\mathbf{v}$ = 出射方向（视线方向）&lt;/li&gt;
+&lt;li&gt;$\rho$ = 漫反射反射率（albedo），范围 [0,1]&lt;/li&gt;
+&lt;li&gt;$\pi$ = 正则化因子，保证能量守恒&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h1 id=&#34;布料的brdf模型&#34;&gt;布料的BRDF模型
+&lt;/h1&gt;&lt;h2 id=&#34;布料材质特点&#34;&gt;布料材质特点
+&lt;/h2&gt;&lt;ul&gt;
+&lt;li&gt;微观几何结构复杂：纤维、丝线、编织结构等&lt;/li&gt;
+&lt;li&gt;表面光学特性特殊：
+&lt;ul&gt;
+&lt;li&gt;各向异性镜面高光&lt;/li&gt;
+&lt;li&gt;粗糙散射（次表面散射导致边缘亮）&lt;/li&gt;
+&lt;li&gt;观察角依赖的颜色变化（多色纤维引起）&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;高频空间变化显著（纹理、老化、瑕疵、皱褶等）&lt;/li&gt;
+&lt;/ul&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;strong&gt;结论&lt;/strong&gt;：默认通用BRDF（Lambert + GGX）无法准确模拟这些特性。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h2 id=&#34;布料brdf的三大类&#34;&gt;布料BRDF的三大类
+&lt;/h2&gt;&lt;ol&gt;
+&lt;li&gt;&lt;strong&gt;经验模型（Empirical）&lt;/strong&gt;
+&lt;ul&gt;
+&lt;li&gt;根据观察设计，非物理正确&lt;/li&gt;
+&lt;li&gt;示例：
+&lt;ul&gt;
+&lt;li&gt;《神秘海域2》漫反射BRDF + rim/inner/lambert项&lt;/li&gt;
+&lt;li&gt;《神秘海域4》使用 wrap lighting 近似次表面散射&lt;/li&gt;
+&lt;li&gt;迪士尼的 sheen 项模拟粗糙散射&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;微表面模型（Microfacet / Micro-surface）&lt;/strong&gt;
+&lt;ul&gt;
+&lt;li&gt;使用 NDF 描述纤维表面微结构&lt;/li&gt;
+&lt;li&gt;示例：
+&lt;ul&gt;
+&lt;li&gt;Ashikhmin 逆高斯 NDF 模拟天鹅绒&lt;/li&gt;
+&lt;li&gt;《教团：1886》使用改进微表面BRDF + 天鹅绒 NDF&lt;/li&gt;
+&lt;li&gt;Imageworks 提供可附加光泽项的逆NDF&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;微圆柱体模型（Micro-cylinder / Fiber-based）&lt;/strong&gt;
+&lt;ul&gt;
+&lt;li&gt;假设表面由大量一维纤维/线段组成&lt;/li&gt;
+&lt;li&gt;示例：
+&lt;ul&gt;
+&lt;li&gt;Kajiya-Kay / Banks 模型&lt;/li&gt;
+&lt;li&gt;《神秘海域4》用于丝绸、高光纤维&lt;/li&gt;
+&lt;li&gt;Dreamworks 和 Sadeghi 的模型增加了可控参数和masking-shadowing&lt;/li&gt;
+&lt;li&gt;可借鉴头发BSDF（PxrSurface、Marschner模型）&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;布料材质光学特性特殊，通用BRDF适用性有限&lt;/p&gt;
+&lt;p&gt;不同布料类型（天鹅绒、丝绸、棉花、羊毛等）需要不同BRDF或BSDF来模拟&lt;/p&gt;
+&lt;p&gt;模型选择依据材质：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;经验模型&lt;/strong&gt; → 视觉效果优先、易控制&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;微表面模型&lt;/strong&gt; → 模拟高光、粗糙散射&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;微圆柱体模型&lt;/strong&gt; → 精确描述纤维方向性、masking-shadowing&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h1 id=&#34;波动光学的brdf模型&#34;&gt;波动光学的BRDF模型
+&lt;/h1&gt;&lt;p&gt;这。。了解即可&lt;/p&gt;
+&lt;h2 id=&#34;几何光学的假设与局限&#34;&gt;几何光学的假设与局限
+&lt;/h2&gt;&lt;ul&gt;
+&lt;li&gt;几何光学把光当作射线，适用于表面特征要么&lt;strong&gt;非常小&lt;/strong&gt;（&amp;lt; 波长），要么&lt;strong&gt;非常大&lt;/strong&gt;（&amp;gt; 100 倍波长）的情况。&lt;/li&gt;
+&lt;li&gt;现实世界表面在&lt;strong&gt;1~100倍波长的尺度&lt;/strong&gt;上具有不规则性，这部分被称为&lt;strong&gt;纳米几何（nanogeometry）&lt;/strong&gt;。&lt;/li&gt;
+&lt;li&gt;纳米几何对反射率的影响无法用几何光学模拟，需要使用&lt;strong&gt;波动光学&lt;/strong&gt;。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;hr&gt;
+&lt;h2 id=&#34;衍射diffraction&#34;&gt;衍射（Diffraction）
+&lt;/h2&gt;&lt;ul&gt;
+&lt;li&gt;纳米几何会导致光发生&lt;strong&gt;衍射&lt;/strong&gt;，Huygens-Fresnel原理解释了光如何在表面点作为新球面波源传播并相干干涉。&lt;/li&gt;
+&lt;li&gt;表面高度的不规则性决定了&lt;strong&gt;镜面反射与衍射光的分布&lt;/strong&gt;：
+&lt;ul&gt;
+&lt;li&gt;较大尺度的不规则性 → 小扩散角度&lt;/li&gt;
+&lt;li&gt;较小尺度的不规则性 → 大扩散角度&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;周期性纳米结构（如CD、DVD、昆虫翅膀）可产生显著的彩虹色衍射。&lt;/li&gt;
+&lt;li&gt;最近的研究表明，衍射在许多普通材质中也存在，只是传统渲染模型未考虑。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;hr&gt;
+&lt;h2 id=&#34;薄膜干涉thin-film-interference&#34;&gt;薄膜干涉（Thin-film interference）
+&lt;/h2&gt;&lt;ul&gt;
+&lt;li&gt;发生在&lt;strong&gt;厚度接近光波长的薄膜&lt;/strong&gt;上，例如油渍、肥皂泡。&lt;/li&gt;
+&lt;li&gt;原理：薄膜顶部反射光与底部反射光的光路差导致相长/相消干涉。&lt;/li&gt;
+&lt;li&gt;产生的效果：
+&lt;ul&gt;
+&lt;li&gt;高光随观察角度变化，出现彩虹色或微妙色偏。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;相干长度决定了干涉是否可见：
+&lt;ul&gt;
+&lt;li&gt;可见光的相干长度约 1 微米，因此厚度超过 1 微米的薄膜通常不会产生可见干涉。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;实时渲染中：
+&lt;ul&gt;
+&lt;li&gt;可以用查表或近似方法高效实现一阶、二阶光路干涉。&lt;/li&gt;
+&lt;li&gt;已经被许多现代渲染器（RenderMan、Imageworks）采用，增强材质真实感。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;hr&gt;
+&lt;h2 id=&#34;总结&#34;&gt;总结
+&lt;/h2&gt;&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;几何光学&lt;/strong&gt;适用于宏观微表面，但无法处理纳米尺度的光学效应。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;波动光学&lt;/strong&gt;补充了几何光学的不足：
+&lt;ol&gt;
+&lt;li&gt;&lt;strong&gt;衍射&lt;/strong&gt;：纳米几何导致光在各方向散射和干涉。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;薄膜干涉&lt;/strong&gt;：薄层材质产生随角度变化的彩虹高光或微妙色偏。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/li&gt;
+&lt;li&gt;在渲染中，这些效应虽然属于“细节”，但对真实感有显著提升，现代材质模型和渲染器已开始支持这些效果。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h1 id=&#34;分层材质&#34;&gt;分层材质
+&lt;/h1&gt;&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;概念&lt;/strong&gt;：现实中的材质通常由多层组成，例如灰尘、水、冰、雪、涂层或生物材料。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;透明涂层（Clear Coat）&lt;/strong&gt;：
+&lt;ul&gt;
+&lt;li&gt;最常见且视觉重要的分层案例。&lt;/li&gt;
+&lt;li&gt;透明光滑层覆盖在基底材质上，如木材上涂清漆。&lt;/li&gt;
+&lt;li&gt;二次反射效果显著，尤其在金属基底上。&lt;/li&gt;
+&lt;li&gt;可以有颜色（通过Beer-Lambert定律模拟光吸收）。&lt;/li&gt;
+&lt;li&gt;支持逐层法线，但实时渲染中较少用。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;分层材质模型实例&lt;/strong&gt;：
+&lt;ul&gt;
+&lt;li&gt;迪士尼Principled Shader、虚幻引擎、PxrSurface材质、Dreamworks/Imageworks。&lt;/li&gt;
+&lt;li&gt;Weidlich &amp;amp; Wilkie模型：多层叠加，追踪单次反射/折射，计算成本低，适合实时。&lt;/li&gt;
+&lt;li&gt;Jakob等框架：支持层间多次反射，精确但不适合实时渲染。&lt;/li&gt;
+&lt;li&gt;游戏《使命召唤：无限战争》：可叠加任意层，支持折射、散射、层间吸收及逐层法线，实时渲染复杂材质。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h1 id=&#34;材质混合material-blending&#34;&gt;材质混合（Material Blending）
+&lt;/h1&gt;&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;概念&lt;/strong&gt;：将多种材质的BRDF参数结合在一起。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;方法&lt;/strong&gt;：
+&lt;ul&gt;
+&lt;li&gt;使用蒙版纹理控制不同材质混合区域。&lt;/li&gt;
+&lt;li&gt;可在运行时或预烘焙完成。&lt;/li&gt;
+&lt;li&gt;可混合法线贴图，通过高度贴图或细节法线叠加实现。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;应用&lt;/strong&gt;：
+&lt;ul&gt;
+&lt;li&gt;展示动态伤害效果&lt;/li&gt;
+&lt;li&gt;用户自定义装备/服装&lt;/li&gt;
+&lt;li&gt;增加角色与环境视觉多样性&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;性能优化&lt;/strong&gt;：
+&lt;ul&gt;
+&lt;li&gt;对蒙版边界材质，优先混合BRDF参数而非计算两次着色。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h1 id=&#34;材质过滤material-filtering&#34;&gt;材质过滤（Material Filtering）
+&lt;/h1&gt;&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;概念&lt;/strong&gt;：纹理在GPU上通过mipmap和滤波进行采样，但假设参数与最终颜色线性，非线性参数可能产生瑕疵。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;主要问题&lt;/strong&gt;：
+&lt;ul&gt;
+&lt;li&gt;法线贴图和粗糙度贴图的线性mipmap可能导致高光闪烁或亮度异常。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;解决方法&lt;/strong&gt;：
+&lt;ol&gt;
+&lt;li&gt;&lt;strong&gt;法线分布过滤&lt;/strong&gt;：
+&lt;ul&gt;
+&lt;li&gt;理想方法：对NDF进行平均，而非对法线或粗糙度单独平均。&lt;/li&gt;
+&lt;li&gt;Toksvig方法：通过平均法线长度修正粗糙度（公式9.76），适合Blinn-Phong/Beckmann NDF。&lt;/li&gt;
+&lt;li&gt;LEAN/CLEAN/LEADR映射：基于法线协方差矩阵，处理各向同性或各向异性。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;方差映射&lt;/strong&gt;：
+&lt;ul&gt;
+&lt;li&gt;预计算法线方差存储到纹理中，用于修正粗糙度，兼顾GPU滤波。&lt;/li&gt;
+&lt;li&gt;可用于多法线叠加（如细节法线）。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;高频表面和闪闪发光材质&lt;/strong&gt;：
+&lt;ul&gt;
+&lt;li&gt;闪烁现象由每像素覆盖少量凸起引起。&lt;/li&gt;
+&lt;li&gt;实时渲染方法：
+&lt;ul&gt;
+&lt;li&gt;Wang &amp;amp; Bowles：产生视觉闪光效果（雪花等）。&lt;/li&gt;
+&lt;li&gt;Zirr &amp;amp; Kaplanyan：模拟多尺度法线分布，空间和时间上稳定。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+        </item>
+        <item>
         <title>Physically Based Shading (1) 光与颜色</title>
         <link>https://sdpyy1.github.io/p/physically-based-shading-1-%E5%85%89%E4%B8%8E%E9%A2%9C%E8%89%B2/</link>
         <pubDate>Mon, 20 Oct 2025 11:41:15 +0800</pubDate>

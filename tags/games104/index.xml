@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+    <channel>
+        <title>Games104 on wanfeng</title>
+        <link>https://sdpyy1.github.io/tags/games104/</link>
+        <description>Recent content in Games104 on wanfeng</description>
+        <generator>Hugo -- gohugo.io</generator>
+        <language>zh-cn</language>
+        <copyright>爱喝东方树叶</copyright>
+        <lastBuildDate>Mon, 20 Oct 2025 15:00:44 +0800</lastBuildDate><atom:link href="https://sdpyy1.github.io/tags/games104/index.xml" rel="self" type="application/rss+xml" /><item>
+        <title>Games105：游戏引擎的动画技术基础</title>
+        <link>https://sdpyy1.github.io/p/games105%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E7%9A%84%E5%8A%A8%E7%94%BB%E6%8A%80%E6%9C%AF%E5%9F%BA%E7%A1%80/</link>
+        <pubDate>Mon, 20 Oct 2025 15:00:44 +0800</pubDate>
+        
+        <guid>https://sdpyy1.github.io/p/games105%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E7%9A%84%E5%8A%A8%E7%94%BB%E6%8A%80%E6%9C%AF%E5%9F%BA%E7%A1%80/</guid>
+        <description>&lt;h1 id=&#34;蒙皮动画&#34;&gt;蒙皮动画
+&lt;/h1&gt;&lt;p&gt;这里讲的就是科普了一下&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-10-20-15.05.52.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-10-20 15.05.52&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;坐标系&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-10-20-15.09.11.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-10-20 15.09.11&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;实际存储的数据是关节数据&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-10-20-15.16.00.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-10-20 15.16.00&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;Root关节一般存在脚底，为了方便计算移速、跳跃高度。髋关节是第一个子关节&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-10-20-15.17.54.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-10-20 15.17.54&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;T-pose和A-pose：&lt;/p&gt;
+&lt;p&gt;A-pose 下，肩关节旋转角度为 0°，肘部微弯 15°，手掌自然朝向大腿关节，旋转轴处于中性位置，绑定师可以更精确地绘制顶点权重，控制手臂摆动和肌肉变形，提高工作效率和质量。T-pose 中，肩部会受到挤压，当手臂放下时，可能会出现肌肉穿模等问题。A-pose 则能避免这种情况，其腋下、胯部等容易穿帮的区域自然展开，为后续的动画制作提供了更好的基础，减少了调整和修正的工作量。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-10-20-15.21.05.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-10-20 15.21.05&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;h1 id=&#34;3d空间的旋转&#34;&gt;3D空间的旋转
+&lt;/h1&gt;&lt;p&gt;&lt;strong&gt;这块东西在Games105数学原理博客部分已总结&lt;/strong&gt;&lt;/p&gt;
+&lt;h2 id=&#34;欧拉角&#34;&gt;欧拉角
+&lt;/h2&gt;&lt;p&gt;分别沿着三个轴旋转，旋转矩阵可以合并成一个&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-10-20-15.25.36.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-10-20 15.25.36&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;缺点：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;顺序依赖&lt;/li&gt;
+&lt;li&gt;万向锁，直接用公式也能解释，把y轴旋转带入后，整个旋转公式只剩下x轴旋转部分了，z轴的都没了&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-10-20-15.30.46.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-10-20 15.30.46&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;欧拉角的插值有问题&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-10-20-15.32.44.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-10-20 15.32.44&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;h2 id=&#34;四元数&#34;&gt;四元数
+&lt;/h2&gt;&lt;p&gt;在二维平面上可以用复数代表旋转。另外旋转的叠加可以直接通过Product运算算出&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-10-20-15.35.39.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-10-20 15.35.39&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;拓展到3D旋转&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-10-20-15.37.18.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-10-20 15.37.18&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;h3 id=&#34;欧拉角转四元数&#34;&gt;欧拉角转四元数
+&lt;/h3&gt;&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-10-20-15.41.55.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-10-20 15.40.44&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;h3 id=&#34;用四元数旋转一个顶点&#34;&gt;用四元数旋转一个顶点
+&lt;/h3&gt;&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-10-20-15.41.55.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-10-20 15.41.55&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;总结后：直接表达成旋转矩阵如下&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-10-20-15.46.58.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-10-20 15.46.58&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;h3 id=&#34;用四元数表达从u旋转到v&#34;&gt;用四元数表达从U旋转到V
+&lt;/h3&gt;&lt;p&gt;可以通过下面的公式计算出对应的旋转四元数是多少&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-10-20-15.49.08.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-10-20 15.49.08&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;h3 id=&#34;四元数表达给定轴的旋转&#34;&gt;四元数表达给定轴的旋转
+&lt;/h3&gt;&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-10-20-15.50.10.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-10-20 15.50.10&#34;
+	
+	
+&gt;&lt;/p&gt;
+</description>
+        </item>
+        
+    </channel>
+</rss>
