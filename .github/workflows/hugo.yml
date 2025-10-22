@@ -5,7 +5,7 @@ on:
     branches: [ main ]
 
 permissions:
-  contents: write  # 授予内容写入权限，确保机器人可提交
+  contents: write  # 允许提交修改
 
 jobs:
   deploy:
@@ -16,134 +16,88 @@ jobs:
         with:
           submodules: true
           fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}  # 使用内置令牌，继承permissions权限
+          token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: 处理 CSDN 图片链接（支持多格式）
+      - name: 安装 Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: 统一 md 与图片文件名（空格改为 -）
         run: |
-          pip install requests
-
-          cat > process_images.py << 'EOF'
-          import re
+          cat > sanitize_images.py << 'EOF'
           import os
-          import requests
           from pathlib import Path
 
-          def process_md_files():
-              # 配置路径
-              md_root = "./content/post"  # md文件根目录（支持多级子目录）
-              static_dir = "./static"     # 图片保存目录
+          md_root = "./content/post"
+          image_exts = ["png", "jpeg", "jpg", "gif", "webp"]
 
-              # 创建static目录
-              os.makedirs(static_dir, exist_ok=True)
+          def sanitize_filename(name):
+              return name.replace(" ", "-")
 
-              # 匹配CSDN图片链接（支持png、jpeg、jpg格式）
-              pattern = r'!\[(.*?)\]\(https://i-blog.csdnimg.cn/direct/(\w+)\.(png|jpeg|jpg)\)'
+          # 1. 遍历所有图片文件，重命名带空格的文件
+          for ext in image_exts:
+              for img_file in Path(md_root).rglob(f"*.{ext}"):
+                  new_name = sanitize_filename(img_file.name)
+                  new_path = img_file.parent / new_name
+                  if img_file != new_path:
+                      if new_path.exists():
+                          print(f"跳过已有文件: {new_path}")
+                          continue
+                      img_file.rename(new_path)
+                      print(f"重命名图片: {img_file} -> {new_path}")
 
-              # 递归查找所有md文件（包括任意嵌套层级）
-              md_files = list(Path(md_root).rglob("*.md"))
-              if not md_files:
-                  print("未找到.md文件")
-                  return
+          # 2. 遍历 md 文件，替换其中的图片路径空格
+          for md_file in Path(md_root).rglob("*.md"):
+              content = md_file.read_text(encoding="utf-8")
+              original_content = content
+              for ext in image_exts:
+                  # 替换 .png 等前面的文件名空格
+                  import re
+                  content = re.sub(r'!\[([^\]]*)\]\(([^\)]+)\)', 
+                                   lambda m: f'![{m.group(1)}]({sanitize_filename(m.group(2))})', 
+                                   content)
+              if content != original_content:
+                  md_file.write_text(content, encoding="utf-8")
+                  print(f"更新 md 文件: {md_file}")
 
-              for md_file in md_files:
-                  print(f"\n处理文件: {md_file}")
-                  try:
-                      content = md_file.read_text(encoding='utf-8')
-                  except Exception as e:
-                      print(f"  读取文件失败: {e}")
-                      continue
-
-                  # 查找所有匹配的图片链接
-                  matches = re.findall(pattern, content)
-                  if not matches:
-                      print("  未找到CSDN图片链接")
-                      continue
-
-                  # 处理每个图片（desc:描述, img_id:图片ID, ext:后缀）
-                  for desc, img_id, ext in matches:
-                      img_filename = f"{img_id}.{ext}"  # 拼接完整文件名（含后缀）
-                      img_url = f"https://i-blog.csdnimg.cn/direct/{img_filename}"
-                      local_path = os.path.join(static_dir, img_filename)
-
-                      # 检查是否已下载
-                      if os.path.exists(local_path):
-                          print(f"  图片已存在: {img_filename}")
-                      else:
-                          # 下载图片（模拟浏览器请求头避免拦截）
-                          try:
-                              print(f"  下载图片: {img_url}")
-                              headers = {
-                                  "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36"
-                              }
-                              response = requests.get(img_url, timeout=15, headers=headers)
-                              response.raise_for_status()  # 抛出HTTP错误（如403、404）
-                              with open(local_path, 'wb') as f:
-                                  f.write(response.content)
-                              print(f"  下载成功: {img_filename}")
-                          except Exception as e:
-                              print(f"  下载失败: {img_url}，错误: {e}")
-                              continue  # 下载失败则不替换该链接
-
-                      # 替换md中的链接为直接文件名（去掉/static/前缀）
-                      old_link = f"![{desc}](https://i-blog.csdnimg.cn/direct/{img_filename})"
-                      new_link = f"![{desc}]({img_filename})"  # 仅保留图片文件名
-                      content = content.replace(old_link, new_link)
-
-                  # 保存修改后的md文件
-                  try:
-                      md_file.write_text(content, encoding='utf-8')
-                      print(f"  文件更新完成: {md_file}")
-                  except Exception as e:
-                      print(f"  保存文件失败: {e}")
-
-          if __name__ == "__main__":
-              process_md_files()
           EOF
 
-          # 运行处理脚本
-          python process_images.py
+          python sanitize_images.py
 
       - name: 复制 post 中的图片到 static 目录
         run: |
           mkdir -p ./static
-          # 递归复制post下所有图片（支持多级目录）
-          find ./content/post -type f \( -name "*.png" -o -name "*.jpeg" -o -name "*.jpg" -o -name "*.gif" -o -name "*.webp" \) -exec cp {} ./static/ 2>/dev/null \;
-          echo -e "\n已复制到 static 目录的图片文件："
-          ls -l ./static/*.{png,jpeg,jpg,gif,webp} 2>/dev/null || echo "  无额外本地图片需要复制"
+          image_exts="png jpeg jpg gif webp"
+          for ext in $image_exts; do
+            find ./content/post -type f -name "*.$ext" -exec cp {} ./static/ \;
+          done
+          echo "图片已复制到 static 目录"
 
       - name: 提交修改后的 md 文件和图片
         run: |
-          # 启用通配符容错：无匹配文件时返回空
-          shopt -s nullglob
-
-          # 配置Git身份
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           
-          # 关键：用find递归查找所有.md文件（支持任意嵌套层级），确保全部添加
-          find ./content/post -type f -name "*.md" -print0 | xargs -0 git add 2>/dev/null
+          git add ./content/post ./static
           
-          # 添加static目录下的图片（自动忽略不存在的格式）
-          git add ./static/*.png ./static/*.jpeg ./static/*.jpg ./static/*.gif ./static/*.webp 2>/dev/null
-          
-          # 检查是否有修改，避免空提交
           if git diff --cached --quiet; then
               echo "无修改内容，无需提交"
           else
-              git commit -m "自动替换CSDN图片链接为本地链接"
+              git commit -m "自动统一图片文件名及 md 引用，空格改为 -"
               git push origin main
           fi
 
-      - name: 安装Hugo
+      - name: 安装 Hugo
         uses: peaceiris/actions-hugo@v2
         with:
           hugo-version: '0.151.2'
           extended: true
 
-      - name: 生成public文件夹
+      - name: 生成 public 文件夹
         run: hugo
 
-      - name: 部署到GitHub Pages
+      - name: 部署到 GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
