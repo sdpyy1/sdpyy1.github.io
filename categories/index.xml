@@ -7,7 +7,23 @@
         <generator>Hugo -- gohugo.io</generator>
         <language>zh-cn</language>
         <copyright>爱喝东方树叶</copyright>
-        <lastBuildDate>Tue, 21 Oct 2025 20:11:16 +0800</lastBuildDate><atom:link href="https://sdpyy1.github.io/categories/index.xml" rel="self" type="application/rss+xml" /><item>
+        <lastBuildDate>Wed, 22 Oct 2025 14:19:43 +0800</lastBuildDate><atom:link href="https://sdpyy1.github.io/categories/index.xml" rel="self" type="application/rss+xml" /><item>
+        <title>Books</title>
+        <link>https://sdpyy1.github.io/categories/books/</link>
+        <pubDate>Wed, 22 Oct 2025 14:19:43 +0800</pubDate>
+        
+        <guid>https://sdpyy1.github.io/categories/books/</guid>
+        <description></description>
+        </item>
+        <item>
+        <title>Real-Time Rendering 4th</title>
+        <link>https://sdpyy1.github.io/categories/books/real-time-rendering-4th/</link>
+        <pubDate>Wed, 22 Oct 2025 14:19:43 +0800</pubDate>
+        
+        <guid>https://sdpyy1.github.io/categories/books/real-time-rendering-4th/</guid>
+        <description></description>
+        </item>
+        <item>
         <title>GameEngine</title>
         <link>https://sdpyy1.github.io/categories/projects/gameengine/</link>
         <pubDate>Tue, 21 Oct 2025 20:11:16 +0800</pubDate>
@@ -37,22 +53,6 @@
         <pubDate>Mon, 20 Oct 2025 15:00:44 +0800</pubDate>
         
         <guid>https://sdpyy1.github.io/categories/course/games104/</guid>
-        <description></description>
-        </item>
-        <item>
-        <title>Books</title>
-        <link>https://sdpyy1.github.io/categories/books/</link>
-        <pubDate>Mon, 20 Oct 2025 13:29:19 +0800</pubDate>
-        
-        <guid>https://sdpyy1.github.io/categories/books/</guid>
-        <description></description>
-        </item>
-        <item>
-        <title>Real-Time Rendering 4th</title>
-        <link>https://sdpyy1.github.io/categories/books/real-time-rendering-4th/</link>
-        <pubDate>Mon, 20 Oct 2025 13:29:19 +0800</pubDate>
-        
-        <guid>https://sdpyy1.github.io/categories/books/real-time-rendering-4th/</guid>
         <description></description>
         </item>
         <item>

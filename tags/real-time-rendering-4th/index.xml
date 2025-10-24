@@ -7,7 +7,939 @@
         <generator>Hugo -- gohugo.io</generator>
         <language>zh-cn</language>
         <copyright>爱喝东方树叶</copyright>
-        <lastBuildDate>Mon, 20 Oct 2025 13:29:19 +0800</lastBuildDate><atom:link href="https://sdpyy1.github.io/tags/real-time-rendering-4th/index.xml" rel="self" type="application/rss+xml" /><item>
+        <lastBuildDate>Wed, 22 Oct 2025 14:19:43 +0800</lastBuildDate><atom:link href="https://sdpyy1.github.io/tags/real-time-rendering-4th/index.xml" rel="self" type="application/rss+xml" /><item>
+        <title>Local Illumination 局部光照</title>
+        <link>https://sdpyy1.github.io/p/local-illumination-%E5%B1%80%E9%83%A8%E5%85%89%E7%85%A7/</link>
+        <pubDate>Wed, 22 Oct 2025 14:19:43 +0800</pubDate>
+        
+        <guid>https://sdpyy1.github.io/p/local-illumination-%E5%B1%80%E9%83%A8%E5%85%89%E7%85%A7/</guid>
+        <description>&lt;img src="https://sdpyy1.github.io/202306151248940.png" alt="Featured image of post Local Illumination 局部光照" /&gt;&lt;blockquote&gt;
+&lt;p&gt;内容包括：1. 将点光源拓展到面光源，并且介绍了一些在Lambertian表面或Glossy表面的实现方案 2.环境光照针对高光和漫反射的模拟的各种实现方案 3. 引入SH预计算的概念&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h1 id=&#34;局部光照-local-illumination&#34;&gt;局部光照 (Local Illumination)
+&lt;/h1&gt;&lt;p&gt;&lt;strong&gt;局部光照模型只考虑光源直接照射到表面点的光照贡献&lt;/strong&gt;，忽略：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;来自其他物体表面反射的间接光（Global Illumination 的一部分）&lt;/li&gt;
+&lt;li&gt;场景中可能存在的全局光能量传播效应（如颜色反弹、光子映射、环境光照等）&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;也就是说，它计算的 $L_o$ 只来自：
+&lt;/p&gt;
+$$
+L_o(\mathbf{p}, \mathbf{v}) = \sum_{\text{光源 } i} \int_{\omega_{L_i}} f_r(\mathbf{p}, \mathbf{l}, \mathbf{v}) L_i(\mathbf{p}, \mathbf{l}) (\mathbf{n}\cdot\mathbf{l})^+ d\mathbf{l}
+$$&lt;ul&gt;
+&lt;li&gt;积分域 $\omega_{L_i}$ = 光源 i 在半球上所占立体角&lt;/li&gt;
+&lt;li&gt;如果光源面积很小 → 可以近似为点光源&lt;/li&gt;
+&lt;li&gt;只计算直接光照 → 计算量低，适合实时渲染&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h1 id=&#34;面光源&#34;&gt;面光源
+&lt;/h1&gt;&lt;p&gt;这一节主要是对一些面光源的积分运算在diffuse和glossy表面的实时渲染近似方案&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/202306151248940.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;img&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;球体使用了GGX BRDF来进行渲染，从左到右，球体材质的表面粗糙度递增。最右侧图像和最左侧图像是一样的，只是将其垂直翻转了过来。请注意，在低粗糙度的材质上，由大圆盘灯引起的高光和着色效果，与较小光源在高粗糙度材质上所引起的高光效果，在视觉上面十分相似。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/202306151702326.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;img&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;这张图意思是使用点光源，并且调整粗糙度后，可以用来近似面光源的镜面效果。&lt;/p&gt;
+&lt;h2 id=&#34;lambertian表面&#34;&gt;Lambertian表面
+&lt;/h2&gt;&lt;p&gt;对于Lambertian表面这种特殊情况，直接使用点光源来表示面光源是很精确的。对于这样的表面，其出射的radiance与irradiance成正比：&lt;/p&gt;
+$$
+L_{o}(\mathbf{v})=\frac{\rho_{\mathrm{ss}}}{\pi} E
+\tag{10.2}
+$$&lt;p&gt;
+也就是说对于Lambertian表面只要接受到的irrandance一致，那最终的radiance就是一样的。所以可以直接用点光源代替面光源（只是在Lambertian表面）&lt;/p&gt;
+&lt;h3 id=&#34;向量irradiance&#34;&gt;向量irradiance
+&lt;/h3&gt;&lt;blockquote&gt;
+&lt;p&gt;这里说的一堆东西是一种用点光源代替面光源近似计算的实现方案，使用它的方法求出来的净辐照度来代替对整个面光源的积分运算&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;向量irradiance（vector irradiance）的概念对于当面光源存在时，理解irradiance的行为十分有用。向量irradiance的概念由Gershun [526]提出，他将其称之为光源向量（light vector），Arvo [73]将这个概念进一步推广。利用向量irradiance，可以将任意大小和任意形状的面光源，精确地转换为点光源或者方向光。&lt;/p&gt;
+&lt;p&gt;这里的向量irradiance计算过程&lt;/p&gt;
+$$
+\mathbf{e}(\mathbf{p})=\int_{\mathbf{l} \in \Theta} L_{i}(\mathbf{p}, \mathbf{l}) \mathbf{l} d \mathbf{l}
+\tag{10.4}
+$$&lt;p&gt;
+左图：点$\mathbf{p}$被各种具有形状、大小、radiance分布的光源所包围，其中黄色的明亮程度代表了光源发射出的radiance数量。以点$\mathbf{p}$为起点的橙色箭头代表了向量，它指向任何存在入射radiance的方向，每个向量的长度，等于来自该方向上的radiance乘以箭头所覆盖的无限小的立体角。原则上应当存在无穷多个箭头。右图：向量irradiance（橙色大箭头）是左图中所有橙色向量的总和。向量irradiance可以用来计算任意平面在点$\mathbf{p}$处的净irradiance。&lt;img src=&#34;https://sdpyy1.github.io/202306151804328.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;img&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;其中$\mathbf{n}$是平面的表面法线。通过平面的净irradiance，是指流经平面“正面”（表面法线$\mathbf{n}$所指向的方向）和流经平面“背面”的irradiance之差。虽然说净irradiance本身对于着色计算来说没有什么用处，但是如果说没有任何radiance被发射通过平面的“背面”的话（换句话说，对于所分析的光线分布，光线方向$\mathbf{l}$和表面法线$\mathbf{n}$之间的夹角都不会超过$90^{\circ}$，所有的入射光线都来自于着色点的正半球方向），即$E(\mathbf{p},-\mathbf{n})=0$，那么此时有：&lt;/p&gt;
+$$
+E(\mathbf{p}, \mathbf{n})=\mathbf{n} \cdot \mathbf{e}(\mathbf{p})
+\tag{10.6}
+$$&lt;p&gt;
+&lt;img src=&#34;https://sdpyy1.github.io/202306151837959.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;img&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/202306151837959-20251022161914154.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;图10.6：单个面光源的向量irradiance。左图中的箭头代表用于计算向量irradiance的单个向量。右图中的橙色大箭头代表的就是向量irradiance $\mathbf{e}$；红色虚线代表了光源的范围；红色向量（每个红色向量都垂直于一条红色虚线）定义了表面法线的极限范围，位于这个范围外的表面法线，将会与面光源的部分区域呈大于$90^{\circ}$的夹角，这样的法线无法使用$\mathbf{e}$来正确计算它们的irradiance。&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;如果入射radiance $L_i$与波长无关的假设不成立的话，那么在一般情况下，我们就不能再定义单个向量irradiance $\mathbf{e}$了。然而，彩色光通常在所有点上都具有相同的相对光谱分布，这意味着我们可以将$L_i$分解为颜色$\mathbf{c}^{\prime}$，以及与波长无关的radiance分布$L_i^{\prime}$。在这种情况下，我们可以计算$L_i^{\prime}$的向量irradiance $\mathbf{e}$，并对方程10.6进行一些扩展，将$\mathbf{n} \cdot \mathbf{e}$乘上颜色$\mathbf{c}^{\prime}$。这样做的结果与计算方向光irradiance的方程相同，只是做了以下替换：&lt;/p&gt;
+$$
+\begin{aligned} \mathbf{l}_{c} &amp; =\frac{\mathbf{e}(\mathbf{p})}{\|\mathbf{e}(\mathbf{p})\|}, \\ \mathbf{c}_{\text {light }} &amp; =\mathbf{c}^{\prime} \frac{\|\mathbf{e}(\mathbf{p})\|}{\pi} .\end{aligned}
+\tag{10.7}  
+$$&lt;p&gt;到此为止，我们已经可以将任意形状和任意大小的面光源转换为方向光，同时不会引入任何误差。&lt;/p&gt;
+&lt;p&gt;对于一些简单情况，用于求取向量irradiance的方程10.4可以求出解析解。例如：想象现在有一个以$\mathbf{p}_l$为中心、半径为$r_l$的球形光源。球面上的每一点都会向各个方向发出具有恒定radiance $L_l$的光线。对于这种光源，将方程10.4和方程10.7联立，可以获得如下结果：&lt;/p&gt;
+$$
+\begin{aligned} \mathbf{l}_{c} &amp; =\frac{\mathbf{p}_{l}-\mathbf{p}}{\left\|\mathbf{p}_{l}-\mathbf{p}\right\|}, \\ \mathbf{c}_{\text {light }} &amp; =\frac{r_{l}^{2}}{\left\|\mathbf{p}_{l}-\mathbf{p}\right\|^{2}} L_{l} .\end{aligned}
+\tag{10.8} 
+$$&lt;p&gt;上述方程，与具有$\mathbf{c}&lt;em&gt;{\text {light }&lt;/em&gt;{0}}=L_{l}, r_{0}=r_{l}$和标准距离平方反比衰减函数的泛光灯（章节5.2.2）完全相同。可以对这个衰减函数进行一些修正，使得光线从球体表面才开始发生衰减，并在光源的最大影响距离处衰减到0，有关这些调整的更多细节，详见章节5.2.2。&lt;/p&gt;
+&lt;h2 id=&#34;glossy表面&#34;&gt;Glossy表面
+&lt;/h2&gt;&lt;p&gt;与 Lambertian 表面（仅依赖入射辐照度总量）不同，非 Lambertian 表面（如光泽、高光表面）的出射亮度，不仅依赖入射光总量，还依赖&lt;strong&gt;入射光的方向分布&lt;/strong&gt;—— 面光源在这类表面的核心视觉效果是 “与光源形状相似、边缘随粗糙度模糊的高光”&lt;/p&gt;
+&lt;p&gt;在实时渲染中，大多数对面光源光照效果的实用近似，都是基于了这样的一个想法：为每个着色点都寻找一个等效的精确光源，从而模拟非无穷小光源的效果。这种方法经常被用于实时渲染中，以解决各种各样的问题&lt;/p&gt;
+&lt;h3 id=&#34;粗糙度修正&#34;&gt;粗糙度修正
+&lt;/h3&gt;&lt;ul&gt;
+&lt;li&gt;核心逻辑：找到面光源入射辐照度的 “有效圆锥体” 和 BRDF 镜面波瓣的 “有效圆锥体”，用两个圆锥体的立体角之和，修正材质的粗糙度参数，让镜面波瓣 “变宽”，模拟面光源的柔和高光。&lt;/li&gt;
+&lt;li&gt;典型实现：Karis 将该思路应用于 GGX BRDF，修改粗糙度参数$(\alpha_g&amp;rsquo; = \left(\alpha_{g}+\frac{r_{l}}{2\left|\mathbf{p}_{l}-\mathbf{p}\right|}\right)^{\mp})$（限制在 0-1 之间）。&lt;/li&gt;
+&lt;li&gt;优缺点：计算成本低，对中等光泽表面效果好；但对镜面级光滑表面失效（无法模拟锐利高光），且微表面 BRDF 的宽衰减特性会导致效果失真。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;代表性点技术&#34;&gt;代表性点技术
+&lt;/h3&gt;&lt;ul&gt;
+&lt;li&gt;核心逻辑：基于 “积分中值定理”，用面光源上对表面能量贡献最大的一个 “代表性点”，替代整个面光源（将面光源简化为一个点光源），类似蒙特卡洛积分的重要性采样思想。&lt;/li&gt;
+&lt;li&gt;关键操作：
+&lt;ul&gt;
+&lt;li&gt;选择代表性点：优先选 “与反射光线夹角最小” 或 “距离反射光线最近” 的点（Karis 改进后更高效）；&lt;/li&gt;
+&lt;li&gt;能量修正：通过简单公式缩放光线强度，保证能量守恒。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;优缺点：推导简单、适用于多种光源形状；但会导致粗糙表面的高光偏 “尖锐”（与真实值有偏差），需额外优化。&lt;/li&gt;
+&lt;li&gt;扩展优化：Iwanicki 和 Pesce 通过拟合数值积分结果，引入软阈值、缩放因子等参数；de Carpentier 针对微表面 BRDF，改用 “最大化$(\mathbf{n} \cdot \mathbf{h})$（法线与半向量点积）” 选择代表性点，优化掠射角下的高光形状。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;线性变换余弦ltc法高精度通用解决方案&#34;&gt;线性变换余弦（LTC）法：高精度通用解决方案
+&lt;/h3&gt;&lt;ul&gt;
+&lt;li&gt;核心逻辑：用 “3×3 矩阵变换的余弦波瓣”（LTC）近似任意 BRDF 的镜面波瓣，通过矩阵对余弦波瓣进行缩放、拉伸、旋转，适配不同 BRDF 和光源形状；再利用逆矩阵变换积分定义域，将复杂积分转化为简单余弦波瓣的积分（可复用成熟算法）。&lt;/li&gt;
+&lt;li&gt;关键优势：
+&lt;ul&gt;
+&lt;li&gt;通用性强：适用于任意纹理多边形面光源（卡片、圆盘、管状等）和一般 BRDF；&lt;/li&gt;
+&lt;li&gt;准确性高：离线构建 BRDF 参数（粗糙度、入射角）的查找表，实时通过查找表快速求解。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;缺点：计算成本高于前两种方法，但准确性更优。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;一般光源形状的适配的处理&#34;&gt;一般光源形状的适配的处理
+&lt;/h3&gt;&lt;table&gt;
+  &lt;thead&gt;
+      &lt;tr&gt;
+          &lt;th&gt;光源形状&lt;/th&gt;
+          &lt;th&gt;适用场景&lt;/th&gt;
+          &lt;th&gt;关键处理方式&lt;/th&gt;
+      &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+      &lt;tr&gt;
+          &lt;td&gt;球形光源&lt;/td&gt;
+          &lt;td&gt;基础简化光源&lt;/td&gt;
+          &lt;td&gt;粗糙度修正、代表性点技术（核心适配对象）&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;管状（胶囊）光源&lt;/td&gt;
+          &lt;td&gt;模拟荧光灯管&lt;/td&gt;
+          &lt;td&gt;Lambertian 表面可用 Picott 的封闭积分解；非 Lambertian 表面用代表性点技术叠加点光源&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;平面光源（卡片 / 圆盘 / 多边形）&lt;/td&gt;
+          &lt;td&gt;柔光箱、反光板、发光面板等&lt;/td&gt;
+          &lt;td&gt;- 简单近似：Drobot 的代表性点方法（找积分最大值附近的点）；- 精确解析：Arvo 的辐照度张量 + 轮廓积分（实时成本高）；- 实用优化：Lecocq 的 O (1) 轮廓积分近似&lt;/td&gt;
+      &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;h1 id=&#34;环境光照&#34;&gt;环境光照
+&lt;/h1&gt;&lt;p&gt;在实践中，通常我们会认为直接光具有较高的radiance和相对较小的立体角，而间接光往往会以中等或者较低的radiance，来覆盖半球方向上的其余部分。基于这种划分方式和理由，我们可以将二者&lt;strong&gt;分开进行处理&lt;/strong&gt;。&lt;/p&gt;
+&lt;h2 id=&#34;恒定环境光&#34;&gt;恒定环境光
+&lt;/h2&gt;&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;核心假设&lt;/strong&gt;：入射辐射度 $L_A$ 不随方向变化（全方向恒定），是最基础的环境光照模型。&lt;/p&gt;
+&lt;p&gt;对不同表面的贡献&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;Lambertian（漫反射）表面&lt;/li&gt;
+&lt;/ol&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;特点&lt;/strong&gt;：出射辐射度贡献恒定，与表面法线 $\mathbf{n}$ 和观察方向 $\mathbf{v}$ 无关。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;公式&lt;/strong&gt;：&lt;/li&gt;
+&lt;/ul&gt;
+$$
+  L_o(\mathbf{v}) = \rho_{\mathrm{ss}} L_A
+  $$&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;简化逻辑&lt;/strong&gt;：
+漫反射的 BRDF 为 $\frac{\rho_{\mathrm{ss}}}{\pi}$，半球积分为 $\int_{\Omega} (\mathbf{n} \cdot \mathbf{l}) d\mathbf{l} = \pi$，因此最终 $\frac{\rho_{\mathrm{ss}}}{\pi} \cdot L_A \cdot \pi = \rho_{\mathrm{ss}} L_A$。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;hr&gt;
+&lt;ol start=&#34;2&#34;&gt;
+&lt;li&gt;任意 BRDF 表面&lt;/li&gt;
+&lt;/ol&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;特点&lt;/strong&gt;：贡献依赖定向反照率 $R(\mathbf{v})$。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;定向反照率定义&lt;/strong&gt;：&lt;/li&gt;
+&lt;/ul&gt;
+$$
+  R(\mathbf{v}) = \int_{\Omega} f(\mathbf{l}, \mathbf{v}) (\mathbf{n} \cdot \mathbf{l}) \, d\mathbf{l}
+  $$&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;出射辐射度公式&lt;/strong&gt;：&lt;/li&gt;
+&lt;/ul&gt;
+$$
+  L_o(\mathbf{v}) = L_A \cdot R(\mathbf{v})
+  $$&lt;hr&gt;
+&lt;ol start=&#34;3&#34;&gt;
+&lt;li&gt;老版本简化（近似方案）&lt;/li&gt;
+&lt;/ol&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;假设&lt;/strong&gt;：定向反照率 $R(\mathbf{v})$ 为恒定值（称为环境颜色 $\mathbf{c}_{\mathrm{amb}}$）。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;公式&lt;/strong&gt;：&lt;/li&gt;
+&lt;/ul&gt;
+$$
+  L_o(\mathbf{v}) = \mathbf{c}_{\mathrm{amb}} \cdot L_A
+  $$&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;球面函数和半球函数&#34;&gt;球面函数和半球函数
+&lt;/h2&gt;&lt;p&gt;把环境光照 $L_A$ 视为一个常数，这意味着：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;每个方向来的光强都是相同的。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;但真实世界中并非如此。一个点从不同方向接收到的光强往往不同，例如：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;左边可能是红墙 → 红色光；&lt;/li&gt;
+&lt;li&gt;右边可能是绿树 → 绿色光；&lt;/li&gt;
+&lt;li&gt;上方可能被遮挡 → 几乎没有光。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;因此，要描述这种“&lt;strong&gt;方向依赖的入射辐射度（radiance）&lt;/strong&gt;”，我们需要一个定义在**方向空间（sphere）**上的函数。&lt;/p&gt;
+&lt;p&gt;我们把所有方向的集合记为：
+&lt;/p&gt;
+$$
+S = \{\omega \in \mathbb{R}^3 : ||\omega|| = 1\}
+$$&lt;p&gt;
+于是，一个方向依赖的入射辐射度可以写为：
+&lt;/p&gt;
+$$
+L_i(\omega) : S \rightarrow \mathbb{R}^+
+$$&lt;p&gt;
+它表示从方向 $\omega$ 入射的 radiance。&lt;/p&gt;
+&lt;p&gt;这个函数定义在球面上（而非位置上），因此叫&lt;strong&gt;球面函数（spherical function）&lt;/strong&gt;。&lt;/p&gt;
+&lt;p&gt;对于一个 Lambertian 表面，其出射辐射度与入射辐射度的关系是：
+&lt;/p&gt;
+$$
+L_o = \frac{\rho}{\pi} \int_{H(\mathbf{n})} L_i(\omega_i) (\mathbf{n} \cdot \omega_i) d\omega_i
+$$&lt;p&gt;
+其中：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;$H(\mathbf{n})$：法线方向上的半球；&lt;/li&gt;
+&lt;li&gt;$(\mathbf{n} \cdot \omega_i)$：余弦项；&lt;/li&gt;
+&lt;li&gt;这个积分就是&lt;strong&gt;radiance 与余弦波瓣的卷积&lt;/strong&gt;。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;因此，为了实时渲染，我们往往预计算：
+&lt;/p&gt;
+$$
+E(\mathbf{n}) = \int_{H(\mathbf{n})} L_i(\omega_i) (\mathbf{n} \cdot \omega_i) d\omega_i
+$$&lt;p&gt;
+并把它称为 &lt;strong&gt;irradiance function&lt;/strong&gt;，它是球面函数的卷积结果。预计算每个法线半球的irradiance。&lt;/p&gt;
+&lt;p&gt;球面函数是定义在球面上的连续函数，不可能直接存储。所以我们要找一种“基底”，用有限个系数表示它。这就类似于在平面上用傅立叶级数展开周期函数。&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;例如：
+$f(\omega) = \sum_{l,m} c_{lm} Y_{lm}(\omega)$，
+其中 $Y_{lm}$ 是&lt;strong&gt;球谐函数（Spherical Harmonics）&lt;/strong&gt;。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;这类基底称为：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;球面基底（Spherical Base）&lt;/strong&gt;&lt;/li&gt;
+&lt;li&gt;包括球谐函数、Haar 小波基、径向基、环境高光基底（AHD）等。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;投影（Projection）&lt;/strong&gt;：
+把函数 $L_i(\omega)$ 投影到基底空间，求出系数：
+&lt;/p&gt;
+$$
+c_{lm} = \int_S L_i(\omega) Y_{lm}(\omega) d\omega
+$$&lt;p&gt;
+&lt;strong&gt;重建（Reconstruction）&lt;/strong&gt;：
+通过这些系数恢复函数：
+&lt;/p&gt;
+$$
+\tilde{L_i}(\omega) = \sum_{l,m} c_{lm} Y_{lm}(\omega)
+$$&lt;blockquote&gt;
+&lt;p&gt;总结一下：一个定义在球面上的函数 $f(\omega)$，可以用一组球面基函数 $Y_l^m(\omega)$ 的线性组合来近似表示。
+你只需要计算保存这些线性组合的&lt;strong&gt;系数&lt;/strong&gt;，在任何方向上（角度）都可以通过这些系数 + 基函数重建出近似值。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h3 id=&#34;球面基底的简单表示形式&#34;&gt;球面基底的简单表示形式
+&lt;/h3&gt;&lt;ol&gt;
+&lt;li&gt;表格（采样点）表示球面函数&lt;/li&gt;
+&lt;/ol&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;方法&lt;/strong&gt;：直接在球面上选若干方向 $\omega_i$，存储每个方向上的函数值 $f(\omega_i)$。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;重建&lt;/strong&gt;：当需要某个方向 $\omega$ 的值时，找到附近的样本点，用插值（如双线性或三线性）求出近似值。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;优点&lt;/strong&gt;：
+&lt;ul&gt;
+&lt;li&gt;非常直观，易于理解和实现；&lt;/li&gt;
+&lt;li&gt;表征能力强，只要采样足够密集，几乎可以精确还原原函数；&lt;/li&gt;
+&lt;li&gt;函数相加/相乘简单：直接对对应采样点的值相加或相乘。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;缺点&lt;/strong&gt;：
+&lt;ul&gt;
+&lt;li&gt;样本少时重建误差大；&lt;/li&gt;
+&lt;li&gt;旋转不变性差（函数旋转后，插值结果可能不准确，导致闪烁或脉动瑕疵）；&lt;/li&gt;
+&lt;li&gt;高频函数需要大量样本，存储和计算量大；&lt;/li&gt;
+&lt;li&gt;卷积等操作复杂，计算成本和样本数量成正比。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;ol start=&#34;2&#34;&gt;
+&lt;li&gt;
+&lt;p&gt;环境立方体（Ambient Cube, AC）&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;思想&lt;/strong&gt;：用 6 个值（立方体六个面）表示球面函数。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;公式&lt;/strong&gt;：&lt;/li&gt;
+&lt;/ul&gt;
+$$
+   F_{AC}(\mathbf{d}) = \mathbf{d} \cdot \operatorname{sel}_+(\mathbf{c}_+, \mathbf{c}_-, \mathbf{d})
+   $$&lt;ul&gt;
+&lt;li&gt;$\mathbf{d}$ 是方向向量；&lt;/li&gt;
+&lt;li&gt;$\mathbf{c}&lt;em&gt;+$ 和 $\mathbf{c}&lt;/em&gt;-$ 是立方体六个面的值；&lt;/li&gt;
+&lt;li&gt;$\operatorname{sel}_+$ 根据方向的正负性选择对应面。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;特点&lt;/strong&gt;：
+&lt;ul&gt;
+&lt;li&gt;只需三个波瓣参与计算（x、y、z方向）；&lt;/li&gt;
+&lt;li&gt;在软件重建上可能比 GPU 双线性过滤更快；&lt;/li&gt;
+&lt;li&gt;精度低，但实现简单；&lt;/li&gt;
+&lt;li&gt;可以和球谐 SH 互相转换（Sloan 提供方法）。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;环境骰子（Ambient Dice, AD）：&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;ul&gt;
+&lt;li&gt;基底由二十面体顶点方向上的平方和四次余弦波瓣组成；&lt;/li&gt;
+&lt;li&gt;需要存储 12 个值中的 6 个来重建；&lt;/li&gt;
+&lt;li&gt;重建质量比环境立方体高，但逻辑稍复杂。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;球面基底&#34;&gt;球面基底
+&lt;/h3&gt;&lt;p&gt;基函数的一个例子。在这个例子中，输入值为0-5之间的一个数，函数会返回0-1之间一个值，左侧的图展示了这样一个函数。中间的图展示了一组基函数（每种颜色都代表了一个不同的基函数）。右图则展示了使用基函数来对目标函数的近似，通过将每个基函数乘以一个权重并将它们相加来完成这个近似。右图中的每个基函数都按照各自的权重进行了缩放，图中的黑色线条代表了基函数求和之后的结果，这是对原始函数的近似结果；图中灰色线条代表了原始函数，用于和近似函数进行比较。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/202306191318043.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;img&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;h4 id=&#34;球面径向基函数srbf&#34;&gt;球面径向基函数（SRBF）
+&lt;/h4&gt;&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;定义&lt;/strong&gt;：一类沿轴旋转对称的函数，只依赖于 &lt;strong&gt;方向之间的夹角&lt;/strong&gt;。
+&lt;ul&gt;
+&lt;li&gt;输入参数 = 方向 $\mathbf{v}$ 与波瓣方向 $\mathbf{d}$ 的夹角。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;构建方法&lt;/strong&gt;：
+&lt;ul&gt;
+&lt;li&gt;将球面覆盖上若干固定方向的“波瓣”（lobe）；&lt;/li&gt;
+&lt;li&gt;每个波瓣有大小/尖锐度参数；&lt;/li&gt;
+&lt;li&gt;函数值 = 所有波瓣在该方向上的值加权求和。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;优点&lt;/strong&gt;：
+&lt;ul&gt;
+&lt;li&gt;可以获得比双线性插值更高质量的重建；&lt;/li&gt;
+&lt;li&gt;可通过固定波瓣方向，简化投影（只需拟合权重）。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h4 id=&#34;球面高斯sg-spherical-gaussian&#34;&gt;球面高斯（SG, Spherical Gaussian）
+&lt;/h4&gt;&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;定义&lt;/strong&gt;：一种常用的 SRBF，类似 von Mises-Fisher 分布：&lt;/li&gt;
+&lt;/ul&gt;
+$$
+G(\mathbf{v}, \mathbf{d}, \lambda) = e^{\lambda(\mathbf{v} \cdot \mathbf{d}-1)}
+$$&lt;ul&gt;
+&lt;li&gt;$\mathbf{v}$：计算方向&lt;/li&gt;
+&lt;li&gt;$\mathbf{d}$：波瓣主方向&lt;/li&gt;
+&lt;li&gt;$\lambda$：尖锐度/扩散参数&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;球面函数表示&lt;/strong&gt;：&lt;/li&gt;
+&lt;/ul&gt;
+$$
+F_G(\mathbf{v}) = \sum_k w_k G(\mathbf{v}, \mathbf{d}_k, \lambda_k)
+$$&lt;ul&gt;
+&lt;li&gt;通过拟合 $w_k$ 来最小化重建误差。&lt;/li&gt;
+&lt;li&gt;如果波瓣方向和扩散参数固定，投影成基就简单 → 线性最小二乘法。&lt;/li&gt;
+&lt;li&gt;如果方向/扩散参数可变 → 非线性优化，难度大。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h4 id=&#34;球谐函数spherical-harmonicsh&#34;&gt;球谐函数（spherical harmonic，SH）
+&lt;/h4&gt;&lt;p&gt;球谐函数（spherical harmonic，SH）是球面上的一组正交的基函数。一组基函数的正交集（orthogonal set）具有如下特点：任意两个&lt;strong&gt;不同基函数之间的内积（inner product）为零&lt;/strong&gt;。内积是一个类似于点积的概念。两个向量之间的内积就是它们的点积，即各个分量对应相乘再相加的结果。我们可以类似地推导出&lt;strong&gt;两个函数的内积的定义&lt;/strong&gt;，即将这两个函数相乘再进行积分，其数学表达如下：&lt;/p&gt;
+$$
+\left\langle f_{i}(\mathbf{n}), f_{j}(\mathbf{n})\right\rangle \equiv \int_{\mathbf{n} \in \Theta} f_{i}(\mathbf{n}) f_{j}(\mathbf{n}) d \mathbf{n}
+$$&lt;blockquote&gt;
+&lt;p&gt;下面说的是为了说明什么是标准正交基，以及他的优势对比普通基底&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;标准正交集（orthonormal set）也是一个正交集，其附加条件是该集合中的任意一个函数与自身的内积都为1。更加正式的表述方式为，一组函数${f_j()}$是标准正交的条件是：&lt;/p&gt;
+$$
+\left\langle f_{i}(), f_{j}()\right\rangle=\left\{\begin{array}{ll}0, &amp; \text { where } i \neq j, \\ 1, &amp; \text { where } i=j .\end{array}\right.
+$$&lt;p&gt;
+展示了一个类似于图10.18的例子，不同之处在于，其中的基函数都是标准正交的。请注意，图10.20中的所展示的标准正交基函数都是互不重叠的，这个条件对于非负函数的标准正交集合是十分必要的，因为任何的重叠都意味着内积非零。而对于那些在部分范围内为负的基函数，则可以发生重叠，它们仍然可以形成标准正交集。这种重叠通常会得到更好的近似结果，因为它允许使用更加平滑的基底。而那些互不重叠的基函数，往往会导致近似结果的不连续性。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/202306191454474.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;img&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;标准正交基的优点在于，想要找到最接近目标函数的近似值十分简单。为了完成投影操作，每个基函数的权重系数都是目标函数$f_{\text {target }}() $与相应基函数的内积：&lt;/p&gt;
+$$
+\begin{array}{c}k_{j}=\left\langle f_{\text {target }}(), f_{j}()\right\rangle, \\[2mm]
+ f_{\text {target }}() \approx \sum_{j=1}^{n} k_{j} f_{j}() .\end{array}
+ \tag{10.23}
+$$&lt;p&gt;
+SH的基&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/202306191809330.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;img&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;SH 的特点&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;strong&gt;旋转不变性&lt;/strong&gt;：
+&lt;ul&gt;
+&lt;li&gt;基函数在旋转下有解析变换公式，旋转投影函数方便。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;计算成本低&lt;/strong&gt;：
+&lt;ul&gt;
+&lt;li&gt;基函数是 $x, y, z$ 坐标的多项式。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;全局支持&lt;/strong&gt;：
+&lt;ul&gt;
+&lt;li&gt;类似球面高斯，每个基函数影响球面上所有方向。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;频带排列&lt;/strong&gt;：
+&lt;ul&gt;
+&lt;li&gt;第 0 频带：常数函数&lt;/li&gt;
+&lt;li&gt;第 1 频带：线性函数&lt;/li&gt;
+&lt;li&gt;第 2 频带：二次函数&lt;/li&gt;
+&lt;li&gt;… → 低频分量变化慢，高频分量变化快&lt;/li&gt;
+&lt;li&gt;光照积分等低频函数可以用少量系数表示（比如 irradiance）。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;积分和乘积解析&lt;/strong&gt;：
+&lt;ul&gt;
+&lt;li&gt;两个函数在球面上的积分可以转化为它们系数的点积 → 高效计算光照积分。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h4 id=&#34;其他球面表示方法&#34;&gt;其他球面表示方法
+&lt;/h4&gt;&lt;p&gt;除了 SH，还有：&lt;/p&gt;
+&lt;table&gt;
+  &lt;thead&gt;
+      &lt;tr&gt;
+          &lt;th&gt;方法&lt;/th&gt;
+          &lt;th&gt;特点&lt;/th&gt;
+          &lt;th&gt;用途&lt;/th&gt;
+      &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+      &lt;tr&gt;
+          &lt;td&gt;线性变换余弦（LTC）&lt;/td&gt;
+          &lt;td&gt;近似 BRDF&lt;/td&gt;
+          &lt;td&gt;高效积分&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;球面小波（spherical wavelet）&lt;/td&gt;
+          &lt;td&gt;空间局部性 + 频率局部性&lt;/td&gt;
+          &lt;td&gt;高频函数压缩&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;球面分段常数基函数&lt;/td&gt;
+          &lt;td&gt;球面划分为常数区域&lt;/td&gt;
+          &lt;td&gt;环境光照表示&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;双聚类近似（biclustering）&lt;/td&gt;
+          &lt;td&gt;矩阵分解方法&lt;/td&gt;
+          &lt;td&gt;环境光照压缩&lt;/td&gt;
+      &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;h3 id=&#34;半球基底&#34;&gt;半球基底
+&lt;/h3&gt;&lt;p&gt;为什么要用半球基底&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;上节讲的 SH、球面高斯等基底都是定义在 &lt;strong&gt;整个球面&lt;/strong&gt; 上。&lt;/li&gt;
+&lt;li&gt;但是很多光照相关函数 &lt;strong&gt;天然只定义在半球&lt;/strong&gt;（例如 BRDF、入射辐照度、到达表面的光照），另一半球（向下）是零。&lt;/li&gt;
+&lt;li&gt;如果用全球基底来表示半球函数，会 &lt;strong&gt;浪费一半的表示能力&lt;/strong&gt;。&lt;/li&gt;
+&lt;li&gt;因此研究者提出了 &lt;strong&gt;直接在半球域上构造的基底&lt;/strong&gt;。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h4 id=&#34;ahd基底&#34;&gt;AHD基底
+&lt;/h4&gt;&lt;p&gt;最简单的半球表示方法：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;A：恒定环境光&lt;/li&gt;
+&lt;li&gt;H：高光方向光&lt;/li&gt;
+&lt;li&gt;D：入射光集中的方向&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;存储：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;8 个参数（2 个角度 + 6 个 RGB 颜色）&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;投影：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;非线性 → 通常先投影到 SH，再用最优方向确定余弦波瓣方向 → 最小二乘求权重&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;用途：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;表面 irrandiance 存储&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;游戏应用：《雷神之锤3》《使命召唤》&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h4 id=&#34;半条命2基底radiosity-normal-mapping&#34;&gt;半条命2基底（Radiosity Normal Mapping）
+&lt;/h4&gt;&lt;ul&gt;
+&lt;li&gt;用 3 个 &lt;strong&gt;互相垂直的基向量&lt;/strong&gt;表示半球函数&lt;/li&gt;
+&lt;li&gt;基向量在切线空间中：&lt;/li&gt;
+&lt;/ul&gt;
+$$
+\mathbf{m}_0, \mathbf{m}_1, \mathbf{m}_2
+$$&lt;ul&gt;
+&lt;li&gt;重建公式：&lt;/li&gt;
+&lt;/ul&gt;
+$$
+E(\mathbf{n}) = \frac{\sum_{k=0}^{2} \max(\mathbf{m}_k \cdot \mathbf{n}, 0)^2 E_k}{\sum_{k=0}^{2} \max(\mathbf{m}_k \cdot \mathbf{n}, 0)^2} \quad \text{(10.25)}
+$$&lt;ul&gt;
+&lt;li&gt;优化后可简化为线性加权形式：&lt;/li&gt;
+&lt;/ul&gt;
+$$
+E(\mathbf{n}) = \sum_{k=0}^{2} d_k E_k \quad \text{(10.27)}
+$$&lt;ul&gt;
+&lt;li&gt;特点：
+&lt;ul&gt;
+&lt;li&gt;存储少、计算快&lt;/li&gt;
+&lt;li&gt;可与法线贴图结合&lt;/li&gt;
+&lt;li&gt;实际效果优于低阶 SH&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h4 id=&#34;半球谐波--h-basis&#34;&gt;半球谐波 / H-Basis
+&lt;/h4&gt;&lt;p&gt;将 SH 特化到半球域：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;半球谐波（HSH）：类似 SH，但只定义在半球&lt;/li&gt;
+&lt;li&gt;可以使用 Zernike 多项式（单位圆盘上的正交函数）来表示半球函数&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;H-Basis（Habel）：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;混合部分球谐函数 + HSH&lt;/li&gt;
+&lt;li&gt;正交&lt;/li&gt;
+&lt;li&gt;计算效率较高&lt;/li&gt;
+&lt;li&gt;可以对系数向量进行矩阵运算完成旋转&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h1 id=&#34;环境映射&#34;&gt;环境映射
+&lt;/h1&gt;&lt;p&gt;将一个球面函数记录在一个或者多个图像中的做法，被称为环境映射（environment mapping）&lt;/p&gt;
+&lt;h2 id=&#34;经纬度映射&#34;&gt;经纬度映射
+&lt;/h2&gt;&lt;blockquote&gt;
+&lt;p&gt;就是把环境光贴图表达为经纬度采样，计算要采样方向的经纬度，去对应位置读取&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;&lt;strong&gt;起源&lt;/strong&gt;：1976年，Blinn 和 Newell 实现了第一个环境映射算法。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;原理&lt;/strong&gt;：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;把球面上的环境信息“展开”到二维纹理。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;类似地球上的经纬度系统：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;$\phi$（经度） → $[-π, π]$&lt;/li&gt;
+&lt;li&gt;$\rho$（纬度） → $[0, π]$&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;将反射向量 $\mathbf{r} = (r_x, r_y, r_z)$ 转换为球坐标：
+&lt;/p&gt;
+$$
+  \rho = \arccos(r_z), \quad 
+  \phi = \text{atan2}(r_y, r_x) \quad \text{(10.30)}
+  $$&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;用 $(\rho, \phi)$ 来访问纹理，获取环境颜色。&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;注意&lt;/strong&gt;：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;纬度-经度映射 ≠ Mercator 投影：
+&lt;ul&gt;
+&lt;li&gt;纬度-经度映射保持纬度线之间的距离恒定。&lt;/li&gt;
+&lt;li&gt;Mercator 投影在两极会极度拉伸。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;球面映射&#34;&gt;球面映射
+&lt;/h2&gt;&lt;p&gt;球面映射把环境光照记录在一个&lt;strong&gt;圆形纹理图像&lt;/strong&gt;中，就像在一个完全反射的球体上看到环境一样。这个纹理也称为&lt;strong&gt;光照探针（light probe）&lt;/strong&gt;，因为它捕捉了球体位置处的光照。&lt;/p&gt;
+&lt;p&gt;计算流程&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;固定观察向量&lt;/strong&gt; $\mathbf{v} = (0,0,1)$：
+球面贴图是在一个固定视角下拍摄或者生成的，反映了这个方向的环境信息。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;求半角向量&lt;/strong&gt; $\mathbf{n}$：
+反射观察向量 $\mathbf{r}$ 和原始观察向量 $\mathbf{v}$ 的和：
+&lt;/p&gt;
+$$
+   \mathbf{n} = \frac{(r_x, r_y, r_z + 1)}{\sqrt{r_x^2 + r_y^2 + (r_z + 1)^2}}
+   $$&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;映射到纹理坐标&lt;/strong&gt; $(u,v)$：
+&lt;/p&gt;
+$$
+   u = \frac{r_x}{2 m} + 0.5, \quad v = \frac{r_y}{2 m} + 0.5
+   $$&lt;ul&gt;
+&lt;li&gt;这里 $m = \sqrt{r_x^2 + r_y^2 + (r_z + 1)^2}$&lt;/li&gt;
+&lt;li&gt;将 $[-1,1]$ 范围映射到 $[0,1]$&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;纹理查找&lt;/strong&gt;：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;使用 $(u,v)$ 在球面贴图中查找对应的入射辐射 $L_i(\mathbf{r})$&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h2 id=&#34;立方体映射&#34;&gt;立方体映射
+&lt;/h2&gt;&lt;p&gt;将环境投影到以相机位置为中心的立方体六个面上，每个面90° FOV。&lt;/p&gt;
+&lt;p&gt;六张正方形纹理分别对应立方体的 +X、-X、+Y、-Y、+Z、-Z。&lt;/p&gt;
+&lt;p&gt;访问纹理时，直接用方向向量 $\mathbf{r}$ 指向哪个面，再根据面内坐标取值即可。 &lt;strong&gt;这个在LearnOpenGL中实现过&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/202306201605223.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;img&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;h1 id=&#34;基于图像的高光照明&#34;&gt;基于图像的高光照明
+&lt;/h1&gt;&lt;blockquote&gt;
+&lt;p&gt;这里讲的就是LearnOpenGL的IBL实现，高光就是反射的一个范围内都能接收到&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;环境映射最初是作为一种镜面渲染技术发展起来的，但是也可以将它扩展到光泽（glossy）反射中。当用于模拟无限远处光源的镜面效果时，这样的环境贴图也被称为高光探针（specular light probe）。（这里的镜面反射就是只有反射方向的颜色，光泽反射就是反射的一个范围内都能接收到）&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;先解释一下lobe是什么，lobe说的都是BRDF的lobe&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;对于一个 &lt;strong&gt;给定的入射方向&lt;/strong&gt; $\mathbf{l}$，BRDF $f_r(\mathbf{l}, \mathbf{v})$ 会定义出 &lt;strong&gt;所有出射方向&lt;/strong&gt; $\mathbf{v}$ 上的反射强度。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;**波瓣（lobe）**就是指这个方向空间中 &lt;strong&gt;反射值显著非零的区域&lt;/strong&gt;。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;理想镜面 → 波瓣无限尖锐，只在反射方向上非零。&lt;/li&gt;
+&lt;li&gt;光泽表面 → 波瓣稍宽，附近方向也有非零反射。&lt;/li&gt;
+&lt;li&gt;漫反射 → 波瓣非常宽，几乎整个半球都有非零反射。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;下图展示镜面和高光的区别&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/202306201747328.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;img&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;径向对称的镜面波瓣：反射方向在lobe中心&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-10-24-14.46.40.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-10-24 14.46.40&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;径向对称的镜面波瓣是一种渲染的假设，但会存在地平线裁剪问题&lt;/p&gt;
+&lt;p&gt;对于上边这种情况，观察球的表面时lobe会被地平线裁剪，这时候经径向对称的镜面波瓣假设是错的，会让表面高光过亮&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/202306201853156.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;img&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;环境贴图 + mipmap 模拟粗糙度&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Heidrich 和 Seidel 方法&lt;/strong&gt;：用一个环境贴图来模拟表面模糊反射。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;粗糙度的处理&lt;/strong&gt;：
+&lt;ul&gt;
+&lt;li&gt;环境立方体贴图生成多级 mipmap。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;低级别 mipmap&lt;/strong&gt;：高分辨率，对应光滑表面（高光尖锐）。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;高级别 mipmap&lt;/strong&gt;：低分辨率，对应粗糙表面（高光模糊）。&lt;/li&gt;
+&lt;li&gt;渲染时，通过 &lt;strong&gt;反射向量索引贴图&lt;/strong&gt; 并选择对应 mipmap 层，实现不同粗糙度的反射。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;blockquote&gt;
+&lt;p&gt;图10.36显示了不同粗糙度波瓣对应的 mipmap 层级及渲染结果。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h2 id=&#34;卷积环境贴图&#34;&gt;卷积环境贴图
+&lt;/h2&gt;&lt;p&gt;想要生成预过滤的环境贴图意味着，要对与方向$\mathbf{v}$相关的每个纹素上，计算环境radiance与镜面波瓣$D$的积分：&lt;/p&gt;
+$$
+\int_{\Omega} D(\mathbf{l}, \mathbf{v}) L_{i}(\mathbf{l}) d \mathbf{l}.
+$$&lt;p&gt;这个积分是一个球面卷积（spherical convolution），由于其中的$L_i$只能通过环境贴图的表格形式获得，因此这个积分通常无法解析求解，只能通过数值方法进行求解。一种流行的数值方法是采用蒙特卡罗方法：&lt;/p&gt;
+$$
+\int_{\Omega} D(\mathbf{l}, \mathbf{v}) L_{i}(\mathbf{l}) d \mathbf{l} \approx \lim _{N \rightarrow \infty} \frac{1}{N} \sum_{k=1}^{N} \frac{D\left(\mathbf{l}_{k}, \mathbf{v}\right) L_{i}\left(\mathbf{l}_{k}\right)}{p\left(\mathbf{l}_{k}, \mathbf{v}\right)}
+\tag{10.36}
+$$&lt;p&gt;
+蒙特卡罗积分&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;通过随机采样球面方向近似积分：
+&lt;/p&gt;
+$$
+  \int_\Omega D(\mathbf{l}, \mathbf{v}) L_i(\mathbf{l}) \, d\mathbf{l} \approx \frac{1}{N} \sum_{k=1}^{N} \frac{D(\mathbf{l}_k, \mathbf{v}) L_i(\mathbf{l}_k)}{p(\mathbf{l}_k, \mathbf{v})}
+  $$&lt;ul&gt;
+&lt;li&gt;$\mathbf{l}_k$ 是球面样本方向&lt;/li&gt;
+&lt;li&gt;$p(\mathbf{l}_k, \mathbf{v})$ 是采样概率密度&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;问题&lt;/strong&gt;：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;高光波瓣很尖，很多样本 $D(\mathbf{l}_k, \mathbf{v})\approx 0$ → 浪费计算&lt;/li&gt;
+&lt;li&gt;第一级 mipmap（高分辨率，低粗糙度）尤其慢&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;hr&gt;
+&lt;p&gt;重要性采样（Importance Sampling）&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;通过选择采样概率 $p(\mathbf{l}_k, \mathbf{v})$ 更贴近波瓣形状&lt;/li&gt;
+&lt;li&gt;减少无效样本，降低方差&lt;/li&gt;
+&lt;li&gt;可以结合 &lt;strong&gt;环境贴图的 radiance 分布&lt;/strong&gt; 和镜面波瓣进一步优化&lt;/li&gt;
+&lt;li&gt;适合 &lt;strong&gt;离线渲染&lt;/strong&gt; 或生成 ground-truth 数据&lt;/li&gt;
+&lt;/ul&gt;
+&lt;hr&gt;
+&lt;p&gt;用锥形 / 区域采样降低方差&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;不用单点采样，而是用 &lt;strong&gt;锥形区域&lt;/strong&gt; 样本代替一个方向&lt;/li&gt;
+&lt;li&gt;可以对应 mipmap 层级进行近似&lt;/li&gt;
+&lt;li&gt;会引入偏差，但显著降低样本数，甚至可以 &lt;strong&gt;GPU 实时计算&lt;/strong&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;示例技术&lt;/strong&gt;：
+&lt;ul&gt;
+&lt;li&gt;McGuire 等人：实时近似卷积，通过混合不同 mipmap 层级来重建波瓣&lt;/li&gt;
+&lt;li&gt;Hensley 等人：使用 SAT（前缀和）加速积分&lt;/li&gt;
+&lt;li&gt;Kautz / Manson &amp;amp; Sloan：B 样条滤波生成 mipmap，提高精度与速度&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;缺点&lt;/strong&gt;：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;忽略了 shadowing-masking 和半向量菲涅尔。&lt;/li&gt;
+&lt;li&gt;仅适合粗略镜面近似或 Phong 模型。&lt;/li&gt;
+&lt;li&gt;会产生误差，如地平线裁剪或掠射角下波瓣尖锐变化&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;split-sum&#34;&gt;split-sum
+&lt;/h3&gt;&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;改进&lt;/strong&gt;：将镜面环境光积分拆分为两个部分：
+&lt;ol&gt;
+&lt;li&gt;&lt;strong&gt;环境光卷积&lt;/strong&gt;：波瓣 $D$ 与环境光 $L_i$ 的积分，依赖于反射方向和粗糙度，可预计算到立方体贴图 mipmap。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;半球定向反射率 $R_\text{spec}$&lt;/strong&gt;：包含 BRDF 权重（菲涅尔、shadowing-masking），依赖于视角、粗糙度，可预计算到二维或三维查找表。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/li&gt;
+&lt;li&gt;优势：
+&lt;ul&gt;
+&lt;li&gt;对任意微表面 BRDF 都适用，不只是 Phong。&lt;/li&gt;
+&lt;li&gt;运行时快速查表即可获得高光结果。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;注意：
+&lt;ul&gt;
+&lt;li&gt;假设波瓣径向对称（仍会有误差）。&lt;/li&gt;
+&lt;li&gt;可以通过轻微调整查询方向来补偿半球裁剪误差。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;不对称和各向异性波瓣&#34;&gt;不对称和各向异性波瓣
+&lt;/h3&gt;&lt;p&gt;传统预过滤环境贴图的假设&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;早期方法（如 10.5.1）假设&lt;strong&gt;镜面波瓣是径向对称&lt;/strong&gt;，仅依赖于反射向量。&lt;/li&gt;
+&lt;li&gt;这种方法在 Phong 或简单各向同性 BRDF 下有效。&lt;/li&gt;
+&lt;li&gt;波瓣的径向对称意味着：
+&lt;ul&gt;
+&lt;li&gt;波瓣围绕反射向量旋转时，形状不变。&lt;/li&gt;
+&lt;li&gt;高光大小只由粗糙度决定，与光线方向旋转无关。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;hr&gt;
+&lt;p&gt;微表面 BRDF 的复杂性&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;微表面 BRDF（如 GGX）是围绕&lt;strong&gt;半向量 $\mathbf{h}=(\mathbf{l}+\mathbf{v})/|\mathbf{l}+\mathbf{v}|$&lt;/strong&gt; 定义的。&lt;/li&gt;
+&lt;li&gt;半向量依赖入射方向 $\mathbf{l}$，环境光下 $\mathbf{l}$ 并不唯一。&lt;/li&gt;
+&lt;li&gt;因此即便各向同性，也&lt;strong&gt;无法满足反射向量径向对称&lt;/strong&gt;。&lt;/li&gt;
+&lt;li&gt;直接将微表面 BRDF 转换为径向对称波瓣会引入较大误差（高光形状偏离真实情况，尤其在掠射视角）。
+&lt;ul&gt;
+&lt;li&gt;图10.38 显示 GGX 原生波瓣（红） vs. 径向对称近似波瓣（绿），差异明显。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;改进方法&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;Kautz &amp;amp; McCool&lt;/strong&gt;：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;使用单个最佳样本拟合 BRDF，而不是恒定修正因子。&lt;/li&gt;
+&lt;li&gt;对多个样本平均，近似半向量模型的拉伸高光。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;ul&gt;
+&lt;li&gt;引入能量修正因子，补偿径向对称近似的能量损失。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;Iwanicki &amp;amp; Pesce&lt;/strong&gt;：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;对 GGX BRDF 做环境立方体贴图近似，利用 Nelder-Mead 最小化优化样本位置。&lt;/li&gt;
+&lt;li&gt;可以结合 GPU 各向异性过滤加速采样。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;Revie / McAuley&lt;/strong&gt;：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;在延迟渲染和毛皮渲染中，调整单个样本位置以匹配复杂 BRDF 峰值。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;McAllister / Lafortune BRDF&lt;/strong&gt;：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;利用 Lafortune BRDF（多个广义 Phong 波瓣叠加）表达复杂材质。&lt;/li&gt;
+&lt;li&gt;依然可以用传统预过滤环境贴图和 mipmap 编码不同 Phong 指数。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h1 id=&#34;irradiance环境映射&#34;&gt;irradiance环境映射
+&lt;/h1&gt;&lt;p&gt;上一小节中我们讨论了如何使用预过滤环境贴图来实现光泽反射，这些贴图同样也可以用于实现漫反射&lt;/p&gt;
+&lt;p&gt;计算irradiance环境贴图的过程。在原始环境纹理（本例中是一个立方体贴图）中对表面法线周围的余弦加权半球进行采样，并对采样结果进行求和，从而获得与视图无关的irradiance。图中绿色的方块代表了立方体贴图的横截面，红色的虚线代表了纹素之间的边界。这里使用的是一个立方体贴图，但实际上任何环境表示都是可以使用的。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/202306211248385.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;img&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;h2 id=&#34;球谐irradiance&#34;&gt;球谐irradiance
+&lt;/h2&gt;&lt;p&gt;&lt;strong&gt;漫反射光照低频&lt;/strong&gt;：irradiance 随表面法线变化平滑，适合用低阶 SH 表示。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;低阶 SH 足够&lt;/strong&gt;：前 9 个系数（每个 RGB 通道）就能表示环境光，误差约 1%；间接光照甚至只需 4 个系数（12 个浮点数）。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;卷积方法高效&lt;/strong&gt;：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;从 radiance 贴图计算 irradiance 实际上是与 clamped 余弦函数卷积。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;卷积在 SH 空间中可通过系数相乘快速完成：
+&lt;/p&gt;
+$$
+  k_{E j} = k_{\cos^+ j}&#39; \, k_{L j}
+  $$&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;$k_{L j}$ 是 radiance 的 SH 系数，$k_{\cos^+ j}&amp;rsquo;$ 是 clamped 余弦函数系数的缩放&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;紧凑&lt;/strong&gt;：比立方体贴图或抛物线贴图节省存储。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;高效&lt;/strong&gt;：渲染时可通过多项式计算重建 irradiance，而无需纹理采样。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;动态光源支持&lt;/strong&gt;：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;新光源的 SH 系数可以累加到已有 SH 系数中，无需重算整个贴图。&lt;/li&gt;
+&lt;li&gt;点光源、圆盘光源、球光源等均有解析 SH 表达式，可快速叠加。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;其他方法&#34;&gt;其他方法
+&lt;/h2&gt;&lt;table&gt;
+  &lt;thead&gt;
+      &lt;tr&gt;
+          &lt;th&gt;方法&lt;/th&gt;
+          &lt;th&gt;特点&lt;/th&gt;
+          &lt;th&gt;优缺点&lt;/th&gt;
+      &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;strong&gt;半球光照（hemisphere lighting）&lt;/strong&gt;&lt;/td&gt;
+          &lt;td&gt;使用天空颜色 $L_{sky}$ 和地面颜色 $L_{ground}$ 两种均匀radiance表示上半球和下半球&lt;/td&gt;
+          &lt;td&gt;简单、存储少、计算快；精度低&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;strong&gt;环境立方体（ambient cube）&lt;/strong&gt;&lt;/td&gt;
+          &lt;td&gt;将半球光照扩展为6个方向的立方体&lt;/td&gt;
+          &lt;td&gt;较SH更直观，可用于快速计算；存储略大&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;strong&gt;球面高斯函数&lt;/strong&gt;&lt;/td&gt;
+          &lt;td&gt;对irradiance使用旋转对称的高斯函数表示&lt;/td&gt;
+          &lt;td&gt;平滑，适合低频光照&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;strong&gt;H-basis&lt;/strong&gt;&lt;/td&gt;
+          &lt;td&gt;只能表示一个半球方向&lt;/td&gt;
+          &lt;td&gt;有局限，法线向下时不可用&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;strong&gt;SH（球谐函数）&lt;/strong&gt;&lt;/td&gt;
+          &lt;td&gt;低频光照的紧凑表示，可做卷积、动态光源累加&lt;/td&gt;
+          &lt;td&gt;高频光照不足，振铃现象存在&lt;/td&gt;
+      &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+</description>
+        </item>
+        <item>
         <title>Physically Based Shading(2) 基于物理的着色</title>
         <link>https://sdpyy1.github.io/p/physically-based-shading2-%E5%9F%BA%E4%BA%8E%E7%89%A9%E7%90%86%E7%9A%84%E7%9D%80%E8%89%B2/</link>
         <pubDate>Mon, 20 Oct 2025 13:29:19 +0800</pubDate>
