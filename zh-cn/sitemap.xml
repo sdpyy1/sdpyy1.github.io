@@ -2,6 +2,22 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
+    <loc>https://sdpyy1.github.io/</loc>
+    <lastmod>2025-10-22T14:19:43+08:00</lastmod>
+    <xhtml:link
+                rel="alternate"
+                hreflang="en"
+                href="https://sdpyy1.github.io/en/"
+                />
+    <xhtml:link
+                rel="alternate"
+                hreflang="zh-cn"
+                href="https://sdpyy1.github.io/"
+                />
+  </url><url>
+    <loc>https://sdpyy1.github.io/post/</loc>
+    <lastmod>2025-10-22T14:19:43+08:00</lastmod>
+  </url><url>
     <loc>https://sdpyy1.github.io/categories/</loc>
     <lastmod>2025-10-21T20:11:16+08:00</lastmod>
     <xhtml:link
@@ -19,22 +35,6 @@
     <lastmod>2025-10-21T20:11:16+08:00</lastmod>
   </url><url>
     <loc>https://sdpyy1.github.io/tags/hazel/</loc>
-    <lastmod>2025-10-21T20:11:16+08:00</lastmod>
-  </url><url>
-    <loc>https://sdpyy1.github.io/</loc>
-    <lastmod>2025-10-21T20:11:16+08:00</lastmod>
-    <xhtml:link
-                rel="alternate"
-                hreflang="en"
-                href="https://sdpyy1.github.io/en/"
-                />
-    <xhtml:link
-                rel="alternate"
-                hreflang="zh-cn"
-                href="https://sdpyy1.github.io/"
-                />
-  </url><url>
-    <loc>https://sdpyy1.github.io/post/</loc>
     <lastmod>2025-10-21T20:11:16+08:00</lastmod>
   </url><url>
     <loc>https://sdpyy1.github.io/categories/projects/</loc>
@@ -133,6 +133,9 @@
   </url><url>
     <loc>https://sdpyy1.github.io/p/openglrender%E5%BC%80%E5%8F%91%E8%AE%B0%E5%BD%952%E9%98%B4%E5%BD%B1shadowmappcfpcss/</loc>
     <lastmod>2025-10-19T14:19:37+08:00</lastmod>
+  </url><url>
+    <loc>https://sdpyy1.github.io/p/openglrender%E5%BC%80%E5%8F%91%E8%AE%B0%E5%BD%951%E5%9F%BA%E4%BA%8E%E5%9B%BE%E5%83%8F%E7%9A%84%E5%85%89%E7%85%A7ibl/</loc>
+    <lastmod>2025-10-19T14:13:50+08:00</lastmod>
   </url><url>
     <loc>https://sdpyy1.github.io/categories/assignment/</loc>
     <lastmod>2025-10-19T14:05:15+08:00</lastmod>
