@@ -1,6 +1,6 @@
 +++
 date = '2025-10-19T14:13:50+08:00'
-draft = true
+draft = false
 title = 'OpenGLRender开发记录（1）：基于图像的光照（IBL）'
 categories = ["Projects/OpenGLRender"]
 tags = ["渲染器开发","OpenGLRender","OpenGL"]
