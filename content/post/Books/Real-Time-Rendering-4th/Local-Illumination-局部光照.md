@@ -1,6 +1,6 @@
 +++
 date = '2025-10-22T14:19:43+08:00'
-draft = true
+draft = false
 title = 'Local Illumination 局部光照'
 categories = ["Books/Real-Time Rendering 4th"]
 tags = ["看书笔记","实时渲染","Real-Time Rendering 4th"]
