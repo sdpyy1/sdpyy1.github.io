@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+    <channel>
+        <title>渲染管线 on wanfeng</title>
+        <link>https://sdpyy1.github.io/tags/%E6%B8%B2%E6%9F%93%E7%AE%A1%E7%BA%BF/</link>
+        <description>Recent content in 渲染管线 on wanfeng</description>
+        <generator>Hugo -- gohugo.io</generator>
+        <language>zh-cn</language>
+        <copyright>爱喝东方树叶</copyright>
+        <lastBuildDate>Sat, 25 Oct 2025 20:49:55 +0800</lastBuildDate><atom:link href="https://sdpyy1.github.io/tags/%E6%B8%B2%E6%9F%93%E7%AE%A1%E7%BA%BF/index.xml" rel="self" type="application/rss+xml" /><item>
+        <title>游戏引擎开发实践（阴影篇）</title>
+        <link>https://sdpyy1.github.io/p/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E5%BC%80%E5%8F%91%E5%AE%9E%E8%B7%B5%E9%98%B4%E5%BD%B1%E7%AF%87/</link>
+        <pubDate>Sat, 25 Oct 2025 20:49:55 +0800</pubDate>
+        
+        <guid>https://sdpyy1.github.io/p/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E5%BC%80%E5%8F%91%E5%AE%9E%E8%B7%B5%E9%98%B4%E5%BD%B1%E7%AF%87/</guid>
+        <description>&lt;blockquote&gt;
+&lt;p&gt;在OpenGL渲染器中已经实现了硬阴影以及PCF，PCSS，在这里再引入级联阴影&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h1 id=&#34;级联阴影&#34;&gt;级联阴影
+&lt;/h1&gt;</description>
+        </item>
+        
+    </channel>
+</rss>

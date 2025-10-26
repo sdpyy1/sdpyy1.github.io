@@ -7,7 +7,19 @@
         <generator>Hugo -- gohugo.io</generator>
         <language>zh-cn</language>
         <copyright>爱喝东方树叶</copyright>
-        <lastBuildDate>Tue, 21 Oct 2025 20:11:16 +0800</lastBuildDate><atom:link href="https://sdpyy1.github.io/tags/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E/index.xml" rel="self" type="application/rss+xml" /><item>
+        <lastBuildDate>Sat, 25 Oct 2025 20:49:55 +0800</lastBuildDate><atom:link href="https://sdpyy1.github.io/tags/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E/index.xml" rel="self" type="application/rss+xml" /><item>
+        <title>游戏引擎开发实践（阴影篇）</title>
+        <link>https://sdpyy1.github.io/p/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E5%BC%80%E5%8F%91%E5%AE%9E%E8%B7%B5%E9%98%B4%E5%BD%B1%E7%AF%87/</link>
+        <pubDate>Sat, 25 Oct 2025 20:49:55 +0800</pubDate>
+        
+        <guid>https://sdpyy1.github.io/p/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E5%BC%80%E5%8F%91%E5%AE%9E%E8%B7%B5%E9%98%B4%E5%BD%B1%E7%AF%87/</guid>
+        <description>&lt;blockquote&gt;
+&lt;p&gt;在OpenGL渲染器中已经实现了硬阴影以及PCF，PCSS，在这里再引入级联阴影&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h1 id=&#34;级联阴影&#34;&gt;级联阴影
+&lt;/h1&gt;</description>
+        </item>
+        <item>
         <title>游戏引擎开发实践（实例化渲染）</title>
         <link>https://sdpyy1.github.io/p/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E5%BC%80%E5%8F%91%E5%AE%9E%E8%B7%B5%E5%AE%9E%E4%BE%8B%E5%8C%96%E6%B8%B2%E6%9F%93/</link>
         <pubDate>Tue, 21 Oct 2025 20:11:16 +0800</pubDate>

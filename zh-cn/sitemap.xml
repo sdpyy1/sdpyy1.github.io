@@ -2,11 +2,8 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
-    <loc>https://sdpyy1.github.io/categories/books/</loc>
-    <lastmod>2025-10-22T14:19:43+08:00</lastmod>
-  </url><url>
     <loc>https://sdpyy1.github.io/categories/</loc>
-    <lastmod>2025-10-22T14:19:43+08:00</lastmod>
+    <lastmod>2025-10-25T20:49:55+08:00</lastmod>
     <xhtml:link
                 rel="alternate"
                 hreflang="en"
@@ -18,8 +15,14 @@
                 href="https://sdpyy1.github.io/categories/"
                 />
   </url><url>
+    <loc>https://sdpyy1.github.io/categories/projects/gameengine/</loc>
+    <lastmod>2025-10-25T20:49:55+08:00</lastmod>
+  </url><url>
+    <loc>https://sdpyy1.github.io/tags/hazel/</loc>
+    <lastmod>2025-10-25T20:49:55+08:00</lastmod>
+  </url><url>
     <loc>https://sdpyy1.github.io/</loc>
-    <lastmod>2025-10-22T14:19:43+08:00</lastmod>
+    <lastmod>2025-10-25T20:49:55+08:00</lastmod>
     <xhtml:link
                 rel="alternate"
                 hreflang="en"
@@ -31,20 +34,14 @@
                 href="https://sdpyy1.github.io/"
                 />
   </url><url>
-    <loc>https://sdpyy1.github.io/p/local-illumination-%E5%B1%80%E9%83%A8%E5%85%89%E7%85%A7/</loc>
-    <lastmod>2025-10-22T14:19:43+08:00</lastmod>
-  </url><url>
     <loc>https://sdpyy1.github.io/post/</loc>
-    <lastmod>2025-10-22T14:19:43+08:00</lastmod>
+    <lastmod>2025-10-25T20:49:55+08:00</lastmod>
   </url><url>
-    <loc>https://sdpyy1.github.io/categories/books/real-time-rendering-4th/</loc>
-    <lastmod>2025-10-22T14:19:43+08:00</lastmod>
-  </url><url>
-    <loc>https://sdpyy1.github.io/tags/real-time-rendering-4th/</loc>
-    <lastmod>2025-10-22T14:19:43+08:00</lastmod>
+    <loc>https://sdpyy1.github.io/categories/projects/</loc>
+    <lastmod>2025-10-25T20:49:55+08:00</lastmod>
   </url><url>
     <loc>https://sdpyy1.github.io/tags/</loc>
-    <lastmod>2025-10-22T14:19:43+08:00</lastmod>
+    <lastmod>2025-10-25T20:49:55+08:00</lastmod>
     <xhtml:link
                 rel="alternate"
                 hreflang="en"
@@ -56,28 +53,37 @@
                 href="https://sdpyy1.github.io/tags/"
                 />
   </url><url>
+    <loc>https://sdpyy1.github.io/tags/vulkan/</loc>
+    <lastmod>2025-10-25T20:49:55+08:00</lastmod>
+  </url><url>
+    <loc>https://sdpyy1.github.io/tags/%E6%B8%B2%E6%9F%93%E7%AE%A1%E7%BA%BF/</loc>
+    <lastmod>2025-10-25T20:49:55+08:00</lastmod>
+  </url><url>
+    <loc>https://sdpyy1.github.io/tags/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E/</loc>
+    <lastmod>2025-10-25T20:49:55+08:00</lastmod>
+  </url><url>
+    <loc>https://sdpyy1.github.io/p/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E5%BC%80%E5%8F%91%E5%AE%9E%E8%B7%B5%E9%98%B4%E5%BD%B1%E7%AF%87/</loc>
+    <lastmod>2025-10-25T20:49:55+08:00</lastmod>
+  </url><url>
+    <loc>https://sdpyy1.github.io/categories/books/</loc>
+    <lastmod>2025-10-22T14:19:43+08:00</lastmod>
+  </url><url>
+    <loc>https://sdpyy1.github.io/p/local-illumination-%E5%B1%80%E9%83%A8%E5%85%89%E7%85%A7/</loc>
+    <lastmod>2025-10-22T14:19:43+08:00</lastmod>
+  </url><url>
+    <loc>https://sdpyy1.github.io/categories/books/real-time-rendering-4th/</loc>
+    <lastmod>2025-10-22T14:19:43+08:00</lastmod>
+  </url><url>
+    <loc>https://sdpyy1.github.io/tags/real-time-rendering-4th/</loc>
+    <lastmod>2025-10-22T14:19:43+08:00</lastmod>
+  </url><url>
     <loc>https://sdpyy1.github.io/tags/%E7%9C%8B%E4%B9%A6%E7%AC%94%E8%AE%B0/</loc>
     <lastmod>2025-10-22T14:19:43+08:00</lastmod>
   </url><url>
     <loc>https://sdpyy1.github.io/tags/%E5%AE%9E%E6%97%B6%E6%B8%B2%E6%9F%93/</loc>
     <lastmod>2025-10-22T14:19:43+08:00</lastmod>
   </url><url>
-    <loc>https://sdpyy1.github.io/categories/projects/gameengine/</loc>
-    <lastmod>2025-10-21T20:11:16+08:00</lastmod>
-  </url><url>
-    <loc>https://sdpyy1.github.io/tags/hazel/</loc>
-    <lastmod>2025-10-21T20:11:16+08:00</lastmod>
-  </url><url>
-    <loc>https://sdpyy1.github.io/categories/projects/</loc>
-    <lastmod>2025-10-21T20:11:16+08:00</lastmod>
-  </url><url>
-    <loc>https://sdpyy1.github.io/tags/vulkan/</loc>
-    <lastmod>2025-10-21T20:11:16+08:00</lastmod>
-  </url><url>
     <loc>https://sdpyy1.github.io/tags/%E6%B8%B2%E6%9F%93%E6%9E%B6%E6%9E%84/</loc>
-    <lastmod>2025-10-21T20:11:16+08:00</lastmod>
-  </url><url>
-    <loc>https://sdpyy1.github.io/tags/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E/</loc>
     <lastmod>2025-10-21T20:11:16+08:00</lastmod>
   </url><url>
     <loc>https://sdpyy1.github.io/p/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E5%BC%80%E5%8F%91%E5%AE%9E%E8%B7%B5%E5%AE%9E%E4%BE%8B%E5%8C%96%E6%B8%B2%E6%9F%93/</loc>
