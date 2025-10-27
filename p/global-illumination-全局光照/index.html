@@ -1,0 +1,1830 @@
+<!DOCTYPE html>
+<html lang="zh-cn" dir="ltr">
+    <head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'>
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+  <meta name="referrer" content="no-referrer-when-downgrade"><meta name='description' content="渲染过程最终计算的是radiance，到目前为止，我们一直在使用反射方程（reflectance equation）来对其进行计算：\n$$ L_{o}(\\mathbf{p}, \\mathbf{v})=\\int_{\\mathbf{l} \\in \\Omega} f(\\mathbf{l}, \\mathbf{v}) L_{i}(\\mathbf{p}, \\mathbf{l})(\\mathbf{n} \\cdot \\mathbf{l})^{+} d \\mathbf{l} \\tag{11.1} $$其中$L_{o}(\\mathbf{p}, \\mathbf{v})$是表面位置$\\mathbf{p}$在观察方向$\\mathbf{v}$上的出射radiance；$\\Omega$是表面位置$\\mathbf{p}$的上半球范围；$f(\\mathbf{l}, \\mathbf{v})$是观察方向$\\mathbf{v}$和当前光线入射方向$\\mathbf{l}$上的BRDF；$L_{i}(\\mathbf{p}, \\mathbf{l})$是从光线方向$\\mathbf{l}$到达表面位置$\\mathbf{p}$的入射radiance；$(\\mathbf{n} \\cdot \\mathbf{l})^{+}$是光线方向$\\mathbf{l}$和表面法线$\\mathbf{n}$之间的点积，并将负数结果clamp到0，即将来自表面下方的光线过滤掉。\n">
+<title>Global Illumination 全局光照</title>
+
+<link rel='canonical' href='https://sdpyy1.github.io/p/global-illumination-%E5%85%A8%E5%B1%80%E5%85%89%E7%85%A7/'>
+
+<link rel="stylesheet" href="/scss/style.min.6a692fd055deae459f2a9767f57f3855ba80cafd5041317f24f7360f6ca47cdf.css"><meta property='og:title' content="Global Illumination 全局光照">
+<meta property='og:description' content="渲染过程最终计算的是radiance，到目前为止，我们一直在使用反射方程（reflectance equation）来对其进行计算：\n$$ L_{o}(\\mathbf{p}, \\mathbf{v})=\\int_{\\mathbf{l} \\in \\Omega} f(\\mathbf{l}, \\mathbf{v}) L_{i}(\\mathbf{p}, \\mathbf{l})(\\mathbf{n} \\cdot \\mathbf{l})^{+} d \\mathbf{l} \\tag{11.1} $$其中$L_{o}(\\mathbf{p}, \\mathbf{v})$是表面位置$\\mathbf{p}$在观察方向$\\mathbf{v}$上的出射radiance；$\\Omega$是表面位置$\\mathbf{p}$的上半球范围；$f(\\mathbf{l}, \\mathbf{v})$是观察方向$\\mathbf{v}$和当前光线入射方向$\\mathbf{l}$上的BRDF；$L_{i}(\\mathbf{p}, \\mathbf{l})$是从光线方向$\\mathbf{l}$到达表面位置$\\mathbf{p}$的入射radiance；$(\\mathbf{n} \\cdot \\mathbf{l})^{+}$是光线方向$\\mathbf{l}$和表面法线$\\mathbf{n}$之间的点积，并将负数结果clamp到0，即将来自表面下方的光线过滤掉。\n">
+<meta property='og:url' content='https://sdpyy1.github.io/p/global-illumination-%E5%85%A8%E5%B1%80%E5%85%89%E7%85%A7/'>
+<meta property='og:site_name' content='wanfeng'>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='看书笔记' /><meta property='article:tag' content='实时渲染' /><meta property='article:tag' content='Real-Time Rendering 4th' /><meta property='article:published_time' content='2025-10-25T13:59:45&#43;08:00'/><meta property='article:modified_time' content='2025-10-25T13:59:45&#43;08:00'/><meta property='og:image' content='https://sdpyy1.github.io/202307031150341.png' />
+<meta name="twitter:title" content="Global Illumination 全局光照">
+<meta name="twitter:description" content="渲染过程最终计算的是radiance，到目前为止，我们一直在使用反射方程（reflectance equation）来对其进行计算：\n$$ L_{o}(\\mathbf{p}, \\mathbf{v})=\\int_{\\mathbf{l} \\in \\Omega} f(\\mathbf{l}, \\mathbf{v}) L_{i}(\\mathbf{p}, \\mathbf{l})(\\mathbf{n} \\cdot \\mathbf{l})^{+} d \\mathbf{l} \\tag{11.1} $$其中$L_{o}(\\mathbf{p}, \\mathbf{v})$是表面位置$\\mathbf{p}$在观察方向$\\mathbf{v}$上的出射radiance；$\\Omega$是表面位置$\\mathbf{p}$的上半球范围；$f(\\mathbf{l}, \\mathbf{v})$是观察方向$\\mathbf{v}$和当前光线入射方向$\\mathbf{l}$上的BRDF；$L_{i}(\\mathbf{p}, \\mathbf{l})$是从光线方向$\\mathbf{l}$到达表面位置$\\mathbf{p}$的入射radiance；$(\\mathbf{n} \\cdot \\mathbf{l})^{+}$是光线方向$\\mathbf{l}$和表面法线$\\mathbf{n}$之间的点积，并将负数结果clamp到0，即将来自表面下方的光线过滤掉。\n"><meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content='https://sdpyy1.github.io/202307031150341.png' />
+    <link rel="shortcut icon" href="/favicon.ico" />
+
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="切换菜单">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        
+            
+            <figure class="site-avatar">
+                <a href="/">
+                
+                    
+                    
+                    
+                        
+                        <img src="/img/avatar_hu_f59158f730715054.png" width="300"
+                            height="300" class="site-logo" loading="lazy" alt="Avatar">
+                    
+                
+                </a>
+                
+                    <span class="emoji">🧐</span>
+                
+            </figure>
+            
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="/">wanfeng</a></h1>
+            <h2 class="site-description">Blog</h2>
+        </div>
+    </header><ol class="menu-social">
+            
+                <li>
+                    <a 
+                        href='https://space.bilibili.com/287473737'
+                        target="_blank"
+                        title="Bilibili"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-brand-bilibili"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 10a4 4 0 0 1 4 -4h10a4 4 0 0 1 4 4v6a4 4 0 0 1 -4 4h-10a4 4 0 0 1 -4 -4v-6z" /><path d="M8 3l2 3" /><path d="M16 3l-2 3" /><path d="M9 13v-2" /><path d="M15 11v2" /></svg>
+                        
+                    </a>
+                </li>
+            
+                <li>
+                    <a 
+                        href='https://github.com/sdpyy1'
+                        target="_blank"
+                        title="GitHub"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
+</svg>
+
+
+
+                        
+                    </a>
+                </li>
+            
+        </ol><ol class="menu" id="main-menu">
+        
+        
+        
+        <li >
+            <a href='/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>Home</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/about/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>About</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>Archives</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/search/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>Search</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/links/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5" />
+  <path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5" />
+</svg>
+
+
+
+                
+                <span>Links</span>
+            </a>
+        </li>
+        
+        <li class="menu-bottom-section">
+            <ol class="menu">
+                    
+                        <li id="i18n-switch">  
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-language" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M4 5h7" />
+  <path d="M9 3v2c0 4.418 -2.239 8 -5 8" />
+  <path d="M5 9c-.003 2.144 2.952 3.908 6.7 4" />
+  <path d="M12 20l4 -9l4 9" />
+  <path d="M19.1 18h-6.2" />
+</svg>
+
+
+
+                            <select name="language" title="language" onchange="window.location.href = this.selectedOptions[0].value">
+                                
+                                    <option value="https://sdpyy1.github.io/en/" >English</option>
+                                
+                                    <option value="https://sdpyy1.github.io/" selected>中文</option>
+                                
+                            </select>
+                        </li>
+                    
+                
+
+                
+                    <li id="dark-mode-toggle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <span>暗色模式</span>
+                    </li>
+                
+            </ol>
+        </li>
+    </ol>
+</aside>
+
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">目录</h2>
+        
+        <div class="widget--toc">
+            <nav id="TableOfContents">
+  <ol>
+    <li><a href="#通用全局光照算法">通用全局光照算法</a>
+      <ol>
+        <li><a href="#辐射度">辐射度</a>
+          <ol>
+            <li><a href="#通俗理解">通俗理解</a></li>
+          </ol>
+        </li>
+        <li><a href="#光线追踪">光线追踪</a></li>
+      </ol>
+    </li>
+    <li><a href="#环境光遮蔽">环境光遮蔽</a></li>
+    <li><a href="#漫反射全局光照">漫反射全局光照</a>
+      <ol>
+        <li><a href="#表面预照明静态场景固定法线">表面预照明（静态场景，固定法线）</a></li>
+        <li><a href="#定向表面预照明静态场景法线可变">定向表面预照明（静态场景，法线可变）</a></li>
+        <li><a href="#预计算传输-prt静态场景但光源可变">预计算传输 PRT（静态场景，但光源可变）</a></li>
+        <li><a href="#存储方法">存储方法</a></li>
+        <li><a href="#动态漫反射全局光照">动态漫反射全局光照</a></li>
+        <li><a href="#光照传播体积lpv">光照传播体积（LPV）</a></li>
+        <li><a href="#体素化全局光照voxel-cone-tracing-vxgi">体素化全局光照（Voxel Cone Tracing, VXGI）</a></li>
+      </ol>
+    </li>
+    <li><a href="#镜面全局光照">镜面全局光照</a>
+      <ol>
+        <li><a href="#局部环境贴图反射探针">局部环境贴图（反射探针）</a></li>
+        <li><a href="#反射探针的实时更新">反射探针的实时更新</a></li>
+        <li><a href="#基于体素的方法">基于体素的方法</a></li>
+        <li><a href="#平面反射">平面反射</a>
+          <ol>
+            <li>
+              <ol>
+                <li><a href="#方法-a反射场景副本">方法 A：反射场景副本</a></li>
+                <li><a href="#方法-b反射观察者">方法 B：反射观察者</a></li>
+              </ol>
+            </li>
+          </ol>
+        </li>
+        <li><a href="#屏幕空间方法">屏幕空间方法</a></li>
+        <li><a href="#统一方法">统一方法</a></li>
+      </ol>
+    </li>
+  </ol>
+</nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+            <main class="main full-width">
+    <article class="has-image main-article">
+    <header class="article-header">
+        <div class="article-image">
+            <a href="/p/global-illumination-%E5%85%A8%E5%B1%80%E5%85%89%E7%85%A7/">
+                
+                    <img src="/202307031150341.png" loading="lazy" alt="Featured image of post Global Illumination 全局光照" />
+                
+            </a>
+        </div>
+    
+
+    <div class="article-details">
+    
+    <header class="article-category">
+        
+        
+             
+            
+            
+            
+            <div class="category-hierarchy">
+                
+                    
+                    
+                    
+                        
+                    
+                     
+                    
+                    
+                    
+                    <a href="/categories/books/" 
+                       >
+                        Books
+                    </a>
+                    
+                    
+                    
+                        <span class="category-separator">/</span>
+                    
+                
+                    
+                    
+                    
+                        
+                    
+                        
+                    
+                     
+                    
+                    
+                    
+                    <a href="/categories/books/real-time-rendering-4th/" 
+                       >
+                        Real-Time Rendering 4th
+                    </a>
+                    
+                    
+                    
+                
+            </div>
+        
+    </header>
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="/p/global-illumination-%E5%85%A8%E5%B1%80%E5%85%89%E7%85%A7/">Global Illumination 全局光照</a>
+        </h2>
+    
+        
+    </div>
+
+    
+    
+    
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published">Oct 25, 2025</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-time--reading">
+                    阅读时长: 19 分钟
+                </time>
+            </div>
+        
+
+        
+            
+    </footer>
+    
+    
+</div>
+<style>
+    .category-hierarchy {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;  
+        margin-right: 12px;  
+        margin-bottom: 8px;  
+    }
+    
+    .category-separator {
+        color: #999;
+        user-select: none;
+        font-size: 1em;  
+    }
+    
+    .article-category a {
+        text-decoration: none;
+        padding: 6px 12px;  
+        border-radius: 6px;  
+        font-size: 0.95em;  
+        transition: all 0.2s ease;
+        line-height: 1.5;  
+    }
+    
+    .article-category a:hover {
+        opacity: 0.9;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 6px rgba(0,0,0,0.1);  
+    }
+</style>
+</header>
+
+    <section class="article-content">
+    
+    
+    <p>渲染过程最终计算的是radiance，到目前为止，我们一直在使用反射方程（reflectance equation）来对其进行计算：</p>
+$$
+L_{o}(\mathbf{p}, \mathbf{v})=\int_{\mathbf{l} \in \Omega} f(\mathbf{l}, \mathbf{v}) L_{i}(\mathbf{p}, \mathbf{l})(\mathbf{n} \cdot \mathbf{l})^{+} d \mathbf{l}
+\tag{11.1} 
+$$<p>其中$L_{o}(\mathbf{p}, \mathbf{v})$是表面位置$\mathbf{p}$在观察方向$\mathbf{v}$上的出射radiance；$\Omega$是表面位置$\mathbf{p}$的上半球范围；$f(\mathbf{l}, \mathbf{v})$是观察方向$\mathbf{v}$和当前光线入射方向$\mathbf{l}$上的BRDF；$L_{i}(\mathbf{p}, \mathbf{l})$是从光线方向$\mathbf{l}$到达表面位置$\mathbf{p}$的入射radiance；$(\mathbf{n} \cdot \mathbf{l})^{+}$是光线方向$\mathbf{l}$和表面法线$\mathbf{n}$之间的点积，并将负数结果clamp到0，即将来自表面下方的光线过滤掉。</p>
+<h1 id="通用全局光照算法">通用全局光照算法
+</h1><p><strong>通用</strong> = <strong>适用于所有类型的光照交互，不局限于特定材质或光源类型</strong>。</p>
+<p>它强调的是算法<strong>完整求解渲染方程</strong>，可以模拟现实世界中各种光线传输现象，而不是仅仅处理直接光或特定反射类型。</p>
+<h2 id="辐射度">辐射度
+</h2><ul>
+<li><strong>目标</strong>：模拟漫反射表面间的光线反弹，尤其是面光源产生的软阴影。</li>
+<li><strong>假设</strong>：所有间接光来自漫反射表面（不适合镜面或高光材质）。</li>
+<li><strong>基本思想</strong>：光在环境中弹射，直到达到稳定平衡，每个表面可以视为光源。</li>
+<li><strong>光传输路径</strong>：通常记作 $LD*E$（光源 $L$ → 漫反射 $D$ → 眼睛 $E$）。</li>
+</ul>
+<p>算法实现</p>
+<ol>
+<li>
+<p><strong>面片划分</strong></p>
+<ul>
+<li>场景表面分割为若干面片（patch），每个面片计算一个平均辐射度值。（就是把Mesh分成一个一个片来计算）</li>
+<li>面片大小不必与原始三角形网格一致，但要足够小以捕捉阴影和光照细节。</li>
+</ul>
+</li>
+<li>
+<p><strong>辐射度方程</strong>
+</p>
+$$
+   B_{i} = B_i^e + \rho_{\mathrm{ss}} \sum_j F_{ij} B_j
+   $$<ul>
+<li>$B_i$：面片 $i$ 的辐射度</li>
+<li>$B_i^e$：面片自身发出的辐射度</li>
+<li>$\rho_{\mathrm{ss}}$：次表面反照率</li>
+<li>$F_{ij}$：形状因子（form factor），表示面片 $i$ 发出的光有多少到达面片 $j$</li>
+</ul>
+<h3 id="通俗理解">通俗理解
+</h3><ol>
+<li><strong>自己发光的部分</strong> → $B_i^e$
+<ul>
+<li>面片本身是光源时才有</li>
+</ul>
+</li>
+<li><strong>其他面片反射来的光</strong> → $\rho_{\mathrm{ss}} \sum_j F_{ij} B_j$
+<ul>
+<li>房间里其他面片反射的光经过漫反射照到面片 $i$</li>
+</ul>
+</li>
+<li><strong>总和</strong> → $B_i$
+<ul>
+<li>面片 $i$ 的最终辐射度就是“自己发光 + 别人反射的光”</li>
+</ul>
+</li>
+</ol>
+</li>
+<li>
+<p><strong>形状因子</strong>（描述一个面片受到另一个面片的影响程度）</p>
+<p><img src="/202306221508114.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="img"
+	
+	
+>
+</p>
+$$
+   F_{ij} = \frac{1}{A_i} \int_{A_i} \int_{A_j} V(i,j) \frac{\cos \theta_i \cos \theta_j}{\pi d_{ij}^2} \, da_i da_j
+   $$<ul>
+<li>$A_i$：面片面积</li>
+<li>$V(i,j)$：可见性函数（1 = 可见，0 = 被遮挡）</li>
+<li>$\theta_i, \theta_j$：法线与连线的夹角</li>
+<li>$d_{ij}$：两面片中心距离</li>
+</ul>
+</li>
+<li>
+<p><strong>求解方法</strong></p>
+<ul>
+<li>形状因子计算完成后，所有面片方程组成一个线性系统（一个由线性方程组成的数学模型）</li>
+<li>解线性系统得到每个面片的辐射度</li>
+</ul>
+</li>
+<li>
+<p><strong>限制与应用</strong></p>
+<ul>
+<li>扩展性差，面片数量大时矩阵求解开销高</li>
+<li>不适合高光或镜面材质</li>
+<li>现代实时系统借鉴思想：预计算形状因子，然后在运行时进行光线传播</li>
+</ul>
+</li>
+</ol>
+<p>辐射度算法是一种基于有限元的全局光照方法，适合漫反射环境，通过面片划分、形状因子计算和线性系统求解，模拟间接光照。虽然计算量大，但其理论基础和预计算思想对实时渲染设计仍有重要参考价值。</p>
+<h2 id="光线追踪">光线追踪
+</h2><p>这块倒是原理比较熟悉了</p>
+<p><img src="/202306230953424.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="img"
+	
+	
+></p>
+<h1 id="环境光遮蔽">环境光遮蔽
+</h1><p>上一小节中所介绍的通用全局光照算法，它们的计算成本都很高。虽然它们可以产生各种复杂的效果，但是生成一幅图像往往需要好几个小时。我们将首先介绍一些最简单的，但是在视觉上很有说服力的方法，并在本章节逐步探索实时替代方案，逐步构建更加复杂的效果。</p>
+<p>AO的话也比较熟悉了，跳过。在GameEngine真正实现时，再回来看</p>
+<h1 id="漫反射全局光照">漫反射全局光照
+</h1><p>这部分针对漫反射的全局光照的各种技术进行介绍</p>
+<h2 id="表面预照明静态场景固定法线">表面预照明（静态场景，固定法线）
+</h2><p>静态场景烘培</p>
+<p>对于一个法线已知的Lambertian表面，其irradiance可以预先计算出来。在运行过程中，将这个值乘以实际的表面颜色（例如纹理颜色），从而获得反射的radiance。根据表面颜色的确切形式，可能还需要额外除以\pi 来确保能量守恒。</p>
+<p><img src="/202306301817467.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="img"
+	
+	
+></p>
+<p>除了限制最为严格的硬件平台之外，如今已经很少使用预计算irradiance的方法了。因为根据定义，irradiance是针对给定的法线方向进行计算的，这意味着我们无法对物体的表面法线进行修改，我们无法使用法线映射来提供高频的表面细节。这也意味着只能对平面进行预计算irradiance。如果我们需要在动态几何物体上使用烘焙光照，我们就需要其他的方法来存储这些光照信息。这些限制条件促使人们寻找一种方法，来存储带有方向分量的预计算光照。</p>
+<h2 id="定向表面预照明静态场景法线可变">定向表面预照明（静态场景，法线可变）
+</h2><p>1️⃣ 为什么需要定向表面预照明</p>
+<ul>
+<li>对 <strong>Lambertian 漫反射表面</strong>，简单的环境光照（irradiance）只存储一个标量就够了，但如果要：
+<ul>
+<li>使用 <strong>法线贴图</strong>（normal map）提高细节</li>
+<li>给动态几何提供间接光</li>
+</ul>
+</li>
+<li>就需要存储 <strong>irradiance 随表面法线变化</strong> 的信息，也就是方向性信息。</li>
+</ul>
+<p>2️⃣ 常用表示方法</p>
+<ol>
+<li><strong>球谐函数（Spherical Harmonics, SH）</strong>
+<ul>
+<li>可以存储完整的半球或球面光照函数。</li>
+<li>优点：插值简单，支持动态法线。</li>
+<li>缺点：系数多（3阶SH每通道9个系数），可能有振铃现象（振铃现象就是在用有限阶球谐函数近似光照时，高频细节无法精确表达，在边界或高对比区域出现的伪波纹或亮暗误差）。</li>
+<li>优化变体：
+<ul>
+<li>Chen 的方法：将主要方向光用一个方向+颜色存储，其余用二阶SH编码 → 18个系数，降低存储。</li>
+<li>H-basis：仅对半球编码，可用更少系数（6个）获得三阶SH精度。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><strong>半球基（AHD / Half-angle Basis）</strong>
+<ul>
+<li>《半条命2》使用：每个样本 3 颜色通道，总共 9 个系数。</li>
+<li>简单，成本低，效果可接受。</li>
+</ul>
+</li>
+<li><strong>切线空间高斯 / 环境波瓣</strong>
+<ul>
+<li>Crytek 和《教团：1886》方法：
+<ul>
+<li>存储 <strong>平均光线方向 + 颜色 + 混合因子</strong>。</li>
+<li>用球面高斯波瓣（cos^n 权重）表示光照分布。</li>
+</ul>
+</li>
+<li>优点：高质量、可做漫反射和镜面高光卷积。</li>
+<li>缺点：存储和计算成本高。</li>
+</ul>
+</li>
+<li><strong>环境立方 / 环境骰子</strong>
+<ul>
+<li>用几个方向的余弦波瓣表示光照（cos² 或 cos⁴）。</li>
+<li>优点：存储少（6-12个方向），局部支持好，重建质量接近二阶SH。</li>
+<li>已应用在《半条命2》《使命召唤》《孤岛惊魂3》等游戏。</li>
+</ul>
+</li>
+</ol>
+<h2 id="预计算传输-prt静态场景但光源可变">预计算传输 PRT（静态场景，但光源可变）
+</h2><p>虽然上述的预计算光照看起来很惊艳，但是它本质上还是静态的。</p>
+<p>如果我们假设场景中的几何物体没有发生变化，只有光照发生了变化，那么我们可以对光线与模型的相互作用进行预计算。物体之间的影响（例如相互反射或者次表面散射），可以预先进行一定程度的分析，并将结果存储下来，而不需要对实际的radiance进行操作。接收入射光线，并将其转换为整个场景的radiance分布，这个函数被称为传输函数（transfer function）。这样的方法被称为预计算传输（precomputed transfer）或者预计算radiance传输（precomputed radiance transfer，PRT）。</p>
+<p>简单讲就是对于每种光源都可以提前对他单独进行预计算，最终场景光照可以由这些单独的光源预计算结果进行累加即可</p>
+<p>使用预计算radiance传输的渲染示例。会预先计算三个显示器的完整光照传输，分别获得一个归一化的“单位”响应。由于光线传输的线性叠加特点，这些单独的解可以分别乘以显示器的颜色（本例中是粉色、黄色和蓝色），从而获得最终的光照效果。</p>
+<p><img src="/202307011024303.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="img"
+	
+	
+></p>
+<p>上述过程可以写出如下数学形式：</p>
+$$
+L(\mathbf{p})=\sum_{i} L_{i}(\mathbf{p}) \mathbf{w}_{i}
+\tag{11.36} 
+$$<p>其中$L(\mathbf{p})$是点$\mathbf{p}$的最终radiance；$L_{i}(\mathbf{p})$是来自显示器$i$的预计算单位（归一化）贡献；$\mathbf{w}_{i}$是该显示器的当前亮度。这个方程在数学意义上定义了一个向量空间（vector space），$L_i$是这个空间中的基向量。任何可能的光照效果，都可以通过这些光源贡献的线性组合来生成。</p>
+<h2 id="存储方法">存储方法
+</h2><p>光照信息存储的目的</p>
+<ul>
+<li>无论是完全预计算的光照（例如光照贴图）还是只预计算部分传输信息（PRT等），都需要将结果数据存储在 <strong>GPU友好的形式</strong>。</li>
+<li>存储的形式必须便于 <strong>运行时高效访问</strong>，以便着色器能快速获取光照信息。</li>
+</ul>
+<p>光照贴图（Lightmap）</p>
+<ul>
+<li>
+<p><strong>定义</strong>：存储预计算光照的纹理。术语上可以涵盖irradiance贴图或其他光照存储。</p>
+</li>
+<li>
+<p><strong>特点</strong>：</p>
+<ul>
+<li>GPU上使用纹理机制进行访问，通常经过双线性过滤。</li>
+<li>有些表示方法（如AHD）是非线性的，插值后需要归一化。</li>
+<li>光照贴图通常 <strong>不使用 mipmap</strong>，因为贴图分辨率已经很低，每个纹素覆盖面积大（约 20×20 cm）。</li>
+</ul>
+</li>
+<li>
+<p><strong>参数化要求</strong>：</p>
+<ul>
+<li>模型网格需要唯一的参数化（unique parameterization），每个三角形都有自己的纹理区域。</li>
+<li>网格通常被分成 <strong>chart 或 shell</strong>，然后打包到同一纹理中。</li>
+<li>需要注意 chart 之间不重叠，并保证过滤占用空间独立，以防颜色溢出。</li>
+</ul>
+</li>
+<li>
+<p><strong>接缝问题</strong>：</p>
+<ul>
+<li>因为 chart 独立展开，纹素边界可能不连续。</li>
+<li>可以通过手动放置接缝、后处理或者约束优化来减小可见瑕疵。</li>
+</ul>
+<p>光照信息被烘焙到一个场景中，将光照贴图应用到物体表面上从而实现光照。光照贴图使用了一个唯一的参数化。场景会被划分成多个元素，这些元素被展开并打包成一个共同的纹理。例如：右图左下角的小块对应了地面，它展示了两个立方体的阴影。</p>
+</li>
+</ul>
+<p><img src="/202307011533930.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="img"
+	
+	
+></p>
+<p>顶点光照存储</p>
+<ul>
+<li>预计算光照也可以存储在顶点上，但：
+<ul>
+<li>光照质量依赖网格细分程度。</li>
+<li>网格过粗会导致光照表现不准确，过细会增加计算成本。</li>
+<li>在现代GPU上，顶点之间传递大量光照参数会降低效率，因此很少使用。</li>
+</ul>
+</li>
+</ul>
+<p>体积光照存储（Irradiance Volume / Light Probe）</p>
+<ul>
+<li>
+<p><strong>概念</strong>：</p>
+<ul>
+<li>在场景中预计算空间中多个点的光照信息。</li>
+<li>可用于动态物体，也可用于静态物体。也就是说光照信息分布在场景中，而不是物体上，即使新物体来了也能直接用</li>
+</ul>
+</li>
+<li>
+<p><strong>存储方式</strong>：</p>
+<ul>
+<li>原始方法：每个样本点存储小纹理。</li>
+<li>现代方法：存储在三维纹理或其他体积结构中，可用GPU加速过滤。</li>
+</ul>
+</li>
+<li>
+<p><strong>常用表示方法</strong>：</p>
+<ul>
+<li>二阶或三阶 <strong>球谐函数（SH）</strong></li>
+<li>球面高斯函数</li>
+<li>环境立方体贴图（cube map）</li>
+</ul>
+</li>
+<li>
+<p><strong>采样方法</strong>：</p>
+<ul>
+<li>可用最近探针插值，或者基于四面体网格/点云+重心坐标的插值（图11.30、11.31）。</li>
+<li>精度依赖探针密度和网格结构。</li>
+</ul>
+</li>
+<li>
+<p><strong>注意问题</strong>：</p>
+<ul>
+<li>光照体素可能跨越不同光照特征的表面，需要处理边界问题。</li>
+<li>体积存储比光照贴图占用更多内存（立方关系）。</li>
+</ul>
+<p>Unity引擎使用了一个四面体网格，来从一组探针中插值出光照信息。</p>
+</li>
+</ul>
+<p><img src="/202307031150341.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="img"
+	
+	
+></p>
+<p>对于静态和动态的几何物体，通常会使用不同的光照存储方法。例如：静态物体可以使用光照贴图，而动态物体则可以从体积结构中获得光照信息。虽然这样做很流行，但是这种方案可能会导致不同类型的几何物体之间产生不一致的外观表现。其中一些差异可以通过正则化（regularization）来消除，即在这些表示方法中对光照信息进行平均。</p>
+<h2 id="动态漫反射全局光照">动态漫反射全局光照
+</h2><p>预计算光照的局限性</p>
+<ul>
+<li><strong>优点</strong>：能产生高质量的光照效果。</li>
+<li><strong>缺点</strong>：
+<ul>
+<li>需要离线烘焙，耗时长（可能几个小时甚至更多）。</li>
+<li>烘焙-调整-再烘焙循环非常耗费时间，影响工作效率。</li>
+<li>不适用于动态几何或用户生成的场景，因为场景会在运行时变化。</li>
+</ul>
+</li>
+</ul>
+<p>为了适应场景动态变化，需要即时计算间接光照（无需长时间预计算），主要方法包括：</p>
+<p>即时辐射度（Instant Radiosity）</p>
+<ul>
+<li>思路：从光源向场景投射光线，每个被光线照到的点放置一个 <strong>虚拟点光源（VPL, Virtual Point Light）</strong> 来模拟间接照明。</li>
+<li>实现：Tabellion &amp; Lamorlette（《怪物史莱克2》）
+<ul>
+<li>对场景表面做一次直接光照 Pass 并存储纹理。</li>
+<li>渲染时使用这些缓存数据生成一次弹射的间接光照。</li>
+</ul>
+</li>
+<li>优点：一次弹射即可产生合理效果。</li>
+<li>缺点：仍然是部分离线，需要一定计算。</li>
+</ul>
+<p>反射阴影贴图（Reflective Shadow Maps, RSM）</p>
+<ul>
+<li>基于光源视角渲染的阴影贴图，不仅存储深度，还存储 <strong>法线、反照率、直接光照</strong> 等信息。</li>
+<li>纹素视作虚拟点光源，在渲染时生成单次弹射的间接光照。</li>
+<li>优化：
+<ul>
+<li>不使用全部像素作为点光源，而是用 <strong>重要性驱动选择子集</strong>。</li>
+<li>可在屏幕空间 splat 虚拟光源，而不是每个着色点都选取纹素。</li>
+</ul>
+</li>
+<li>缺点：
+<ul>
+<li>无法提供间接光照的遮挡信息（近似效果）。</li>
+<li>间接光源数量不足时，会出现闪烁。</li>
+<li>数量太多则性能挑战大。</li>
+</ul>
+</li>
+</ul>
+<p>其他改进</p>
+<ul>
+<li><strong>双抛物面阴影贴图</strong>：逐步添加间接光源，保证每帧只用少量阴影贴图。</li>
+<li><strong>点场景表示 + 不完美阴影贴图（imperfect shadow maps）</strong>：小贴图 + 后处理过滤，实现间接光照遮挡效果。</li>
+<li>游戏应用示例：
+<ul>
+<li>《Dust 514》使用多纹理图层收集间接光照。</li>
+<li>UE 风筝 Demo 用类似方法处理地形间接光照。</li>
+</ul>
+</li>
+</ul>
+<h2 id="光照传播体积lpv">光照传播体积（LPV）
+</h2><p>场景被离散成一个规则的三维网格，每个单元格内都会维护一个穿过它的定向radiance分布，他使用二阶球谐函数来处理这些信息</p>
+<p>LPV 的基本流程</p>
+<ol>
+<li><strong>注入光照（Injection）</strong>：
+<ul>
+<li>将直接光照注入与表面接触的体素（volume cell）中。</li>
+<li>注入值是表面反射光（根据材质颜色调节）。</li>
+<li>可以使用 <strong>反射阴影贴图（RSM）</strong> 或其他方法找到这些体素。</li>
+</ul>
+</li>
+<li><strong>光照传播（Propagation）</strong>：
+<ul>
+<li>每个体素分析邻居体素的 radiance 分布，更新自身 radiance。</li>
+<li>每次迭代光照只传播一个体素的距离，所以需要多次迭代才能覆盖更大空间。</li>
+<li>优点：每个体素都有完整 radiance 场，任意 BRDF 都可用。</li>
+</ul>
+</li>
+<li><strong>级联体积（Cascaded LPV）</strong>：
+<ul>
+<li>为了覆盖更大空间并节省内存，使用嵌套、逐渐变大的体素层级。</li>
+<li>光照注入和传播在每个层级独立进行，查找光照时选用最细可用层级。</li>
+</ul>
+</li>
+<li><strong>遮挡信息（Occlusion）</strong>：
+<ul>
+<li>初始 LPV 不考虑间接光遮挡。</li>
+<li>后续改进引入 <strong>RSM 深度信息</strong> 或 <strong>相机深度缓冲</strong>，为体素添加遮挡近似。</li>
+</ul>
+</li>
+</ol>
+<p><img src="/202307031650806.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="img"
+	
+	
+></p>
+<h2 id="体素化全局光照voxel-cone-tracing-vxgi">体素化全局光照（Voxel Cone Tracing, VXGI）
+</h2><p><strong>体素化场景</strong>：将场景几何体用稀疏体素八叉树（Sparse Voxel Octree, SVO）表示，每个体素存储反射的光照信息（Radiance）。</p>
+<p><strong>光照注入</strong>：</p>
+<ol>
+<li>使用反射阴影贴图（RSM）或直接光照信息注入到最低层体素。</li>
+<li>再通过层次传播向上累积，形成整个体素空间的光照场。</li>
+</ol>
+<p><strong>圆锥追踪近似射线积分</strong>：</p>
+<ul>
+<li>为了避免追踪大量射线，使用 <strong>圆锥（Cone）近似</strong> 来取代理想射线。</li>
+<li>沿圆锥轴线在八叉树上进行层次查找，并根据体素覆盖率调节光照衰减。</li>
+<li>多个圆锥组合可以模拟漫反射间接光。</li>
+</ul>
+<p>性能优化</p>
+<ul>
+<li><strong>稀疏八叉树访问开销大</strong>：
+<ul>
+<li>查找叶子节点需要多次内存访问，GPU 上容易导致 warp 停滞。</li>
+</ul>
+</li>
+<li><strong>级联三维纹理替代八叉树</strong>：
+<ul>
+<li>类似 <strong>级联光照传播体积（LPV）</strong>，每层覆盖更大的空间。</li>
+<li>只需一次纹理查找即可获得多层级信息。</li>
+</ul>
+</li>
+<li><strong>屏幕空间过滤</strong>：
+<ul>
+<li>每像素只追踪一个圆锥，通过屏幕空间滤波得到最终漫反射响应。</li>
+</ul>
+</li>
+</ul>
+<p>VXGI 的优点</p>
+<ul>
+<li>可支持 <strong>动态全局光照</strong>（直接光 + 间接光）。</li>
+<li>允许 <strong>动态物体和光源</strong>。</li>
+<li>能处理 <strong>复杂遮挡和半透明间接光</strong>（虽然近似）。</li>
+</ul>
+<p>体素锥形追踪使用一系列体素树中的过滤查找，来对一个精确的锥形追踪进行近似。左图显示的是三维轨迹的二维模拟。右图展示了体素化几何的分层表示，从左到右每一列所展示的体素树，其层次越来越粗糙。在右图每一行中，展示了用于为给定样本提供覆盖率的层次结构节点。选择合适的级别进行使用，从而使得较粗级别节点的大小大于当前查找的大小，较细级别节点的大小小于当前查找的大小。会使用一个类似于三线性滤波的过程，来在这两个选定的级别之间进行插值。</p>
+<p><img src="/202307031820522.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="img"
+	
+	
+></p>
+<h1 id="镜面全局光照">镜面全局光照
+</h1><p>漫反射 VS 光泽材质的不同需求</p>
+<div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th>特性</th>
+          <th>漫反射</th>
+          <th>光泽/镜面材质</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>光照分布</td>
+          <td>宽余弦波瓣（整个半球）</td>
+          <td>狭窄镜面波瓣（小立体角）</td>
+      </tr>
+      <tr>
+          <td>光照采样</td>
+          <td>半球内积分</td>
+          <td>只需有限方向光线</td>
+      </tr>
+      <tr>
+          <td>实时渲染要求</td>
+          <td>低频、粗略表示即可</td>
+          <td>需高频、精确方向信息</td>
+      </tr>
+  </tbody>
+</table></div>
+<ul>
+<li>漫反射光照可以用二阶球谐函数、LPV 或 VXGI 等低频方法表示。</li>
+<li>光泽材质要求高频 radiance 表示，否则镜面反射高光会出现明显瑕疵。</li>
+</ul>
+<h2 id="局部环境贴图反射探针">局部环境贴图（反射探针）
+</h2><p>最早将环境贴图与空间中特定点相绑定的游戏之一是《半条命2》，在他们的系统中，会由艺术家首先在整个场景中放置采样位置。在预处理阶段中，会在每个位置上渲染一个立方体贴图。在进行高光计算的时候，物体会使用最近位置上的结果来作为入射radiance的表示。相邻的物体可能会使用不同的环境贴图，这将会导致视觉效果的不匹配，但是艺术家可以手动调整立方体贴图所覆盖的范围。</p>
+<p>常规环境贴图（EM）假设环境在“无限远”，即每个表面点采样反射方向时，环境似乎以这个点为中心。</p>
+<p>对于<strong>小物体或者贴图正好从物体中心生成</strong>，结果几乎精确；但大多数物体：</p>
+<ul>
+<li>EM 是在某个中心点生成的（reflection probe）</li>
+<li>高光表面离中心点越远 → 反射方向采样的结果就偏离真实情况 → 高光不真实</li>
+</ul>
+<p>视差矫正：</p>
+<p><strong>假设入射光来自一个有限大小的球体或盒子</strong>（reflection proxy），而不是无限远。</p>
+<ul>
+<li>用户可以定义半径/大小。</li>
+<li>代理物体可以是球、盒子等形状，包围渲染到 EM 中的几何。</li>
+</ul>
+<p><strong>计算校正方向</strong>：</p>
+<ul>
+<li>对于某个表面点 $\mathbf{p}$：
+<ol>
+<li>计算反射方向 $\mathbf{r}$（传统方式）</li>
+<li>视作从表面点沿 $\mathbf{r}$ 发射一条射线，与<strong>反射代理</strong>相交</li>
+<li>计算交点 $\mathbf{x}$</li>
+<li>新方向 $\mathbf{r}&rsquo; = \mathbf{x} - \mathbf{c}$，其中 $\mathbf{c}$ 是环境贴图的中心</li>
+</ol>
+</li>
+<li>使用 $\mathbf{r}&rsquo;$ 去 EM 采样，而不是直接使用 $\mathbf{r}$</li>
+</ul>
+<p>左边是常规的环境映射，它使用蓝色圆圈进行表示（它也可以是任何表示形式，例如立方体贴图）。左图中的效果是通过使用反射观察方向$\mathbf{r}$访问环境贴图来确定的。仅仅使用这个方向作为参数，蓝色圆圈EM会被视为半径无限大且遥远的。对于黑色圆表面上的任何点，EM好像都以该点为中心。右图中，我们希望EM能够把周围的黑色房间表示为本地的，而不是无限远的。蓝色圆圈EM是在房间的中心处生成的。要像访问房间一样访问这个EM，会从位置$\mathbf{p}$处，沿着反射观察方向发射一根反射光线，这个光线会在着色器中与一个简单的代理物体（房间周围的红色框）相交。这个交点与EM的中心形成一个新的方向$\mathbf{r}^{\prime}$，然后会像常规的环境映射一样，使用这个方向$\mathbf{r}^{\prime}$来访问EM。通过求解$\mathbf{r}^{\prime}$，这个过程会将EM视为具有一个实际的物理形状，即图中的红框。这个红色代理框的假设会在房间的左下角和右下角失效，因为代理形状与实际房间的几何形状并不匹配。</p>
+<p><img src="/202307041728600.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="img"
+	
+	
+></p>
+<p>视差矫正从上图就很好理解，我反射采样点是R方向，但是物体并不在立方体贴图中间，如果按左图采样的方向是错的（他是假设着色点在立方体中心来采样的），按右图来看，他重新获取采样方向R&rsquo;，才是正确的采样结果</p>
+<p>多探针组合</p>
+<ul>
+<li>当一个区域被多个探针覆盖时，需要一种规则来组合它们：
+<ul>
+<li><strong>优先级法</strong>：用户可以为探针设置优先级，高优先级探针覆盖低优先级探针</li>
+<li><strong>平滑插值法</strong>：在相邻探针之间做线性/权重插值，保证过渡自然</li>
+</ul>
+</li>
+<li><strong>问题</strong>：简单的组合规则无法完全消除瑕疵，尤其是在高光或抛光材质上，容易出现反射拉伸或不自然。</li>
+</ul>
+<hr>
+<p>反射代理形状问题</p>
+<ul>
+<li>反射代理（reflection proxy）通常是简化的几何形状（球、盒子、平面），很少能完全匹配真实场景几何。</li>
+<li>结果：
+<ul>
+<li><strong>反射拉伸</strong>：高光表面上，反射看起来被拉伸或不真实</li>
+<li><strong>BRDF不完全正确</strong>：渲染到环境贴图的物体可能在不同位置看起来不一样</li>
+<li><strong>漏光（light leaking）</strong>：光线可能穿过代理，导致一些遮挡丢失</li>
+</ul>
+</li>
+<li>缓解方法：
+<ul>
+<li><strong>定向遮蔽（directional occlusion）</strong></li>
+<li><strong>预计算漫反射光照</strong>：将环境贴图反射值除以平均漫反射光照，只保留高频成分，再在着色时乘回漫反射</li>
+</ul>
+</li>
+</ul>
+<hr>
+<p>深度辅助方法</p>
+<ul>
+<li><strong>Szirmay-Kalos</strong>：每个探针存储深度贴图，查找时做光线追踪 → 精度更高，但成本大</li>
+<li><strong>McGuire</strong>：用探针深度缓冲追踪光线，如果主探针信息不足，选择备用探针继续追踪 → 提升可靠性和精度</li>
+</ul>
+<hr>
+<p>预过滤环境贴图问题</p>
+<ul>
+<li>对光泽材质（glossy BRDF）：
+<ul>
+<li>EM通常是预过滤的，每个 mipmap 层表示不同卷积半径的入射辐射</li>
+<li><strong>问题</strong>：视差校正会让反射方向在代理形状上的分布变化，使得卷积略不准确</li>
+<li>Pesce 和 Iwanicki 分析了这些问题并提出了潜在解决方案</li>
+</ul>
+</li>
+</ul>
+<hr>
+<p>反射代理形状的灵活性</p>
+<ul>
+<li>代理不必是闭合或凸形，可以是：
+<ul>
+<li>平面矩形</li>
+<li>简单盒子</li>
+<li>球形代理</li>
+</ul>
+</li>
+<li>复杂代理能更精确表示周围几何，但会增加计算开销</li>
+</ul>
+<h2 id="反射探针的实时更新">反射探针的实时更新
+</h2><ul>
+<li><strong>传统方法</strong>：局部反射探针一般在离线阶段渲染和预过滤，生成高质量立方体贴图。</li>
+<li><strong>问题</strong>：
+<ul>
+<li>开放世界游戏中，时间变化、动态几何体和大量环境探针使得离线渲染不现实</li>
+<li>存储大量环境贴图会消耗磁盘空间</li>
+</ul>
+</li>
+<li><strong>解决方案</strong>：
+<ul>
+<li>一部分探针在加载阶段预渲染</li>
+<li>其他探针在进入相机视野时动态渲染</li>
+</ul>
+</li>
+</ul>
+<p><strong>低帧率更新</strong>：动态物体的反射不需要每帧都更新</p>
+<ul>
+<li>可以定义每帧更新的探针数量</li>
+<li>使用启发式方法决定更新顺序，例如：探针到相机的距离、上次更新时间等</li>
+</ul>
+<p><strong>拆分立方体贴图渲染</strong>：一个立方体贴图的6个面可以分布到6帧渲染，降低每帧开销</p>
+<p>高质量卷积通常需要多次采样，不适合高帧率实时更新</p>
+<p><strong>解决方法</strong>：</p>
+<ol>
+<li><strong>重要性采样</strong>（Colbert &amp; Krivanek）：用少量样本（约64）进行近似滤波</li>
+<li><strong>mipmap层级采样</strong>：根据启发式选择每个样本的 mipmap 层</li>
+<li><strong>基函数滤波</strong>（Manson &amp; Sloan）：先简单下采样+滤波，再组合 mipmap 构建最终贴图</li>
+</ol>
+<p><strong>纹理压缩</strong>：</p>
+<ul>
+<li>HDR 探针可压缩为 BC6H 半精度浮点格式</li>
+<li>减少显存占用和带宽消耗</li>
+</ul>
+<p><strong>G-buffer辅助渲染</strong>：</p>
+<ul>
+<li>离线生成场景的 G-buffer</li>
+<li>运行时只需计算光照和卷积</li>
+<li>可以在预生成 G-buffer 上渲染动态几何体，降低 CPU 开销</li>
+</ul>
+<h2 id="基于体素的方法">基于体素的方法
+</h2><p>体素锥形追踪，无论是使用稀疏八叉树进行存储[307]，还是其级联版本（章节11.5.7）[1190]，同样可以用于渲染高光效果</p>
+<p>对于光泽材质而言，使用锥形追踪的效率要高得多。在镜面光照的情况下，BRDF的波瓣会很狭窄，只需要考虑一个来自较小立体角的radiance，因此我们不再需要同时追踪多个圆锥区域，在大多数情况下，一个着色点只需要追踪一个圆锥就足够了。只有较为粗糙材质上的高光效果，才可能需要追踪多个圆锥，但是又因为这样的反射效果十分模糊，在这种情况下，我们只需要使用局部反射探针即可，根本不需要执行锥形追踪。</p>
+<p>就是Voxel Cone Tracing来进行着色，因为glossy表面的lobe很狭窄，相比于漫反射效率要高得多</p>
+<h2 id="平面反射">平面反射
+</h2><p><img src="/202307051111816.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="img"
+	
+	
+></p>
+<h4 id="方法-a反射场景副本">方法 A：反射场景副本
+</h4><ol>
+<li>对每个反射的物体创建一个<strong>副本</strong></li>
+<li>将副本沿平面镜像变换到反射位置</li>
+<li>渲染副本物体生成反射图像</li>
+<li>光源也需进行镜像处理：
+<ul>
+<li>光源位置和方向也要镜像</li>
+</ul>
+</li>
+<li>将生成的图像用作反射贴图或者直接绘制到反射表面</li>
+</ol>
+<h4 id="方法-b反射观察者">方法 B：反射观察者
+</h4><ul>
+<li>不改变场景中的物体，而是<strong>反射观察者（摄像机）位置和观察方向</strong></li>
+<li>通过修改投影矩阵，实现从镜面后的视角渲染场景</li>
+<li>优点：不需要复制场景物体</li>
+<li>关键点：仍需镜像光源位置/方向</li>
+</ul>
+<h2 id="屏幕空间方法">屏幕空间方法
+</h2><blockquote>
+<p>这里讲的就是SSR，以及SSR的优化策略</p>
+</blockquote>
+<h2 id="统一方法">统一方法
+</h2><p>到目前为止我们所介绍的方法，它们可以组合成一个能够渲染漂亮图像的完整系统。然而，这些系统交错在一起，缺乏路径追踪的优雅性和概念简洁性。渲染方程的不同方面都会以不同的方式进行处理，在每个方面都做出了不同程度的妥协。尽管最终的生成图像看起来很逼真，但是在很多情况下，这些方法依然会失败，导致视错觉的中断。由于上述的这些原因，实时路径追踪一直是研究工作的重点。</p>
+<p><strong>混合渲染管线（Hybrid Rendering Pipeline）</strong>：更加合理、但不那么纯粹的方法是，使用路径跟踪方法来处理光栅化渲染框架内难以实现的效果。我们对相机可见的三角形进行光栅化，但是在计算反射效果的时候，我们不再依赖近似的反射代理或者不完整的屏幕空间信息，而是通过路径追踪来计算。我们不再尝试模拟具有模糊效果的面光源阴影，而是直接通过向光源追踪光线并计算正确的遮挡信息。</p>
+<p>为了生成高质量的图像，可能需要对每个像素追踪成百上千条光线。即使是使用最优的BVH、最高效的树遍历算法和最快速的GPU，目前也只能在最简单的场景中实时做到这一点，而在稍微复杂一点的场景中则根本无法实现。在可用的性能限制下，我们所生成的图像会具有非常多的噪点，根本无法用于显示。然而幸运的是，这些充满噪声的图像可以使用降噪算法来进行处理，从而产生基本无噪声的图像，如图11.42和图24.2所示。最近在实时光追降噪领域取得了令人印象深刻的进展，并且开发出了一些算法，可以在每像素仅追踪一根光线的情况下（1spp），创建视觉上接近高质量的、路径追踪生成的图像 [95, 200, 247, 1124, 1563]。</p>
+
+</section>
+
+
+    <footer class="article-footer">
+    
+    <section class="article-tags">
+        
+            <a href="/tags/%E7%9C%8B%E4%B9%A6%E7%AC%94%E8%AE%B0/">看书笔记</a>
+        
+            <a href="/tags/%E5%AE%9E%E6%97%B6%E6%B8%B2%E6%9F%93/">实时渲染</a>
+        
+            <a href="/tags/real-time-rendering-4th/">Real-Time Rendering 4th</a>
+        
+    </section>
+
+
+    
+    <section class="article-copyright">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
+</svg>
+
+
+
+        <span>Licensed under CC BY-NC-SA 4.0</span>
+    </section>
+    </footer>
+
+
+    
+        <link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css"integrity="sha384-n8MVd4RsNIU0tAv4ct0nTaAbDJwPJzDEaqSD1odI&#43;WdtXRGWt2kTvGFasHpSy3SV"crossorigin="anonymous"
+            ><script 
+                src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"integrity="sha384-XjKyOOlGwcjNTAIQHIpgOno0Hl1YQqzUOEleOLALmuqehneUG&#43;vnGctmUb0ZY0l8"crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"integrity="sha384-&#43;VBxd3r6XgURycqtZ117nYw44OOcIax56Z4dCRWbxyPt0Koah1uHoK0o4&#43;/RRE05"crossorigin="anonymous"
+                defer
+                >
+            </script><script>
+    window.addEventListener("DOMContentLoaded", () => {
+	const mainArticleElement = document.querySelector(".main-article");
+        renderMathInElement(mainArticleElement, {
+            delimiters: [
+                { left: "$$", right: "$$", display: true },
+                { left: "$", right: "$", display: false },
+                { left: "\\(", right: "\\)", display: false },
+                { left: "\\[", right: "\\]", display: true }
+            ],
+            ignoredClasses: ["gist"]
+        });})
+</script>
+
+    
+</article>
+
+    
+
+    
+
+<aside class="related-content--wrapper">
+    <h2 class="section-title">相关文章</h2>
+    <div class="related-content">
+        <div class="flex article-list--tile">
+            
+                
+<article class="article-card has-image">
+    <a href="/p/local-illumination-%E5%B1%80%E9%83%A8%E5%85%89%E7%85%A7/">
+        
+        <div class="article-image-card">
+            
+                <img src="/202306151248940.png" loading="lazy" data-key="" data-hash="/202306151248940.png"/>
+            
+
+            
+            <div class="article-overlay">
+                <h2 class="article-title">Local Illumination 局部光照</h2>
+            </div>
+        </div>
+        
+    </a>
+
+    <style>
+     
+    .article-card {
+        background: rgba(255, 255, 255, 0.25);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        margin: 10px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .article-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    }
+
+    .article-card a {
+        display: flex;
+        flex-direction: column;
+        text-decoration: none;
+        color: inherit;
+        height: 100%;
+    }
+
+     
+    .article-image-card {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        overflow: hidden;
+    }
+    .article-image-card img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+    .article-image-card:hover img {
+        transform: scale(1.05);
+    }
+
+     
+    .article-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: rgba(0,0,0,0.3);  
+        padding: 10px;
+        box-sizing: border-box;
+        text-align: center;
+    }
+    .article-overlay .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #fff;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .article-card.no-image .article-details {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 15px;
+    }
+    .article-card.no-image .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #222;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .articles-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 20px;
+    }
+    </style>
+</article>
+            
+                
+<article class="article-card has-image">
+    <a href="/p/physically-based-shading2-%E5%9F%BA%E4%BA%8E%E7%89%A9%E7%90%86%E7%9A%84%E7%9D%80%E8%89%B2/">
+        
+        <div class="article-image-card">
+            
+                <img src="/20230611105147.png" loading="lazy" data-key="" data-hash="/20230611105147.png"/>
+            
+
+            
+            <div class="article-overlay">
+                <h2 class="article-title">Physically Based Shading(2) 基于物理的着色</h2>
+            </div>
+        </div>
+        
+    </a>
+
+    <style>
+     
+    .article-card {
+        background: rgba(255, 255, 255, 0.25);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        margin: 10px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .article-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    }
+
+    .article-card a {
+        display: flex;
+        flex-direction: column;
+        text-decoration: none;
+        color: inherit;
+        height: 100%;
+    }
+
+     
+    .article-image-card {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        overflow: hidden;
+    }
+    .article-image-card img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+    .article-image-card:hover img {
+        transform: scale(1.05);
+    }
+
+     
+    .article-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: rgba(0,0,0,0.3);  
+        padding: 10px;
+        box-sizing: border-box;
+        text-align: center;
+    }
+    .article-overlay .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #fff;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .article-card.no-image .article-details {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 15px;
+    }
+    .article-card.no-image .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #222;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .articles-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 20px;
+    }
+    </style>
+</article>
+            
+                
+<article class="article-card has-image">
+    <a href="/p/physically-based-shading-1-%E5%85%89%E4%B8%8E%E9%A2%9C%E8%89%B2/">
+        
+        <div class="article-image-card">
+            
+                <img src="/202306132029525.png" loading="lazy" data-key="" data-hash="/202306132029525.png"/>
+            
+
+            
+            <div class="article-overlay">
+                <h2 class="article-title">Physically Based Shading (1) 光与颜色</h2>
+            </div>
+        </div>
+        
+    </a>
+
+    <style>
+     
+    .article-card {
+        background: rgba(255, 255, 255, 0.25);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        margin: 10px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .article-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    }
+
+    .article-card a {
+        display: flex;
+        flex-direction: column;
+        text-decoration: none;
+        color: inherit;
+        height: 100%;
+    }
+
+     
+    .article-image-card {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        overflow: hidden;
+    }
+    .article-image-card img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+    .article-image-card:hover img {
+        transform: scale(1.05);
+    }
+
+     
+    .article-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: rgba(0,0,0,0.3);  
+        padding: 10px;
+        box-sizing: border-box;
+        text-align: center;
+    }
+    .article-overlay .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #fff;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .article-card.no-image .article-details {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 15px;
+    }
+    .article-card.no-image .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #222;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .articles-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 20px;
+    }
+    </style>
+</article>
+            
+        </div>
+    </div>
+</aside>
+
+     
+    
+        
+    <script
+    src="https://giscus.app/client.js"
+    data-repo="sdpyy1/sdpyy1.github.io"
+    data-repo-id="R_kgDOQEycpQ"
+    data-category="Announcements"
+    data-category-id="DIC_kwDOQEycpc4Cwz7v"
+    data-mapping="pathname"
+    data-strict="0"
+    data-reactions-enabled="1"
+    data-emit-metadata="0"
+    data-input-position="top"
+    data-theme="light"
+    data-lang="en"
+    data-loading=""
+    crossorigin="anonymous"
+    async
+></script>
+<script>
+    function setGiscusTheme(theme) {
+        let giscus = document.querySelector("iframe.giscus-frame");
+        if (giscus) {
+            giscus.contentWindow.postMessage(
+                {
+                    giscus: {
+                        setConfig: {
+                            theme: theme,
+                        },
+                    },
+                },
+                "https://giscus.app"
+            );
+        }
+    }
+
+    (function () {
+        addEventListener("message", (e) => {
+            if (event.origin !== "https://giscus.app") return;
+            handler();
+        });
+        window.addEventListener("onColorSchemeChange", handler);
+
+        function handler() {
+            if (document.documentElement.dataset.scheme === "light") {
+                setGiscusTheme('light');
+            } else {
+                setGiscusTheme('light');
+            }
+        }
+    })();
+</script>
+
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+            2020 - 
+        
+        2025 爱喝东方树叶
+    </section>
+    <section style="display: flex; gap: 30px; align-items: center;">
+      
+      
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+      <span>📚 文章数: 43</span>
+      <span>✍️ 总字数: 
+        
+        
+        153.78K
+      </span>
+    </section>
+
+    <section class="powerby">
+    
+    <div class="busuanzi-footer">
+        <span id="busuanzi_container_site_pv">
+          本站总访问量<span id="busuanzi_value_site_pv"></span>次
+        </span>
+        <span id="busuanzi_container_site_uv">
+          本站访客数<span id="busuanzi_value_site_uv"></span>人次
+        </span>
+      </div></section>
+
+</footer>
+
+
+    
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    
+    <div class="pswp__bg"></div>
+
+    
+    <div class="pswp__scroll-wrap">
+
+        
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                
+                
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                        <div class="pswp__preloader__cut">
+                            <div class="pswp__preloader__donut"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div>
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js"integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo="crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js"integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU="crossorigin="anonymous"
+                defer
+                >
+            </script><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css"crossorigin="anonymous"
+            ><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css"crossorigin="anonymous"
+            >
+
+            </main>
+        </div>
+        <script 
+                src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js"integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z&#43;KMkF24hUW8WePSA9HM="crossorigin="anonymous"
+                
+                >
+            </script><script type="text/javascript" src="/ts/main.1e9a3bafd846ced4c345d084b355fb8c7bae75701c338f8a1f8a82c780137826.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>

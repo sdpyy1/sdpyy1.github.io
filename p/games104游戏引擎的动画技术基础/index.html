@@ -4,16 +4,16 @@
 <meta name='viewport' content='width=device-width, initial-scale=1'>
 <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
   <meta name="referrer" content="no-referrer-when-downgrade"><meta name='description' content="蒙皮动画 这里讲的就是科普了一下\n坐标系\n实际存储的数据是关节数据\nRoot关节一般存在脚底，为了方便计算移速、跳跃高度。髋关节是第一个子关节\nT-pose和A-pose：\n">
-<title>Games105：游戏引擎的动画技术基础</title>
+<title>Games104：游戏引擎的动画技术基础</title>
 
-<link rel='canonical' href='https://sdpyy1.github.io/p/games105%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E7%9A%84%E5%8A%A8%E7%94%BB%E6%8A%80%E6%9C%AF%E5%9F%BA%E7%A1%80/'>
+<link rel='canonical' href='https://sdpyy1.github.io/p/games104%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E7%9A%84%E5%8A%A8%E7%94%BB%E6%8A%80%E6%9C%AF%E5%9F%BA%E7%A1%80/'>
 
-<link rel="stylesheet" href="/scss/style.min.6a692fd055deae459f2a9767f57f3855ba80cafd5041317f24f7360f6ca47cdf.css"><meta property='og:title' content="Games105：游戏引擎的动画技术基础">
+<link rel="stylesheet" href="/scss/style.min.6a692fd055deae459f2a9767f57f3855ba80cafd5041317f24f7360f6ca47cdf.css"><meta property='og:title' content="Games104：游戏引擎的动画技术基础">
 <meta property='og:description' content="蒙皮动画 这里讲的就是科普了一下\n坐标系\n实际存储的数据是关节数据\nRoot关节一般存在脚底，为了方便计算移速、跳跃高度。髋关节是第一个子关节\nT-pose和A-pose：\n">
-<meta property='og:url' content='https://sdpyy1.github.io/p/games105%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E7%9A%84%E5%8A%A8%E7%94%BB%E6%8A%80%E6%9C%AF%E5%9F%BA%E7%A1%80/'>
+<meta property='og:url' content='https://sdpyy1.github.io/p/games104%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E7%9A%84%E5%8A%A8%E7%94%BB%E6%8A%80%E6%9C%AF%E5%9F%BA%E7%A1%80/'>
 <meta property='og:site_name' content='wanfeng'>
 <meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='课程笔记' /><meta property='article:tag' content='Games104' /><meta property='article:tag' content='计算机动画' /><meta property='article:published_time' content='2025-10-20T15:00:44&#43;08:00'/><meta property='article:modified_time' content='2025-10-20T15:00:44&#43;08:00'/><meta property='og:image' content='https://sdpyy1.github.io/%E6%88%AA%E5%B1%8F2025-10-20-15.21.05.png' />
-<meta name="twitter:title" content="Games105：游戏引擎的动画技术基础">
+<meta name="twitter:title" content="Games104：游戏引擎的动画技术基础">
 <meta name="twitter:description" content="蒙皮动画 这里讲的就是科普了一下\n坐标系\n实际存储的数据是关节数据\nRoot关节一般存在脚底，为了方便计算移速、跳跃高度。髋关节是第一个子关节\nT-pose和A-pose：\n"><meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:image" content='https://sdpyy1.github.io/%E6%88%AA%E5%B1%8F2025-10-20-15.21.05.png' />
     <link rel="shortcut icon" href="/favicon.ico" />
@@ -325,9 +325,9 @@
     <article class="has-image main-article">
     <header class="article-header">
         <div class="article-image">
-            <a href="/p/games105%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E7%9A%84%E5%8A%A8%E7%94%BB%E6%8A%80%E6%9C%AF%E5%9F%BA%E7%A1%80/">
+            <a href="/p/games104%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E7%9A%84%E5%8A%A8%E7%94%BB%E6%8A%80%E6%9C%AF%E5%9F%BA%E7%A1%80/">
                 
-                    <img src="/%e6%88%aa%e5%b1%8f2025-10-20-15.21.05.png" loading="lazy" alt="Featured image of post Games105：游戏引擎的动画技术基础" />
+                    <img src="/%e6%88%aa%e5%b1%8f2025-10-20-15.21.05.png" loading="lazy" alt="Featured image of post Games104：游戏引擎的动画技术基础" />
                 
             </a>
         </div>
@@ -389,7 +389,7 @@
 
     <div class="article-title-wrapper">
         <h2 class="article-title">
-            <a href="/p/games105%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E7%9A%84%E5%8A%A8%E7%94%BB%E6%8A%80%E6%9C%AF%E5%9F%BA%E7%A1%80/">Games105：游戏引擎的动画技术基础</a>
+            <a href="/p/games104%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E7%9A%84%E5%8A%A8%E7%94%BB%E6%8A%80%E6%9C%AF%E5%9F%BA%E7%A1%80/">Games104：游戏引擎的动画技术基础</a>
         </h2>
     
         
@@ -947,6 +947,126 @@ $$<ul>
 
     
 
+<aside class="related-content--wrapper">
+    <h2 class="section-title">相关文章</h2>
+    <div class="related-content">
+        <div class="flex article-list--tile">
+            
+                
+<article class="article-card has-image">
+    <a href="/p/games104%E9%AB%98%E7%BA%A7%E5%8A%A8%E7%94%BB%E6%8A%80%E6%9C%AF%E5%8A%A8%E7%94%BB%E6%A0%91ik%E5%92%8C%E8%A1%A8%E6%83%85%E5%8A%A8%E7%94%BB/">
+        
+        <div class="article-image-card">
+            
+                <img src="/%e6%88%aa%e5%b1%8f2025-10-20-15.21.05.png" loading="lazy" data-key="" data-hash="/截屏2025-10-20-15.21.05.png"/>
+            
+
+            
+            <div class="article-overlay">
+                <h2 class="article-title">Games104：高级动画技术：动画树、IK和表情动画</h2>
+            </div>
+        </div>
+        
+    </a>
+
+    <style>
+     
+    .article-card {
+        background: rgba(255, 255, 255, 0.25);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        margin: 10px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .article-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    }
+
+    .article-card a {
+        display: flex;
+        flex-direction: column;
+        text-decoration: none;
+        color: inherit;
+        height: 100%;
+    }
+
+     
+    .article-image-card {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        overflow: hidden;
+    }
+    .article-image-card img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+    .article-image-card:hover img {
+        transform: scale(1.05);
+    }
+
+     
+    .article-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: rgba(0,0,0,0.3);  
+        padding: 10px;
+        box-sizing: border-box;
+        text-align: center;
+    }
+    .article-overlay .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #fff;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .article-card.no-image .article-details {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 15px;
+    }
+    .article-card.no-image .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #222;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .articles-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 20px;
+    }
+    </style>
+</article>
+            
+        </div>
+    </div>
+</aside>
+
      
     
         
@@ -1097,12 +1217,16 @@ $$<ul>
       
         
       
+        
+      
+        
+      
     
-      <span>📚 文章数: 41</span>
+      <span>📚 文章数: 43</span>
       <span>✍️ 总字数: 
         
         
-        141.37K
+        153.78K
       </span>
     </section>
 

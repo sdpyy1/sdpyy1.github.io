@@ -7,13 +7,159 @@
         <generator>Hugo -- gohugo.io</generator>
         <language>zh-cn</language>
         <copyright>爱喝东方树叶</copyright>
-        <lastBuildDate>Mon, 20 Oct 2025 15:00:44 +0800</lastBuildDate><atom:link href="https://sdpyy1.github.io/categories/course/index.xml" rel="self" type="application/rss+xml" /><item>
-        <title>Games105：游戏引擎的动画技术基础</title>
-        <link>https://sdpyy1.github.io/p/games105%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E7%9A%84%E5%8A%A8%E7%94%BB%E6%8A%80%E6%9C%AF%E5%9F%BA%E7%A1%80/</link>
+        <lastBuildDate>Sat, 25 Oct 2025 15:45:35 +0800</lastBuildDate><atom:link href="https://sdpyy1.github.io/categories/course/index.xml" rel="self" type="application/rss+xml" /><item>
+        <title>Games104：高级动画技术：动画树、IK和表情动画</title>
+        <link>https://sdpyy1.github.io/p/games104%E9%AB%98%E7%BA%A7%E5%8A%A8%E7%94%BB%E6%8A%80%E6%9C%AF%E5%8A%A8%E7%94%BB%E6%A0%91ik%E5%92%8C%E8%A1%A8%E6%83%85%E5%8A%A8%E7%94%BB/</link>
+        <pubDate>Sat, 25 Oct 2025 15:45:35 +0800</pubDate>
+        
+        <guid>https://sdpyy1.github.io/p/games104%E9%AB%98%E7%BA%A7%E5%8A%A8%E7%94%BB%E6%8A%80%E6%9C%AF%E5%8A%A8%E7%94%BB%E6%A0%91ik%E5%92%8C%E8%A1%A8%E6%83%85%E5%8A%A8%E7%94%BB/</guid>
+        <description>&lt;img src="https://sdpyy1.github.io/%E6%88%AA%E5%B1%8F2025-10-20-15.21.05.png" alt="Featured image of post Games104：高级动画技术：动画树、IK和表情动画" /&gt;&lt;blockquote&gt;
+&lt;p&gt;这节主要讲了动画在实践时需要的一些技术&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h1 id=&#34;动画混合&#34;&gt;动画混合
+&lt;/h1&gt;&lt;p&gt;在一个Clip内部，使用KeyFrame之间进行插值&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-10-25-15.47.17.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-10-25 15.47.17&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;Clip之间进行插值，就涉及到如何设置两个Clip的权重，这里静态到走路可以用速度进行插值&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-10-25-15.48.58.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-10-25 15.48.58&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;Clip之间插值取哪一的KeyFrame进行插值呢？&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-10-25-15.53.47.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-10-25 15.53.47&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;h1 id=&#34;混合空间&#34;&gt;混合空间
+&lt;/h1&gt;&lt;h2 id=&#34;1d2d混合空间&#34;&gt;1D/2D混合空间
+&lt;/h2&gt;&lt;p&gt;一维混合就是类似从走到跑的混合，只需要一个速度变量就可以进行权重插值&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-10-25-15.56.04.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-10-25 15.56.04&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;二维混合空间就需要x,y两个参数来确定很多的动画的插值&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-10-25-16.03.49.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-10-25 16.03.49&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;Delaunay Triangulation（德劳内三角剖分）：解决众多动画中那些动画参与插值（并不是所有动画都需要参与）&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;二维插值的问题&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;假设你有 2D Blend Space，点 &lt;code&gt;(x, y)&lt;/code&gt; 表示某个动作（如走、跑、斜向走）。&lt;/li&gt;
+&lt;li&gt;当角色的当前参数 &lt;code&gt;(px, py)&lt;/code&gt; 落在这些点之间时，需要根据它周围的动画点计算混合权重。&lt;/li&gt;
+&lt;li&gt;问题是：怎么快速找到 &lt;code&gt;(px, py)&lt;/code&gt; 所在的区域，并确定参与混合的动画点？&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;三角剖分的思路&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;把二维平面上的所有动画点用三角形连起来（Delaunay Triangulation），满足：
+&lt;ul&gt;
+&lt;li&gt;没有点在任意三角形的外接圆内（Delaunay性质）。&lt;/li&gt;
+&lt;li&gt;三角形形状尽量接近等边三角形，避免“瘦长三角形”，这样插值更稳定。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;这样每个三角形的顶点就是 &lt;strong&gt;参与插值的动画点&lt;/strong&gt;。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;skeleton-masked-blending&#34;&gt;Skeleton Masked Blending
+&lt;/h2&gt;&lt;p&gt;用来解决两个动画分别作用于不同的骨骼的情况（一个动画控制上半身，一个动画控制下半身）&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-10-25-16.07.00.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-10-25 16.07.00&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;h2 id=&#34;additive-blending&#34;&gt;Additive Blending
+&lt;/h2&gt;&lt;p&gt;Blending做完后还可以再加一个修饰&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-10-25-16.09.21.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-10-25 16.09.21&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;h1 id=&#34;动作状态机asm&#34;&gt;动作状态机（ASM）
+&lt;/h1&gt;&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-10-25-16.12.59.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-10-25 16.12.59&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-10-25-16.14.59.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-10-25 16.14.59&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;h1 id=&#34;动画混合树&#34;&gt;动画混合树
+&lt;/h1&gt;&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-10-25-16.25.08.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-10-25 16.25.08&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;h1 id=&#34;ik&#34;&gt;IK
+&lt;/h1&gt;&lt;p&gt;这块东西在Games105详细记录过了&lt;/p&gt;
+&lt;h1 id=&#34;面部动画&#34;&gt;面部动画
+&lt;/h1&gt;&lt;h1 id=&#34;动画重定向&#34;&gt;动画重定向
+&lt;/h1&gt;</description>
+        </item>
+        <item>
+        <title>Games104：游戏引擎的动画技术基础</title>
+        <link>https://sdpyy1.github.io/p/games104%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E7%9A%84%E5%8A%A8%E7%94%BB%E6%8A%80%E6%9C%AF%E5%9F%BA%E7%A1%80/</link>
         <pubDate>Mon, 20 Oct 2025 15:00:44 +0800</pubDate>
         
-        <guid>https://sdpyy1.github.io/p/games105%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E7%9A%84%E5%8A%A8%E7%94%BB%E6%8A%80%E6%9C%AF%E5%9F%BA%E7%A1%80/</guid>
-        <description>&lt;img src="https://sdpyy1.github.io/%E6%88%AA%E5%B1%8F2025-10-20-15.21.05.png" alt="Featured image of post Games105：游戏引擎的动画技术基础" /&gt;&lt;h1 id=&#34;蒙皮动画&#34;&gt;蒙皮动画
+        <guid>https://sdpyy1.github.io/p/games104%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E7%9A%84%E5%8A%A8%E7%94%BB%E6%8A%80%E6%9C%AF%E5%9F%BA%E7%A1%80/</guid>
+        <description>&lt;img src="https://sdpyy1.github.io/%E6%88%AA%E5%B1%8F2025-10-20-15.21.05.png" alt="Featured image of post Games104：游戏引擎的动画技术基础" /&gt;&lt;h1 id=&#34;蒙皮动画&#34;&gt;蒙皮动画
 &lt;/h1&gt;&lt;p&gt;这里讲的就是科普了一下&lt;/p&gt;
 &lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-10-20-15.05.52.png&#34;
 	

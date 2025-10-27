@@ -3,18 +3,18 @@
     <head><meta charset='utf-8'>
 <meta name='viewport' content='width=device-width, initial-scale=1'>
 <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
-  <meta name="referrer" content="no-referrer-when-downgrade"><meta name='description' content=" 在OpenGL渲染器中已经实现了硬阴影以及PCF，PCSS，在这里再引入级联阴影\n级联阴影 ">
+  <meta name="referrer" content="no-referrer-when-downgrade"><meta name='description' content=" 在OpenGL渲染器中已经实现了硬阴影以及PCF，PCSS，在这里再引入级联阴影\n级联阴影 传统阴影做法与问题 截图来自我的OpenGL延迟渲染器\n1 2 float orthoSize = 10.0f; glm::mat4 lightProjection = glm::ortho(-orthoSize, orthoSize, -orthoSize, orthoSize, near_plane, far_plane); 这行代码决定了从光源位置渲染阴影贴图的正交投影矩阵，他决定了阴影的覆盖范围，当设置为10时，硬阴影以及PCSS效果如下\n">
 <title>游戏引擎开发实践（阴影篇）</title>
 
 <link rel='canonical' href='https://sdpyy1.github.io/p/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E5%BC%80%E5%8F%91%E5%AE%9E%E8%B7%B5%E9%98%B4%E5%BD%B1%E7%AF%87/'>
 
 <link rel="stylesheet" href="/scss/style.min.6a692fd055deae459f2a9767f57f3855ba80cafd5041317f24f7360f6ca47cdf.css"><meta property='og:title' content="游戏引擎开发实践（阴影篇）">
-<meta property='og:description' content=" 在OpenGL渲染器中已经实现了硬阴影以及PCF，PCSS，在这里再引入级联阴影\n级联阴影 ">
+<meta property='og:description' content=" 在OpenGL渲染器中已经实现了硬阴影以及PCF，PCSS，在这里再引入级联阴影\n级联阴影 传统阴影做法与问题 截图来自我的OpenGL延迟渲染器\n1 2 float orthoSize = 10.0f; glm::mat4 lightProjection = glm::ortho(-orthoSize, orthoSize, -orthoSize, orthoSize, near_plane, far_plane); 这行代码决定了从光源位置渲染阴影贴图的正交投影矩阵，他决定了阴影的覆盖范围，当设置为10时，硬阴影以及PCSS效果如下\n">
 <meta property='og:url' content='https://sdpyy1.github.io/p/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E5%BC%80%E5%8F%91%E5%AE%9E%E8%B7%B5%E9%98%B4%E5%BD%B1%E7%AF%87/'>
 <meta property='og:site_name' content='wanfeng'>
 <meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='游戏引擎' /><meta property='article:tag' content='Vulkan' /><meta property='article:tag' content='渲染管线' /><meta property='article:tag' content='Hazel' /><meta property='article:published_time' content='2025-10-25T20:49:55&#43;08:00'/><meta property='article:modified_time' content='2025-10-25T20:49:55&#43;08:00'/>
 <meta name="twitter:title" content="游戏引擎开发实践（阴影篇）">
-<meta name="twitter:description" content=" 在OpenGL渲染器中已经实现了硬阴影以及PCF，PCSS，在这里再引入级联阴影\n级联阴影 ">
+<meta name="twitter:description" content=" 在OpenGL渲染器中已经实现了硬阴影以及PCF，PCSS，在这里再引入级联阴影\n级联阴影 传统阴影做法与问题 截图来自我的OpenGL延迟渲染器\n1 2 float orthoSize = 10.0f; glm::mat4 lightProjection = glm::ortho(-orthoSize, orthoSize, -orthoSize, orthoSize, near_plane, far_plane); 这行代码决定了从光源位置渲染阴影贴图的正交投影矩阵，他决定了阴影的覆盖范围，当设置为10时，硬阴影以及PCSS效果如下\n">
     <link rel="shortcut icon" href="/favicon.ico" />
 
     </head>
@@ -286,7 +286,18 @@
         <div class="widget--toc">
             <nav id="TableOfContents">
   <ol>
-    <li><a href="#级联阴影">级联阴影</a></li>
+    <li><a href="#级联阴影">级联阴影</a>
+      <ol>
+        <li><a href="#传统阴影做法与问题">传统阴影做法与问题</a></li>
+        <li><a href="#级联阴影的原理">级联阴影的原理</a>
+          <ol>
+            <li><a href="#视锥体分段">视锥体分段</a></li>
+            <li><a href="#光源空间中正交投影">光源空间中正交投影</a></li>
+          </ol>
+        </li>
+      </ol>
+    </li>
+    <li><a href="#游戏引擎实践">游戏引擎实践</a></li>
   </ol>
 </nav>
         </div>
@@ -394,7 +405,7 @@
 
 
                 <time class="article-time--reading">
-                    阅读时长: 1 分钟
+                    阅读时长: 5 分钟
                 </time>
             </div>
         
@@ -444,6 +455,434 @@
 <p>在OpenGL渲染器中已经实现了硬阴影以及PCF，PCSS，在这里再引入级联阴影</p>
 </blockquote>
 <h1 id="级联阴影">级联阴影
+</h1><h2 id="传统阴影做法与问题">传统阴影做法与问题
+</h2><blockquote>
+<p>截图来自我的OpenGL延迟渲染器</p>
+</blockquote>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="kt">float</span> <span class="n">orthoSize</span> <span class="o">=</span> <span class="mf">10.0f</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">glm</span><span class="o">::</span><span class="n">mat4</span> <span class="n">lightProjection</span> <span class="o">=</span> <span class="n">glm</span><span class="o">::</span><span class="n">ortho</span><span class="p">(</span><span class="o">-</span><span class="n">orthoSize</span><span class="p">,</span> <span class="n">orthoSize</span><span class="p">,</span> <span class="o">-</span><span class="n">orthoSize</span><span class="p">,</span> <span class="n">orthoSize</span><span class="p">,</span> <span class="n">near_plane</span><span class="p">,</span> <span class="n">far_plane</span><span class="p">);</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>这行代码决定了从光源位置渲染阴影贴图的正交投影矩阵，他决定了阴影的覆盖范围，当设置为10时，硬阴影以及PCSS效果如下</p>
+<p><img src="/%e6%88%aa%e5%b1%8f2025-10-27-12.01.48.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="截屏2025-10-27 12.01.48"
+	
+	
+></p>
+<p><img src="/%e6%88%aa%e5%b1%8f2025-10-27-12.01.58.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="截屏2025-10-27 12.01.58"
+	
+	
+></p>
+<p>当设置为100时，硬阴影与PCSS效果如下,可以看到硬阴影锯齿变得严重起来，软阴影也糊成一片了</p>
+<p><img src="/%e6%88%aa%e5%b1%8f2025-10-27-12.03.03.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="截屏2025-10-27 12.03.03"
+	
+	
+></p>
+<p><img src="/%e6%88%aa%e5%b1%8f2025-10-27-12.04.07.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="截屏2025-10-27 12.04.07"
+	
+	
+></p>
+<p>最后设置为1000,阴影以及完全失效了，因为覆盖区域太大了，整个模型也就占几个像素，导致模型边缘区域都是一样的判断结果，另外bias也失效了</p>
+<p><img src="/%e6%88%aa%e5%b1%8f2025-10-27-12.05.34.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="截屏2025-10-27 12.05.34"
+	
+	
+></p>
+<blockquote>
+<p>所以使用大场景时，阴影需要覆盖很大的区域，导致一大片位置只在阴影贴图中占一小部分，会导致近处模型阴影明显出问题</p>
+</blockquote>
+<h2 id="级联阴影的原理">级联阴影的原理
+</h2><p><img src="/v2-ec0d3e20458af48ed5ee5c5f18a5f402_1440w.jpg"
+	
+	
+	
+	loading="lazy"
+	
+		alt="img"
+	
+	
+></p>
+<ol>
+<li>首先对摄像机坐标系下的视锥体分割，分割为不同深度的分段</li>
+<li>在光源的视角下，生成每个视锥体分段的“包围盒”，这个包围盒是生成阴影贴图时正交投影的重要参考</li>
+</ol>
+<h3 id="视锥体分段">视锥体分段
+</h3><blockquote>
+<p>目的是把相机的视锥体（camera frustum）沿深度方向划分成多个“级联”</p>
+</blockquote>
+<p>常用方法叫PSSM</p>
+<p><img src="/v2-18974f07a73f8da9c208fd0d7e7ff95c_1440w.jpg"
+	
+	
+	
+	loading="lazy"
+	
+		alt="img"
+	
+	
+></p>
+<ol>
+<li>ds表示阴影贴图的像素长度</li>
+<li>dp屏幕像素长度</li>
+<li>dp/ds可以理解为阴影的锯齿误差</li>
+<li>为了使整个画面的阴影看起来质量一致，不因到相机的距离而发生明显质量变化， 应该让dp/ds 是一个常数（<strong>dp/ds</strong>：表示“一个阴影贴图像素在屏幕上看起来有多大”）</li>
+<li>由dp/dy = n/z，得出dp = ndy/z</li>
+<li>φ和θ分别表示曲面法线与屏幕和阴影贴图平面之间的角度。由dz/cosθ = dy/cosφ，得出dy = dzcosφ/cosθ</li>
+<li>所以dp = ndzcosφ/zcosθ，dp/ds = ndzcosφ/zdscosθ</li>
+</ol>
+<p>看看这个式子：
+</p>
+$$
+\frac{dp}{ds} = \frac{n dz \cos\phi}{z \, ds \cos\theta}
+$$<p>
+它告诉你阴影质量受哪些因素影响：</p>
+<div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th>因素</th>
+          <th>影响</th>
+          <th>含义</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><strong>n / z</strong></td>
+          <td>↓ 随距离增大而减小</td>
+          <td>物体越远，阴影在屏幕上越小 → 锯齿更明显</td>
+      </tr>
+      <tr>
+          <td><strong>cosφ / cosθ</strong></td>
+          <td>与法线角度相关</td>
+          <td>面倾斜时投影面积不同，阴影更“拉伸”</td>
+      </tr>
+      <tr>
+          <td><strong>dz/ds</strong></td>
+          <td>光源深度变化与贴图分辨率关系</td>
+          <td>光源投影范围越大（dz 大），每个像素越模糊</td>
+      </tr>
+      <tr>
+          <td><strong>→ dp/ds 越大，阴影越锯齿</strong></td>
+          <td></td>
+          <td></td>
+      </tr>
+  </tbody>
+</table></div>
+<ul>
+<li>最后如果用对数拆分方案，可以推导出</li>
+</ul>
+<p><img src="/v2-8d28bf60db42ef352f4b729843f1d79b_1440w.jpg"
+	
+	
+	
+	loading="lazy"
+	
+		alt="img"
+	
+	
+></p>
+<p>其中Z是视锥体分段处的值,对应上图中的Ci，n是近平面距离，f是远平面距离，N是视锥体分割的个数，一般是1~4个</p>
+<ul>
+<li>如果使用均匀拆分方案</li>
+</ul>
+<p><img src="/v2-bdeeccd64a3ebcbb9eabc7adbe4e8038_1440w.jpg"
+	
+	
+	
+	loading="lazy"
+	
+		alt="img"
+	
+	
+></p>
+<ul>
+<li>而PSSM方法是他们的折中，用系数λ来加权平均，</li>
+</ul>
+<p><img src="/v2-c183739f2e2414a76c5ca7e49a9114ab_1440w.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="img"
+	
+	
+></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="kt">float</span> <span class="n">nd</span> <span class="o">=</span> <span class="n">camera</span><span class="o">-&gt;</span><span class="n">near</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="kt">float</span> <span class="n">fd</span> <span class="o">=</span> <span class="n">camera</span><span class="o">-&gt;</span><span class="n">far</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="kt">float</span> <span class="n">lambda</span> <span class="o">=</span> <span class="mf">0.75</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="kt">float</span> <span class="n">ratio</span> <span class="o">=</span> <span class="n">fd</span> <span class="o">/</span> <span class="n">nd</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">frustums</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="n">near</span><span class="p">(</span><span class="n">nd</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="k">for</span><span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">1</span> <span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="err">分段个数</span> <span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> 
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="kt">float</span> <span class="n">si</span> <span class="o">=</span> <span class="n">i</span> <span class="o">/</span> <span class="p">(</span><span class="kt">float</span><span class="p">)</span><span class="err">分段个数</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="kt">float</span> <span class="n">t_near</span> <span class="o">=</span> <span class="n">lambda</span> <span class="o">*</span> <span class="p">(</span><span class="n">nd</span> <span class="o">*</span> <span class="n">powf</span><span class="p">(</span><span class="n">ratio</span><span class="p">,</span> <span class="n">si</span><span class="p">))</span> <span class="o">+</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">lambda</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">nd</span> <span class="o">+</span> <span class="p">(</span><span class="n">fd</span> <span class="o">-</span> <span class="n">nd</span><span class="p">)</span> <span class="o">*</span> <span class="n">si</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="kt">float</span> <span class="n">far</span> <span class="o">=</span> <span class="n">near</span> <span class="o">*</span> <span class="mf">1.005f</span><span class="p">;</span><span class="c1">//略微增加重合，避免断裂
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="n">frustums</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">near</span><span class="p">(</span><span class="n">near</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="n">frustums</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">].</span><span class="n">far</span><span class="p">(</span><span class="n">far</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="n">frustums</span><span class="p">[</span><span class="err">分段个数</span><span class="o">-</span><span class="mi">1</span><span class="p">].</span><span class="n">far</span><span class="p">(</span><span class="n">fd</span><span class="p">);</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>到这里就拿到了每个视锥体切片的Near和Far是多少，就是上图中的C0，C1&hellip;</p>
+<h3 id="光源空间中正交投影">光源空间中正交投影
+</h3><ol>
+<li>先计算出摄像机视锥体分块在世界空间中的坐标（就是计算了近平面和远平面组成的立方体的8个顶点的世界坐标）</li>
+</ol>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="n">glm</span><span class="o">::</span><span class="n">vec3</span> <span class="n">viewPos</span> <span class="o">=</span> <span class="n">camera</span><span class="o">-&gt;</span><span class="n">Position</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">glm</span><span class="o">::</span><span class="n">vec3</span> <span class="n">viewDir</span> <span class="o">=</span> <span class="n">camera</span><span class="o">-&gt;</span><span class="n">Front</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">glm</span><span class="o">::</span><span class="n">vec3</span> <span class="n">up</span><span class="p">(</span><span class="mf">0.0f</span><span class="p">,</span> <span class="mf">1.0f</span><span class="p">,</span> <span class="mf">0.0f</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="n">glm</span><span class="o">::</span><span class="n">vec3</span> <span class="n">right</span> <span class="o">=</span> <span class="n">glm</span><span class="o">::</span><span class="n">cross</span><span class="p">(</span><span class="n">viewDir</span><span class="p">,</span> <span class="n">up</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="k">for</span><span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span> <span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="err">分块个数</span> <span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> 
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">   <span class="n">Frustum</span><span class="o">&amp;</span> <span class="n">frustum</span> <span class="o">=</span> <span class="n">m_frustums</span><span class="p">[</span><span class="n">i</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">   <span class="n">glm</span><span class="o">::</span><span class="n">vec3</span> <span class="n">fc</span> <span class="o">=</span> <span class="n">viewPos</span> <span class="o">+</span> <span class="n">viewDir</span> <span class="o">*</span> <span class="n">frustum</span><span class="p">.</span><span class="n">far</span><span class="p">();</span> <span class="c1">// 当前的Near
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>   <span class="n">glm</span><span class="o">::</span><span class="n">vec3</span> <span class="n">nc</span> <span class="o">=</span> <span class="n">viewPos</span> <span class="o">+</span> <span class="n">viewDir</span> <span class="o">*</span> <span class="n">frustum</span><span class="p">.</span><span class="n">near</span><span class="p">();</span> <span class="c1">// 当前的Far
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>   <span class="n">right</span> <span class="o">=</span> <span class="n">glm</span><span class="o">::</span><span class="n">normalize</span><span class="p">(</span><span class="n">right</span><span class="p">);</span>   <span class="c1">// 相机的右方向
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>   <span class="n">up</span> <span class="o">=</span> <span class="n">glm</span><span class="o">::</span><span class="n">normalize</span><span class="p">(</span><span class="n">glm</span><span class="o">::</span><span class="n">cross</span><span class="p">(</span><span class="n">right</span><span class="p">,</span> <span class="n">viewDir</span><span class="p">));</span> <span class="c1">// 计算正交基的上方向
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>   <span class="c1">// 计算当前分片的近平面和远平面宽高的一半
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>   <span class="kt">float</span> <span class="n">near_height</span> <span class="o">=</span> <span class="n">tan</span><span class="p">(</span><span class="n">frustum</span><span class="p">.</span><span class="n">fov</span><span class="p">()</span> <span class="o">/</span> <span class="mf">2.0f</span><span class="p">)</span> <span class="o">*</span> <span class="n">frustum</span><span class="p">.</span><span class="n">near</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">   <span class="kt">float</span> <span class="n">near_width</span> <span class="o">=</span> <span class="n">near_height</span> <span class="o">*</span> <span class="n">frustum</span><span class="p">.</span><span class="n">ratio</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">   <span class="kt">float</span> <span class="n">far_height</span> <span class="o">=</span> <span class="n">tan</span><span class="p">(</span><span class="n">frustum</span><span class="p">.</span><span class="n">fov</span><span class="p">()</span> <span class="o">/</span> <span class="mf">2.0f</span><span class="p">)</span> <span class="o">*</span> <span class="n">frustum</span><span class="p">.</span><span class="n">far</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">   <span class="kt">float</span> <span class="n">far_width</span> <span class="o">=</span> <span class="n">far_height</span> <span class="o">*</span> <span class="n">frustum</span><span class="p">.</span><span class="n">ratio</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">   <span class="c1">//记录视锥8个顶点
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>   <span class="n">frustum</span><span class="p">.</span><span class="n">m_points</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">nc</span> <span class="o">-</span> <span class="n">up</span> <span class="o">*</span> <span class="n">near_height</span> <span class="o">-</span> <span class="n">right</span> <span class="o">*</span> <span class="n">near_width</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">   <span class="n">frustum</span><span class="p">.</span><span class="n">m_points</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">nc</span> <span class="o">+</span> <span class="n">up</span> <span class="o">*</span> <span class="n">near_height</span> <span class="o">-</span> <span class="n">right</span> <span class="o">*</span> <span class="n">near_width</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">   <span class="n">frustum</span><span class="p">.</span><span class="n">m_points</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">nc</span> <span class="o">+</span> <span class="n">up</span> <span class="o">*</span> <span class="n">near_height</span> <span class="o">+</span> <span class="n">right</span> <span class="o">*</span> <span class="n">near_width</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">   <span class="n">frustum</span><span class="p">.</span><span class="n">m_points</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">nc</span> <span class="o">-</span> <span class="n">up</span> <span class="o">*</span> <span class="n">near_height</span> <span class="o">+</span> <span class="n">right</span> <span class="o">*</span> <span class="n">near_width</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">   <span class="n">frustum</span><span class="p">.</span><span class="n">m_points</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span> <span class="o">=</span> <span class="n">fc</span> <span class="o">-</span> <span class="n">up</span> <span class="o">*</span> <span class="n">far_height</span> <span class="o">-</span> <span class="n">right</span> <span class="o">*</span> <span class="n">far_width</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">   <span class="n">frustum</span><span class="p">.</span><span class="n">m_points</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span> <span class="o">=</span> <span class="n">fc</span> <span class="o">+</span> <span class="n">up</span> <span class="o">*</span> <span class="n">far_height</span> <span class="o">-</span> <span class="n">right</span> <span class="o">*</span> <span class="n">far_width</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">   <span class="n">frustum</span><span class="p">.</span><span class="n">m_points</span><span class="p">[</span><span class="mi">6</span><span class="p">]</span> <span class="o">=</span> <span class="n">fc</span> <span class="o">+</span> <span class="n">up</span> <span class="o">*</span> <span class="n">far_height</span> <span class="o">+</span> <span class="n">right</span> <span class="o">*</span> <span class="n">far_width</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">   <span class="n">frustum</span><span class="p">.</span><span class="n">m_points</span><span class="p">[</span><span class="mi">7</span><span class="p">]</span> <span class="o">=</span> <span class="n">fc</span> <span class="o">-</span> <span class="n">up</span> <span class="o">*</span> <span class="n">far_height</span> <span class="o">+</span> <span class="n">right</span> <span class="o">*</span> <span class="n">far_width</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><ol start="2">
+<li>利用分块的各顶点坐标，计算摄像机视锥体分段的“包围盒”，从而计算出分块对应的正交投影矩阵（最终结果就是每个级联块都有了自己的变换矩阵，我想把模型放在哪个级联块中，就乘以他的变换矩阵）</li>
+</ol>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
+</span><span class="lnt">56
+</span><span class="lnt">57
+</span><span class="lnt">58
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="n">glm</span><span class="o">::</span><span class="n">mat4</span> <span class="n">lightProjMat</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="k">for</span><span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span> <span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="err">分块个数</span> <span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> 
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">   <span class="c1">//1. 找出光空间中八个顶点的最大最小z值（光源视角下z的范围）
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>   <span class="n">Frustum</span><span class="o">&amp;</span> <span class="n">frustum</span> <span class="o">=</span> <span class="n">m_frustums</span><span class="p">[</span><span class="n">i</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">   <span class="n">glm</span><span class="o">::</span><span class="n">vec3</span> <span class="n">max</span><span class="p">(</span><span class="o">-</span><span class="mf">1000.0f</span><span class="p">,</span> <span class="o">-</span><span class="mf">1000.0f</span><span class="p">,</span> <span class="mf">0.0f</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">   <span class="n">glm</span><span class="o">::</span><span class="n">vec3</span> <span class="n">min</span><span class="p">(</span><span class="mf">1000.0f</span><span class="p">,</span> <span class="mf">1000.0f</span><span class="p">,</span> <span class="mf">0.0f</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">   <span class="n">glm</span><span class="o">::</span><span class="n">vec4</span> <span class="n">transf</span> <span class="o">=</span> <span class="n">lightViewMat</span> <span class="o">*</span> <span class="n">glm</span><span class="o">::</span><span class="n">vec4</span><span class="p">(</span><span class="n">frustum</span><span class="p">.</span><span class="n">m_points</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mf">1.0f</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">   <span class="n">min</span><span class="p">.</span><span class="n">z</span> <span class="o">=</span> <span class="n">transf</span><span class="p">.</span><span class="n">z</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">   <span class="n">max</span><span class="p">.</span><span class="n">z</span> <span class="o">=</span> <span class="n">transf</span><span class="p">.</span><span class="n">z</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">   <span class="k">for</span><span class="p">(</span><span class="kt">int</span> <span class="n">j</span> <span class="o">=</span> <span class="mi">1</span> <span class="p">;</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="mi">8</span> <span class="p">;</span> <span class="n">j</span><span class="o">++</span><span class="p">)</span> 
+</span></span><span class="line"><span class="cl">   <span class="p">{</span>
+</span></span><span class="line"><span class="cl">     <span class="n">transf</span> <span class="o">=</span> <span class="n">lightViewMat</span> <span class="o">*</span> <span class="n">glm</span><span class="o">::</span><span class="n">vec4</span><span class="p">(</span><span class="n">frustum</span><span class="p">.</span><span class="n">m_points</span><span class="p">[</span><span class="n">j</span><span class="p">],</span> <span class="mf">1.0f</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">     <span class="k">if</span><span class="p">(</span><span class="n">transf</span><span class="p">.</span><span class="n">z</span> <span class="o">&gt;</span> <span class="n">max</span><span class="p">.</span><span class="n">z</span><span class="p">)</span> <span class="p">{</span> <span class="n">max</span><span class="p">.</span><span class="n">z</span> <span class="o">=</span> <span class="n">transf</span><span class="p">.</span><span class="n">z</span><span class="p">;</span> <span class="p">}</span>
+</span></span><span class="line"><span class="cl">     <span class="k">if</span><span class="p">(</span><span class="n">transf</span><span class="p">.</span><span class="n">z</span> <span class="o">&lt;</span> <span class="n">min</span><span class="p">.</span><span class="n">z</span><span class="p">)</span> <span class="p">{</span> <span class="n">min</span><span class="p">.</span><span class="n">z</span> <span class="o">=</span> <span class="n">transf</span><span class="p">.</span><span class="n">z</span><span class="p">;</span> <span class="p">}</span>
+</span></span><span class="line"><span class="cl">   <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="c1">//1.1 扩展光视锥体的大小，使其包括所有的遮挡物
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>   <span class="k">for</span><span class="p">(</span><span class="kt">int</span> <span class="n">j</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span> <span class="n">j</span><span class="o">&lt;</span><span class="err">场景中物体包围球个数</span><span class="p">;</span> <span class="n">j</span><span class="o">++</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">   <span class="p">{</span>
+</span></span><span class="line"><span class="cl">   	<span class="n">transf</span> <span class="o">=</span> <span class="n">lightViewMat</span> <span class="o">*</span> <span class="n">vec4f</span><span class="p">(</span><span class="n">objBSphereCenter</span><span class="p">[</span><span class="n">j</span><span class="p">],</span> <span class="mf">1.0f</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">		<span class="k">if</span><span class="p">(</span><span class="n">transf</span><span class="p">.</span><span class="n">z</span> <span class="o">+</span> <span class="n">objBSphereRadius</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">max</span><span class="p">.</span><span class="n">z</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="n">max</span><span class="p">.</span><span class="n">z</span> <span class="o">=</span> <span class="n">transf</span><span class="p">.</span><span class="n">z</span> <span class="o">+</span> <span class="n">objBSphereRadius</span><span class="p">[</span><span class="n">j</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">   <span class="p">}</span>
+</span></span><span class="line"><span class="cl">   <span class="c1">//2. 设光空间的正交投影矩阵为ortho，他的x,y∈[-1,1]，z∈[-tmax.z,-tmin.z]
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>   <span class="c1">//使用x,y∈[-1,1]，是因为每个分块的投影矩阵都可以使用单位x,y缩放平移后获得
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>   <span class="c1">//使用z∈[-tmax.z,-tmin.z]，是因为摄像机空间指向负Z方向，而glm::ortho传入的是近平面和远平面指向正Z方向
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>   <span class="n">glm</span><span class="o">::</span><span class="n">mat4</span> <span class="n">ortho</span> <span class="o">=</span> <span class="n">glm</span><span class="o">::</span><span class="n">ortho</span><span class="p">(</span><span class="o">-</span><span class="mf">1.0f</span><span class="p">,</span> <span class="mf">1.0f</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.0f</span><span class="p">,</span> <span class="mf">1.0f</span><span class="p">,</span> <span class="o">-</span><span class="n">tmax</span><span class="p">.</span><span class="n">z</span><span class="p">,</span> <span class="o">-</span><span class="n">tmin</span><span class="p">.</span><span class="n">z</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="c1">//2.1 在光空间中，找出视锥体切片各顶点的x、y的标准设备坐标范围。因为我们设的投影矩阵的x、y都是标准设备坐标，我们需要求出x、y的变化范围，以便对ortho进行缩放平移
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>   <span class="n">glm</span><span class="o">::</span><span class="n">mat4</span> <span class="n">lightVP</span> <span class="o">=</span> <span class="n">ortho</span> <span class="o">*</span> <span class="n">lightViewMat</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">   <span class="k">for</span><span class="p">(</span><span class="kt">int</span> <span class="n">j</span> <span class="o">=</span> <span class="mi">0</span> <span class="p">;</span> <span class="n">j</span> <span class="o">&lt;</span> <span class="mi">8</span> <span class="p">;</span> <span class="n">j</span><span class="o">++</span><span class="p">)</span> 
+</span></span><span class="line"><span class="cl">   <span class="p">{</span>
+</span></span><span class="line"><span class="cl">     <span class="n">transf</span> <span class="o">=</span> <span class="n">lightVP</span> <span class="o">*</span> <span class="n">glm</span><span class="o">::</span><span class="n">vec4</span><span class="p">(</span><span class="n">frustum</span><span class="p">.</span><span class="n">m_points</span><span class="p">[</span><span class="n">j</span><span class="p">],</span> <span class="mf">1.0f</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">     <span class="n">transf</span><span class="p">.</span><span class="n">x</span> <span class="o">/=</span> <span class="n">transf</span><span class="p">.</span><span class="n">w</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">     <span class="n">transf</span><span class="p">.</span><span class="n">y</span> <span class="o">/=</span> <span class="n">transf</span><span class="p">.</span><span class="n">w</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">     <span class="k">if</span><span class="p">(</span><span class="n">transf</span><span class="p">.</span><span class="n">x</span> <span class="o">&gt;</span> <span class="n">max</span><span class="p">.</span><span class="n">x</span><span class="p">)</span> <span class="p">{</span> <span class="n">max</span><span class="p">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">transf</span><span class="p">.</span><span class="n">x</span><span class="p">;</span> <span class="p">}</span>
+</span></span><span class="line"><span class="cl">     <span class="k">if</span><span class="p">(</span><span class="n">transf</span><span class="p">.</span><span class="n">x</span> <span class="o">&lt;</span> <span class="n">min</span><span class="p">.</span><span class="n">x</span><span class="p">)</span> <span class="p">{</span> <span class="n">min</span><span class="p">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">transf</span><span class="p">.</span><span class="n">x</span><span class="p">;</span> <span class="p">}</span>
+</span></span><span class="line"><span class="cl">     <span class="k">if</span><span class="p">(</span><span class="n">transf</span><span class="p">.</span><span class="n">y</span> <span class="o">&gt;</span> <span class="n">max</span><span class="p">.</span><span class="n">y</span><span class="p">)</span> <span class="p">{</span> <span class="n">max</span><span class="p">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">transf</span><span class="p">.</span><span class="n">y</span><span class="p">;</span> <span class="p">}</span>
+</span></span><span class="line"><span class="cl">     <span class="k">if</span><span class="p">(</span><span class="n">transf</span><span class="p">.</span><span class="n">y</span> <span class="o">&lt;</span> <span class="n">min</span><span class="p">.</span><span class="n">y</span><span class="p">)</span> <span class="p">{</span> <span class="n">min</span><span class="p">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">transf</span><span class="p">.</span><span class="n">y</span><span class="p">;</span> <span class="p">}</span>
+</span></span><span class="line"><span class="cl">   <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="c1">//2.2 根据正交投影矩阵的公式，设置缩放平移量(计算过程在后面)
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>   <span class="n">glm</span><span class="o">::</span><span class="n">vec2</span> <span class="n">scale</span><span class="p">(</span><span class="mf">2.0f</span> <span class="o">/</span> <span class="p">(</span><span class="n">max</span><span class="p">.</span><span class="n">x</span> <span class="o">-</span> <span class="n">min</span><span class="p">.</span><span class="n">x</span><span class="p">),</span> <span class="mf">2.0f</span> <span class="o">/</span> <span class="p">(</span><span class="n">max</span><span class="p">.</span><span class="n">y</span> <span class="o">-</span> <span class="n">min</span><span class="p">.</span><span class="n">y</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">   <span class="n">glm</span><span class="o">::</span><span class="n">vec2</span> <span class="n">offset</span><span class="p">(</span><span class="o">-</span><span class="mf">0.5f</span> <span class="o">*</span> <span class="p">(</span><span class="n">max</span><span class="p">.</span><span class="n">x</span> <span class="o">+</span> <span class="n">min</span><span class="p">.</span><span class="n">x</span><span class="p">)</span> <span class="o">*</span> <span class="n">scale</span><span class="p">.</span><span class="n">x</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.5f</span> <span class="o">*</span> <span class="p">(</span><span class="n">max</span><span class="p">.</span><span class="n">y</span> <span class="o">+</span> <span class="n">min</span><span class="p">.</span><span class="n">y</span><span class="p">)</span> <span class="o">*</span> <span class="n">scale</span><span class="p">.</span><span class="n">y</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">   <span class="n">glm</span><span class="o">::</span><span class="n">mat4</span> <span class="n">crop</span> <span class="o">=</span> <span class="n">glm</span><span class="o">::</span><span class="n">mat4</span><span class="p">(</span><span class="mf">1.0</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="c1">//2.3 设置缩放平移的变换矩阵
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>   <span class="n">crop</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">scale</span><span class="p">.</span><span class="n">x</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">   <span class="n">crop</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">scale</span><span class="p">.</span><span class="n">y</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">   <span class="n">crop</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">offset</span><span class="p">.</span><span class="n">x</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">   <span class="n">crop</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">offset</span><span class="p">.</span><span class="n">y</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">   <span class="n">crop</span> <span class="o">=</span> <span class="n">glm</span><span class="o">::</span><span class="n">transpose</span><span class="p">(</span><span class="n">crop</span><span class="p">);</span><span class="c1">//注意glm按列储存，实际矩阵要转置
+</span></span></span><span class="line"><span class="cl"><span class="c1">//2.4 计算出光空间中的正交投影矩阵
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>   <span class="n">lightProjMat</span> <span class="o">=</span> <span class="n">crop</span> <span class="o">*</span> <span class="n">ortho</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">   <span class="c1">//保存光空间的投影矩阵
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>   <span class="n">projection_matrices</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">lightProjMat</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">   <span class="c1">//保存世界坐标到光空间变换的矩阵
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>   <span class="n">crop_matrices</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">lightProjMat</span> <span class="o">*</span> <span class="n">lightViewMat</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><ol start="3">
+<li>计算出摄像机视锥体分块的远平面在摄像机空间中投影后的位置，并把他变换到[0.0，1.0]。这么做的目的是为了在中判断某个片段属于哪个分块</li>
+</ol>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="k">for</span><span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span> <span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="err">分块个数</span> <span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> 
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">   <span class="n">far_bounds</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span><span class="mf">0.5f</span><span class="o">*</span><span class="p">((</span><span class="o">-</span><span class="mf">1.0f</span> <span class="o">*</span> <span class="n">frustums</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">far</span><span class="p">()</span> <span class="o">*</span> <span class="n">projMat</span><span class="p">[</span><span class="mi">2</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="n">projMat</span><span class="p">[</span><span class="mi">3</span><span class="p">][</span><span class="mi">2</span><span class="p">])</span><span class="o">/</span>
+</span></span><span class="line"><span class="cl">   <span class="n">frustums</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">far</span><span class="p">())</span><span class="o">+</span><span class="mf">0.5f</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"> <span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h1 id="游戏引擎实践">游戏引擎实践
 </h1>
 </section>
 
@@ -781,12 +1220,16 @@
       
         
       
+        
+      
+        
+      
     
-      <span>📚 文章数: 41</span>
+      <span>📚 文章数: 43</span>
       <span>✍️ 总字数: 
         
         
-        141.37K
+        153.78K
       </span>
     </section>
 
