@@ -1,0 +1,1686 @@
+<!DOCTYPE html>
+<html lang="zh-cn" dir="ltr">
+    <head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'>
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+  <meta name="referrer" content="no-referrer-when-downgrade"><meta name='description' content="图像处理 这里介绍的就是什么是后处理，以及用三角形代替四边形的方法，这个我在OpenGL渲染器已经在使用了\n紧接着介绍图像处理的高斯滤波器是一种常用的滤波核，其形状是著名的钟形曲线：\n">
+<title>Image Space Effects 图像空间特效</title>
+
+<link rel='canonical' href='https://sdpyy1.github.io/p/image-space-effects-%E5%9B%BE%E5%83%8F%E7%A9%BA%E9%97%B4%E7%89%B9%E6%95%88/'>
+
+<link rel="stylesheet" href="/scss/style.min.6a692fd055deae459f2a9767f57f3855ba80cafd5041317f24f7360f6ca47cdf.css"><meta property='og:title' content="Image Space Effects 图像空间特效">
+<meta property='og:description' content="图像处理 这里介绍的就是什么是后处理，以及用三角形代替四边形的方法，这个我在OpenGL渲染器已经在使用了\n紧接着介绍图像处理的高斯滤波器是一种常用的滤波核，其形状是著名的钟形曲线：\n">
+<meta property='og:url' content='https://sdpyy1.github.io/p/image-space-effects-%E5%9B%BE%E5%83%8F%E7%A9%BA%E9%97%B4%E7%89%B9%E6%95%88/'>
+<meta property='og:site_name' content='wanfeng'>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='看书笔记' /><meta property='article:tag' content='实时渲染' /><meta property='article:tag' content='Real-Time Rendering 4th' /><meta property='article:published_time' content='2025-10-28T11:59:27&#43;08:00'/><meta property='article:modified_time' content='2025-10-28T11:59:27&#43;08:00'/><meta property='og:image' content='https://sdpyy1.github.io/202307131302667.png' />
+<meta name="twitter:title" content="Image Space Effects 图像空间特效">
+<meta name="twitter:description" content="图像处理 这里介绍的就是什么是后处理，以及用三角形代替四边形的方法，这个我在OpenGL渲染器已经在使用了\n紧接着介绍图像处理的高斯滤波器是一种常用的滤波核，其形状是著名的钟形曲线：\n"><meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content='https://sdpyy1.github.io/202307131302667.png' />
+    <link rel="shortcut icon" href="/favicon.ico" />
+
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="切换菜单">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        
+            
+            <figure class="site-avatar">
+                <a href="/">
+                
+                    
+                    
+                    
+                        
+                        <img src="/img/avatar_hu_f59158f730715054.png" width="300"
+                            height="300" class="site-logo" loading="lazy" alt="Avatar">
+                    
+                
+                </a>
+                
+                    <span class="emoji">🧐</span>
+                
+            </figure>
+            
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="/">wanfeng</a></h1>
+            <h2 class="site-description">Blog</h2>
+        </div>
+    </header><ol class="menu-social">
+            
+                <li>
+                    <a 
+                        href='https://space.bilibili.com/287473737'
+                        target="_blank"
+                        title="Bilibili"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-brand-bilibili"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 10a4 4 0 0 1 4 -4h10a4 4 0 0 1 4 4v6a4 4 0 0 1 -4 4h-10a4 4 0 0 1 -4 -4v-6z" /><path d="M8 3l2 3" /><path d="M16 3l-2 3" /><path d="M9 13v-2" /><path d="M15 11v2" /></svg>
+                        
+                    </a>
+                </li>
+            
+                <li>
+                    <a 
+                        href='https://github.com/sdpyy1'
+                        target="_blank"
+                        title="GitHub"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
+</svg>
+
+
+
+                        
+                    </a>
+                </li>
+            
+        </ol><ol class="menu" id="main-menu">
+        
+        
+        
+        <li >
+            <a href='/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>Home</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/about/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>About</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>Archives</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/search/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>Search</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/links/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5" />
+  <path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5" />
+</svg>
+
+
+
+                
+                <span>Links</span>
+            </a>
+        </li>
+        
+        <li class="menu-bottom-section">
+            <ol class="menu">
+                    
+                        <li id="i18n-switch">  
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-language" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M4 5h7" />
+  <path d="M9 3v2c0 4.418 -2.239 8 -5 8" />
+  <path d="M5 9c-.003 2.144 2.952 3.908 6.7 4" />
+  <path d="M12 20l4 -9l4 9" />
+  <path d="M19.1 18h-6.2" />
+</svg>
+
+
+
+                            <select name="language" title="language" onchange="window.location.href = this.selectedOptions[0].value">
+                                
+                                    <option value="https://sdpyy1.github.io/en/" >English</option>
+                                
+                                    <option value="https://sdpyy1.github.io/" selected>中文</option>
+                                
+                            </select>
+                        </li>
+                    
+                
+
+                
+                    <li id="dark-mode-toggle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <span>暗色模式</span>
+                    </li>
+                
+            </ol>
+        </li>
+    </ol>
+</aside>
+
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">目录</h2>
+        
+        <div class="widget--toc">
+            <nav id="TableOfContents">
+  <ol>
+    <li><a href="#图像处理">图像处理</a>
+      <ol>
+        <li><a href="#双边滤波">双边滤波</a></li>
+        <li><a href="#乒乓缓冲区后处理pass的资源管理方式">乒乓缓冲区（后处理Pass的资源管理方式）</a></li>
+      </ol>
+    </li>
+    <li><a href="#重投影技术">重投影技术</a>
+      <ol>
+        <li><a href="#反向重投影">反向重投影</a></li>
+        <li><a href="#正向重投影">正向重投影</a></li>
+      </ol>
+    </li>
+    <li><a href="#镜头光晕和泛光">镜头光晕和泛光</a></li>
+    <li><a href="#景深">景深</a></li>
+    <li><a href="#运动模糊">运动模糊</a></li>
+  </ol>
+</nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+            <main class="main full-width">
+    <article class="has-image main-article">
+    <header class="article-header">
+        <div class="article-image">
+            <a href="/p/image-space-effects-%E5%9B%BE%E5%83%8F%E7%A9%BA%E9%97%B4%E7%89%B9%E6%95%88/">
+                
+                    <img src="/202307131302667.png" loading="lazy" alt="Featured image of post Image Space Effects 图像空间特效" />
+                
+            </a>
+        </div>
+    
+
+    <div class="article-details">
+    
+    <header class="article-category">
+        
+        
+             
+            
+            
+            
+            <div class="category-hierarchy">
+                
+                    
+                    
+                    
+                        
+                    
+                     
+                    
+                    
+                    
+                    <a href="/categories/books/" 
+                       >
+                        Books
+                    </a>
+                    
+                    
+                    
+                        <span class="category-separator">/</span>
+                    
+                
+                    
+                    
+                    
+                        
+                    
+                        
+                    
+                     
+                    
+                    
+                    
+                    <a href="/categories/books/real-time-rendering-4th/" 
+                       >
+                        Real-Time Rendering 4th
+                    </a>
+                    
+                    
+                    
+                
+            </div>
+        
+    </header>
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="/p/image-space-effects-%E5%9B%BE%E5%83%8F%E7%A9%BA%E9%97%B4%E7%89%B9%E6%95%88/">Image Space Effects 图像空间特效</a>
+        </h2>
+    
+        
+    </div>
+
+    
+    
+    
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published">Oct 28, 2025</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-time--reading">
+                    阅读时长: 9 分钟
+                </time>
+            </div>
+        
+
+        
+            
+    </footer>
+    
+    
+</div>
+<style>
+    .category-hierarchy {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;  
+        margin-right: 12px;  
+        margin-bottom: 8px;  
+    }
+    
+    .category-separator {
+        color: #999;
+        user-select: none;
+        font-size: 1em;  
+    }
+    
+    .article-category a {
+        text-decoration: none;
+        padding: 6px 12px;  
+        border-radius: 6px;  
+        font-size: 0.95em;  
+        transition: all 0.2s ease;
+        line-height: 1.5;  
+    }
+    
+    .article-category a:hover {
+        opacity: 0.9;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 6px rgba(0,0,0,0.1);  
+    }
+</style>
+</header>
+
+    <section class="article-content">
+    
+    
+    <h1 id="图像处理">图像处理
+</h1><blockquote>
+<p>这里介绍的就是什么是后处理，以及用三角形代替四边形的方法，这个我在OpenGL渲染器已经在使用了</p>
+</blockquote>
+<p><img src="/202307061135551.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="img"
+	
+	
+></p>
+<p>紧接着介绍图像处理的高斯滤波器是一种常用的滤波核，其形状是著名的钟形曲线：</p>
+$$
+\operatorname{Gaussian}(x)=\left(\frac{1}{\sigma \sqrt{2 \pi}}\right) e^{-\frac{r^{2}}{2 \sigma^{2}}}
+\tag{12.1}
+$$<p>
+<img src="/image_EyiNW92NBT.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="img"
+	
+	
+></p>
+<p>将（b）中的权重乘上（c）中的权重，可以得到与（a）相同的权重，这表明两个滤波器实际上是等效的，因此是可分离的。使用（a）对一个像素进行滤波需要25个样本，而单独使用（b）和（c）对一个像素进行滤波分别只要5个样本，总共10个样本，这大大降低了计算量。</p>
+<p>边界像素怎么取？在 GPU 后处理里，一般有以下几种方式来“处理边界外的像素”：</p>
+<div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th>策略</th>
+          <th>名称</th>
+          <th>含义</th>
+          <th>视觉效果</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><strong>Clamp to Edge（边界钳制）</strong></td>
+          <td>最常用</td>
+          <td>超出范围的采样坐标自动钳制到最近的边界像素</td>
+          <td>✅ 边缘平滑、不会产生黑框</td>
+      </tr>
+      <tr>
+          <td><strong>Repeat（平铺）</strong></td>
+          <td>重复采样</td>
+          <td>超出范围部分从另一侧重头取样</td>
+          <td>🚫 不适合模糊，会出现重复图案</td>
+      </tr>
+      <tr>
+          <td><strong>Mirror（镜像）</strong></td>
+          <td>对称反射</td>
+          <td>超出边界部分以边界为轴镜像反射</td>
+          <td>✅ 比 clamp 更平滑，但略贵</td>
+      </tr>
+      <tr>
+          <td><strong>Constant / Black（填充0）</strong></td>
+          <td>超出范围直接返回黑色或常量</td>
+          <td>🚫 会产生黑边、亮度损失</td>
+          <td></td>
+      </tr>
+  </tbody>
+</table></div>
+<p>因为Shader中采样本身就可以不在像素中心，他可以自动插值，所以3*3的滤波核不需要采样9次，而是把采样点放在两个像素之间。通过调整样本的权重，以及样本采样的位置达到原来滤波核的效果。（比如采样点偏向权重高的一边，那自然插值就会分配更高的权重）</p>
+<p><img src="/202307061349068.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="img"
+	
+	
+></p>
+<p>下面讲了：</p>
+<ul>
+<li>圆盘滤波器能产生漂亮的虚化，但代价高；可用复数技巧实现高效近似。</li>
+<li>ComputerShader做这种操作效果更好（线程组共享内容，随意写入）</li>
+<li>“移动平均（Moving Average）”技巧：对每行（或列）第一个像素计算完整滤波和；后续像素只需：加上进入核的新样本；减去离开核的旧样本；每个像素的模糊结果都能在 <strong>O(1)</strong> 时间更新。</li>
+<li>下采样：先通过原图生成一张分辨率更低的图片，在低分辨率下进行滤波，再放大回去，效果类似，速度更快</li>
+</ul>
+<h2 id="双边滤波">双边滤波
+</h2><p>图像处理中，双边滤波指的是 <strong>滤波权重同时考虑两个“方面”</strong>：</p>
+<div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th>方面</th>
+          <th>解释</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td><strong>空间距离（Spatial）</strong></td>
+          <td>像素离中心的物理距离：越近权重越大（普通高斯模糊的做法）</td>
+      </tr>
+      <tr>
+          <td><strong>颜色差异 / 强度差异（Range / Intensity）</strong></td>
+          <td>像素颜色或亮度差异：越相近权重越大，越不同权重越小（边缘保留）</td>
+      </tr>
+  </tbody>
+</table></div>
+<p><img src="/202307061555689.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="img"
+	
+	
+></p>
+<p><img src="/202307131302667.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="img"
+	
+	
+></p>
+<p>使用像素着色器进行图像处理操作。其中左上角为原始图像，在其基础上进行了各种处理。右上角为高斯差分运算（Gaussian difference operation），左下角为边缘检测，右下角为边缘检测与原始图像混合后的合成图像。</p>
+<h2 id="乒乓缓冲区后处理pass的资源管理方式">乒乓缓冲区（后处理Pass的资源管理方式）
+</h2><ul>
+<li>使用 <strong>两个离屏缓冲区（Framebuffer / Texture）</strong> 交替作为输入和输出。</li>
+<li>流程示例：</li>
+</ul>
+<div class="table-wrapper"><table>
+  <thead>
+      <tr>
+          <th>Pass</th>
+          <th>输入</th>
+          <th>输出</th>
+      </tr>
+  </thead>
+  <tbody>
+      <tr>
+          <td>第1个Pass</td>
+          <td>缓冲区 A</td>
+          <td>缓冲区 B</td>
+      </tr>
+      <tr>
+          <td>第2个Pass</td>
+          <td>缓冲区 B</td>
+          <td>缓冲区 A</td>
+      </tr>
+      <tr>
+          <td>第3个Pass</td>
+          <td>缓冲区 A</td>
+          <td>缓冲区 B</td>
+      </tr>
+  </tbody>
+</table></div>
+<ul>
+<li>每个 Pass 都可以使用前一个 Pass 的输出作为输入，同时写入另一个缓冲区。</li>
+<li><strong>优点</strong>：不需要为每个中间结果创建新的纹理，节省 GPU 内存和管理成本。</li>
+</ul>
+<h1 id="重投影技术">重投影技术
+</h1><blockquote>
+<p>利用上一帧已经渲染的数据来渲染本帧</p>
+</blockquote>
+<h2 id="反向重投影">反向重投影
+</h2><p>会计算当前帧（t）和前一帧（t−1）的顶点位置。使用顶点着色中的z和w分量，像素着色器可以为t和t - 1时刻计算插值z/w，如果两帧之间的距离足够近，那么可以在前一帧的颜色缓冲中来对位置$\mathbf{p}_{i}^{t-1}$的颜色进行双线性查找，并使用这个颜色值来代替当前帧的颜色值，而不是重新计算一个新的着色值。</p>
+<p><img src="/202307131510213.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="img"
+	
+	
+></p>
+<p>淡绿色的位置上一帧也是可见的，所以可以重用，暗绿色上一帧不可见，所以需要计算</p>
+<p>为了获得更好的质量，还可以使用一个运行时平均滤波器（running-average filter）[1264, 1556]，它会逐步淘汰旧的着色值。它特别适用于空间抗锯齿（spatial antialiasing）、软阴影和全局光照。这个滤波器的描述如下：</p>
+$$
+\mathbf{c}_{f}\left(\mathbf{p}^{t}\right)=\alpha \mathbf{c}\left(\mathbf{p}^{t}\right)+(1-\alpha) \mathbf{c}\left(\mathbf{p}^{t-1}\right)
+\tag{12.2} 
+$$<p>其中$\mathbf{c}\left(\mathbf{p}^{t}\right)$是点$\mathbf{p}^{t}$上的新着色值，$\mathbf{c}\left(\mathbf{p}^{t-1}\right)$是前一帧中的重投影颜色，$\mathbf{c}_{f}\left(\mathbf{p}^{t}\right)
+$是应用滤波器之后的最终颜色。Nehab等人在某些用例中使用$α = 3/5$，但是他建议根据具体的渲染内容来尝试使用不同的值。</p>
+<h2 id="正向重投影">正向重投影
+</h2><p>正向重投影则是从第t - 1帧的像素开始，并将它们投影到第t帧中，因此不需要进行两次顶点着色。这意味着来自第t−1帧的像素会被分散到第t帧中，而反向重投影方法则会收集从第t−1帧到第t帧的像素值。反向重投影方法还需要处理那些变得可见的遮挡区域，通常会通过一些启发式的空洞填充方法来完成，即使用周围像素的信息来推断出缺失区域的值。Yu等人[1952]使用正向重投影方法，以一种廉价的方式来计算景深效果。Didyk等人[350]基于运动向量（motion vector），在第t−1帧中自适应地生成网格来避免空洞，而不是使用经典的空洞填充方法。这个网格是通过深度测试来进行渲染的，然后会将其投影到第t帧中，这意味着遮挡问题和折叠问题，是作为带深度测试的自适应三角形网格光栅化的一部分来进行处理的。Didyk等人将他们的方法从左眼重投影到右眼，从而为虚拟现实生成一对立体图像，这两个图像之间的相关性通常会很高。后来，Didyk等人[351]提出了一种感知驱动的方法（perceptually motivated method）来执行时域采样，例如：将帧率从40 Hz增加到120 Hz。</p>
+<h1 id="镜头光晕和泛光">镜头光晕和泛光
+</h1><p>光学现象</p>
+<ol>
+<li><strong>光晕（Halo）</strong>
+<ul>
+<li>由镜头晶体结构的径向纤维引起。</li>
+<li>外缘红色，内部紫色，环绕光源。</li>
+<li>尺寸恒定，与光源距离无关。</li>
+</ul>
+</li>
+<li><strong>绒毛状光环（Ciliary corona）</strong>
+<ul>
+<li>由透镜密度波动造成。</li>
+<li>表现为从光源向外辐射的射线。</li>
+</ul>
+</li>
+<li><strong>其他次要效果</strong>
+<ul>
+<li>光圈叶片 → 多边形图案</li>
+<li>玻璃凹槽 → 条状光线</li>
+<li>CCD溢出 → 泛光效果</li>
+<li>这些统称为 <strong>炫光效果（glare effect）</strong></li>
+</ul>
+</li>
+</ol>
+<hr>
+<p>数字化实现</p>
+<p>(1) 基本思路</p>
+<ul>
+<li>将光源或高亮像素分离出来（bright-pass filter）。</li>
+<li>对这些像素进行模糊处理（通常高斯模糊，也可以是径向或尖峰形状）。</li>
+<li>将模糊后的结果叠加回原图。</li>
+<li>可以下采样以降低计算量（½ 到 1/8 分辨率），再上采样回原图。</li>
+</ul>
+<p>(2) 镜头光晕纹理（Lens Flare Texture）</p>
+<ul>
+<li>使用纹理（例如一系列小正方块）模拟光晕效果。</li>
+<li>光源远离屏幕中心 → 光晕小且透明</li>
+<li>光源靠近屏幕中心 → 光晕大且不透明</li>
+<li>可以结合 <strong>屏幕空间可见性</strong> 调整亮度（遮挡检测）。</li>
+</ul>
+<p>(3) 条纹（Star streaks）</p>
+<ul>
+<li>使用 <strong>steerable filter</strong> 在给定方向上累加像素值。</li>
+<li>通常结合乒乓缓冲区和下采样，实现高效渲染。</li>
+<li>常用于光源周围的线性光条或星状光晕。</li>
+</ul>
+<p>(4) 泛光（Bloom）</p>
+<ul>
+<li>只保留过亮区域，暗部变黑 → bright-pass。</li>
+<li>对 bright-pass 图像进行模糊（高斯或锐化型）。</li>
+<li>模糊结果叠加回原图（加法混合）。</li>
+<li>可结合 HDR 渲染：先 tone-mapping，再叠加 bloom。</li>
+</ul>
+<p>(5) 优化技巧</p>
+<ul>
+<li><strong>低分辨率渲染</strong>：减少模糊计算量，扩大相对核尺寸。</li>
+<li><strong>多级下采样</strong>：可产生更广泛的模糊效果。</li>
+<li><strong>遮挡采样</strong>：如 Maughan 的 GPU 遮挡采样，调整光晕亮度。</li>
+<li><strong>累积历史帧</strong>：对动画物体形成条纹光晕或持久感。</li>
+</ul>
+<hr>
+<p>典型渲染流程（后处理管线）</p>
+<ol>
+<li><strong>场景渲染</strong> → 得到 HDR 场景缓冲。</li>
+<li><strong>Bright-pass 提取高亮像素</strong>。</li>
+<li><strong>模糊处理</strong>
+<ul>
+<li>可以径向模糊（halo）</li>
+<li>可以方向模糊（star streaks）</li>
+<li>使用低分辨率或乒乓缓冲区优化</li>
+</ul>
+</li>
+<li><strong>光晕纹理叠加</strong>
+<ul>
+<li>根据光源位置、遮挡信息调整大小与亮度</li>
+</ul>
+</li>
+<li><strong>合成</strong>
+<ul>
+<li>bloom 或 lens flare 结果加到原图</li>
+<li>tone mapping &amp; HDR → LDR</li>
+</ul>
+</li>
+</ol>
+<h1 id="景深">景深
+</h1><p><img src="/image_QQa1DAb17H.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="img"
+	
+	
+></p>
+<p><strong>累积缓冲区方法（Accumulate Buffer）</strong></p>
+<ul>
+<li>通过移动镜头位置（保持焦点固定），多次渲染图像并累积平均。</li>
+<li>焦点附近的像素保持清晰，远近场模糊。</li>
+<li>可以收敛到物理正确的ground-truth景深图像。</li>
+<li>缺点：渲染成本高，不适合实时应用。</li>
+</ul>
+<p><strong>分层渲染</strong>：</p>
+<ul>
+<li>
+<p>焦点层：清晰聚焦。</p>
+</li>
+<li>
+<p>远场层：模糊处理。</p>
+</li>
+<li>
+<p>近场层：模糊处理。</p>
+</li>
+<li>
+<p>通过改变裁剪平面和模糊处理，将层组合，形成景深。</p>
+</li>
+<li>
+<p>缺点：物体跨越多层时会产生突变；模糊不随距离连续变化。</p>
+</li>
+</ul>
+<p><strong>焦点外像素被扩散到弥散圆内。</strong></p>
+<p><strong>散射（Scatter）方法</strong>：</p>
+<ul>
+<li>将像素颜色散射到弥散圆覆盖的邻域像素。</li>
+<li>GPU上直接散射困难 → 可用Sprite渲染或可分离滤波。</li>
+</ul>
+<p><strong>聚集（Gather / Backward Mapping）方法</strong>：</p>
+<ul>
+<li>对每个像素，采样其弥散圆内的邻域像素颜色并聚合。</li>
+<li>可使用深度信息来调整模糊半径，效率高且可预测。</li>
+</ul>
+<p>现代算法通常结合前景/背景分层 + 可分离滤波 + 聚集方法。</p>
+<p><img src="/202308180930147.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="img"
+	
+	
+></p>
+<p>散射（scatter）操作是获取像素的着色值，并将其扩散到邻近区域的像素上，例如通过渲染一个圆形的sprite。在聚集操作中，相邻区域的值被采样并用于影响某一个像素。GPU的像素着色器经过优化，可以通过纹理采样来执行聚集操作。</p>
+<p><strong>近场与远场模糊处理</strong></p>
+<ul>
+<li><strong>近场</strong>：
+<ul>
+<li>独立图像渲染并模糊。</li>
+<li>使用alpha通道控制混合，避免清晰边缘被模糊。</li>
+</ul>
+</li>
+<li><strong>远场</strong>：
+<ul>
+<li>使用弥散圆半径插值焦点图像。</li>
+</ul>
+</li>
+<li><strong>组合</strong>：
+<ul>
+<li>根据弥散圆半径插值焦点、远场图像。</li>
+<li>使用近场alpha覆盖合成，形成自然的景深。</li>
+</ul>
+</li>
+</ul>
+<h1 id="运动模糊">运动模糊
+</h1><ul>
+<li><strong>本质</strong>：运动模糊是由于物体或相机在快门打开时间内移动，导致图像在时间上被平均，从而产生模糊。</li>
+<li><strong>电影中的运动模糊</strong>：
+<ul>
+<li>电影每秒24帧（FPS），快门通常在1/40s-1/60s。</li>
+<li>每一帧画面本身已经有运动模糊，所以即使24 FPS，画面也看起来平滑。</li>
+<li>快门时间越短（如1/500s），会产生“hyperkinetic”效果，看起来非常快、清晰。</li>
+</ul>
+</li>
+<li><strong>实时图形中的问题</strong>：
+<ul>
+<li>FPS 低于一定值时，运动显得跳跃。</li>
+<li>高速物体在没有运动模糊时出现“时间锯齿”（temporal aliasing）。</li>
+</ul>
+</li>
+</ul>
+<p>多帧累积（Frame Accumulation）</p>
+<ul>
+<li>思路：在一段时间内累积若干帧并求平均。</li>
+<li>问题：
+<ul>
+<li>会降低帧率（每帧需渲染多次）。</li>
+<li>快速移动物体容易出现鬼影。</li>
+</ul>
+</li>
+<li>优化：
+<ul>
+<li>滑动累积（sliding accumulation）：只渲染新帧，减去最早帧，累加当前帧。</li>
+</ul>
+</li>
+</ul>
+<p>b. 速度缓冲区（Velocity Buffer / Motion Vector）</p>
+<ul>
+<li>每个像素记录当前帧与上一帧在屏幕空间的位置差（速度向量）。</li>
+<li>用法：
+<ol>
+<li>渲染当前帧图像。</li>
+<li>根据速度缓冲区进行像素方向上的模糊。</li>
+<li>可在GPU中通过滤波、瓦片处理加速（tile-based max velocity）。</li>
+</ol>
+</li>
+<li>优点：
+<ul>
+<li>只需渲染一帧。</li>
+<li>可处理复杂场景的物体运动。</li>
+<li>支持遮挡处理（前景物体不被背景模糊覆盖）。</li>
+</ul>
+</li>
+</ul>
+<p>几何方法（Geometry-based Motion Blur）</p>
+<ul>
+<li>对快速移动物体生成拉伸的几何（如剑挥动）。</li>
+<li>缺点：
+<ul>
+<li>计算复杂。</li>
+<li>需要对每个物体处理纹理和高光。</li>
+</ul>
+</li>
+</ul>
+<p>结合景深与运动模糊</p>
+<ul>
+<li>通过对速度向量和弥散圆结合，统一处理景深模糊和运动模糊。</li>
+<li>可使用随机采样、交错采样、快速重建等技术减少采样噪声。</li>
+</ul>
+<p><img src="/202308181445428.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="img"
+	
+	
+></p>
+
+</section>
+
+
+    <footer class="article-footer">
+    
+    <section class="article-tags">
+        
+            <a href="/tags/%E7%9C%8B%E4%B9%A6%E7%AC%94%E8%AE%B0/">看书笔记</a>
+        
+            <a href="/tags/%E5%AE%9E%E6%97%B6%E6%B8%B2%E6%9F%93/">实时渲染</a>
+        
+            <a href="/tags/real-time-rendering-4th/">Real-Time Rendering 4th</a>
+        
+    </section>
+
+
+    
+    <section class="article-copyright">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
+</svg>
+
+
+
+        <span>Licensed under CC BY-NC-SA 4.0</span>
+    </section>
+    </footer>
+
+
+    
+        <link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css"integrity="sha384-n8MVd4RsNIU0tAv4ct0nTaAbDJwPJzDEaqSD1odI&#43;WdtXRGWt2kTvGFasHpSy3SV"crossorigin="anonymous"
+            ><script 
+                src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"integrity="sha384-XjKyOOlGwcjNTAIQHIpgOno0Hl1YQqzUOEleOLALmuqehneUG&#43;vnGctmUb0ZY0l8"crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"integrity="sha384-&#43;VBxd3r6XgURycqtZ117nYw44OOcIax56Z4dCRWbxyPt0Koah1uHoK0o4&#43;/RRE05"crossorigin="anonymous"
+                defer
+                >
+            </script><script>
+    window.addEventListener("DOMContentLoaded", () => {
+	const mainArticleElement = document.querySelector(".main-article");
+        renderMathInElement(mainArticleElement, {
+            delimiters: [
+                { left: "$$", right: "$$", display: true },
+                { left: "$", right: "$", display: false },
+                { left: "\\(", right: "\\)", display: false },
+                { left: "\\[", right: "\\]", display: true }
+            ],
+            ignoredClasses: ["gist"]
+        });})
+</script>
+
+    
+</article>
+
+    
+
+    
+
+<aside class="related-content--wrapper">
+    <h2 class="section-title">相关文章</h2>
+    <div class="related-content">
+        <div class="flex article-list--tile">
+            
+                
+<article class="article-card has-image">
+    <a href="/p/global-illumination-%E5%85%A8%E5%B1%80%E5%85%89%E7%85%A7/">
+        
+        <div class="article-image-card">
+            
+                <img src="/202307031150341.png" loading="lazy" data-key="" data-hash="/202307031150341.png"/>
+            
+
+            
+            <div class="article-overlay">
+                <h2 class="article-title">Global Illumination 全局光照</h2>
+            </div>
+        </div>
+        
+    </a>
+
+    <style>
+     
+    .article-card {
+        background: rgba(255, 255, 255, 0.25);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        margin: 10px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .article-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    }
+
+    .article-card a {
+        display: flex;
+        flex-direction: column;
+        text-decoration: none;
+        color: inherit;
+        height: 100%;
+    }
+
+     
+    .article-image-card {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        overflow: hidden;
+    }
+    .article-image-card img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+    .article-image-card:hover img {
+        transform: scale(1.05);
+    }
+
+     
+    .article-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: rgba(0,0,0,0.3);  
+        padding: 10px;
+        box-sizing: border-box;
+        text-align: center;
+    }
+    .article-overlay .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #fff;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .article-card.no-image .article-details {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 15px;
+    }
+    .article-card.no-image .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #222;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .articles-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 20px;
+    }
+    </style>
+</article>
+            
+                
+<article class="article-card has-image">
+    <a href="/p/local-illumination-%E5%B1%80%E9%83%A8%E5%85%89%E7%85%A7/">
+        
+        <div class="article-image-card">
+            
+                <img src="/202306151248940.png" loading="lazy" data-key="" data-hash="/202306151248940.png"/>
+            
+
+            
+            <div class="article-overlay">
+                <h2 class="article-title">Local Illumination 局部光照</h2>
+            </div>
+        </div>
+        
+    </a>
+
+    <style>
+     
+    .article-card {
+        background: rgba(255, 255, 255, 0.25);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        margin: 10px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .article-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    }
+
+    .article-card a {
+        display: flex;
+        flex-direction: column;
+        text-decoration: none;
+        color: inherit;
+        height: 100%;
+    }
+
+     
+    .article-image-card {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        overflow: hidden;
+    }
+    .article-image-card img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+    .article-image-card:hover img {
+        transform: scale(1.05);
+    }
+
+     
+    .article-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: rgba(0,0,0,0.3);  
+        padding: 10px;
+        box-sizing: border-box;
+        text-align: center;
+    }
+    .article-overlay .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #fff;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .article-card.no-image .article-details {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 15px;
+    }
+    .article-card.no-image .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #222;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .articles-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 20px;
+    }
+    </style>
+</article>
+            
+                
+<article class="article-card has-image">
+    <a href="/p/physically-based-shading2-%E5%9F%BA%E4%BA%8E%E7%89%A9%E7%90%86%E7%9A%84%E7%9D%80%E8%89%B2/">
+        
+        <div class="article-image-card">
+            
+                <img src="/20230611105147.png" loading="lazy" data-key="" data-hash="/20230611105147.png"/>
+            
+
+            
+            <div class="article-overlay">
+                <h2 class="article-title">Physically Based Shading(2) 基于物理的着色</h2>
+            </div>
+        </div>
+        
+    </a>
+
+    <style>
+     
+    .article-card {
+        background: rgba(255, 255, 255, 0.25);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        margin: 10px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .article-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    }
+
+    .article-card a {
+        display: flex;
+        flex-direction: column;
+        text-decoration: none;
+        color: inherit;
+        height: 100%;
+    }
+
+     
+    .article-image-card {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        overflow: hidden;
+    }
+    .article-image-card img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+    .article-image-card:hover img {
+        transform: scale(1.05);
+    }
+
+     
+    .article-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: rgba(0,0,0,0.3);  
+        padding: 10px;
+        box-sizing: border-box;
+        text-align: center;
+    }
+    .article-overlay .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #fff;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .article-card.no-image .article-details {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 15px;
+    }
+    .article-card.no-image .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #222;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .articles-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 20px;
+    }
+    </style>
+</article>
+            
+                
+<article class="article-card has-image">
+    <a href="/p/physically-based-shading-1-%E5%85%89%E4%B8%8E%E9%A2%9C%E8%89%B2/">
+        
+        <div class="article-image-card">
+            
+                <img src="/202306132029525.png" loading="lazy" data-key="" data-hash="/202306132029525.png"/>
+            
+
+            
+            <div class="article-overlay">
+                <h2 class="article-title">Physically Based Shading (1) 光与颜色</h2>
+            </div>
+        </div>
+        
+    </a>
+
+    <style>
+     
+    .article-card {
+        background: rgba(255, 255, 255, 0.25);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        margin: 10px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .article-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    }
+
+    .article-card a {
+        display: flex;
+        flex-direction: column;
+        text-decoration: none;
+        color: inherit;
+        height: 100%;
+    }
+
+     
+    .article-image-card {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        overflow: hidden;
+    }
+    .article-image-card img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+    .article-image-card:hover img {
+        transform: scale(1.05);
+    }
+
+     
+    .article-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: rgba(0,0,0,0.3);  
+        padding: 10px;
+        box-sizing: border-box;
+        text-align: center;
+    }
+    .article-overlay .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #fff;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .article-card.no-image .article-details {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 15px;
+    }
+    .article-card.no-image .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #222;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .articles-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 20px;
+    }
+    </style>
+</article>
+            
+        </div>
+    </div>
+</aside>
+
+     
+    
+        
+    <script
+    src="https://giscus.app/client.js"
+    data-repo="sdpyy1/sdpyy1.github.io"
+    data-repo-id="R_kgDOQEycpQ"
+    data-category="Announcements"
+    data-category-id="DIC_kwDOQEycpc4Cwz7v"
+    data-mapping="pathname"
+    data-strict="0"
+    data-reactions-enabled="1"
+    data-emit-metadata="0"
+    data-input-position="top"
+    data-theme="light"
+    data-lang="en"
+    data-loading=""
+    crossorigin="anonymous"
+    async
+></script>
+<script>
+    function setGiscusTheme(theme) {
+        let giscus = document.querySelector("iframe.giscus-frame");
+        if (giscus) {
+            giscus.contentWindow.postMessage(
+                {
+                    giscus: {
+                        setConfig: {
+                            theme: theme,
+                        },
+                    },
+                },
+                "https://giscus.app"
+            );
+        }
+    }
+
+    (function () {
+        addEventListener("message", (e) => {
+            if (event.origin !== "https://giscus.app") return;
+            handler();
+        });
+        window.addEventListener("onColorSchemeChange", handler);
+
+        function handler() {
+            if (document.documentElement.dataset.scheme === "light") {
+                setGiscusTheme('light');
+            } else {
+                setGiscusTheme('light');
+            }
+        }
+    })();
+</script>
+
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+            2020 - 
+        
+        2025 爱喝东方树叶
+    </section>
+    <section style="display: flex; gap: 30px; align-items: center;">
+      
+      
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+      <span>📚 文章数: 44</span>
+      <span>✍️ 总字数: 
+        
+        
+        158.06K
+      </span>
+    </section>
+
+    <section class="powerby">
+    
+    <div class="busuanzi-footer">
+        <span id="busuanzi_container_site_pv">
+          本站总访问量<span id="busuanzi_value_site_pv"></span>次
+        </span>
+        <span id="busuanzi_container_site_uv">
+          本站访客数<span id="busuanzi_value_site_uv"></span>人次
+        </span>
+      </div></section>
+
+</footer>
+
+
+    
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    
+    <div class="pswp__bg"></div>
+
+    
+    <div class="pswp__scroll-wrap">
+
+        
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                
+                
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                        <div class="pswp__preloader__cut">
+                            <div class="pswp__preloader__donut"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div>
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js"integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo="crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js"integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU="crossorigin="anonymous"
+                defer
+                >
+            </script><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css"crossorigin="anonymous"
+            ><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css"crossorigin="anonymous"
+            >
+
+            </main>
+        </div>
+        <script 
+                src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js"integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z&#43;KMkF24hUW8WePSA9HM="crossorigin="anonymous"
+                
+                >
+            </script><script type="text/javascript" src="/ts/main.1e9a3bafd846ced4c345d084b355fb8c7bae75701c338f8a1f8a82c780137826.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>

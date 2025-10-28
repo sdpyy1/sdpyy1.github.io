@@ -7,7 +7,440 @@
         <generator>Hugo -- gohugo.io</generator>
         <language>zh-cn</language>
         <copyright>爱喝东方树叶</copyright>
-        <lastBuildDate>Sat, 25 Oct 2025 13:59:45 +0800</lastBuildDate><atom:link href="https://sdpyy1.github.io/tags/%E7%9C%8B%E4%B9%A6%E7%AC%94%E8%AE%B0/index.xml" rel="self" type="application/rss+xml" /><item>
+        <lastBuildDate>Tue, 28 Oct 2025 11:59:27 +0800</lastBuildDate><atom:link href="https://sdpyy1.github.io/tags/%E7%9C%8B%E4%B9%A6%E7%AC%94%E8%AE%B0/index.xml" rel="self" type="application/rss+xml" /><item>
+        <title>Image Space Effects 图像空间特效</title>
+        <link>https://sdpyy1.github.io/p/image-space-effects-%E5%9B%BE%E5%83%8F%E7%A9%BA%E9%97%B4%E7%89%B9%E6%95%88/</link>
+        <pubDate>Tue, 28 Oct 2025 11:59:27 +0800</pubDate>
+        
+        <guid>https://sdpyy1.github.io/p/image-space-effects-%E5%9B%BE%E5%83%8F%E7%A9%BA%E9%97%B4%E7%89%B9%E6%95%88/</guid>
+        <description>&lt;img src="https://sdpyy1.github.io/202307131302667.png" alt="Featured image of post Image Space Effects 图像空间特效" /&gt;&lt;h1 id=&#34;图像处理&#34;&gt;图像处理
+&lt;/h1&gt;&lt;blockquote&gt;
+&lt;p&gt;这里介绍的就是什么是后处理，以及用三角形代替四边形的方法，这个我在OpenGL渲染器已经在使用了&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/202307061135551.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;img&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;紧接着介绍图像处理的高斯滤波器是一种常用的滤波核，其形状是著名的钟形曲线：&lt;/p&gt;
+$$
+\operatorname{Gaussian}(x)=\left(\frac{1}{\sigma \sqrt{2 \pi}}\right) e^{-\frac{r^{2}}{2 \sigma^{2}}}
+\tag{12.1}
+$$&lt;p&gt;
+&lt;img src=&#34;https://sdpyy1.github.io/image_EyiNW92NBT.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;img&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;将（b）中的权重乘上（c）中的权重，可以得到与（a）相同的权重，这表明两个滤波器实际上是等效的，因此是可分离的。使用（a）对一个像素进行滤波需要25个样本，而单独使用（b）和（c）对一个像素进行滤波分别只要5个样本，总共10个样本，这大大降低了计算量。&lt;/p&gt;
+&lt;p&gt;边界像素怎么取？在 GPU 后处理里，一般有以下几种方式来“处理边界外的像素”：&lt;/p&gt;
+&lt;table&gt;
+  &lt;thead&gt;
+      &lt;tr&gt;
+          &lt;th&gt;策略&lt;/th&gt;
+          &lt;th&gt;名称&lt;/th&gt;
+          &lt;th&gt;含义&lt;/th&gt;
+          &lt;th&gt;视觉效果&lt;/th&gt;
+      &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;strong&gt;Clamp to Edge（边界钳制）&lt;/strong&gt;&lt;/td&gt;
+          &lt;td&gt;最常用&lt;/td&gt;
+          &lt;td&gt;超出范围的采样坐标自动钳制到最近的边界像素&lt;/td&gt;
+          &lt;td&gt;✅ 边缘平滑、不会产生黑框&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;strong&gt;Repeat（平铺）&lt;/strong&gt;&lt;/td&gt;
+          &lt;td&gt;重复采样&lt;/td&gt;
+          &lt;td&gt;超出范围部分从另一侧重头取样&lt;/td&gt;
+          &lt;td&gt;🚫 不适合模糊，会出现重复图案&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;strong&gt;Mirror（镜像）&lt;/strong&gt;&lt;/td&gt;
+          &lt;td&gt;对称反射&lt;/td&gt;
+          &lt;td&gt;超出边界部分以边界为轴镜像反射&lt;/td&gt;
+          &lt;td&gt;✅ 比 clamp 更平滑，但略贵&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;strong&gt;Constant / Black（填充0）&lt;/strong&gt;&lt;/td&gt;
+          &lt;td&gt;超出范围直接返回黑色或常量&lt;/td&gt;
+          &lt;td&gt;🚫 会产生黑边、亮度损失&lt;/td&gt;
+          &lt;td&gt;&lt;/td&gt;
+      &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;因为Shader中采样本身就可以不在像素中心，他可以自动插值，所以3*3的滤波核不需要采样9次，而是把采样点放在两个像素之间。通过调整样本的权重，以及样本采样的位置达到原来滤波核的效果。（比如采样点偏向权重高的一边，那自然插值就会分配更高的权重）&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/202307061349068.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;img&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;下面讲了：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;圆盘滤波器能产生漂亮的虚化，但代价高；可用复数技巧实现高效近似。&lt;/li&gt;
+&lt;li&gt;ComputerShader做这种操作效果更好（线程组共享内容，随意写入）&lt;/li&gt;
+&lt;li&gt;“移动平均（Moving Average）”技巧：对每行（或列）第一个像素计算完整滤波和；后续像素只需：加上进入核的新样本；减去离开核的旧样本；每个像素的模糊结果都能在 &lt;strong&gt;O(1)&lt;/strong&gt; 时间更新。&lt;/li&gt;
+&lt;li&gt;下采样：先通过原图生成一张分辨率更低的图片，在低分辨率下进行滤波，再放大回去，效果类似，速度更快&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;双边滤波&#34;&gt;双边滤波
+&lt;/h2&gt;&lt;p&gt;图像处理中，双边滤波指的是 &lt;strong&gt;滤波权重同时考虑两个“方面”&lt;/strong&gt;：&lt;/p&gt;
+&lt;table&gt;
+  &lt;thead&gt;
+      &lt;tr&gt;
+          &lt;th&gt;方面&lt;/th&gt;
+          &lt;th&gt;解释&lt;/th&gt;
+      &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;strong&gt;空间距离（Spatial）&lt;/strong&gt;&lt;/td&gt;
+          &lt;td&gt;像素离中心的物理距离：越近权重越大（普通高斯模糊的做法）&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;&lt;strong&gt;颜色差异 / 强度差异（Range / Intensity）&lt;/strong&gt;&lt;/td&gt;
+          &lt;td&gt;像素颜色或亮度差异：越相近权重越大，越不同权重越小（边缘保留）&lt;/td&gt;
+      &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/202307061555689.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;img&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/202307131302667.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;img&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;使用像素着色器进行图像处理操作。其中左上角为原始图像，在其基础上进行了各种处理。右上角为高斯差分运算（Gaussian difference operation），左下角为边缘检测，右下角为边缘检测与原始图像混合后的合成图像。&lt;/p&gt;
+&lt;h2 id=&#34;乒乓缓冲区后处理pass的资源管理方式&#34;&gt;乒乓缓冲区（后处理Pass的资源管理方式）
+&lt;/h2&gt;&lt;ul&gt;
+&lt;li&gt;使用 &lt;strong&gt;两个离屏缓冲区（Framebuffer / Texture）&lt;/strong&gt; 交替作为输入和输出。&lt;/li&gt;
+&lt;li&gt;流程示例：&lt;/li&gt;
+&lt;/ul&gt;
+&lt;table&gt;
+  &lt;thead&gt;
+      &lt;tr&gt;
+          &lt;th&gt;Pass&lt;/th&gt;
+          &lt;th&gt;输入&lt;/th&gt;
+          &lt;th&gt;输出&lt;/th&gt;
+      &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+      &lt;tr&gt;
+          &lt;td&gt;第1个Pass&lt;/td&gt;
+          &lt;td&gt;缓冲区 A&lt;/td&gt;
+          &lt;td&gt;缓冲区 B&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;第2个Pass&lt;/td&gt;
+          &lt;td&gt;缓冲区 B&lt;/td&gt;
+          &lt;td&gt;缓冲区 A&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;第3个Pass&lt;/td&gt;
+          &lt;td&gt;缓冲区 A&lt;/td&gt;
+          &lt;td&gt;缓冲区 B&lt;/td&gt;
+      &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;ul&gt;
+&lt;li&gt;每个 Pass 都可以使用前一个 Pass 的输出作为输入，同时写入另一个缓冲区。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;优点&lt;/strong&gt;：不需要为每个中间结果创建新的纹理，节省 GPU 内存和管理成本。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h1 id=&#34;重投影技术&#34;&gt;重投影技术
+&lt;/h1&gt;&lt;blockquote&gt;
+&lt;p&gt;利用上一帧已经渲染的数据来渲染本帧&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h2 id=&#34;反向重投影&#34;&gt;反向重投影
+&lt;/h2&gt;&lt;p&gt;会计算当前帧（t）和前一帧（t−1）的顶点位置。使用顶点着色中的z和w分量，像素着色器可以为t和t - 1时刻计算插值z/w，如果两帧之间的距离足够近，那么可以在前一帧的颜色缓冲中来对位置$\mathbf{p}_{i}^{t-1}$的颜色进行双线性查找，并使用这个颜色值来代替当前帧的颜色值，而不是重新计算一个新的着色值。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/202307131510213.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;img&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;淡绿色的位置上一帧也是可见的，所以可以重用，暗绿色上一帧不可见，所以需要计算&lt;/p&gt;
+&lt;p&gt;为了获得更好的质量，还可以使用一个运行时平均滤波器（running-average filter）[1264, 1556]，它会逐步淘汰旧的着色值。它特别适用于空间抗锯齿（spatial antialiasing）、软阴影和全局光照。这个滤波器的描述如下：&lt;/p&gt;
+$$
+\mathbf{c}_{f}\left(\mathbf{p}^{t}\right)=\alpha \mathbf{c}\left(\mathbf{p}^{t}\right)+(1-\alpha) \mathbf{c}\left(\mathbf{p}^{t-1}\right)
+\tag{12.2} 
+$$&lt;p&gt;其中$\mathbf{c}\left(\mathbf{p}^{t}\right)$是点$\mathbf{p}^{t}$上的新着色值，$\mathbf{c}\left(\mathbf{p}^{t-1}\right)$是前一帧中的重投影颜色，$\mathbf{c}_{f}\left(\mathbf{p}^{t}\right)
+$是应用滤波器之后的最终颜色。Nehab等人在某些用例中使用$α = 3/5$，但是他建议根据具体的渲染内容来尝试使用不同的值。&lt;/p&gt;
+&lt;h2 id=&#34;正向重投影&#34;&gt;正向重投影
+&lt;/h2&gt;&lt;p&gt;正向重投影则是从第t - 1帧的像素开始，并将它们投影到第t帧中，因此不需要进行两次顶点着色。这意味着来自第t−1帧的像素会被分散到第t帧中，而反向重投影方法则会收集从第t−1帧到第t帧的像素值。反向重投影方法还需要处理那些变得可见的遮挡区域，通常会通过一些启发式的空洞填充方法来完成，即使用周围像素的信息来推断出缺失区域的值。Yu等人[1952]使用正向重投影方法，以一种廉价的方式来计算景深效果。Didyk等人[350]基于运动向量（motion vector），在第t−1帧中自适应地生成网格来避免空洞，而不是使用经典的空洞填充方法。这个网格是通过深度测试来进行渲染的，然后会将其投影到第t帧中，这意味着遮挡问题和折叠问题，是作为带深度测试的自适应三角形网格光栅化的一部分来进行处理的。Didyk等人将他们的方法从左眼重投影到右眼，从而为虚拟现实生成一对立体图像，这两个图像之间的相关性通常会很高。后来，Didyk等人[351]提出了一种感知驱动的方法（perceptually motivated method）来执行时域采样，例如：将帧率从40 Hz增加到120 Hz。&lt;/p&gt;
+&lt;h1 id=&#34;镜头光晕和泛光&#34;&gt;镜头光晕和泛光
+&lt;/h1&gt;&lt;p&gt;光学现象&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;strong&gt;光晕（Halo）&lt;/strong&gt;
+&lt;ul&gt;
+&lt;li&gt;由镜头晶体结构的径向纤维引起。&lt;/li&gt;
+&lt;li&gt;外缘红色，内部紫色，环绕光源。&lt;/li&gt;
+&lt;li&gt;尺寸恒定，与光源距离无关。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;绒毛状光环（Ciliary corona）&lt;/strong&gt;
+&lt;ul&gt;
+&lt;li&gt;由透镜密度波动造成。&lt;/li&gt;
+&lt;li&gt;表现为从光源向外辐射的射线。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;其他次要效果&lt;/strong&gt;
+&lt;ul&gt;
+&lt;li&gt;光圈叶片 → 多边形图案&lt;/li&gt;
+&lt;li&gt;玻璃凹槽 → 条状光线&lt;/li&gt;
+&lt;li&gt;CCD溢出 → 泛光效果&lt;/li&gt;
+&lt;li&gt;这些统称为 &lt;strong&gt;炫光效果（glare effect）&lt;/strong&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;hr&gt;
+&lt;p&gt;数字化实现&lt;/p&gt;
+&lt;p&gt;(1) 基本思路&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;将光源或高亮像素分离出来（bright-pass filter）。&lt;/li&gt;
+&lt;li&gt;对这些像素进行模糊处理（通常高斯模糊，也可以是径向或尖峰形状）。&lt;/li&gt;
+&lt;li&gt;将模糊后的结果叠加回原图。&lt;/li&gt;
+&lt;li&gt;可以下采样以降低计算量（½ 到 1/8 分辨率），再上采样回原图。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;(2) 镜头光晕纹理（Lens Flare Texture）&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;使用纹理（例如一系列小正方块）模拟光晕效果。&lt;/li&gt;
+&lt;li&gt;光源远离屏幕中心 → 光晕小且透明&lt;/li&gt;
+&lt;li&gt;光源靠近屏幕中心 → 光晕大且不透明&lt;/li&gt;
+&lt;li&gt;可以结合 &lt;strong&gt;屏幕空间可见性&lt;/strong&gt; 调整亮度（遮挡检测）。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;(3) 条纹（Star streaks）&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;使用 &lt;strong&gt;steerable filter&lt;/strong&gt; 在给定方向上累加像素值。&lt;/li&gt;
+&lt;li&gt;通常结合乒乓缓冲区和下采样，实现高效渲染。&lt;/li&gt;
+&lt;li&gt;常用于光源周围的线性光条或星状光晕。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;(4) 泛光（Bloom）&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;只保留过亮区域，暗部变黑 → bright-pass。&lt;/li&gt;
+&lt;li&gt;对 bright-pass 图像进行模糊（高斯或锐化型）。&lt;/li&gt;
+&lt;li&gt;模糊结果叠加回原图（加法混合）。&lt;/li&gt;
+&lt;li&gt;可结合 HDR 渲染：先 tone-mapping，再叠加 bloom。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;(5) 优化技巧&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;低分辨率渲染&lt;/strong&gt;：减少模糊计算量，扩大相对核尺寸。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;多级下采样&lt;/strong&gt;：可产生更广泛的模糊效果。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;遮挡采样&lt;/strong&gt;：如 Maughan 的 GPU 遮挡采样，调整光晕亮度。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;累积历史帧&lt;/strong&gt;：对动画物体形成条纹光晕或持久感。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;hr&gt;
+&lt;p&gt;典型渲染流程（后处理管线）&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;strong&gt;场景渲染&lt;/strong&gt; → 得到 HDR 场景缓冲。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Bright-pass 提取高亮像素&lt;/strong&gt;。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;模糊处理&lt;/strong&gt;
+&lt;ul&gt;
+&lt;li&gt;可以径向模糊（halo）&lt;/li&gt;
+&lt;li&gt;可以方向模糊（star streaks）&lt;/li&gt;
+&lt;li&gt;使用低分辨率或乒乓缓冲区优化&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;光晕纹理叠加&lt;/strong&gt;
+&lt;ul&gt;
+&lt;li&gt;根据光源位置、遮挡信息调整大小与亮度&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;合成&lt;/strong&gt;
+&lt;ul&gt;
+&lt;li&gt;bloom 或 lens flare 结果加到原图&lt;/li&gt;
+&lt;li&gt;tone mapping &amp;amp; HDR → LDR&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h1 id=&#34;景深&#34;&gt;景深
+&lt;/h1&gt;&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/image_QQa1DAb17H.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;img&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;累积缓冲区方法（Accumulate Buffer）&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;通过移动镜头位置（保持焦点固定），多次渲染图像并累积平均。&lt;/li&gt;
+&lt;li&gt;焦点附近的像素保持清晰，远近场模糊。&lt;/li&gt;
+&lt;li&gt;可以收敛到物理正确的ground-truth景深图像。&lt;/li&gt;
+&lt;li&gt;缺点：渲染成本高，不适合实时应用。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;分层渲染&lt;/strong&gt;：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;焦点层：清晰聚焦。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;远场层：模糊处理。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;近场层：模糊处理。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;通过改变裁剪平面和模糊处理，将层组合，形成景深。&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;缺点：物体跨越多层时会产生突变；模糊不随距离连续变化。&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;焦点外像素被扩散到弥散圆内。&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;散射（Scatter）方法&lt;/strong&gt;：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;将像素颜色散射到弥散圆覆盖的邻域像素。&lt;/li&gt;
+&lt;li&gt;GPU上直接散射困难 → 可用Sprite渲染或可分离滤波。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;聚集（Gather / Backward Mapping）方法&lt;/strong&gt;：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;对每个像素，采样其弥散圆内的邻域像素颜色并聚合。&lt;/li&gt;
+&lt;li&gt;可使用深度信息来调整模糊半径，效率高且可预测。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;现代算法通常结合前景/背景分层 + 可分离滤波 + 聚集方法。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/202308180930147.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;img&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;散射（scatter）操作是获取像素的着色值，并将其扩散到邻近区域的像素上，例如通过渲染一个圆形的sprite。在聚集操作中，相邻区域的值被采样并用于影响某一个像素。GPU的像素着色器经过优化，可以通过纹理采样来执行聚集操作。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;近场与远场模糊处理&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;近场&lt;/strong&gt;：
+&lt;ul&gt;
+&lt;li&gt;独立图像渲染并模糊。&lt;/li&gt;
+&lt;li&gt;使用alpha通道控制混合，避免清晰边缘被模糊。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;远场&lt;/strong&gt;：
+&lt;ul&gt;
+&lt;li&gt;使用弥散圆半径插值焦点图像。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;组合&lt;/strong&gt;：
+&lt;ul&gt;
+&lt;li&gt;根据弥散圆半径插值焦点、远场图像。&lt;/li&gt;
+&lt;li&gt;使用近场alpha覆盖合成，形成自然的景深。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h1 id=&#34;运动模糊&#34;&gt;运动模糊
+&lt;/h1&gt;&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;本质&lt;/strong&gt;：运动模糊是由于物体或相机在快门打开时间内移动，导致图像在时间上被平均，从而产生模糊。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;电影中的运动模糊&lt;/strong&gt;：
+&lt;ul&gt;
+&lt;li&gt;电影每秒24帧（FPS），快门通常在1/40s-1/60s。&lt;/li&gt;
+&lt;li&gt;每一帧画面本身已经有运动模糊，所以即使24 FPS，画面也看起来平滑。&lt;/li&gt;
+&lt;li&gt;快门时间越短（如1/500s），会产生“hyperkinetic”效果，看起来非常快、清晰。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;实时图形中的问题&lt;/strong&gt;：
+&lt;ul&gt;
+&lt;li&gt;FPS 低于一定值时，运动显得跳跃。&lt;/li&gt;
+&lt;li&gt;高速物体在没有运动模糊时出现“时间锯齿”（temporal aliasing）。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;多帧累积（Frame Accumulation）&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;思路：在一段时间内累积若干帧并求平均。&lt;/li&gt;
+&lt;li&gt;问题：
+&lt;ul&gt;
+&lt;li&gt;会降低帧率（每帧需渲染多次）。&lt;/li&gt;
+&lt;li&gt;快速移动物体容易出现鬼影。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;优化：
+&lt;ul&gt;
+&lt;li&gt;滑动累积（sliding accumulation）：只渲染新帧，减去最早帧，累加当前帧。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;b. 速度缓冲区（Velocity Buffer / Motion Vector）&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;每个像素记录当前帧与上一帧在屏幕空间的位置差（速度向量）。&lt;/li&gt;
+&lt;li&gt;用法：
+&lt;ol&gt;
+&lt;li&gt;渲染当前帧图像。&lt;/li&gt;
+&lt;li&gt;根据速度缓冲区进行像素方向上的模糊。&lt;/li&gt;
+&lt;li&gt;可在GPU中通过滤波、瓦片处理加速（tile-based max velocity）。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/li&gt;
+&lt;li&gt;优点：
+&lt;ul&gt;
+&lt;li&gt;只需渲染一帧。&lt;/li&gt;
+&lt;li&gt;可处理复杂场景的物体运动。&lt;/li&gt;
+&lt;li&gt;支持遮挡处理（前景物体不被背景模糊覆盖）。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;几何方法（Geometry-based Motion Blur）&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;对快速移动物体生成拉伸的几何（如剑挥动）。&lt;/li&gt;
+&lt;li&gt;缺点：
+&lt;ul&gt;
+&lt;li&gt;计算复杂。&lt;/li&gt;
+&lt;li&gt;需要对每个物体处理纹理和高光。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;结合景深与运动模糊&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;通过对速度向量和弥散圆结合，统一处理景深模糊和运动模糊。&lt;/li&gt;
+&lt;li&gt;可使用随机采样、交错采样、快速重建等技术减少采样噪声。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/202308181445428.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;img&#34;
+	
+	
+&gt;&lt;/p&gt;
+</description>
+        </item>
+        <item>
         <title>Global Illumination 全局光照</title>
         <link>https://sdpyy1.github.io/p/global-illumination-%E5%85%A8%E5%B1%80%E5%85%89%E7%85%A7/</link>
         <pubDate>Sat, 25 Oct 2025 13:59:45 +0800</pubDate>
