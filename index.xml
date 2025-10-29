@@ -7,7 +7,459 @@
         <generator>Hugo -- gohugo.io</generator>
         <language>zh-cn</language>
         <copyright>爱喝东方树叶</copyright>
-        <lastBuildDate>Wed, 29 Oct 2025 12:17:56 +0800</lastBuildDate><atom:link href="https://sdpyy1.github.io/index.xml" rel="self" type="application/rss+xml" /><item>
+        <lastBuildDate>Wed, 29 Oct 2025 13:51:52 +0800</lastBuildDate><atom:link href="https://sdpyy1.github.io/index.xml" rel="self" type="application/rss+xml" /><item>
+        <title>Beyond Polygons 超越多边形</title>
+        <link>https://sdpyy1.github.io/p/beyond-polygons-%E8%B6%85%E8%B6%8A%E5%A4%9A%E8%BE%B9%E5%BD%A2/</link>
+        <pubDate>Wed, 29 Oct 2025 13:51:52 +0800</pubDate>
+        
+        <guid>https://sdpyy1.github.io/p/beyond-polygons-%E8%B6%85%E8%B6%8A%E5%A4%9A%E8%BE%B9%E5%BD%A2/</guid>
+        <description>&lt;img src="https://sdpyy1.github.io/202308191853823.png" alt="Featured image of post Beyond Polygons 超越多边形" /&gt;&lt;blockquote&gt;
+&lt;p&gt;这里主要说出了三角形渲染，还有其他的渲染方式，主要是了解各种优化渲染技巧&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/202308181916610.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;img&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;h1 id=&#34;天空盒&#34;&gt;天空盒
+&lt;/h1&gt;&lt;blockquote&gt;
+&lt;p&gt;&amp;hellip;&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h1 id=&#34;光场渲染&#34;&gt;光场渲染
+&lt;/h1&gt;&lt;h3 id=&#34;radiance-捕获与计算摄影&#34;&gt;Radiance 捕获与计算摄影
+&lt;/h3&gt;&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Radiance&lt;/strong&gt;（辐射亮度）可以在：
+&lt;ul&gt;
+&lt;li&gt;不同位置&lt;/li&gt;
+&lt;li&gt;不同方向&lt;/li&gt;
+&lt;li&gt;不同时间&lt;/li&gt;
+&lt;li&gt;不同光照条件
+下进行捕获。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;计算摄影&lt;/strong&gt;领域研究如何从这些捕获的数据中提取有用结果，例如高动态范围成像（HDR）、光照重建等。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;​&lt;/p&gt;
+&lt;h3 id=&#34;基于图像的物体表示&#34;&gt;基于图像的物体表示
+&lt;/h3&gt;&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Lumigraph&lt;/strong&gt; 和 &lt;strong&gt;光场渲染（Light-field Rendering）&lt;/strong&gt;：
+&lt;ul&gt;
+&lt;li&gt;通过一组离散观察点捕获物体。&lt;/li&gt;
+&lt;li&gt;给定一个新视角，通过&lt;strong&gt;在已存储视图之间插值&lt;/strong&gt;生成新视图。&lt;/li&gt;
+&lt;li&gt;类似于&lt;strong&gt;全息摄影（Holography）&lt;/strong&gt;：用二维视图数组表示物体。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;优点&lt;/strong&gt;：
+&lt;ul&gt;
+&lt;li&gt;能够表示任意复杂表面与光照。&lt;/li&gt;
+&lt;li&gt;显示速率几乎恒定，与物体几何复杂度无关。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;缺点&lt;/strong&gt;：
+&lt;ul&gt;
+&lt;li&gt;数据量大，需要存储大量视图。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h1 id=&#34;sprite和图层&#34;&gt;Sprite和图层
+&lt;/h1&gt;&lt;p&gt;&lt;strong&gt;Sprite（精灵图）&lt;/strong&gt;：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;屏幕上可移动的图像元素，例如鼠标光标、游戏角色。&lt;/li&gt;
+&lt;li&gt;不一定是矩形，支持透明像素。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;简单sprite&lt;/strong&gt;：每个像素直接映射到屏幕像素。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;动画sprite&lt;/strong&gt;：通过显示不同的sprite序列生成动画。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;通用sprite&lt;/strong&gt;：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;将纹理渲染到始终面向观众的多边形（通常是四边形）上。&lt;/li&gt;
+&lt;li&gt;支持大小调整和拉伸。&lt;/li&gt;
+&lt;li&gt;Alpha通道提供透明度和边缘抗锯齿。&lt;/li&gt;
+&lt;li&gt;可包含深度信息，使sprite有三维位置。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;场景可以看作是一系列&lt;strong&gt;sprite层&lt;/strong&gt;：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;典型例子：二维序列帧动画（cel animation）。&lt;/li&gt;
+&lt;li&gt;每层都有深度信息，用于确定前后关系。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;渲染顺序&lt;/strong&gt;：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;画家算法（Painter’s Algorithm）：从后向前渲染，无需z-buffer。&lt;/li&gt;
+&lt;li&gt;相机移动时：
+&lt;ul&gt;
+&lt;li&gt;物体变大 → 可使用相同sprite或mipmap处理。&lt;/li&gt;
+&lt;li&gt;前景与背景的相对覆盖可通过修改sprite层位置调整。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/202308191053337.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;img&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;h1 id=&#34;广告牌技术&#34;&gt;广告牌技术
+&lt;/h1&gt;&lt;p&gt;基于观察方向来修改纹理矩形朝向的技术被称为广告牌技术（billboarding），这个矩形被称为广告牌（billboard）&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/202308191139790.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;img&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;这就是通过两个向量构建正交基的办法：首先，计算 &lt;strong&gt;right 向量&lt;/strong&gt;：
+&lt;/p&gt;
+$$
+\mathbf{r} = \mathbf{u} \times \mathbf{n}
+$$&lt;p&gt;
+然后，用 &lt;strong&gt;right 向量&lt;/strong&gt; 和法线重新计算一个正交的 up 向量：
+&lt;/p&gt;
+$$
+\mathbf{u}&#39; = \mathbf{n} \times \mathbf{r}
+$$&lt;p&gt;
+最终得到一个标准正交基：
+&lt;/p&gt;
+$$
+\{\mathbf{r}, \mathbf{u}&#39;, \mathbf{n}\}
+$$&lt;p&gt;
+这样 $\mathbf{r}$、$\mathbf{u}&amp;rsquo;$ 和 $\mathbf{n}$ 三个向量两两垂直。&lt;/p&gt;
+&lt;p&gt;有了这些初步的准备，剩下的主要任务就是决定用什么表面法线和up向量来定义广告牌的方向。&lt;strong&gt;构建正交基 + 平移 + 缩放的操作，其核心目的就是生成模型变换矩阵（Model Matrix），也就是把广告牌从局部模型空间变换到世界空间的矩阵。&lt;/strong&gt;&lt;/p&gt;
+&lt;h2 id=&#34;屏幕对齐screen-aligned的广告牌&#34;&gt;屏幕对齐（screen-aligned）的广告牌
+&lt;/h2&gt;&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;法线向量&lt;/strong&gt;：
+&lt;/p&gt;
+$$
+  \mathbf{n} = -\mathbf{v}_n
+  $$&lt;ul&gt;
+&lt;li&gt;$\mathbf{v}_n$ 是视平面法线，指向远离观察点。&lt;/li&gt;
+&lt;li&gt;法线指向观察者。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;Up 向量&lt;/strong&gt;：
+&lt;/p&gt;
+$$
+  \mathbf{u} = \text{camera up vector}
+  $$&lt;ul&gt;
+&lt;li&gt;定义了广告牌在视平面上的上方向。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;Right 向量&lt;/strong&gt;：
+&lt;/p&gt;
+$$
+  \mathbf{r} = \mathbf{u} \times \mathbf{n}
+  $$&lt;ul&gt;
+&lt;li&gt;由 up 和法线叉乘得到，完成正交基。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;&lt;strong&gt;旋转矩阵&lt;/strong&gt;：
+&lt;/p&gt;
+$$
+  R = [\mathbf{r} \;\; \mathbf{u} \;\; \mathbf{n}]
+  $$&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;面向世界world-oriented的广告牌&#34;&gt;面向世界（world oriented）的广告牌
+&lt;/h2&gt;&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/202308191554483.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;img&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;两种不同对齐方式的广告牌的俯视图。根据不同的对齐方法，五块广告牌的朝向也不同。&lt;/p&gt;
+&lt;table&gt;
+  &lt;thead&gt;
+      &lt;tr&gt;
+          &lt;th&gt;特性&lt;/th&gt;
+          &lt;th&gt;屏幕对齐（Screen-aligned）&lt;/th&gt;
+          &lt;th&gt;面向视点（Viewpoint-oriented）&lt;/th&gt;
+      &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+      &lt;tr&gt;
+          &lt;td&gt;法线方向&lt;/td&gt;
+          &lt;td&gt;固定指向视平面&lt;/td&gt;
+          &lt;td&gt;指向观察者&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;扭曲情况&lt;/td&gt;
+          &lt;td&gt;对所有sprite相同，远处可能被拉伸&lt;/td&gt;
+          &lt;td&gt;遵循真实透视，投影形变正确&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;使用场景&lt;/td&gt;
+          &lt;td&gt;小sprite、文本注释、地图标记&lt;/td&gt;
+          &lt;td&gt;粒子效果、火焰、烟雾、爆炸等&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;渲染复杂度&lt;/td&gt;
+          &lt;td&gt;低&lt;/td&gt;
+          &lt;td&gt;高，需要每帧计算法线&lt;/td&gt;
+      &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;p&gt;Wang [1839, 1840]详细介绍了微软飞行模拟器产品中所使用的云建模和渲染技术。每片云都由5到400块广告牌组成，但是只需要16种不同的基本sprite纹理即可实现各种各样的云，因为这些基本的sprite纹理可以使用非均匀缩放和旋转来进行修改，从而组合形成各种各样类型的云。还会根据距离云中心的距离来修改该点的透明度，从而模拟云的形成和消散。为了节省处理时间，远处的云都被渲染为一组环绕场景的8个全景纹理，类似于天空盒。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/202308191853823.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;img&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;h2 id=&#34;轴向广告牌&#34;&gt;轴向广告牌
+&lt;/h2&gt;&lt;p&gt;最后一种常见类型的广告牌被称为轴向广告牌（axial billboarding）。在这个方案中，被纹理化的物体通常并不会直接面对观察者。相反，它可以围绕一些固定的世界空间轴进行旋转，并在这个范围内尽可能多地面向观察者。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/202308192013423.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;img&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;当观察者在场景中移动时，灌木广告牌会发生旋转以面向前方。在这个例子中，灌木从南面被照亮，因此不断变化的视野会使得整体着色随着旋转而发生变化。&lt;/p&gt;
+&lt;table&gt;
+  &lt;thead&gt;
+      &lt;tr&gt;
+          &lt;th&gt;广告牌类型&lt;/th&gt;
+          &lt;th&gt;法线朝向&lt;/th&gt;
+          &lt;th&gt;Up 向量&lt;/th&gt;
+          &lt;th&gt;特点&lt;/th&gt;
+          &lt;th&gt;示例&lt;/th&gt;
+      &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+      &lt;tr&gt;
+          &lt;td&gt;屏幕对齐（Screen-aligned）&lt;/td&gt;
+          &lt;td&gt;固定视平面法线&lt;/td&gt;
+          &lt;td&gt;相机 up&lt;/td&gt;
+          &lt;td&gt;固定旋转矩阵，适合小sprite/文本&lt;/td&gt;
+          &lt;td&gt;HUD、标记&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;面向视点（Viewpoint-oriented）&lt;/td&gt;
+          &lt;td&gt;指向观察者&lt;/td&gt;
+          &lt;td&gt;尽量对齐世界 up&lt;/td&gt;
+          &lt;td&gt;可保持透视形变&lt;/td&gt;
+          &lt;td&gt;粒子效果、火焰、爆炸&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;轴向（Axial）&lt;/td&gt;
+          &lt;td&gt;尽量面向观察者，但绕固定轴&lt;/td&gt;
+          &lt;td&gt;世界 up&lt;/td&gt;
+          &lt;td&gt;保持直立，适合圆柱形对称物体&lt;/td&gt;
+          &lt;td&gt;远景树木、光柱、激光束&lt;/td&gt;
+      &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;h2 id=&#34;impostor&#34;&gt;Impostor
+&lt;/h2&gt;&lt;p&gt;Impostor 是一个广告牌，通过渲染复杂物体到纹理上，然后将纹理映射到广告牌上，替代原始几何体。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/202308192106566.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;img&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;在左边，通过视锥体从侧面观察物体，从而创建了一个impostor。观察方向朝向物体的中心点\mathbf{c}，使用这个相机设置渲染一副图像，并将其用作impostor纹理。如右侧所示，将imposter纹理应用于一个四边形上。impostor的中心等于原始物体的中心，法线（从imposter中心发出）直接指向视点。&lt;/p&gt;
+&lt;h1 id=&#34;位移技术&#34;&gt;位移技术
+&lt;/h1&gt;&lt;p&gt;&lt;strong&gt;通过图像编码几何信息&lt;/strong&gt;：不仅是颜色，也包括高度、深度、法线&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;优势&lt;/strong&gt;：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;减少几何复杂度&lt;/li&gt;
+&lt;li&gt;与传统impostor或sprite相比，渲染更真实&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;应用场景&lt;/strong&gt;：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;远景人群、粒子系统、点云&lt;/li&gt;
+&lt;li&gt;复杂表面细节建模（纹理化模拟几何）&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h1 id=&#34;粒子系统&#34;&gt;粒子系统
+&lt;/h1&gt;&lt;blockquote&gt;
+&lt;p&gt;等学习GPU粒子时再记录&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;&lt;strong&gt;定义&lt;/strong&gt;：由独立微小物体组成的集合，通过算法控制运动和生命周期（创建、移动、修改、删除）。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;应用&lt;/strong&gt;：火、烟、爆炸、水流、星系等自然现象和特效。&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;渲染&lt;/strong&gt;：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;每个粒子可以是单像素、轨迹线段或四边形广告牌（sprite）。&lt;/li&gt;
+&lt;li&gt;圆形粒子可只考虑位置，不必考虑旋转方向。&lt;/li&gt;
+&lt;li&gt;可以用几何着色器生成，也可用顶点着色器生成，后者更高效。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;纹理&lt;/strong&gt;：可使用颜色、法线、法线贴图等。&lt;/p&gt;
+&lt;h1 id=&#34;点渲染&#34;&gt;点渲染
+&lt;/h1&gt;&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;概念&lt;/strong&gt;：使用点（point）作为基本图元来表示物体表面，然后通过高斯滤波填补点之间的空隙。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;历史&lt;/strong&gt;：
+&lt;ul&gt;
+&lt;li&gt;1985 年，Levoy 和 Whitted 首次提出。&lt;/li&gt;
+&lt;li&gt;约 15 年后再次兴起，原因：
+&lt;ol&gt;
+&lt;li&gt;计算能力提升，支持交互速率渲染；&lt;/li&gt;
+&lt;li&gt;激光扫描仪等设备提供高密度点云数据（RGB-D、LIDAR、Kinect、iPhone TrueDepth、Tango、自动驾驶激光雷达等）。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;点云数据&lt;/strong&gt;：每个点通常包含位置、颜色/强度，有时还有分类信息（建筑、路面等）。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/202308211536110.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;img&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;h1 id=&#34;体素&#34;&gt;体素
+&lt;/h1&gt;&lt;h3 id=&#34;体素化输入来源&#34;&gt;&lt;strong&gt;体素化输入来源&lt;/strong&gt;
+&lt;/h3&gt;&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;点云&lt;/strong&gt;：扫描设备生成的任意位置点。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;多边形网格&lt;/strong&gt;：通过 GPU 加速体素化。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;医学影像&lt;/strong&gt;：通过切片堆叠生成体素。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;图像集合&lt;/strong&gt;：可通过视觉外壳（visual hull）或轮廓切割生成体素。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;常见体素化方法&#34;&gt;&lt;strong&gt;常见体素化方法&lt;/strong&gt;
+&lt;/h3&gt;&lt;ol&gt;
+&lt;li&gt;&lt;strong&gt;六正交视图体素化&lt;/strong&gt;（Karabassi et al.）：
+&lt;ul&gt;
+&lt;li&gt;从六个方向（上下左右前后）渲染深度。&lt;/li&gt;
+&lt;li&gt;标记不可见体素为内部体素。&lt;/li&gt;
+&lt;li&gt;优点：可识别内部体素；缺点：漏掉六视图不可见特征。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;视觉外壳体素化&lt;/strong&gt;（Loop et al.）：
+&lt;ul&gt;
+&lt;li&gt;基于相机捕获的轮廓图像生成体素。&lt;/li&gt;
+&lt;li&gt;只在可见像素位置生成体素，适合人体重建。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;切片渲染体素化&lt;/strong&gt;（Eisemann &amp;amp; Decoret）：
+&lt;ul&gt;
+&lt;li&gt;使用 32bit 渲染目标存储多层体素（slicemap）。&lt;/li&gt;
+&lt;li&gt;优点：可在 GPU 上一次渲染多层。&lt;/li&gt;
+&lt;li&gt;局限：只生成表面体素，无法识别内部体素。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;现代 GPU 体素化&lt;/strong&gt;：
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;计算着色器 + 图像加载/存储操作&lt;/strong&gt;：
+&lt;ul&gt;
+&lt;li&gt;支持随机读写纹理。&lt;/li&gt;
+&lt;li&gt;可进行保守光栅化，记录与体素重叠的三角形。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;可直接构建 &lt;strong&gt;SVO（Sparse Voxel Octree）&lt;/strong&gt;：
+&lt;ul&gt;
+&lt;li&gt;自上而下体素化非空节点。&lt;/li&gt;
+&lt;li&gt;自下而上 mipmap 填充结构。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;动态场景处理&lt;/strong&gt;：
+&lt;ul&gt;
+&lt;li&gt;渐进式更新体素（progressive voxelization）。&lt;/li&gt;
+&lt;li&gt;使用深度缓冲清除/设置体素。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h3 id=&#34;体素类型&#34;&gt;&lt;strong&gt;体素类型&lt;/strong&gt;
+&lt;/h3&gt;&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;实体体素&lt;/strong&gt;：内部体素和外部体素完全分离。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;26-分离体素&lt;/strong&gt;：内部体素不与外部体素共享面、边或顶点。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;6-分离体素&lt;/strong&gt;：内部体素与外部体素共享边角（更保守的表面表示）。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;存储方式&#34;&gt;&lt;strong&gt;存储方式&lt;/strong&gt;
+&lt;/h3&gt;&lt;ul&gt;
+&lt;li&gt;体素数据通常存储在三维数组或三维纹理中。&lt;/li&gt;
+&lt;li&gt;每个体素可用 bit 或更高精度数据表示状态（内部/外部、密度、颜色、法线等）。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;渲染方法&#34;&gt;&lt;strong&gt;渲染方法&lt;/strong&gt;
+&lt;/h3&gt;&lt;ol&gt;
+&lt;li&gt;&lt;strong&gt;直接立方体渲染&lt;/strong&gt;：
+&lt;ul&gt;
+&lt;li&gt;将每个体素绘制为立方体。&lt;/li&gt;
+&lt;li&gt;相邻立方体共享面可剔除，减少多边形数量。&lt;/li&gt;
+&lt;li&gt;可使用快速贪心算法进一步合并小面片。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;表面提取（Surface Extraction）&lt;/strong&gt;：
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Marching Cubes&lt;/strong&gt;：
+&lt;ul&gt;
+&lt;li&gt;每个体素的 8 个角点确定表面穿过位置。&lt;/li&gt;
+&lt;li&gt;通过查表生成三角形网格。&lt;/li&gt;
+&lt;li&gt;可插值顶点位置以获得平滑表面。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;水平集（Level Set）&lt;/strong&gt;：
+&lt;ul&gt;
+&lt;li&gt;体素存储到表面的距离（正内部，负外部）。&lt;/li&gt;
+&lt;li&gt;可直接进行光线追踪或调整网格顶点位置。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;稀疏体素光线投射&lt;/strong&gt;：
+&lt;ul&gt;
+&lt;li&gt;针对稀疏体素数据直接进行光线投射。&lt;/li&gt;
+&lt;li&gt;GPU 高效实现，支持交互式帧率。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;锥形追踪（Cone Tracing）&lt;/strong&gt;：
+&lt;ul&gt;
+&lt;li&gt;类似 mipmap 的采样方法。&lt;/li&gt;
+&lt;li&gt;支持软阴影、景深、可变法线滤波。&lt;/li&gt;
+&lt;li&gt;利用体素规则性进行区域采样。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h3 id=&#34;优化与数据结构&#34;&gt;&lt;strong&gt;优化与数据结构&lt;/strong&gt;
+&lt;/h3&gt;&lt;ul&gt;
+&lt;li&gt;八叉树（Octree）：
+&lt;ul&gt;
+&lt;li&gt;优点：易构建，支持稀疏数据。&lt;/li&gt;
+&lt;li&gt;缺点：树遍历开销大，动态变化不便。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;VDB 树 / 索引表：
+&lt;ul&gt;
+&lt;li&gt;提高 GPU 光线追踪性能。&lt;/li&gt;
+&lt;li&gt;支持动态体素变化。&lt;/li&gt;
+&lt;li&gt;可分块流式加载，处理大规模场景。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+        </item>
+        <item>
         <title>ComputerShader学习</title>
         <link>https://sdpyy1.github.io/p/computershader%E5%AD%A6%E4%B9%A0/</link>
         <pubDate>Wed, 29 Oct 2025 12:17:56 +0800</pubDate>
