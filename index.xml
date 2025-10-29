@@ -7,7 +7,34 @@
         <generator>Hugo -- gohugo.io</generator>
         <language>zh-cn</language>
         <copyright>爱喝东方树叶</copyright>
-        <lastBuildDate>Wed, 29 Oct 2025 13:51:52 +0800</lastBuildDate><atom:link href="https://sdpyy1.github.io/index.xml" rel="self" type="application/rss+xml" /><item>
+        <lastBuildDate>Wed, 29 Oct 2025 14:42:31 +0800</lastBuildDate><atom:link href="https://sdpyy1.github.io/index.xml" rel="self" type="application/rss+xml" /><item>
+        <title>Games104：引擎工具链</title>
+        <link>https://sdpyy1.github.io/p/games104%E5%BC%95%E6%93%8E%E5%B7%A5%E5%85%B7%E9%93%BE/</link>
+        <pubDate>Wed, 29 Oct 2025 14:42:31 +0800</pubDate>
+        
+        <guid>https://sdpyy1.github.io/p/games104%E5%BC%95%E6%93%8E%E5%B7%A5%E5%85%B7%E9%93%BE/</guid>
+        <description>&lt;blockquote&gt;
+&lt;p&gt;讲了 GUI架构、Asset的序列化和反序列化、Redo undo实现、反射等技术&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h1 id=&#34;反射&#34;&gt;反射
+&lt;/h1&gt;&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-10-29-15.18.45.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-10-29 15.18.45&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;h2 id=&#34;为什么需要反射&#34;&gt;为什么需要反射
+&lt;/h2&gt;&lt;p&gt;我定义一个定向光组件，刚开始有方向和强度，我想在GUI实时修改，就需要在imgui添加两个按钮来调整，但是定向光的属性越来越多，我并不希望每次都要修改imgui界面来修改，这种就可以让imgui拿到定向光的反射来自动生成&lt;/p&gt;
+&lt;h2 id=&#34;c实现&#34;&gt;C++实现
+&lt;/h2&gt;&lt;p&gt;Piccolo 借助 Clang AST，相当于直接复用了编译器的语法分析，通过在需要反射的类和属性上做标记，让clang AST分析后就会带上这个标记，从而知道了这些信息。 再下一步就是生成对应的反射类（就是自动生成的一些cpp文件，这些文件就包含了GetSet方法来设置原本被反射的类的信息&lt;/p&gt;
+&lt;p&gt;这节内容主要是反射了解一下&lt;/p&gt;
+</description>
+        </item>
+        <item>
         <title>Beyond Polygons 超越多边形</title>
         <link>https://sdpyy1.github.io/p/beyond-polygons-%E8%B6%85%E8%B6%8A%E5%A4%9A%E8%BE%B9%E5%BD%A2/</link>
         <pubDate>Wed, 29 Oct 2025 13:51:52 +0800</pubDate>

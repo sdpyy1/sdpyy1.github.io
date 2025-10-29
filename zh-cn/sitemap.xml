@@ -2,14 +2,8 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
-    <loc>https://sdpyy1.github.io/p/beyond-polygons-%E8%B6%85%E8%B6%8A%E5%A4%9A%E8%BE%B9%E5%BD%A2/</loc>
-    <lastmod>2025-10-29T13:51:52+08:00</lastmod>
-  </url><url>
-    <loc>https://sdpyy1.github.io/categories/books/</loc>
-    <lastmod>2025-10-29T13:51:52+08:00</lastmod>
-  </url><url>
     <loc>https://sdpyy1.github.io/categories/</loc>
-    <lastmod>2025-10-29T13:51:52+08:00</lastmod>
+    <lastmod>2025-10-29T14:42:31+08:00</lastmod>
     <xhtml:link
                 rel="alternate"
                 hreflang="en"
@@ -21,8 +15,20 @@
                 href="https://sdpyy1.github.io/categories/"
                 />
   </url><url>
+    <loc>https://sdpyy1.github.io/categories/course/</loc>
+    <lastmod>2025-10-29T14:42:31+08:00</lastmod>
+  </url><url>
+    <loc>https://sdpyy1.github.io/categories/course/games104/</loc>
+    <lastmod>2025-10-29T14:42:31+08:00</lastmod>
+  </url><url>
+    <loc>https://sdpyy1.github.io/tags/games104/</loc>
+    <lastmod>2025-10-29T14:42:31+08:00</lastmod>
+  </url><url>
+    <loc>https://sdpyy1.github.io/p/games104%E5%BC%95%E6%93%8E%E5%B7%A5%E5%85%B7%E9%93%BE/</loc>
+    <lastmod>2025-10-29T14:42:31+08:00</lastmod>
+  </url><url>
     <loc>https://sdpyy1.github.io/</loc>
-    <lastmod>2025-10-29T13:51:52+08:00</lastmod>
+    <lastmod>2025-10-29T14:42:31+08:00</lastmod>
     <xhtml:link
                 rel="alternate"
                 hreflang="en"
@@ -35,16 +41,10 @@
                 />
   </url><url>
     <loc>https://sdpyy1.github.io/post/</loc>
-    <lastmod>2025-10-29T13:51:52+08:00</lastmod>
-  </url><url>
-    <loc>https://sdpyy1.github.io/categories/books/real-time-rendering-4th/</loc>
-    <lastmod>2025-10-29T13:51:52+08:00</lastmod>
-  </url><url>
-    <loc>https://sdpyy1.github.io/tags/real-time-rendering-4th/</loc>
-    <lastmod>2025-10-29T13:51:52+08:00</lastmod>
+    <lastmod>2025-10-29T14:42:31+08:00</lastmod>
   </url><url>
     <loc>https://sdpyy1.github.io/tags/</loc>
-    <lastmod>2025-10-29T13:51:52+08:00</lastmod>
+    <lastmod>2025-10-29T14:42:31+08:00</lastmod>
     <xhtml:link
                 rel="alternate"
                 hreflang="en"
@@ -55,6 +55,21 @@
                 hreflang="zh-cn"
                 href="https://sdpyy1.github.io/tags/"
                 />
+  </url><url>
+    <loc>https://sdpyy1.github.io/tags/%E8%AF%BE%E7%A8%8B%E7%AC%94%E8%AE%B0/</loc>
+    <lastmod>2025-10-29T14:42:31+08:00</lastmod>
+  </url><url>
+    <loc>https://sdpyy1.github.io/p/beyond-polygons-%E8%B6%85%E8%B6%8A%E5%A4%9A%E8%BE%B9%E5%BD%A2/</loc>
+    <lastmod>2025-10-29T13:51:52+08:00</lastmod>
+  </url><url>
+    <loc>https://sdpyy1.github.io/categories/books/</loc>
+    <lastmod>2025-10-29T13:51:52+08:00</lastmod>
+  </url><url>
+    <loc>https://sdpyy1.github.io/categories/books/real-time-rendering-4th/</loc>
+    <lastmod>2025-10-29T13:51:52+08:00</lastmod>
+  </url><url>
+    <loc>https://sdpyy1.github.io/tags/real-time-rendering-4th/</loc>
+    <lastmod>2025-10-29T13:51:52+08:00</lastmod>
   </url><url>
     <loc>https://sdpyy1.github.io/tags/%E7%9C%8B%E4%B9%A6%E7%AC%94%E8%AE%B0/</loc>
     <lastmod>2025-10-29T13:51:52+08:00</lastmod>
@@ -98,22 +113,10 @@
     <loc>https://sdpyy1.github.io/p/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E5%BC%80%E5%8F%91%E5%AE%9E%E8%B7%B5%E9%98%B4%E5%BD%B1%E7%AF%87/</loc>
     <lastmod>2025-10-25T20:49:55+08:00</lastmod>
   </url><url>
-    <loc>https://sdpyy1.github.io/categories/course/</loc>
-    <lastmod>2025-10-25T15:45:35+08:00</lastmod>
-  </url><url>
-    <loc>https://sdpyy1.github.io/categories/course/games104/</loc>
-    <lastmod>2025-10-25T15:45:35+08:00</lastmod>
-  </url><url>
-    <loc>https://sdpyy1.github.io/tags/games104/</loc>
-    <lastmod>2025-10-25T15:45:35+08:00</lastmod>
-  </url><url>
     <loc>https://sdpyy1.github.io/p/games104%E9%AB%98%E7%BA%A7%E5%8A%A8%E7%94%BB%E6%8A%80%E6%9C%AF%E5%8A%A8%E7%94%BB%E6%A0%91ik%E5%92%8C%E8%A1%A8%E6%83%85%E5%8A%A8%E7%94%BB/</loc>
     <lastmod>2025-10-25T15:45:35+08:00</lastmod>
   </url><url>
     <loc>https://sdpyy1.github.io/tags/%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%8A%A8%E7%94%BB/</loc>
-    <lastmod>2025-10-25T15:45:35+08:00</lastmod>
-  </url><url>
-    <loc>https://sdpyy1.github.io/tags/%E8%AF%BE%E7%A8%8B%E7%AC%94%E8%AE%B0/</loc>
     <lastmod>2025-10-25T15:45:35+08:00</lastmod>
   </url><url>
     <loc>https://sdpyy1.github.io/p/global-illumination-%E5%85%A8%E5%B1%80%E5%85%89%E7%85%A7/</loc>

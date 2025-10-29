@@ -3,18 +3,18 @@
     <head><meta charset='utf-8'>
 <meta name='viewport' content='width=device-width, initial-scale=1'>
 <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
-  <meta name="referrer" content="no-referrer-when-downgrade"><meta name='description' content="爱喝东方树叶">
-<title>About</title>
+  <meta name="referrer" content="no-referrer-when-downgrade"><meta name='description' content=" 讲了 GUI架构、Asset的序列化和反序列化、Redo undo实现、反射等技术\n反射 为什么需要反射 我定义一个定向光组件，刚开始有方向和强度，我想在GUI实时修改，就需要在imgui添加两个按钮来调整，但是定向光的属性越来越多，我并不希望每次都要修改imgui界面来修改，这种就可以让imgui拿到定向光的反射来自动生成\n">
+<title>Games104：引擎工具链</title>
 
-<link rel='canonical' href='https://sdpyy1.github.io/about/'>
+<link rel='canonical' href='https://sdpyy1.github.io/p/games104%E5%BC%95%E6%93%8E%E5%B7%A5%E5%85%B7%E9%93%BE/'>
 
-<link rel="stylesheet" href="/scss/style.min.6a692fd055deae459f2a9767f57f3855ba80cafd5041317f24f7360f6ca47cdf.css"><meta property='og:title' content="About">
-<meta property='og:description' content="爱喝东方树叶">
-<meta property='og:url' content='https://sdpyy1.github.io/about/'>
+<link rel="stylesheet" href="/scss/style.min.6a692fd055deae459f2a9767f57f3855ba80cafd5041317f24f7360f6ca47cdf.css"><meta property='og:title' content="Games104：引擎工具链">
+<meta property='og:description' content=" 讲了 GUI架构、Asset的序列化和反序列化、Redo undo实现、反射等技术\n反射 为什么需要反射 我定义一个定向光组件，刚开始有方向和强度，我想在GUI实时修改，就需要在imgui添加两个按钮来调整，但是定向光的属性越来越多，我并不希望每次都要修改imgui界面来修改，这种就可以让imgui拿到定向光的反射来自动生成\n">
+<meta property='og:url' content='https://sdpyy1.github.io/p/games104%E5%BC%95%E6%93%8E%E5%B7%A5%E5%85%B7%E9%93%BE/'>
 <meta property='og:site_name' content='wanfeng'>
-<meta property='og:type' content='article'><meta property='article:section' content='Page' /><meta property='article:published_time' content='2025-10-19T00:00:00&#43;00:00'/><meta property='article:modified_time' content='2020-10-09T00:00:00&#43;00:00'/>
-<meta name="twitter:title" content="About">
-<meta name="twitter:description" content="爱喝东方树叶">
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='课程笔记' /><meta property='article:tag' content='Games104' /><meta property='article:published_time' content='2025-10-29T14:42:31&#43;08:00'/><meta property='article:modified_time' content='2025-10-29T14:42:31&#43;08:00'/>
+<meta name="twitter:title" content="Games104：引擎工具链">
+<meta name="twitter:description" content=" 讲了 GUI架构、Asset的序列化和反序列化、Redo undo实现、反射等技术\n反射 为什么需要反射 我定义一个定向光组件，刚开始有方向和强度，我想在GUI实时修改，就需要在imgui添加两个按钮来调整，但是定向光的属性越来越多，我并不希望每次都要修改imgui界面来修改，这种就可以让imgui拿到定向光的反射来自动生成\n">
     <link rel="shortcut icon" href="/favicon.ico" />
 
     </head>
@@ -136,7 +136,7 @@
         </li>
         
         
-        <li  class='current' >
+        <li >
             <a href='/about/' >
                 
                 
@@ -264,7 +264,43 @@
     </ol>
 </aside>
 
-    
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">目录</h2>
+        
+        <div class="widget--toc">
+            <nav id="TableOfContents">
+  <ol>
+    <li><a href="#反射">反射</a>
+      <ol>
+        <li><a href="#为什么需要反射">为什么需要反射</a></li>
+        <li><a href="#c实现">C++实现</a></li>
+      </ol>
+    </li>
+  </ol>
+</nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
 
             <main class="main full-width">
     <article class="main-article">
@@ -272,16 +308,63 @@
 
     <div class="article-details">
     
+    <header class="article-category">
+        
+        
+             
+            
+            
+            
+            <div class="category-hierarchy">
+                
+                    
+                    
+                    
+                        
+                    
+                     
+                    
+                    
+                    
+                    <a href="/categories/course/" 
+                       >
+                        Course
+                    </a>
+                    
+                    
+                    
+                        <span class="category-separator">/</span>
+                    
+                
+                    
+                    
+                    
+                        
+                    
+                        
+                    
+                     
+                    
+                    
+                    
+                    <a href="/categories/course/games104/" 
+                       >
+                        Games104
+                    </a>
+                    
+                    
+                    
+                
+            </div>
+        
+    </header>
+    
 
     <div class="article-title-wrapper">
         <h2 class="article-title">
-            <a href="/about/">About</a>
+            <a href="/p/games104%E5%BC%95%E6%93%8E%E5%B7%A5%E5%85%B7%E9%93%BE/">Games104：引擎工具链</a>
         </h2>
     
-        
-        <h3 class="article-subtitle">
-            爱喝东方树叶
-        </h3>
         
     </div>
 
@@ -301,7 +384,7 @@
   <path d="M3 11h16" />
   <path d="M18 16.496v1.504l1 1" />
 </svg>
-                <time class="article-time--published">Oct 19, 2025</time>
+                <time class="article-time--published">Oct 29, 2025</time>
             </div>
         
 
@@ -362,13 +445,39 @@
     <section class="article-content">
     
     
-    <p>用了两天终于把搭建完了网站，并且把博客全部搬过来了</p>
+    <blockquote>
+<p>讲了 GUI架构、Asset的序列化和反序列化、Redo undo实现、反射等技术</p>
+</blockquote>
+<h1 id="反射">反射
+</h1><p><img src="/%e6%88%aa%e5%b1%8f2025-10-29-15.18.45.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="截屏2025-10-29 15.18.45"
+	
+	
+></p>
+<h2 id="为什么需要反射">为什么需要反射
+</h2><p>我定义一个定向光组件，刚开始有方向和强度，我想在GUI实时修改，就需要在imgui添加两个按钮来调整，但是定向光的属性越来越多，我并不希望每次都要修改imgui界面来修改，这种就可以让imgui拿到定向光的反射来自动生成</p>
+<h2 id="c实现">C++实现
+</h2><p>Piccolo 借助 Clang AST，相当于直接复用了编译器的语法分析，通过在需要反射的类和属性上做标记，让clang AST分析后就会带上这个标记，从而知道了这些信息。 再下一步就是生成对应的反射类（就是自动生成的一些cpp文件，这些文件就包含了GetSet方法来设置原本被反射的类的信息</p>
+<p>这节内容主要是反射了解一下</p>
 
 </section>
 
 
     <footer class="article-footer">
     
+    <section class="article-tags">
+        
+            <a href="/tags/%E8%AF%BE%E7%A8%8B%E7%AC%94%E8%AE%B0/">课程笔记</a>
+        
+            <a href="/tags/games104/">Games104</a>
+        
+    </section>
+
 
     
     <section class="article-copyright">
@@ -380,21 +489,9 @@
 
 
 
-        <span>CC BY-NC-ND</span>
+        <span>Licensed under CC BY-NC-SA 4.0</span>
     </section>
-    <section class="article-lastmod">
-        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-  <path stroke="none" d="M0 0h24v24H0z"/>
-  <circle cx="12" cy="12" r="9" />
-  <polyline points="12 7 12 12 15 15" />
-</svg>
-
-
-
-        <span>
-            最后更新于 Oct 09, 2020 00:00 UTC
-        </span>
-    </section></footer>
+    </footer>
 
 
     
@@ -429,6 +526,237 @@
     
 
     
+
+<aside class="related-content--wrapper">
+    <h2 class="section-title">相关文章</h2>
+    <div class="related-content">
+        <div class="flex article-list--tile">
+            
+                
+<article class="article-card has-image">
+    <a href="/p/games104%E9%AB%98%E7%BA%A7%E5%8A%A8%E7%94%BB%E6%8A%80%E6%9C%AF%E5%8A%A8%E7%94%BB%E6%A0%91ik%E5%92%8C%E8%A1%A8%E6%83%85%E5%8A%A8%E7%94%BB/">
+        
+        <div class="article-image-card">
+            
+                <img src="/%e6%88%aa%e5%b1%8f2025-10-20-15.21.05.png" loading="lazy" data-key="" data-hash="/截屏2025-10-20-15.21.05.png"/>
+            
+
+            
+            <div class="article-overlay">
+                <h2 class="article-title">Games104：高级动画技术：动画树、IK和表情动画</h2>
+            </div>
+        </div>
+        
+    </a>
+
+    <style>
+     
+    .article-card {
+        background: rgba(255, 255, 255, 0.25);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        margin: 10px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .article-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    }
+
+    .article-card a {
+        display: flex;
+        flex-direction: column;
+        text-decoration: none;
+        color: inherit;
+        height: 100%;
+    }
+
+     
+    .article-image-card {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        overflow: hidden;
+    }
+    .article-image-card img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+    .article-image-card:hover img {
+        transform: scale(1.05);
+    }
+
+     
+    .article-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: rgba(0,0,0,0.3);  
+        padding: 10px;
+        box-sizing: border-box;
+        text-align: center;
+    }
+    .article-overlay .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #fff;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .article-card.no-image .article-details {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 15px;
+    }
+    .article-card.no-image .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #222;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .articles-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 20px;
+    }
+    </style>
+</article>
+            
+                
+<article class="article-card has-image">
+    <a href="/p/games104%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E7%9A%84%E5%8A%A8%E7%94%BB%E6%8A%80%E6%9C%AF%E5%9F%BA%E7%A1%80/">
+        
+        <div class="article-image-card">
+            
+                <img src="/%e6%88%aa%e5%b1%8f2025-10-20-15.21.05.png" loading="lazy" data-key="" data-hash="/截屏2025-10-20-15.21.05.png"/>
+            
+
+            
+            <div class="article-overlay">
+                <h2 class="article-title">Games104：游戏引擎的动画技术基础</h2>
+            </div>
+        </div>
+        
+    </a>
+
+    <style>
+     
+    .article-card {
+        background: rgba(255, 255, 255, 0.25);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        margin: 10px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .article-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    }
+
+    .article-card a {
+        display: flex;
+        flex-direction: column;
+        text-decoration: none;
+        color: inherit;
+        height: 100%;
+    }
+
+     
+    .article-image-card {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        overflow: hidden;
+    }
+    .article-image-card img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+    .article-image-card:hover img {
+        transform: scale(1.05);
+    }
+
+     
+    .article-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: rgba(0,0,0,0.3);  
+        padding: 10px;
+        box-sizing: border-box;
+        text-align: center;
+    }
+    .article-overlay .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #fff;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .article-card.no-image .article-details {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 15px;
+    }
+    .article-card.no-image .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #222;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .articles-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 20px;
+    }
+    </style>
+</article>
+            
+        </div>
+    </div>
+</aside>
 
      
     
