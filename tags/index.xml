@@ -7,7 +7,23 @@
         <generator>Hugo -- gohugo.io</generator>
         <language>zh-cn</language>
         <copyright>爱喝东方树叶</copyright>
-        <lastBuildDate>Tue, 28 Oct 2025 11:59:27 +0800</lastBuildDate><atom:link href="https://sdpyy1.github.io/tags/index.xml" rel="self" type="application/rss+xml" /><item>
+        <lastBuildDate>Wed, 29 Oct 2025 12:17:56 +0800</lastBuildDate><atom:link href="https://sdpyy1.github.io/tags/index.xml" rel="self" type="application/rss+xml" /><item>
+        <title>API学习</title>
+        <link>https://sdpyy1.github.io/tags/api%E5%AD%A6%E4%B9%A0/</link>
+        <pubDate>Wed, 29 Oct 2025 12:17:56 +0800</pubDate>
+        
+        <guid>https://sdpyy1.github.io/tags/api%E5%AD%A6%E4%B9%A0/</guid>
+        <description></description>
+        </item>
+        <item>
+        <title>Vulkan</title>
+        <link>https://sdpyy1.github.io/tags/vulkan/</link>
+        <pubDate>Wed, 29 Oct 2025 12:17:56 +0800</pubDate>
+        
+        <guid>https://sdpyy1.github.io/tags/vulkan/</guid>
+        <description></description>
+        </item>
+        <item>
         <title>Real-Time Rendering 4th</title>
         <link>https://sdpyy1.github.io/tags/real-time-rendering-4th/</link>
         <pubDate>Tue, 28 Oct 2025 11:59:27 +0800</pubDate>
@@ -37,14 +53,6 @@
         <pubDate>Sat, 25 Oct 2025 20:49:55 +0800</pubDate>
         
         <guid>https://sdpyy1.github.io/tags/hazel/</guid>
-        <description></description>
-        </item>
-        <item>
-        <title>Vulkan</title>
-        <link>https://sdpyy1.github.io/tags/vulkan/</link>
-        <pubDate>Sat, 25 Oct 2025 20:49:55 +0800</pubDate>
-        
-        <guid>https://sdpyy1.github.io/tags/vulkan/</guid>
         <description></description>
         </item>
         <item>
@@ -141,14 +149,6 @@
         <pubDate>Sun, 19 Oct 2025 14:05:15 +0800</pubDate>
         
         <guid>https://sdpyy1.github.io/tags/%E8%AF%BE%E7%A8%8B%E4%BD%9C%E4%B8%9A/</guid>
-        <description></description>
-        </item>
-        <item>
-        <title>API学习</title>
-        <link>https://sdpyy1.github.io/tags/api%E5%AD%A6%E4%B9%A0/</link>
-        <pubDate>Sun, 19 Oct 2025 13:53:52 +0800</pubDate>
-        
-        <guid>https://sdpyy1.github.io/tags/api%E5%AD%A6%E4%B9%A0/</guid>
         <description></description>
         </item>
         <item>
