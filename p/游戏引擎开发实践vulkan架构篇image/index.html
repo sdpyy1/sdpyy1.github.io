@@ -1,0 +1,1941 @@
+<!DOCTYPE html>
+<html lang="zh-cn" dir="ltr">
+    <head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'>
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+  <meta name="referrer" content="no-referrer-when-downgrade"><meta name='description' content=" 本文主要讲解GameEngine项目Vulkan封装，在渲染层只需要调用RHI层接口即可\n总览 所有底层对象创建都需要使用xxxSpecification来说明创建需求，调用RHI接口函数，创建底层Vulkan对象\n">
+<title>游戏引擎开发实践（Vulkan架构篇：Image）</title>
+
+<link rel='canonical' href='https://sdpyy1.github.io/p/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E5%BC%80%E5%8F%91%E5%AE%9E%E8%B7%B5vulkan%E6%9E%B6%E6%9E%84%E7%AF%87image/'>
+
+<link rel="stylesheet" href="/scss/style.min.6a692fd055deae459f2a9767f57f3855ba80cafd5041317f24f7360f6ca47cdf.css"><meta property='og:title' content="游戏引擎开发实践（Vulkan架构篇：Image）">
+<meta property='og:description' content=" 本文主要讲解GameEngine项目Vulkan封装，在渲染层只需要调用RHI层接口即可\n总览 所有底层对象创建都需要使用xxxSpecification来说明创建需求，调用RHI接口函数，创建底层Vulkan对象\n">
+<meta property='og:url' content='https://sdpyy1.github.io/p/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E5%BC%80%E5%8F%91%E5%AE%9E%E8%B7%B5vulkan%E6%9E%B6%E6%9E%84%E7%AF%87image/'>
+<meta property='og:site_name' content='wanfeng'>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='游戏引擎' /><meta property='article:tag' content='Vulkan' /><meta property='article:tag' content='Hazel' /><meta property='article:published_time' content='2025-11-02T20:46:56&#43;08:00'/><meta property='article:modified_time' content='2025-11-02T20:46:56&#43;08:00'/>
+<meta name="twitter:title" content="游戏引擎开发实践（Vulkan架构篇：Image）">
+<meta name="twitter:description" content=" 本文主要讲解GameEngine项目Vulkan封装，在渲染层只需要调用RHI层接口即可\n总览 所有底层对象创建都需要使用xxxSpecification来说明创建需求，调用RHI接口函数，创建底层Vulkan对象\n">
+    <link rel="shortcut icon" href="/favicon.ico" />
+
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="切换菜单">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        
+            
+            <figure class="site-avatar">
+                <a href="/">
+                
+                    
+                    
+                    
+                        
+                        <img src="/img/avatar_hu_f59158f730715054.png" width="300"
+                            height="300" class="site-logo" loading="lazy" alt="Avatar">
+                    
+                
+                </a>
+                
+                    <span class="emoji">🧐</span>
+                
+            </figure>
+            
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="/">wanfeng</a></h1>
+            <h2 class="site-description">Blog</h2>
+        </div>
+    </header><ol class="menu-social">
+            
+                <li>
+                    <a 
+                        href='https://space.bilibili.com/287473737'
+                        target="_blank"
+                        title="Bilibili"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-brand-bilibili"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 10a4 4 0 0 1 4 -4h10a4 4 0 0 1 4 4v6a4 4 0 0 1 -4 4h-10a4 4 0 0 1 -4 -4v-6z" /><path d="M8 3l2 3" /><path d="M16 3l-2 3" /><path d="M9 13v-2" /><path d="M15 11v2" /></svg>
+                        
+                    </a>
+                </li>
+            
+                <li>
+                    <a 
+                        href='https://github.com/sdpyy1'
+                        target="_blank"
+                        title="GitHub"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
+</svg>
+
+
+
+                        
+                    </a>
+                </li>
+            
+        </ol><ol class="menu" id="main-menu">
+        
+        
+        
+        <li >
+            <a href='/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>Home</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/about/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>About</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>Archives</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/search/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>Search</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/links/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5" />
+  <path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5" />
+</svg>
+
+
+
+                
+                <span>Links</span>
+            </a>
+        </li>
+        
+        <li class="menu-bottom-section">
+            <ol class="menu">
+                    
+                        <li id="i18n-switch">  
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-language" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M4 5h7" />
+  <path d="M9 3v2c0 4.418 -2.239 8 -5 8" />
+  <path d="M5 9c-.003 2.144 2.952 3.908 6.7 4" />
+  <path d="M12 20l4 -9l4 9" />
+  <path d="M19.1 18h-6.2" />
+</svg>
+
+
+
+                            <select name="language" title="language" onchange="window.location.href = this.selectedOptions[0].value">
+                                
+                                    <option value="https://sdpyy1.github.io/en/" >English</option>
+                                
+                                    <option value="https://sdpyy1.github.io/" selected>中文</option>
+                                
+                            </select>
+                        </li>
+                    
+                
+
+                
+                    <li id="dark-mode-toggle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <span>暗色模式</span>
+                    </li>
+                
+            </ol>
+        </li>
+    </ol>
+</aside>
+
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">目录</h2>
+        
+        <div class="widget--toc">
+            <nav id="TableOfContents">
+  <ol>
+    <li><a href="#总览">总览</a></li>
+    <li><a href="#image">Image</a></li>
+    <li><a href="#texture">Texture</a></li>
+  </ol>
+</nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+            <main class="main full-width">
+    <article class="main-article">
+    <header class="article-header">
+
+    <div class="article-details">
+    
+    <header class="article-category">
+        
+        
+             
+            
+            
+            
+            <div class="category-hierarchy">
+                
+                    
+                    
+                    
+                        
+                    
+                     
+                    
+                    
+                    
+                    <a href="/categories/projects/" 
+                       >
+                        Projects
+                    </a>
+                    
+                    
+                    
+                        <span class="category-separator">/</span>
+                    
+                
+                    
+                    
+                    
+                        
+                    
+                        
+                    
+                     
+                    
+                    
+                    
+                    <a href="/categories/projects/gameengine/" 
+                       >
+                        GameEngine
+                    </a>
+                    
+                    
+                    
+                
+            </div>
+        
+    </header>
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="/p/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E5%BC%80%E5%8F%91%E5%AE%9E%E8%B7%B5vulkan%E6%9E%B6%E6%9E%84%E7%AF%87image/">游戏引擎开发实践（Vulkan架构篇：Image）</a>
+        </h2>
+    
+        
+    </div>
+
+    
+    
+    
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published">Nov 02, 2025</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-time--reading">
+                    阅读时长: 6 分钟
+                </time>
+            </div>
+        
+
+        
+            
+    </footer>
+    
+    
+</div>
+<style>
+    .category-hierarchy {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;  
+        margin-right: 12px;  
+        margin-bottom: 8px;  
+    }
+    
+    .category-separator {
+        color: #999;
+        user-select: none;
+        font-size: 1em;  
+    }
+    
+    .article-category a {
+        text-decoration: none;
+        padding: 6px 12px;  
+        border-radius: 6px;  
+        font-size: 0.95em;  
+        transition: all 0.2s ease;
+        line-height: 1.5;  
+    }
+    
+    .article-category a:hover {
+        opacity: 0.9;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 6px rgba(0,0,0,0.1);  
+    }
+</style>
+</header>
+
+    <section class="article-content">
+    
+    
+    <blockquote>
+<p>本文主要讲解GameEngine项目Vulkan封装，在渲染层只需要调用RHI层接口即可</p>
+</blockquote>
+<h1 id="总览">总览
+</h1><blockquote>
+<p>所有底层对象创建都需要使用xxxSpecification来说明创建需求，调用RHI接口函数，创建底层Vulkan对象</p>
+</blockquote>
+<h1 id="image">Image
+</h1><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="k">enum</span> <span class="k">class</span> <span class="nc">ImageFormat</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">None</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">RED8UN</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="n">RED8UI</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">    <span class="p">...</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// Defaults
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">Depth</span> <span class="o">=</span> <span class="n">DEPTH32F</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl"><span class="p">};</span>
+</span></span><span class="line"><span class="cl"><span class="c1">// 图片用途
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">enum</span> <span class="k">class</span> <span class="nc">ImageUsage</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="n">None</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">	<span class="n">Texture</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">	<span class="n">Attachment</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">	<span class="n">Storage</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">	<span class="n">HostRead</span>
+</span></span><span class="line"><span class="cl"><span class="p">};</span>
+</span></span><span class="line"><span class="cl"><span class="c1">// 图片说明书
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">struct</span> <span class="nc">ImageSpecification</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">DebugName</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="n">ImageFormat</span> <span class="n">Format</span> <span class="o">=</span> <span class="n">ImageFormat</span><span class="o">::</span><span class="n">RGBA</span><span class="p">;</span>  <span class="c1">// 图片格式
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="n">ImageUsage</span> <span class="n">Usage</span> <span class="o">=</span> <span class="n">ImageUsage</span><span class="o">::</span><span class="n">Texture</span><span class="p">;</span> <span class="c1">// 用途
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="kt">bool</span> <span class="n">Transfer</span> <span class="o">=</span> <span class="nb">false</span><span class="p">;</span> <span class="c1">// 是否需要转移
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="kt">uint32_t</span> <span class="n">Width</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="kt">uint32_t</span> <span class="n">Height</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="kt">uint32_t</span> <span class="n">Mips</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="c1">// mip多少层，在Vulkan中也需要自己指定
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="kt">uint32_t</span> <span class="n">Layers</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="c1">// Layer，图层通常用于立方体纹理（6 个面）、数组纹理（多个图像的集合）等场景。
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="kt">bool</span> <span class="n">CreateSampler</span> <span class="o">=</span> <span class="nb">true</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">};</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="k">class</span> <span class="nc">Image</span> <span class="o">:</span> <span class="k">public</span> <span class="n">RendererResource</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl"><span class="k">public</span><span class="o">:</span>
+</span></span><span class="line"><span class="cl">	<span class="k">virtual</span> <span class="o">~</span><span class="n">Image</span><span class="p">()</span> <span class="o">=</span> <span class="k">default</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="k">virtual</span> <span class="kt">void</span> <span class="nf">Resize</span><span class="p">(</span><span class="k">const</span> <span class="kt">uint32_t</span> <span class="n">width</span><span class="p">,</span> <span class="k">const</span> <span class="kt">uint32_t</span> <span class="n">height</span><span class="p">)</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="k">virtual</span> <span class="kt">void</span> <span class="nf">Invalidate</span><span class="p">()</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="k">virtual</span> <span class="kt">void</span> <span class="nf">Release</span><span class="p">()</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="k">virtual</span> <span class="kt">uint32_t</span> <span class="nf">GetWidth</span><span class="p">()</span> <span class="k">const</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="k">virtual</span> <span class="kt">uint32_t</span> <span class="nf">GetHeight</span><span class="p">()</span> <span class="k">const</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="k">virtual</span> <span class="n">glm</span><span class="o">::</span><span class="n">uvec2</span> <span class="n">GetSize</span><span class="p">()</span> <span class="k">const</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="k">virtual</span> <span class="kt">bool</span> <span class="nf">HasMips</span><span class="p">()</span> <span class="k">const</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="k">virtual</span> <span class="kt">float</span> <span class="nf">GetAspectRatio</span><span class="p">()</span> <span class="k">const</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="k">virtual</span> <span class="n">ImageSpecification</span><span class="o">&amp;</span> <span class="n">GetSpecification</span><span class="p">()</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="k">virtual</span> <span class="k">const</span> <span class="n">ImageSpecification</span><span class="o">&amp;</span> <span class="n">GetSpecification</span><span class="p">()</span> <span class="k">const</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="k">virtual</span> <span class="n">Buffer</span> <span class="nf">GetBuffer</span><span class="p">()</span> <span class="k">const</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="k">virtual</span> <span class="n">Buffer</span><span class="o">&amp;</span> <span class="n">GetBuffer</span><span class="p">()</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="k">virtual</span> <span class="kt">uint64_t</span> <span class="nf">GetGPUMemoryUsage</span><span class="p">()</span> <span class="k">const</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> 
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="k">virtual</span> <span class="kt">void</span> <span class="nf">CreatePerLayerImageViews</span><span class="p">()</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="k">virtual</span> <span class="kt">uint64_t</span> <span class="nf">GetHash</span><span class="p">()</span> <span class="k">const</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="k">virtual</span> <span class="kt">void</span> <span class="nf">SetData</span><span class="p">(</span><span class="n">Buffer</span> <span class="n">buffer</span><span class="p">)</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="k">virtual</span> <span class="kt">void</span> <span class="nf">CopyToHostBuffer</span><span class="p">(</span><span class="n">Buffer</span><span class="o">&amp;</span> <span class="n">buffer</span><span class="p">)</span> <span class="k">const</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> 
+</span></span><span class="line"><span class="cl"><span class="p">};</span>
+</span></span><span class="line"><span class="cl"><span class="k">class</span> <span class="nc">Image2D</span> <span class="o">:</span> <span class="k">public</span> <span class="n">Image</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl"><span class="k">public</span><span class="o">:</span>
+</span></span><span class="line"><span class="cl">    <span class="k">static</span> <span class="n">Ref</span><span class="o">&lt;</span><span class="n">Image2D</span><span class="o">&gt;</span> <span class="n">Create</span><span class="p">(</span><span class="k">const</span> <span class="n">ImageSpecification</span><span class="o">&amp;</span> <span class="n">specification</span><span class="p">,</span> <span class="n">Buffer</span> <span class="n">buffer</span> <span class="o">=</span> <span class="n">Buffer</span><span class="p">());</span>
+</span></span><span class="line"><span class="cl">    <span class="k">virtual</span> <span class="kt">void</span> <span class="nf">Resize</span><span class="p">(</span><span class="k">const</span> <span class="n">glm</span><span class="o">::</span><span class="n">uvec2</span><span class="o">&amp;</span> <span class="n">size</span><span class="p">)</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">virtual</span> <span class="kt">bool</span> <span class="nf">IsValid</span><span class="p">()</span> <span class="k">const</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">};</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>到VulkanImage2D后，创建过程</p>
+<ol>
+<li>
+<p>处理图片用途</p>
+<p>声明图像的所有用途（需用按位或组合），类型为 <code>VkImageUsageFlags</code>，常见取值：</p>
+<ul>
+<li><code>VK_IMAGE_USAGE_SAMPLED_BIT</code>：可被采样器访问（作为纹理）。</li>
+<li><code>VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT</code>：作为颜色附着（渲染目标）。</li>
+<li><code>VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT</code>：作为深度 / 模板附着。</li>
+<li><code>VK_IMAGE_USAGE_TRANSFER_SRC_BIT</code>/<code>VK_IMAGE_USAGE_TRANSFER_DST_BIT</code>：作为复制操作的源 / 目标。</li>
+<li><code>VK_IMAGE_USAGE_STORAGE_BIT</code>：作为存储图像（Compute Shader 读写）。</li>
+</ul>
+<p>用途需与后续操作匹配，否则会触发验证层错误。</p>
+</li>
+</ol>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="n">VkImageUsageFlags</span> <span class="n">usage</span> <span class="o">=</span> <span class="n">VK_IMAGE_USAGE_SAMPLED_BIT</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="k">if</span> <span class="p">(</span><span class="n">m_Specification</span><span class="p">.</span><span class="n">Usage</span> <span class="o">==</span> <span class="n">ImageUsage</span><span class="o">::</span><span class="n">Attachment</span><span class="p">)</span> 
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="p">(</span><span class="n">Utils</span><span class="o">::</span><span class="n">IsDepthFormat</span><span class="p">(</span><span class="n">m_Specification</span><span class="p">.</span><span class="n">Format</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">		<span class="n">usage</span> <span class="o">|=</span> <span class="n">VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="k">else</span>
+</span></span><span class="line"><span class="cl">		<span class="n">usage</span> <span class="o">|=</span> <span class="n">VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="k">if</span> <span class="p">(</span><span class="n">m_Specification</span><span class="p">.</span><span class="n">Transfer</span> <span class="o">||</span> <span class="n">m_Specification</span><span class="p">.</span><span class="n">Usage</span> <span class="o">==</span> <span class="n">ImageUsage</span><span class="o">::</span><span class="n">Texture</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="n">usage</span> <span class="o">|=</span> <span class="n">VK_IMAGE_USAGE_TRANSFER_SRC_BIT</span> <span class="o">|</span> <span class="n">VK_IMAGE_USAGE_TRANSFER_DST_BIT</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="k">if</span> <span class="p">(</span><span class="n">m_Specification</span><span class="p">.</span><span class="n">Usage</span> <span class="o">==</span> <span class="n">ImageUsage</span><span class="o">::</span><span class="n">Storage</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="n">usage</span> <span class="o">|=</span> <span class="n">VK_IMAGE_USAGE_STORAGE_BIT</span> <span class="o">|</span> <span class="n">VK_IMAGE_USAGE_TRANSFER_DST_BIT</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><ol start="2">
+<li>
+<p>VkImageCreateInfo</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="n">VkImageCreateInfo</span> <span class="n">imageCreateInfo</span> <span class="o">=</span> <span class="p">{};</span>
+</span></span><span class="line"><span class="cl"><span class="n">imageCreateInfo</span><span class="p">.</span><span class="n">sType</span> <span class="o">=</span> <span class="n">VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">imageCreateInfo</span><span class="p">.</span><span class="n">imageType</span> <span class="o">=</span> <span class="n">VK_IMAGE_TYPE_2D</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">imageCreateInfo</span><span class="p">.</span><span class="n">format</span> <span class="o">=</span> <span class="n">vulkanFormat</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">imageCreateInfo</span><span class="p">.</span><span class="n">extent</span><span class="p">.</span><span class="n">width</span> <span class="o">=</span> <span class="n">m_Specification</span><span class="p">.</span><span class="n">Width</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">imageCreateInfo</span><span class="p">.</span><span class="n">extent</span><span class="p">.</span><span class="n">height</span> <span class="o">=</span> <span class="n">m_Specification</span><span class="p">.</span><span class="n">Height</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">imageCreateInfo</span><span class="p">.</span><span class="n">extent</span><span class="p">.</span><span class="n">depth</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">imageCreateInfo</span><span class="p">.</span><span class="n">mipLevels</span> <span class="o">=</span> <span class="n">m_Specification</span><span class="p">.</span><span class="n">Mips</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">imageCreateInfo</span><span class="p">.</span><span class="n">arrayLayers</span> <span class="o">=</span> <span class="n">m_Specification</span><span class="p">.</span><span class="n">Layers</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">imageCreateInfo</span><span class="p">.</span><span class="n">samples</span> <span class="o">=</span> <span class="n">VK_SAMPLE_COUNT_1_BIT</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">imageCreateInfo</span><span class="p">.</span><span class="n">tiling</span> <span class="o">=</span> <span class="n">m_Specification</span><span class="p">.</span><span class="n">Usage</span> <span class="o">==</span> <span class="n">ImageUsage</span><span class="o">::</span><span class="n">HostRead</span> <span class="o">?</span> <span class="nl">VK_IMAGE_TILING_LINEAR</span> <span class="p">:</span> <span class="n">VK_IMAGE_TILING_OPTIMAL</span><span class="p">;</span> <span class="c1">// 内存布局
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="n">imageCreateInfo</span><span class="p">.</span><span class="n">usage</span> <span class="o">=</span> <span class="n">usage</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">m_Info</span><span class="p">.</span><span class="n">MemoryAlloc</span> <span class="o">=</span> <span class="n">allocator</span><span class="p">.</span><span class="n">AllocateImage</span><span class="p">(</span><span class="n">imageCreateInfo</span><span class="p">,</span> <span class="n">memoryUsage</span><span class="p">,</span> <span class="n">m_Info</span><span class="p">.</span><span class="n">Image</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">m_GPUAllocationSize</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="n">s_ImageReferences</span><span class="p">[</span><span class="n">m_Info</span><span class="p">.</span><span class="n">Image</span><span class="p">]</span> <span class="o">=</span> <span class="k">this</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">VKUtils</span><span class="o">::</span><span class="n">SetDebugUtilsObjectName</span><span class="p">(</span><span class="n">device</span><span class="p">,</span> <span class="n">VK_OBJECT_TYPE_IMAGE</span><span class="p">,</span> <span class="n">m_Specification</span><span class="p">.</span><span class="n">DebugName</span><span class="p">,</span> <span class="n">m_Info</span><span class="p">.</span><span class="n">Image</span><span class="p">);</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div></li>
+<li>
+<p>VkImageViewCreateInfo（默认创建的ImageView是包含Image所有（所有mip，所有layer）的ImageView）</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="n">VkImageViewCreateInfo</span> <span class="n">imageViewCreateInfo</span> <span class="o">=</span> <span class="p">{};</span>
+</span></span><span class="line"><span class="cl"><span class="n">imageViewCreateInfo</span><span class="p">.</span><span class="n">sType</span> <span class="o">=</span> <span class="n">VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">imageViewCreateInfo</span><span class="p">.</span><span class="n">viewType</span> <span class="o">=</span> <span class="n">m_Specification</span><span class="p">.</span><span class="n">Layers</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="o">?</span> <span class="nl">VK_IMAGE_VIEW_TYPE_2D_ARRAY</span> <span class="p">:</span> <span class="n">VK_IMAGE_VIEW_TYPE_2D</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">imageViewCreateInfo</span><span class="p">.</span><span class="n">format</span> <span class="o">=</span> <span class="n">vulkanFormat</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">imageViewCreateInfo</span><span class="p">.</span><span class="n">flags</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">imageViewCreateInfo</span><span class="p">.</span><span class="n">subresourceRange</span> <span class="o">=</span> <span class="p">{};</span>
+</span></span><span class="line"><span class="cl"><span class="n">imageViewCreateInfo</span><span class="p">.</span><span class="n">subresourceRange</span><span class="p">.</span><span class="n">aspectMask</span> <span class="o">=</span> <span class="n">aspectMask</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">imageViewCreateInfo</span><span class="p">.</span><span class="n">subresourceRange</span><span class="p">.</span><span class="n">baseMipLevel</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">imageViewCreateInfo</span><span class="p">.</span><span class="n">subresourceRange</span><span class="p">.</span><span class="n">levelCount</span> <span class="o">=</span> <span class="n">m_Specification</span><span class="p">.</span><span class="n">Mips</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">imageViewCreateInfo</span><span class="p">.</span><span class="n">subresourceRange</span><span class="p">.</span><span class="n">baseArrayLayer</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">imageViewCreateInfo</span><span class="p">.</span><span class="n">subresourceRange</span><span class="p">.</span><span class="n">layerCount</span> <span class="o">=</span> <span class="n">m_Specification</span><span class="p">.</span><span class="n">Layers</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">imageViewCreateInfo</span><span class="p">.</span><span class="n">image</span> <span class="o">=</span> <span class="n">m_Info</span><span class="p">.</span><span class="n">Image</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">VK_CHECK_RESULT</span><span class="p">(</span><span class="n">vkCreateImageView</span><span class="p">(</span><span class="n">device</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">imageViewCreateInfo</span><span class="p">,</span> <span class="k">nullptr</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">m_Info</span><span class="p">.</span><span class="n">ImageView</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl"><span class="n">VKUtils</span><span class="o">::</span><span class="n">SetDebugUtilsObjectName</span><span class="p">(</span><span class="n">device</span><span class="p">,</span> <span class="n">VK_OBJECT_TYPE_IMAGE_VIEW</span><span class="p">,</span> <span class="n">fmt</span><span class="o">::</span><span class="n">format</span><span class="p">(</span><span class="s">&#34;{} default image view&#34;</span><span class="p">,</span> <span class="n">m_Specification</span><span class="p">.</span><span class="n">DebugName</span><span class="p">),</span> <span class="n">m_Info</span><span class="p">.</span><span class="n">ImageView</span><span class="p">);</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div></li>
+<li>
+<p>采样器</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="k">if</span> <span class="p">(</span><span class="n">m_Specification</span><span class="p">.</span><span class="n">CreateSampler</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="n">VkSamplerCreateInfo</span> <span class="n">samplerCreateInfo</span> <span class="o">=</span> <span class="p">{};</span>
+</span></span><span class="line"><span class="cl">	<span class="n">samplerCreateInfo</span><span class="p">.</span><span class="n">sType</span> <span class="o">=</span> <span class="n">VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="n">samplerCreateInfo</span><span class="p">.</span><span class="n">maxAnisotropy</span> <span class="o">=</span> <span class="mf">1.0f</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="p">(</span><span class="n">Utils</span><span class="o">::</span><span class="n">IsIntegerBased</span><span class="p">(</span><span class="n">m_Specification</span><span class="p">.</span><span class="n">Format</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">	<span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="n">samplerCreateInfo</span><span class="p">.</span><span class="n">magFilter</span> <span class="o">=</span> <span class="n">VK_FILTER_NEAREST</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">		<span class="n">samplerCreateInfo</span><span class="p">.</span><span class="n">minFilter</span> <span class="o">=</span> <span class="n">VK_FILTER_NEAREST</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">		<span class="n">samplerCreateInfo</span><span class="p">.</span><span class="n">mipmapMode</span> <span class="o">=</span> <span class="n">VK_SAMPLER_MIPMAP_MODE_NEAREST</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="k">else</span>
+</span></span><span class="line"><span class="cl">	<span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="n">samplerCreateInfo</span><span class="p">.</span><span class="n">magFilter</span> <span class="o">=</span> <span class="n">VK_FILTER_LINEAR</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">		<span class="n">samplerCreateInfo</span><span class="p">.</span><span class="n">minFilter</span> <span class="o">=</span> <span class="n">VK_FILTER_LINEAR</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">		<span class="n">samplerCreateInfo</span><span class="p">.</span><span class="n">mipmapMode</span> <span class="o">=</span> <span class="n">VK_SAMPLER_MIPMAP_MODE_LINEAR</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="n">samplerCreateInfo</span><span class="p">.</span><span class="n">addressModeU</span> <span class="o">=</span> <span class="n">VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="n">samplerCreateInfo</span><span class="p">.</span><span class="n">addressModeV</span> <span class="o">=</span> <span class="n">samplerCreateInfo</span><span class="p">.</span><span class="n">addressModeU</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="n">samplerCreateInfo</span><span class="p">.</span><span class="n">addressModeW</span> <span class="o">=</span> <span class="n">samplerCreateInfo</span><span class="p">.</span><span class="n">addressModeU</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="n">samplerCreateInfo</span><span class="p">.</span><span class="n">mipLodBias</span> <span class="o">=</span> <span class="mf">0.0f</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="n">samplerCreateInfo</span><span class="p">.</span><span class="n">minLod</span> <span class="o">=</span> <span class="mf">0.0f</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="n">samplerCreateInfo</span><span class="p">.</span><span class="n">maxLod</span> <span class="o">=</span> <span class="mf">100.0f</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="n">samplerCreateInfo</span><span class="p">.</span><span class="n">borderColor</span> <span class="o">=</span> <span class="n">VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="n">m_Info</span><span class="p">.</span><span class="n">Sampler</span> <span class="o">=</span> <span class="n">Vulkan</span><span class="o">::</span><span class="n">CreateSampler</span><span class="p">(</span><span class="n">samplerCreateInfo</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="n">VKUtils</span><span class="o">::</span><span class="n">SetDebugUtilsObjectName</span><span class="p">(</span><span class="n">device</span><span class="p">,</span> <span class="n">VK_OBJECT_TYPE_SAMPLER</span><span class="p">,</span> <span class="n">fmt</span><span class="o">::</span><span class="n">format</span><span class="p">(</span><span class="s">&#34;{} default sampler&#34;</span><span class="p">,</span> <span class="n">m_Specification</span><span class="p">.</span><span class="n">DebugName</span><span class="p">),</span> <span class="n">m_Info</span><span class="p">.</span><span class="n">Sampler</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div></li>
+<li>
+<p>设置图片默认布局 Storage和HostRead才会设置，其他图片都还是无布局状态，不过RenderPass设置可以设置附件的开始和结束布局</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="k">if</span> <span class="p">(</span><span class="n">m_Specification</span><span class="p">.</span><span class="n">Usage</span> <span class="o">==</span> <span class="n">ImageUsage</span><span class="o">::</span><span class="n">Storage</span><span class="p">)</span> <span class="c1">// General
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="c1">// Transition image to GENERAL layout
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="n">VkCommandBuffer</span> <span class="n">commandBuffer</span> <span class="o">=</span> <span class="n">VulkanContext</span><span class="o">::</span><span class="n">GetCurrentDevice</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">GetCommandBuffer</span><span class="p">(</span><span class="nb">true</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="n">VkImageSubresourceRange</span> <span class="n">subresourceRange</span> <span class="o">=</span> <span class="p">{};</span>
+</span></span><span class="line"><span class="cl">	<span class="n">subresourceRange</span><span class="p">.</span><span class="n">aspectMask</span> <span class="o">=</span> <span class="n">VK_IMAGE_ASPECT_COLOR_BIT</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="n">subresourceRange</span><span class="p">.</span><span class="n">baseMipLevel</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="n">subresourceRange</span><span class="p">.</span><span class="n">levelCount</span> <span class="o">=</span> <span class="n">m_Specification</span><span class="p">.</span><span class="n">Mips</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="n">subresourceRange</span><span class="p">.</span><span class="n">layerCount</span> <span class="o">=</span> <span class="n">m_Specification</span><span class="p">.</span><span class="n">Layers</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="n">Utils</span><span class="o">::</span><span class="n">InsertImageMemoryBarrier</span><span class="p">(</span><span class="n">commandBuffer</span><span class="p">,</span> <span class="n">m_Info</span><span class="p">.</span><span class="n">Image</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">		<span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">		<span class="n">VK_IMAGE_LAYOUT_UNDEFINED</span><span class="p">,</span> <span class="n">VK_IMAGE_LAYOUT_GENERAL</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">		<span class="n">VK_PIPELINE_STAGE_ALL_COMMANDS_BIT</span><span class="p">,</span> <span class="n">VK_PIPELINE_STAGE_ALL_COMMANDS_BIT</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">		<span class="n">subresourceRange</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="n">VulkanContext</span><span class="o">::</span><span class="n">GetCurrentDevice</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">FlushCommandBuffer</span><span class="p">(</span><span class="n">commandBuffer</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="k">else</span> <span class="nf">if</span> <span class="p">(</span><span class="n">m_Specification</span><span class="p">.</span><span class="n">Usage</span> <span class="o">==</span> <span class="n">ImageUsage</span><span class="o">::</span><span class="n">HostRead</span><span class="p">)</span> <span class="c1">// VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="c1">// Transition image to TRANSFER_DST layout
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="n">VkCommandBuffer</span> <span class="n">commandBuffer</span> <span class="o">=</span> <span class="n">VulkanContext</span><span class="o">::</span><span class="n">GetCurrentDevice</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">GetCommandBuffer</span><span class="p">(</span><span class="nb">true</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="n">VkImageSubresourceRange</span> <span class="n">subresourceRange</span> <span class="o">=</span> <span class="p">{};</span>
+</span></span><span class="line"><span class="cl">	<span class="n">subresourceRange</span><span class="p">.</span><span class="n">aspectMask</span> <span class="o">=</span> <span class="n">VK_IMAGE_ASPECT_COLOR_BIT</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="n">subresourceRange</span><span class="p">.</span><span class="n">baseMipLevel</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="n">subresourceRange</span><span class="p">.</span><span class="n">levelCount</span> <span class="o">=</span> <span class="n">m_Specification</span><span class="p">.</span><span class="n">Mips</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="n">subresourceRange</span><span class="p">.</span><span class="n">layerCount</span> <span class="o">=</span> <span class="n">m_Specification</span><span class="p">.</span><span class="n">Layers</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="n">Utils</span><span class="o">::</span><span class="n">InsertImageMemoryBarrier</span><span class="p">(</span><span class="n">commandBuffer</span><span class="p">,</span> <span class="n">m_Info</span><span class="p">.</span><span class="n">Image</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">		<span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">		<span class="n">VK_IMAGE_LAYOUT_UNDEFINED</span><span class="p">,</span> <span class="n">VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">		<span class="n">VK_PIPELINE_STAGE_ALL_COMMANDS_BIT</span><span class="p">,</span> <span class="n">VK_PIPELINE_STAGE_ALL_COMMANDS_BIT</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">		<span class="n">subresourceRange</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="n">VulkanContext</span><span class="o">::</span><span class="n">GetCurrentDevice</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">FlushCommandBuffer</span><span class="p">(</span><span class="n">commandBuffer</span><span class="p">);</span> <span class="c1">// 会把命令提交并等待完成
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div></li>
+<li>
+<p>资源描述符信息封装（用默认的构造写一个资源描述符）</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl">	<span class="kt">void</span> <span class="n">VulkanImage2D</span><span class="o">::</span><span class="n">UpdateDescriptor</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">	<span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="k">if</span> <span class="p">(</span><span class="n">m_Specification</span><span class="p">.</span><span class="n">Format</span> <span class="o">==</span> <span class="n">ImageFormat</span><span class="o">::</span><span class="n">DEPTH24STENCIL8</span> <span class="o">||</span>
+</span></span><span class="line"><span class="cl">			<span class="n">m_Specification</span><span class="p">.</span><span class="n">Format</span> <span class="o">==</span> <span class="n">ImageFormat</span><span class="o">::</span><span class="n">DEPTH32F</span> <span class="o">||</span>
+</span></span><span class="line"><span class="cl">			<span class="n">m_Specification</span><span class="p">.</span><span class="n">Format</span> <span class="o">==</span> <span class="n">ImageFormat</span><span class="o">::</span><span class="n">DEPTH32FSTENCIL8UINT</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="n">m_DescriptorImageInfo</span><span class="p">.</span><span class="n">imageLayout</span> <span class="o">=</span> <span class="n">VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">		<span class="k">else</span> <span class="nf">if</span> <span class="p">(</span><span class="n">m_Specification</span><span class="p">.</span><span class="n">Usage</span> <span class="o">==</span> <span class="n">ImageUsage</span><span class="o">::</span><span class="n">Storage</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="n">m_DescriptorImageInfo</span><span class="p">.</span><span class="n">imageLayout</span> <span class="o">=</span> <span class="n">VK_IMAGE_LAYOUT_GENERAL</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">		<span class="k">else</span> <span class="nf">if</span> <span class="p">(</span><span class="n">m_Specification</span><span class="p">.</span><span class="n">Usage</span> <span class="o">==</span> <span class="n">ImageUsage</span><span class="o">::</span><span class="n">HostRead</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="n">m_DescriptorImageInfo</span><span class="p">.</span><span class="n">imageLayout</span> <span class="o">=</span> <span class="n">VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">		<span class="k">else</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="n">m_DescriptorImageInfo</span><span class="p">.</span><span class="n">imageLayout</span> <span class="o">=</span> <span class="n">VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">		<span class="n">m_DescriptorImageInfo</span><span class="p">.</span><span class="n">imageView</span> <span class="o">=</span> <span class="n">m_Info</span><span class="p">.</span><span class="n">ImageView</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">		<span class="n">m_DescriptorImageInfo</span><span class="p">.</span><span class="n">sampler</span> <span class="o">=</span> <span class="n">m_Info</span><span class="p">.</span><span class="n">Sampler</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><blockquote>
+<p>另外Image类需要提供创建不同Mip不同Layer的ImageView的功能，用于不同的场景，比如Mip用于使用ComputerShader创建HZB，Layer用于CSM级联阴影，用一个Image的不同Layer表示不同的级联</p>
+</blockquote>
+</li>
+</ol>
+<h1 id="texture">Texture
+</h1><blockquote>
+<p>Texture就是把Image再封装一层，用于纹理采样，另外封装了2D纹理和Cube纹理，后续还可以封装3D纹理，用于体积云等等</p>
+</blockquote>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
+</span><span class="lnt">56
+</span><span class="lnt">57
+</span><span class="lnt">58
+</span><span class="lnt">59
+</span><span class="lnt">60
+</span><span class="lnt">61
+</span><span class="lnt">62
+</span><span class="lnt">63
+</span><span class="lnt">64
+</span><span class="lnt">65
+</span><span class="lnt">66
+</span><span class="lnt">67
+</span><span class="lnt">68
+</span><span class="lnt">69
+</span><span class="lnt">70
+</span><span class="lnt">71
+</span><span class="lnt">72
+</span><span class="lnt">73
+</span><span class="lnt">74
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl">	<span class="k">struct</span> <span class="nc">TextureSpecification</span>
+</span></span><span class="line"><span class="cl">	<span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="n">ImageFormat</span> <span class="n">Format</span> <span class="o">=</span> <span class="n">ImageFormat</span><span class="o">::</span><span class="n">RGBA</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">		<span class="kt">uint32_t</span> <span class="n">Width</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">		<span class="kt">uint32_t</span> <span class="n">Height</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">		<span class="n">TextureWrap</span> <span class="n">SamplerWrap</span> <span class="o">=</span> <span class="n">TextureWrap</span><span class="o">::</span><span class="n">Repeat</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">		<span class="n">TextureFilter</span> <span class="n">SamplerFilter</span> <span class="o">=</span> <span class="n">TextureFilter</span><span class="o">::</span><span class="n">Linear</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">		<span class="kt">bool</span> <span class="n">GenerateMips</span> <span class="o">=</span> <span class="nb">true</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">		<span class="kt">bool</span> <span class="n">Storage</span> <span class="o">=</span> <span class="nb">false</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">		<span class="kt">bool</span> <span class="n">StoreLocally</span> <span class="o">=</span> <span class="nb">false</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">		<span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">DebugName</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="p">};</span>
+</span></span><span class="line"><span class="cl">	<span class="k">class</span> <span class="nc">Texture</span> <span class="o">:</span> <span class="k">public</span> <span class="n">RendererResource</span>
+</span></span><span class="line"><span class="cl">	<span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="k">public</span><span class="o">:</span>
+</span></span><span class="line"><span class="cl">		<span class="k">virtual</span> <span class="o">~</span><span class="n">Texture</span><span class="p">()</span> <span class="p">{}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">		<span class="k">virtual</span> <span class="kt">void</span> <span class="nf">Bind</span><span class="p">(</span><span class="kt">uint32_t</span> <span class="n">slot</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span> <span class="k">const</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">		<span class="k">virtual</span> <span class="n">ImageFormat</span> <span class="nf">GetFormat</span><span class="p">()</span> <span class="k">const</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">		<span class="k">virtual</span> <span class="kt">uint32_t</span> <span class="nf">GetWidth</span><span class="p">()</span> <span class="k">const</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">		<span class="k">virtual</span> <span class="kt">uint32_t</span> <span class="nf">GetHeight</span><span class="p">()</span> <span class="k">const</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">		<span class="k">virtual</span> <span class="n">glm</span><span class="o">::</span><span class="n">uvec2</span> <span class="n">GetSize</span><span class="p">()</span> <span class="k">const</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">		<span class="k">virtual</span> <span class="kt">uint32_t</span> <span class="nf">GetMipLevelCount</span><span class="p">()</span> <span class="k">const</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">		<span class="k">virtual</span> <span class="n">std</span><span class="o">::</span><span class="n">pair</span><span class="o">&lt;</span><span class="kt">uint32_t</span><span class="p">,</span> <span class="kt">uint32_t</span><span class="o">&gt;</span> <span class="n">GetMipSize</span><span class="p">(</span><span class="kt">uint32_t</span> <span class="n">mip</span><span class="p">)</span> <span class="k">const</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">		<span class="k">virtual</span> <span class="kt">uint64_t</span> <span class="nf">GetHash</span><span class="p">()</span> <span class="k">const</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">		<span class="k">virtual</span> <span class="n">TextureType</span> <span class="nf">GetType</span><span class="p">()</span> <span class="k">const</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="p">};</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="k">class</span> <span class="nc">Texture2D</span> <span class="o">:</span> <span class="k">public</span> <span class="n">Texture</span>
+</span></span><span class="line"><span class="cl">	<span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="k">public</span><span class="o">:</span>
+</span></span><span class="line"><span class="cl">		<span class="k">static</span> <span class="n">Ref</span><span class="o">&lt;</span><span class="n">Texture2D</span><span class="o">&gt;</span> <span class="n">Create</span><span class="p">(</span><span class="k">const</span> <span class="n">TextureSpecification</span><span class="o">&amp;</span> <span class="n">specification</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">		<span class="k">static</span> <span class="n">Ref</span><span class="o">&lt;</span><span class="n">Texture2D</span><span class="o">&gt;</span> <span class="n">Create</span><span class="p">(</span><span class="k">const</span> <span class="n">TextureSpecification</span><span class="o">&amp;</span> <span class="n">specification</span><span class="p">,</span> <span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">filesystem</span><span class="o">::</span><span class="n">path</span><span class="o">&amp;</span> <span class="n">filepath</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">		<span class="k">static</span> <span class="n">Ref</span><span class="o">&lt;</span><span class="n">Texture2D</span><span class="o">&gt;</span> <span class="n">Create</span><span class="p">(</span><span class="k">const</span> <span class="n">TextureSpecification</span><span class="o">&amp;</span> <span class="n">specification</span><span class="p">,</span> <span class="n">Buffer</span> <span class="n">imageData</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">		<span class="k">virtual</span> <span class="kt">void</span> <span class="nf">CreateFromFile</span><span class="p">(</span><span class="k">const</span> <span class="n">TextureSpecification</span><span class="o">&amp;</span> <span class="n">specification</span><span class="p">,</span> <span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">filesystem</span><span class="o">::</span><span class="n">path</span><span class="o">&amp;</span> <span class="n">filepath</span><span class="p">)</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">		<span class="k">virtual</span> <span class="kt">void</span> <span class="nf">CreateFromBuffer</span><span class="p">(</span><span class="k">const</span> <span class="n">TextureSpecification</span><span class="o">&amp;</span> <span class="n">specification</span><span class="p">,</span> <span class="n">Buffer</span> <span class="n">data</span> <span class="o">=</span> <span class="n">Buffer</span><span class="p">())</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">		<span class="k">virtual</span> <span class="kt">void</span> <span class="nf">ReplaceFromFile</span><span class="p">(</span><span class="k">const</span> <span class="n">TextureSpecification</span><span class="o">&amp;</span> <span class="n">specification</span><span class="p">,</span> <span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">filesystem</span><span class="o">::</span><span class="n">path</span><span class="o">&amp;</span> <span class="n">filepath</span><span class="p">)</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">		<span class="k">virtual</span> <span class="kt">void</span> <span class="nf">Resize</span><span class="p">(</span><span class="k">const</span> <span class="n">glm</span><span class="o">::</span><span class="n">uvec2</span><span class="o">&amp;</span> <span class="n">size</span><span class="p">)</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">		<span class="k">virtual</span> <span class="kt">void</span> <span class="nf">Resize</span><span class="p">(</span><span class="k">const</span> <span class="kt">uint32_t</span> <span class="n">width</span><span class="p">,</span> <span class="k">const</span> <span class="kt">uint32_t</span> <span class="n">height</span><span class="p">)</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">		<span class="k">virtual</span> <span class="n">Ref</span><span class="o">&lt;</span><span class="n">Image2D</span><span class="o">&gt;</span> <span class="n">GetImage</span><span class="p">()</span> <span class="k">const</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">		<span class="k">virtual</span> <span class="kt">void</span> <span class="nf">Lock</span><span class="p">()</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">		<span class="k">virtual</span> <span class="kt">void</span> <span class="nf">Unlock</span><span class="p">()</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">		<span class="k">virtual</span> <span class="n">Buffer</span> <span class="nf">GetWriteableBuffer</span><span class="p">()</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">		<span class="k">virtual</span> <span class="kt">bool</span> <span class="nf">Loaded</span><span class="p">()</span> <span class="k">const</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">		<span class="k">virtual</span> <span class="k">const</span> <span class="n">std</span><span class="o">::</span><span class="n">filesystem</span><span class="o">::</span><span class="n">path</span><span class="o">&amp;</span> <span class="n">GetPath</span><span class="p">()</span> <span class="k">const</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">		<span class="k">virtual</span> <span class="n">TextureType</span> <span class="nf">GetType</span><span class="p">()</span> <span class="k">const</span> <span class="k">override</span> <span class="p">{</span> <span class="k">return</span> <span class="n">TextureType</span><span class="o">::</span><span class="n">Texture2D</span><span class="p">;</span> <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">		<span class="k">static</span> <span class="n">AssetType</span> <span class="nf">GetStaticType</span><span class="p">()</span> <span class="p">{</span> <span class="k">return</span> <span class="n">AssetType</span><span class="o">::</span><span class="n">Texture</span><span class="p">;</span> <span class="p">}</span>
+</span></span><span class="line"><span class="cl">		<span class="k">virtual</span> <span class="n">AssetType</span> <span class="nf">GetAssetType</span><span class="p">()</span> <span class="k">const</span> <span class="k">override</span> <span class="p">{</span> <span class="k">return</span> <span class="n">GetStaticType</span><span class="p">();</span> <span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="p">};</span>
+</span></span><span class="line"><span class="cl">	<span class="k">class</span> <span class="nc">TextureCube</span> <span class="o">:</span> <span class="k">public</span> <span class="n">Texture</span>
+</span></span><span class="line"><span class="cl">	<span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="k">public</span><span class="o">:</span>
+</span></span><span class="line"><span class="cl">		<span class="k">static</span> <span class="n">Ref</span><span class="o">&lt;</span><span class="n">TextureCube</span><span class="o">&gt;</span> <span class="n">Create</span><span class="p">(</span><span class="k">const</span> <span class="n">TextureSpecification</span><span class="o">&amp;</span> <span class="n">specification</span><span class="p">,</span> <span class="n">Buffer</span> <span class="n">imageData</span> <span class="o">=</span> <span class="n">Buffer</span><span class="p">());</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">		<span class="k">virtual</span> <span class="n">TextureType</span> <span class="nf">GetType</span><span class="p">()</span> <span class="k">const</span> <span class="k">override</span> <span class="p">{</span> <span class="k">return</span> <span class="n">TextureType</span><span class="o">::</span><span class="n">TextureCube</span><span class="p">;</span> <span class="p">}</span>
+</span></span><span class="line"><span class="cl">		<span class="k">virtual</span> <span class="kt">void</span> <span class="nf">GenerateMips</span><span class="p">(</span><span class="kt">bool</span> <span class="n">readonly</span> <span class="o">=</span> <span class="nb">false</span><span class="p">)</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">		<span class="k">virtual</span> <span class="kt">void</span> <span class="nf">GenerateMips</span><span class="p">(</span><span class="n">Ref</span><span class="o">&lt;</span><span class="n">RenderCommandBuffer</span><span class="o">&gt;</span> <span class="n">renderCommandBuffer</span><span class="p">,</span><span class="kt">bool</span> <span class="n">readonly</span> <span class="o">=</span> <span class="nb">false</span><span class="p">)</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">		<span class="k">static</span> <span class="n">AssetType</span> <span class="nf">GetStaticType</span><span class="p">()</span> <span class="p">{</span> <span class="k">return</span> <span class="n">AssetType</span><span class="o">::</span><span class="n">EnvMap</span><span class="p">;</span> <span class="p">}</span>
+</span></span><span class="line"><span class="cl">		<span class="k">virtual</span> <span class="n">AssetType</span> <span class="nf">GetAssetType</span><span class="p">()</span> <span class="k">const</span> <span class="k">override</span> <span class="p">{</span> <span class="k">return</span> <span class="n">GetStaticType</span><span class="p">();</span> <span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="p">};</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><ol>
+<li>
+<p>创建底层Image对象</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="n">ImageSpecification</span> <span class="n">imageSpec</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">imageSpec</span><span class="p">.</span><span class="n">Format</span> <span class="o">=</span> <span class="n">m_Specification</span><span class="p">.</span><span class="n">Format</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">imageSpec</span><span class="p">.</span><span class="n">Width</span> <span class="o">=</span> <span class="n">m_Specification</span><span class="p">.</span><span class="n">Width</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">imageSpec</span><span class="p">.</span><span class="n">Height</span> <span class="o">=</span> <span class="n">m_Specification</span><span class="p">.</span><span class="n">Height</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">imageSpec</span><span class="p">.</span><span class="n">Mips</span> <span class="o">=</span> <span class="n">specification</span><span class="p">.</span><span class="n">GenerateMips</span> <span class="o">?</span> <span class="n">GetMipLevelCount</span><span class="p">()</span> <span class="o">:</span> <span class="mi">1</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">imageSpec</span><span class="p">.</span><span class="n">DebugName</span> <span class="o">=</span> <span class="n">specification</span><span class="p">.</span><span class="n">DebugName</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">imageSpec</span><span class="p">.</span><span class="n">CreateSampler</span> <span class="o">=</span> <span class="nb">false</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">m_Image</span> <span class="o">=</span> <span class="n">Image2D</span><span class="o">::</span><span class="n">Create</span><span class="p">(</span><span class="n">imageSpec</span><span class="p">);</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div></li>
+<li>
+<p>从文件中读取数据</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="n">m_ImageData</span> <span class="o">=</span> <span class="n">TextureImporter</span><span class="o">::</span><span class="n">ToBufferFromFile</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="n">m_Specification</span><span class="p">.</span><span class="n">Format</span><span class="p">,</span> <span class="n">m_Specification</span><span class="p">.</span><span class="n">Width</span><span class="p">,</span> <span class="n">m_Specification</span><span class="p">.</span><span class="n">Height</span><span class="p">);</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div></li>
+<li>
+<p>数据写入Image对象（先把数据放在临时缓冲区，再转移到图片），生成MipMap后，转为VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL布局</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">  1
+</span><span class="lnt">  2
+</span><span class="lnt">  3
+</span><span class="lnt">  4
+</span><span class="lnt">  5
+</span><span class="lnt">  6
+</span><span class="lnt">  7
+</span><span class="lnt">  8
+</span><span class="lnt">  9
+</span><span class="lnt"> 10
+</span><span class="lnt"> 11
+</span><span class="lnt"> 12
+</span><span class="lnt"> 13
+</span><span class="lnt"> 14
+</span><span class="lnt"> 15
+</span><span class="lnt"> 16
+</span><span class="lnt"> 17
+</span><span class="lnt"> 18
+</span><span class="lnt"> 19
+</span><span class="lnt"> 20
+</span><span class="lnt"> 21
+</span><span class="lnt"> 22
+</span><span class="lnt"> 23
+</span><span class="lnt"> 24
+</span><span class="lnt"> 25
+</span><span class="lnt"> 26
+</span><span class="lnt"> 27
+</span><span class="lnt"> 28
+</span><span class="lnt"> 29
+</span><span class="lnt"> 30
+</span><span class="lnt"> 31
+</span><span class="lnt"> 32
+</span><span class="lnt"> 33
+</span><span class="lnt"> 34
+</span><span class="lnt"> 35
+</span><span class="lnt"> 36
+</span><span class="lnt"> 37
+</span><span class="lnt"> 38
+</span><span class="lnt"> 39
+</span><span class="lnt"> 40
+</span><span class="lnt"> 41
+</span><span class="lnt"> 42
+</span><span class="lnt"> 43
+</span><span class="lnt"> 44
+</span><span class="lnt"> 45
+</span><span class="lnt"> 46
+</span><span class="lnt"> 47
+</span><span class="lnt"> 48
+</span><span class="lnt"> 49
+</span><span class="lnt"> 50
+</span><span class="lnt"> 51
+</span><span class="lnt"> 52
+</span><span class="lnt"> 53
+</span><span class="lnt"> 54
+</span><span class="lnt"> 55
+</span><span class="lnt"> 56
+</span><span class="lnt"> 57
+</span><span class="lnt"> 58
+</span><span class="lnt"> 59
+</span><span class="lnt"> 60
+</span><span class="lnt"> 61
+</span><span class="lnt"> 62
+</span><span class="lnt"> 63
+</span><span class="lnt"> 64
+</span><span class="lnt"> 65
+</span><span class="lnt"> 66
+</span><span class="lnt"> 67
+</span><span class="lnt"> 68
+</span><span class="lnt"> 69
+</span><span class="lnt"> 70
+</span><span class="lnt"> 71
+</span><span class="lnt"> 72
+</span><span class="lnt"> 73
+</span><span class="lnt"> 74
+</span><span class="lnt"> 75
+</span><span class="lnt"> 76
+</span><span class="lnt"> 77
+</span><span class="lnt"> 78
+</span><span class="lnt"> 79
+</span><span class="lnt"> 80
+</span><span class="lnt"> 81
+</span><span class="lnt"> 82
+</span><span class="lnt"> 83
+</span><span class="lnt"> 84
+</span><span class="lnt"> 85
+</span><span class="lnt"> 86
+</span><span class="lnt"> 87
+</span><span class="lnt"> 88
+</span><span class="lnt"> 89
+</span><span class="lnt"> 90
+</span><span class="lnt"> 91
+</span><span class="lnt"> 92
+</span><span class="lnt"> 93
+</span><span class="lnt"> 94
+</span><span class="lnt"> 95
+</span><span class="lnt"> 96
+</span><span class="lnt"> 97
+</span><span class="lnt"> 98
+</span><span class="lnt"> 99
+</span><span class="lnt">100
+</span><span class="lnt">101
+</span><span class="lnt">102
+</span><span class="lnt">103
+</span><span class="lnt">104
+</span><span class="lnt">105
+</span><span class="lnt">106
+</span><span class="lnt">107
+</span><span class="lnt">108
+</span><span class="lnt">109
+</span><span class="lnt">110
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="kt">void</span> <span class="n">VulkanTexture2D</span><span class="o">::</span><span class="n">SetData</span><span class="p">(</span><span class="n">Buffer</span> <span class="n">buffer</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="k">auto</span> <span class="n">device</span> <span class="o">=</span> <span class="n">VulkanContext</span><span class="o">::</span><span class="n">GetCurrentDevice</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">	<span class="n">Ref</span><span class="o">&lt;</span><span class="n">VulkanImage2D</span><span class="o">&gt;</span> <span class="n">image</span> <span class="o">=</span> <span class="n">m_Image</span><span class="p">.</span><span class="n">As</span><span class="o">&lt;</span><span class="n">VulkanImage2D</span><span class="o">&gt;</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">	<span class="k">auto</span><span class="o">&amp;</span> <span class="n">info</span> <span class="o">=</span> <span class="n">image</span><span class="o">-&gt;</span><span class="n">GetImageInfo</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="n">VkDeviceSize</span> <span class="n">size</span> <span class="o">=</span> <span class="n">m_ImageData</span><span class="p">.</span><span class="n">Size</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="n">VkMemoryAllocateInfo</span> <span class="n">memAllocInfo</span><span class="p">{};</span>
+</span></span><span class="line"><span class="cl">	<span class="n">memAllocInfo</span><span class="p">.</span><span class="n">sType</span> <span class="o">=</span> <span class="n">VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="n">VulkanAllocator</span> <span class="nf">allocator</span><span class="p">(</span><span class="s">&#34;Texture2D&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">// Create staging buffer
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="n">VkBufferCreateInfo</span> <span class="n">bufferCreateInfo</span><span class="p">{};</span>
+</span></span><span class="line"><span class="cl">	<span class="n">bufferCreateInfo</span><span class="p">.</span><span class="n">sType</span> <span class="o">=</span> <span class="n">VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="n">bufferCreateInfo</span><span class="p">.</span><span class="n">size</span> <span class="o">=</span> <span class="n">size</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="n">bufferCreateInfo</span><span class="p">.</span><span class="n">usage</span> <span class="o">=</span> <span class="n">VK_BUFFER_USAGE_TRANSFER_SRC_BIT</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="n">bufferCreateInfo</span><span class="p">.</span><span class="n">sharingMode</span> <span class="o">=</span> <span class="n">VK_SHARING_MODE_EXCLUSIVE</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="n">VkBuffer</span> <span class="n">stagingBuffer</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="n">VmaAllocation</span> <span class="n">stagingBufferAllocation</span> <span class="o">=</span> <span class="n">allocator</span><span class="p">.</span><span class="n">AllocateBuffer</span><span class="p">(</span><span class="n">bufferCreateInfo</span><span class="p">,</span> <span class="n">VMA_MEMORY_USAGE_CPU_TO_GPU</span><span class="p">,</span> <span class="n">stagingBuffer</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">// Copy data to staging buffer
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="kt">uint8_t</span><span class="o">*</span> <span class="n">destData</span> <span class="o">=</span> <span class="n">allocator</span><span class="p">.</span><span class="n">MapMemory</span><span class="o">&lt;</span><span class="kt">uint8_t</span><span class="o">&gt;</span><span class="p">(</span><span class="n">stagingBufferAllocation</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="n">HZ_CORE_ASSERT</span><span class="p">(</span><span class="n">m_ImageData</span><span class="p">.</span><span class="n">Data</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="n">memcpy</span><span class="p">(</span><span class="n">destData</span><span class="p">,</span> <span class="n">m_ImageData</span><span class="p">.</span><span class="n">Data</span><span class="p">,</span> <span class="n">size</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="n">allocator</span><span class="p">.</span><span class="n">UnmapMemory</span><span class="p">(</span><span class="n">stagingBufferAllocation</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="n">VkCommandBuffer</span> <span class="n">copyCmd</span> <span class="o">=</span> <span class="n">device</span><span class="o">-&gt;</span><span class="n">GetCommandBuffer</span><span class="p">(</span><span class="nb">true</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">// Image memory barriers for the texture image
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl">	<span class="c1">// The sub resource range describes the regions of the image that will be transitioned using the memory barriers below
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="n">VkImageSubresourceRange</span> <span class="n">subresourceRange</span> <span class="o">=</span> <span class="p">{};</span>
+</span></span><span class="line"><span class="cl">	<span class="c1">// Image only contains color data
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="n">subresourceRange</span><span class="p">.</span><span class="n">aspectMask</span> <span class="o">=</span> <span class="n">VK_IMAGE_ASPECT_COLOR_BIT</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="c1">// Start at first mip level
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="n">subresourceRange</span><span class="p">.</span><span class="n">baseMipLevel</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="n">subresourceRange</span><span class="p">.</span><span class="n">levelCount</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="n">subresourceRange</span><span class="p">.</span><span class="n">layerCount</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">// Transition the texture image layout to transfer target, so we can safely copy our buffer data to it.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="n">VkImageMemoryBarrier</span> <span class="n">imageMemoryBarrier</span><span class="p">{};</span>
+</span></span><span class="line"><span class="cl">	<span class="n">imageMemoryBarrier</span><span class="p">.</span><span class="n">sType</span> <span class="o">=</span> <span class="n">VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="n">imageMemoryBarrier</span><span class="p">.</span><span class="n">srcQueueFamilyIndex</span> <span class="o">=</span> <span class="n">VK_QUEUE_FAMILY_IGNORED</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="n">imageMemoryBarrier</span><span class="p">.</span><span class="n">dstQueueFamilyIndex</span> <span class="o">=</span> <span class="n">VK_QUEUE_FAMILY_IGNORED</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="n">imageMemoryBarrier</span><span class="p">.</span><span class="n">image</span> <span class="o">=</span> <span class="n">info</span><span class="p">.</span><span class="n">Image</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="n">imageMemoryBarrier</span><span class="p">.</span><span class="n">subresourceRange</span> <span class="o">=</span> <span class="n">subresourceRange</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="n">imageMemoryBarrier</span><span class="p">.</span><span class="n">srcAccessMask</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="n">imageMemoryBarrier</span><span class="p">.</span><span class="n">dstAccessMask</span> <span class="o">=</span> <span class="n">VK_ACCESS_TRANSFER_WRITE_BIT</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="n">imageMemoryBarrier</span><span class="p">.</span><span class="n">oldLayout</span> <span class="o">=</span> <span class="n">VK_IMAGE_LAYOUT_UNDEFINED</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="n">imageMemoryBarrier</span><span class="p">.</span><span class="n">newLayout</span> <span class="o">=</span> <span class="n">VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">// Insert a memory dependency at the proper pipeline stages that will execute the image layout transition
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// Source pipeline stage is host write/read execution (VK_PIPELINE_STAGE_HOST_BIT)
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">// Destination pipeline stage is copy command execution (VK_PIPELINE_STAGE_TRANSFER_BIT)
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="n">vkCmdPipelineBarrier</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">		<span class="n">copyCmd</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">		<span class="n">VK_PIPELINE_STAGE_HOST_BIT</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">		<span class="n">VK_PIPELINE_STAGE_TRANSFER_BIT</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">		<span class="mi">0</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">		<span class="mi">0</span><span class="p">,</span> <span class="k">nullptr</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">		<span class="mi">0</span><span class="p">,</span> <span class="k">nullptr</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">		<span class="mi">1</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">imageMemoryBarrier</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="n">VkBufferImageCopy</span> <span class="n">bufferCopyRegion</span> <span class="o">=</span> <span class="p">{};</span>
+</span></span><span class="line"><span class="cl">	<span class="n">bufferCopyRegion</span><span class="p">.</span><span class="n">imageSubresource</span><span class="p">.</span><span class="n">aspectMask</span> <span class="o">=</span> <span class="n">VK_IMAGE_ASPECT_COLOR_BIT</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="n">bufferCopyRegion</span><span class="p">.</span><span class="n">imageSubresource</span><span class="p">.</span><span class="n">mipLevel</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="n">bufferCopyRegion</span><span class="p">.</span><span class="n">imageSubresource</span><span class="p">.</span><span class="n">baseArrayLayer</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="n">bufferCopyRegion</span><span class="p">.</span><span class="n">imageSubresource</span><span class="p">.</span><span class="n">layerCount</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="n">bufferCopyRegion</span><span class="p">.</span><span class="n">imageExtent</span><span class="p">.</span><span class="n">width</span> <span class="o">=</span> <span class="n">m_Specification</span><span class="p">.</span><span class="n">Width</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="n">bufferCopyRegion</span><span class="p">.</span><span class="n">imageExtent</span><span class="p">.</span><span class="n">height</span> <span class="o">=</span> <span class="n">m_Specification</span><span class="p">.</span><span class="n">Height</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="n">bufferCopyRegion</span><span class="p">.</span><span class="n">imageExtent</span><span class="p">.</span><span class="n">depth</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="n">bufferCopyRegion</span><span class="p">.</span><span class="n">bufferOffset</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">// Copy mip levels from staging buffer
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="n">vkCmdCopyBufferToImage</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">		<span class="n">copyCmd</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">		<span class="n">stagingBuffer</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">		<span class="n">info</span><span class="p">.</span><span class="n">Image</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">		<span class="n">VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">		<span class="mi">1</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">		<span class="o">&amp;</span><span class="n">bufferCopyRegion</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="kt">uint32_t</span> <span class="n">mipCount</span> <span class="o">=</span> <span class="n">m_Specification</span><span class="p">.</span><span class="n">GenerateMips</span> <span class="o">?</span> <span class="n">GetMipLevelCount</span><span class="p">()</span> <span class="o">:</span> <span class="mi">1</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="p">(</span><span class="n">mipCount</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">)</span> <span class="c1">// Mips to generate
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="n">Utils</span><span class="o">::</span><span class="n">InsertImageMemoryBarrier</span><span class="p">(</span><span class="n">copyCmd</span><span class="p">,</span> <span class="n">info</span><span class="p">.</span><span class="n">Image</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">			<span class="n">VK_ACCESS_TRANSFER_WRITE_BIT</span><span class="p">,</span> <span class="n">VK_ACCESS_TRANSFER_READ_BIT</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">			<span class="n">VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL</span><span class="p">,</span> <span class="n">VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">			<span class="n">VK_PIPELINE_STAGE_TRANSFER_BIT</span><span class="p">,</span> <span class="n">VK_PIPELINE_STAGE_TRANSFER_BIT</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">			<span class="n">subresourceRange</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="k">else</span>
+</span></span><span class="line"><span class="cl">	<span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="n">Utils</span><span class="o">::</span><span class="n">InsertImageMemoryBarrier</span><span class="p">(</span><span class="n">copyCmd</span><span class="p">,</span> <span class="n">info</span><span class="p">.</span><span class="n">Image</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">			<span class="n">VK_ACCESS_TRANSFER_READ_BIT</span><span class="p">,</span> <span class="n">VK_ACCESS_SHADER_READ_BIT</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">			<span class="n">VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL</span><span class="p">,</span> <span class="n">image</span><span class="o">-&gt;</span><span class="n">GetDescriptorInfoVulkan</span><span class="p">().</span><span class="n">imageLayout</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">			<span class="n">VK_PIPELINE_STAGE_TRANSFER_BIT</span><span class="p">,</span> <span class="n">VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">			<span class="n">subresourceRange</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="n">device</span><span class="o">-&gt;</span><span class="n">FlushCommandBuffer</span><span class="p">(</span><span class="n">copyCmd</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">// Clean up staging resources
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="n">allocator</span><span class="p">.</span><span class="n">DestroyBuffer</span><span class="p">(</span><span class="n">stagingBuffer</span><span class="p">,</span> <span class="n">stagingBufferAllocation</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="p">(</span><span class="n">m_Specification</span><span class="p">.</span><span class="n">GenerateMips</span> <span class="o">&amp;&amp;</span> <span class="n">mipCount</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="n">GenerateMips</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><blockquote>
+<p>对于Cube纹理，就是imageCreateInfo.arrayLayers = 6; // cubeMap本质是一个图片数组，arrayLayers来表示6个面，其他类似</p>
+</blockquote>
+</li>
+</ol>
+
+</section>
+
+
+    <footer class="article-footer">
+    
+    <section class="article-tags">
+        
+            <a href="/tags/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E/">游戏引擎</a>
+        
+            <a href="/tags/vulkan/">Vulkan</a>
+        
+            <a href="/tags/hazel/">Hazel</a>
+        
+    </section>
+
+
+    
+    <section class="article-copyright">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
+</svg>
+
+
+
+        <span>Licensed under CC BY-NC-SA 4.0</span>
+    </section>
+    </footer>
+
+
+    
+        <link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css"integrity="sha384-n8MVd4RsNIU0tAv4ct0nTaAbDJwPJzDEaqSD1odI&#43;WdtXRGWt2kTvGFasHpSy3SV"crossorigin="anonymous"
+            ><script 
+                src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"integrity="sha384-XjKyOOlGwcjNTAIQHIpgOno0Hl1YQqzUOEleOLALmuqehneUG&#43;vnGctmUb0ZY0l8"crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"integrity="sha384-&#43;VBxd3r6XgURycqtZ117nYw44OOcIax56Z4dCRWbxyPt0Koah1uHoK0o4&#43;/RRE05"crossorigin="anonymous"
+                defer
+                >
+            </script><script>
+    window.addEventListener("DOMContentLoaded", () => {
+	const mainArticleElement = document.querySelector(".main-article");
+        renderMathInElement(mainArticleElement, {
+            delimiters: [
+                { left: "$$", right: "$$", display: true },
+                { left: "$", right: "$", display: false },
+                { left: "\\(", right: "\\)", display: false },
+                { left: "\\[", right: "\\]", display: true }
+            ],
+            ignoredClasses: ["gist"]
+        });})
+</script>
+
+    
+</article>
+
+    
+
+    
+
+<aside class="related-content--wrapper">
+    <h2 class="section-title">相关文章</h2>
+    <div class="related-content">
+        <div class="flex article-list--tile">
+            
+                
+<article class="article-card no-image">
+    <a href="/p/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E5%BC%80%E5%8F%91%E5%AE%9E%E8%B7%B5%E9%98%B4%E5%BD%B1%E7%AF%87/">
+        
+        
+        <div class="article-details">
+            <h2 class="article-title">游戏引擎开发实践（阴影篇）</h2>
+        </div>
+        
+    </a>
+
+    <style>
+     
+    .article-card {
+        background: rgba(255, 255, 255, 0.25);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        margin: 10px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .article-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    }
+
+    .article-card a {
+        display: flex;
+        flex-direction: column;
+        text-decoration: none;
+        color: inherit;
+        height: 100%;
+    }
+
+     
+    .article-image-card {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        overflow: hidden;
+    }
+    .article-image-card img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+    .article-image-card:hover img {
+        transform: scale(1.05);
+    }
+
+     
+    .article-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: rgba(0,0,0,0.3);  
+        padding: 10px;
+        box-sizing: border-box;
+        text-align: center;
+    }
+    .article-overlay .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #fff;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .article-card.no-image .article-details {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 15px;
+    }
+    .article-card.no-image .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #222;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .articles-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 20px;
+    }
+    </style>
+</article>
+            
+                
+<article class="article-card has-image">
+    <a href="/p/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E5%BC%80%E5%8F%91%E5%AE%9E%E8%B7%B5%E5%AE%9E%E4%BE%8B%E5%8C%96%E6%B8%B2%E6%9F%93/">
+        
+        <div class="article-image-card">
+            
+                <img src="/image-20251022010105969.png" loading="lazy" data-key="" data-hash="/image-20251022010105969.png"/>
+            
+
+            
+            <div class="article-overlay">
+                <h2 class="article-title">游戏引擎开发实践（实例化渲染）</h2>
+            </div>
+        </div>
+        
+    </a>
+
+    <style>
+     
+    .article-card {
+        background: rgba(255, 255, 255, 0.25);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        margin: 10px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .article-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    }
+
+    .article-card a {
+        display: flex;
+        flex-direction: column;
+        text-decoration: none;
+        color: inherit;
+        height: 100%;
+    }
+
+     
+    .article-image-card {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        overflow: hidden;
+    }
+    .article-image-card img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+    .article-image-card:hover img {
+        transform: scale(1.05);
+    }
+
+     
+    .article-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: rgba(0,0,0,0.3);  
+        padding: 10px;
+        box-sizing: border-box;
+        text-align: center;
+    }
+    .article-overlay .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #fff;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .article-card.no-image .article-details {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 15px;
+    }
+    .article-card.no-image .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #222;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .articles-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 20px;
+    }
+    </style>
+</article>
+            
+        </div>
+    </div>
+</aside>
+
+     
+    
+        
+    <script
+    src="https://giscus.app/client.js"
+    data-repo="sdpyy1/sdpyy1.github.io"
+    data-repo-id="R_kgDOQEycpQ"
+    data-category="Announcements"
+    data-category-id="DIC_kwDOQEycpc4Cwz7v"
+    data-mapping="pathname"
+    data-strict="0"
+    data-reactions-enabled="1"
+    data-emit-metadata="0"
+    data-input-position="top"
+    data-theme="light"
+    data-lang="en"
+    data-loading=""
+    crossorigin="anonymous"
+    async
+></script>
+<script>
+    function setGiscusTheme(theme) {
+        let giscus = document.querySelector("iframe.giscus-frame");
+        if (giscus) {
+            giscus.contentWindow.postMessage(
+                {
+                    giscus: {
+                        setConfig: {
+                            theme: theme,
+                        },
+                    },
+                },
+                "https://giscus.app"
+            );
+        }
+    }
+
+    (function () {
+        addEventListener("message", (e) => {
+            if (event.origin !== "https://giscus.app") return;
+            handler();
+        });
+        window.addEventListener("onColorSchemeChange", handler);
+
+        function handler() {
+            if (document.documentElement.dataset.scheme === "light") {
+                setGiscusTheme('light');
+            } else {
+                setGiscusTheme('light');
+            }
+        }
+    })();
+</script>
+
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+            2020 - 
+        
+        2025 爱喝东方树叶
+    </section>
+    <section style="display: flex; gap: 30px; align-items: center;">
+      
+      
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+      <span>📚 文章数: 48</span>
+      <span>✍️ 总字数: 
+        
+        
+        165.78K
+      </span>
+    </section>
+
+    <section class="powerby">
+    
+    <div class="busuanzi-footer">
+        <span id="busuanzi_container_site_pv">
+          本站总访问量<span id="busuanzi_value_site_pv"></span>次
+        </span>
+        <span id="busuanzi_container_site_uv">
+          本站访客数<span id="busuanzi_value_site_uv"></span>人次
+        </span>
+      </div></section>
+
+</footer>
+
+
+    
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    
+    <div class="pswp__bg"></div>
+
+    
+    <div class="pswp__scroll-wrap">
+
+        
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                
+                
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                        <div class="pswp__preloader__cut">
+                            <div class="pswp__preloader__donut"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div>
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js"integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo="crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js"integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU="crossorigin="anonymous"
+                defer
+                >
+            </script><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css"crossorigin="anonymous"
+            ><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css"crossorigin="anonymous"
+            >
+
+            </main>
+        </div>
+        <script 
+                src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js"integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z&#43;KMkF24hUW8WePSA9HM="crossorigin="anonymous"
+                
+                >
+            </script><script type="text/javascript" src="/ts/main.1e9a3bafd846ced4c345d084b355fb8c7bae75701c338f8a1f8a82c780137826.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>
