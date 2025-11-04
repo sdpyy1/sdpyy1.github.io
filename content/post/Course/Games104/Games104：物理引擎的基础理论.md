@@ -4,7 +4,7 @@ draft = false
 title = 'Games104：物理引擎的基础理论'
 categories = ["Course/Games104"]
 tags = ["课程笔记","Games104"]
-image = '截屏2025-11-04 11.15.42.png'
+image = '截屏2025-11-04-11.15.42.png'
 +++
 > 主要讲了欧拉积分、碰撞检测方法、碰撞结算方法
 物理世界的对象:
