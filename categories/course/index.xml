@@ -7,7 +7,442 @@
         <generator>Hugo -- gohugo.io</generator>
         <language>zh-cn</language>
         <copyright>爱喝东方树叶</copyright>
-        <lastBuildDate>Wed, 29 Oct 2025 14:42:31 +0800</lastBuildDate><atom:link href="https://sdpyy1.github.io/categories/course/index.xml" rel="self" type="application/rss+xml" /><item>
+        <lastBuildDate>Tue, 04 Nov 2025 11:04:19 +0800</lastBuildDate><atom:link href="https://sdpyy1.github.io/categories/course/index.xml" rel="self" type="application/rss+xml" /><item>
+        <title>Games104：物理引擎的基础理论</title>
+        <link>https://sdpyy1.github.io/p/games104%E7%89%A9%E7%90%86%E5%BC%95%E6%93%8E%E7%9A%84%E5%9F%BA%E7%A1%80%E7%90%86%E8%AE%BA/</link>
+        <pubDate>Tue, 04 Nov 2025 11:04:19 +0800</pubDate>
+        
+        <guid>https://sdpyy1.github.io/p/games104%E7%89%A9%E7%90%86%E5%BC%95%E6%93%8E%E7%9A%84%E5%9F%BA%E7%A1%80%E7%90%86%E8%AE%BA/</guid>
+        <description>&lt;img src="https://sdpyy1.github.io/%E6%88%AA%E5%B1%8F2025-11-04%2011.15.42.png" alt="Featured image of post Games104：物理引擎的基础理论" /&gt;&lt;blockquote&gt;
+&lt;p&gt;主要讲了欧拉积分、碰撞检测方法、碰撞结算方法
+物理世界的对象:&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;ol&gt;
+&lt;li&gt;Static&lt;/li&gt;
+&lt;li&gt;Dynamic&lt;/li&gt;
+&lt;li&gt;Trigger(参与GamePlay但是与物理世界无关)&lt;/li&gt;
+&lt;li&gt;Kinematic（动力学Actor）&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-11-04-11.09.08.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-11-04 11.09.08&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;h1 id=&#34;actor-shapes&#34;&gt;Actor Shapes
+&lt;/h1&gt;&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-11-04-11.11.53.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-11-04 11.11.53&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-11-04-11.15.42.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-11-04 11.15.42&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;h1 id=&#34;欧拉积分&#34;&gt;欧拉积分
+&lt;/h1&gt;&lt;p&gt;黎曼积分定义为：
+&lt;/p&gt;
+$$
+\int_a^b f(t) \, dt = \lim_{n\to\infty} \sum_{i=0}^{n-1} f(t_i^*) \, \Delta t
+$$&lt;p&gt;
+其中：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;区间 $[a,b]$ 被划分为很多小区间；&lt;/li&gt;
+&lt;li&gt;每个小区间长度为 $\Delta t = \frac{b-a}{n}$；&lt;/li&gt;
+&lt;li&gt;$f(t_i^*)$ 是函数在区间上的一个采样值；&lt;/li&gt;
+&lt;li&gt;积分就是“采样 × 宽度”的极限&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;显式欧拉法 = 左端点采样（Left Riemann Sum）&lt;/strong&gt;
+&lt;strong&gt;隐式欧拉法 = 右端点采样（Right Riemann Sum）&lt;/strong&gt;&lt;/p&gt;
+&lt;h2 id=&#34;显式欧拉积分&#34;&gt;显式欧拉积分
+&lt;/h2&gt;&lt;p&gt;用当前状态的参数来近似 $\Delta T$ ，比如$t_0时速度为5，那就假设$$\Delta T$内都是5来模拟积分。  显式欧拉法 = 用左端点采样的黎曼积分近似。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-11-04-11.29.09.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-11-04 11.29.09&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;这样求积分的问题是：力不守恒，用因为时间段内力不是恒定的。 如下图所示，如果总是以某一点的力的方向来求解，那物体总是朝着切线方向位移，来不及改变力的方向（因为在$\Delta T$时间内力是恒定的）&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-11-04-11.40.01.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-11-04 11.30.18&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-11-04-11.42.33.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-11-04 11.42.33&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;h2 id=&#34;隐式欧拉方法&#34;&gt;隐式欧拉方法
+&lt;/h2&gt;&lt;p&gt;用未来的状态来计算$\Delta T$时间内的数据 。隐式欧拉法 = 用右侧端点采样的黎曼积分近似。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-11-04-11.43.00.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-11-04 11.43.00&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;显然能量衰减了，我在$\Delta T$时间内又不是一直这么小&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-11-04-11.44.31.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-11-04 11.44.31&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;h2 id=&#34;半隐式欧拉法&#34;&gt;半隐式欧拉法
+&lt;/h2&gt;&lt;p&gt;有点像Hack&amp;hellip;..&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-11-04-11.48.52.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-11-04 11.48.52&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;这种方法数学上很稳定 $\Delta T$取0.05就能很好模拟圆周运动了&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-11-04-11.49.32.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-11-04 11.49.32&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-11-04-11.49.23.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-11-04 11.49.23&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;h1 id=&#34;刚体运动学&#34;&gt;刚体运动学
+&lt;/h1&gt;&lt;blockquote&gt;
+&lt;p&gt;这块课程很杂，应该需要用到什么学什么，这里先听课&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-11-04-11.57.07.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-11-04 11.57.07&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;h1 id=&#34;碰撞检测&#34;&gt;碰撞检测
+&lt;/h1&gt;&lt;p&gt;一般分两步：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;AABB检测&lt;/li&gt;
+&lt;li&gt;计算碰撞点&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-11-04-12.06.19.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-11-04 12.06.19&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;h2 id=&#34;broad-phase&#34;&gt;Broad Phase
+&lt;/h2&gt;&lt;p&gt;BVH检测&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-11-04-12.09.12.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-11-04 12.09.12&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;排序检测&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-11-04-12.09.19.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-11-04 12.09.19&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;h2 id=&#34;narrow-phase&#34;&gt;Narrow Phase
+&lt;/h2&gt;&lt;p&gt;用球的半径来检测&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-11-04-12.12.58.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-11-04 12.12.58&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-11-04-12.13.36.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-11-04 12.13.36&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;h3 id=&#34;闵可夫斯基和minkowski-sum&#34;&gt;闵可夫斯基和（Minkowski Sum）
+&lt;/h3&gt;&lt;p&gt;两个点集内全部互相加&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-11-04-12.16.07.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-11-04 12.16.07&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;红色三角形表示Minkowski Sum的结果&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-11-04-12.18.12.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-11-04 12.17.12&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-11-04-12.18.34.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-11-04 12.18.34&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;再定义减法&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-11-04-12.20.18.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-11-04 12.20.18&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;最妙的来了，如果红色图像包了原点，那就碰撞了&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-11-04-12.20.35.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-11-04 12.20.35&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;如何判断这个多边形过原点呢？&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-11-04-12.22.52.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-11-04 12.22.52&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;h3 id=&#34;分离轴原理sat&#34;&gt;分离轴原理(SAT)
+&lt;/h3&gt;&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-11-04-12.24.33.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-11-04 12.24.33&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-11-04-12.26.21.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-11-04 12.26.21&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;h1 id=&#34;碰撞处理&#34;&gt;碰撞处理
+&lt;/h1&gt;&lt;p&gt;处理碰撞后分离&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-11-04-12.28.30.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-11-04 12.28.30&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;h2 id=&#34;hack&#34;&gt;Hack
+&lt;/h2&gt;&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-11-04-12.29.01.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-11-04 12.29.01&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;h2 id=&#34;约束求解&#34;&gt;约束求解
+&lt;/h2&gt;&lt;blockquote&gt;
+&lt;p&gt;需要再看&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-11-04-12.31.35.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-11-04 12.31.35&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-11-04-12.32.14.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-11-04 12.32.14&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;h1 id=&#34;scene-query&#34;&gt;Scene Query
+&lt;/h1&gt;&lt;blockquote&gt;
+&lt;p&gt;查询碰撞点、查询Sweep、查询Overlap&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;raycast查询碰撞点：比如子弹&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-11-04-12.37.50.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-11-04 12.37.50&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;Sweep&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-11-04-12.38.00.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-11-04 12.38.00&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;Overlap：比如爆炸范围overlap了那些Actor&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-11-04-12.38.45.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-11-04 12.38.45&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;h1 id=&#34;优化&#34;&gt;优化
+&lt;/h1&gt;&lt;p&gt;模拟优化&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-11-04-12.41.05.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-11-04 12.41.05&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;CCD：连续碰撞检测，离散检测可能会穿过薄面&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-11-04-12.42.22.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-11-04 12.42.22&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;确定性模拟：不同的机器计算结果应该一致，比如显卡、移动端等差别&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-11-04-12.45.00.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-11-04 12.45.00&#34;
+	
+	
+&gt;&lt;/p&gt;
+</description>
+        </item>
+        <item>
         <title>Games104：引擎工具链</title>
         <link>https://sdpyy1.github.io/p/games104%E5%BC%95%E6%93%8E%E5%B7%A5%E5%85%B7%E9%93%BE/</link>
         <pubDate>Wed, 29 Oct 2025 14:42:31 +0800</pubDate>
