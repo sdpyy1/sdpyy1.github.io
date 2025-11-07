@@ -1,0 +1,1028 @@
+<!DOCTYPE html>
+<html lang="zh-cn" dir="ltr">
+    <head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'>
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+  <meta name="referrer" content="no-referrer-when-downgrade"><meta name='description' content="\n其实OpenGL渲染器已经完成的单次散射的大气渲染，但是对原理理解不透彻，这次准备更完善一点，并且实现整套的多重散射大气渲染，参考UE的实现，以及几篇论文\n">
+<title>游戏引擎开发实践（大气渲染）</title>
+
+<link rel='canonical' href='https://sdpyy1.github.io/p/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E5%BC%80%E5%8F%91%E5%AE%9E%E8%B7%B5%E5%A4%A7%E6%B0%94%E6%B8%B2%E6%9F%93/'>
+
+<link rel="stylesheet" href="/scss/style.min.6a692fd055deae459f2a9767f57f3855ba80cafd5041317f24f7360f6ca47cdf.css"><meta property='og:title' content="游戏引擎开发实践（大气渲染）">
+<meta property='og:description' content="\n其实OpenGL渲染器已经完成的单次散射的大气渲染，但是对原理理解不透彻，这次准备更完善一点，并且实现整套的多重散射大气渲染，参考UE的实现，以及几篇论文\n">
+<meta property='og:url' content='https://sdpyy1.github.io/p/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E5%BC%80%E5%8F%91%E5%AE%9E%E8%B7%B5%E5%A4%A7%E6%B0%94%E6%B8%B2%E6%9F%93/'>
+<meta property='og:site_name' content='wanfeng'>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:published_time' content='2025-11-07T18:08:43&#43;08:00'/><meta property='article:modified_time' content='2025-11-07T18:08:43&#43;08:00'/>
+<meta name="twitter:title" content="游戏引擎开发实践（大气渲染）">
+<meta name="twitter:description" content="\n其实OpenGL渲染器已经完成的单次散射的大气渲染，但是对原理理解不透彻，这次准备更完善一点，并且实现整套的多重散射大气渲染，参考UE的实现，以及几篇论文\n">
+    <link rel="shortcut icon" href="/favicon.ico" />
+
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="切换菜单">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        
+            
+            <figure class="site-avatar">
+                <a href="/">
+                
+                    
+                    
+                    
+                        
+                        <img src="/img/avatar_hu_f59158f730715054.png" width="300"
+                            height="300" class="site-logo" loading="lazy" alt="Avatar">
+                    
+                
+                </a>
+                
+                    <span class="emoji">🧐</span>
+                
+            </figure>
+            
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="/">wanfeng</a></h1>
+            <h2 class="site-description">Blog</h2>
+        </div>
+    </header><ol class="menu-social">
+            
+                <li>
+                    <a 
+                        href='https://space.bilibili.com/287473737'
+                        target="_blank"
+                        title="Bilibili"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-brand-bilibili"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 10a4 4 0 0 1 4 -4h10a4 4 0 0 1 4 4v6a4 4 0 0 1 -4 4h-10a4 4 0 0 1 -4 -4v-6z" /><path d="M8 3l2 3" /><path d="M16 3l-2 3" /><path d="M9 13v-2" /><path d="M15 11v2" /></svg>
+                        
+                    </a>
+                </li>
+            
+                <li>
+                    <a 
+                        href='https://github.com/sdpyy1'
+                        target="_blank"
+                        title="GitHub"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
+</svg>
+
+
+
+                        
+                    </a>
+                </li>
+            
+        </ol><ol class="menu" id="main-menu">
+        
+        
+        
+        <li >
+            <a href='/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>Home</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/about/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>About</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>Archives</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/search/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>Search</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/links/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5" />
+  <path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5" />
+</svg>
+
+
+
+                
+                <span>Links</span>
+            </a>
+        </li>
+        
+        <li class="menu-bottom-section">
+            <ol class="menu">
+                    
+                        <li id="i18n-switch">  
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-language" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M4 5h7" />
+  <path d="M9 3v2c0 4.418 -2.239 8 -5 8" />
+  <path d="M5 9c-.003 2.144 2.952 3.908 6.7 4" />
+  <path d="M12 20l4 -9l4 9" />
+  <path d="M19.1 18h-6.2" />
+</svg>
+
+
+
+                            <select name="language" title="language" onchange="window.location.href = this.selectedOptions[0].value">
+                                
+                                    <option value="https://sdpyy1.github.io/en/" >English</option>
+                                
+                                    <option value="https://sdpyy1.github.io/" selected>中文</option>
+                                
+                            </select>
+                        </li>
+                    
+                
+
+                
+                    <li id="dark-mode-toggle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <span>暗色模式</span>
+                    </li>
+                
+            </ol>
+        </li>
+    </ol>
+</aside>
+
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">目录</h2>
+        
+        <div class="widget--toc">
+            <nav id="TableOfContents">
+  <ol>
+    <li><a href="#precomputed-atmospheric-scattering">Precomputed Atmospheric Scattering</a>
+      <ol>
+        <li><a href="#transmittance-透射率">Transmittance 透射率</a>
+          <ol>
+            <li><a href="#透射率的预计算">透射率的预计算</a></li>
+          </ol>
+        </li>
+        <li><a href="#单次散射">单次散射</a>
+          <ol>
+            <li><a href="#散射理论">散射理论</a></li>
+            <li><a href="#单次散射预计算">单次散射预计算</a></li>
+          </ol>
+        </li>
+        <li><a href="#多重散射">多重散射</a></li>
+      </ol>
+    </li>
+    <li></li>
+    <li><a href="#a-scalable-and-production-ready-sky-and-atmosphere-rendering-technique">A Scalable and Production Ready Sky and Atmosphere Rendering Technique</a>
+      <ol>
+        <li><a href="#多重散射的优化">多重散射的优化</a></li>
+        <li><a href="#大气透视查找表">大气透视查找表</a></li>
+      </ol>
+    </li>
+    <li><a href="#引擎实践">引擎实践</a></li>
+  </ol>
+</nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+            <main class="main full-width">
+    <article class="main-article">
+    <header class="article-header">
+
+    <div class="article-details">
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="/p/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E5%BC%80%E5%8F%91%E5%AE%9E%E8%B7%B5%E5%A4%A7%E6%B0%94%E6%B8%B2%E6%9F%93/">游戏引擎开发实践（大气渲染）</a>
+        </h2>
+    
+        
+    </div>
+
+    
+    
+    
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published">Nov 07, 2025</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-time--reading">
+                    阅读时长: 5 分钟
+                </time>
+            </div>
+        
+
+        
+            
+    </footer>
+    
+    
+</div>
+<style>
+    .category-hierarchy {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;  
+        margin-right: 12px;  
+        margin-bottom: 8px;  
+    }
+    
+    .category-separator {
+        color: #999;
+        user-select: none;
+        font-size: 1em;  
+    }
+    
+    .article-category a {
+        text-decoration: none;
+        padding: 6px 12px;  
+        border-radius: 6px;  
+        font-size: 0.95em;  
+        transition: all 0.2s ease;
+        line-height: 1.5;  
+    }
+    
+    .article-category a:hover {
+        opacity: 0.9;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 6px rgba(0,0,0,0.1);  
+    }
+</style>
+</header>
+
+    <section class="article-content">
+    
+    
+    <p><img src="/%e6%88%aa%e5%b1%8f2025-11-07-19.17.27.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="截屏2025-11-07 19.17.27"
+	
+	
+></p>
+<p><img src="/%e6%88%aa%e5%b1%8f2025-11-07-18.15.57.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="截屏2025-11-07 18.15.57"
+	
+	
+></p>
+<blockquote>
+<p>其实OpenGL渲染器已经完成的单次散射的大气渲染，但是对原理理解不透彻，这次准备更完善一点，并且实现整套的多重散射大气渲染，参考UE的实现，以及几篇论文</p>
+</blockquote>
+<h1 id="precomputed-atmospheric-scattering">Precomputed Atmospheric Scattering
+</h1><blockquote>
+<p>Eric Bruneton, Fabrice Neyret在2008年发表的论文，在2017年有了一个示例代码</p>
+</blockquote>
+<h2 id="transmittance-透射率">Transmittance 透射率
+</h2><p>基本概念：透射是可乘的</p>
+<ul>
+<li>对于 <strong>三点共线</strong> $p, q, r$（顺序为 $p \to q \to r$）</li>
+<li><strong>从 p 到 r 的透射率</strong> = 从 p 到 q 的透射 × 从 q 到 r 的透射</li>
+</ul>
+$$
+T(p,r) = T(p,q) \cdot T(q,r)
+$$<ul>
+<li>这是光线传输的乘法性质，因为大气衰减是指数衰减，连续段可以相乘。</li>
+</ul>
+<p>处理大气边界</p>
+<ul>
+<li>对于点对 $p, q$</li>
+<li>将从 $p$ 出发到 $q$ 的射线延长，找到它 <strong>与大气上下边界的最近交点 $i$</strong></li>
+<li>透射可以表示为：</li>
+</ul>
+$$
+T(p,q) = \frac{T(p,i)}{T(q,i)}
+$$<ul>
+<li>特殊情况：如果 $[p,q]$ 与地面相交 → 透射为 0（光被阻挡）</li>
+<li><strong>直观理解</strong>：
+你只需要知道从大气内部某点到大气边界的透射，再通过除法就能得到任意点对的透射。</li>
+</ul>
+<h3 id="透射率的预计算">透射率的预计算
+</h3><p><img src="/v2-4055228b35712abec9c292680f0be070_1440w.jpg"
+	
+	
+	
+	loading="lazy"
+	
+		alt="img"
+	
+	
+></p>
+<p>离地心的距离 r 和天顶角的余弦$\mu = \cos\theta$这两个参数，就可以描述从任意点出发沿着任意方向到大气层的路径上的传输衰减。</p>
+<p>所以预计算的是摄像机在任意高度，不同抬头角度看向大气层的边界的投射率</p>
+<p>// TODO: 知乎https://zhuanlan.zhihu.com/p/595576594上对坐标到纹理的重映射方法与论文不一样</p>
+<h2 id="单次散射">单次散射
+</h2><p>光路即使没有经过太阳，太阳也对这条光路有贡献，因为本来不应该经过视线的光由于空气粒子的反弹进入了视线，形成光路</p>
+<p><img src="/v2-009081b5f8f50f1243b3f7046c110df4_1440w.jpg"
+	
+	
+	
+	loading="lazy"
+	
+		alt="img"
+	
+	
+></p>
+<p>光线在空气中主要会发生两种物理现象：散射和透射。</p>
+<ul>
+<li>
+<p>散射：散射是指一束光和大气层中的微粒发生碰撞之后，众多粒子各奔东西四散而逃的物理现象。我们把逃逸到视线方向进而产生颜色贡献的光照能量记作 ：S</p>
+<p><img src="/v2-d732867caff2441913b1a2e0e229e101_1440w.jpg"
+	
+	
+	
+	loading="lazy"
+	
+		alt="img"
+	
+	
+></p>
+</li>
+<li>
+<p>透射（Transmittance）描述的是光在介质中穿行所造成的能量衰减，记作 ：$I = T(I_0)$</p>
+</li>
+</ul>
+<p><img src="/v2-22f066c8879e81493dccec28ec77907f_1440w.jpg"
+	
+	
+	
+	loading="lazy"
+	
+		alt="img"
+	
+	
+></p>
+<p>所以单次散射的流程：</p>
+<ol>
+<li>T1透射 （衰减）</li>
+<li>S点散射</li>
+<li>T2透射 （衰减）</li>
+</ol>
+<p><img src="/v2-121814a840482242b46443719d55a961_1440w.jpg"
+	
+	
+	
+	loading="lazy"
+	
+		alt="img"
+	
+	
+></p>
+<p>事实上在大气层内太阳光可以被看做是平行光，因此需要对视线方向做积分来重建无数条光路的总和：</p>
+<p><img src="/v2-33d02b05c2cd834e923cfe10b2ef18a2_1440w.jpg"
+	
+	
+	
+	loading="lazy"
+	
+		alt="img"
+	
+	
+></p>
+<h3 id="散射理论">散射理论
+</h3><blockquote>
+<p>解决散射系数和相位函数是什么</p>
+</blockquote>
+<p>在大气渲染中也是类似的，我们通过 “散射系数” 和 “相位函数” 来描述光线散射的现象。散射系数$\sigma$ 描述了光线和空气分子发生一次反弹之后逃逸到各个方向的（失去的）能量 <strong>总和</strong></p>
+<p><img src="/v2-951d9ef2f4dceb06b3ccfd10f105f6b0_1440w.jpg"
+	
+	
+	
+	loading="lazy"
+	
+		alt="img"
+	
+	
+></p>
+<p>剩下的能量并非完全进入我们的视线，而是会四下逃窜。因此相位函数 $phase(\theta)$ 表述了反弹后剩下的能量有多少能够逃到指定的方向上。相位函数和 BRDF 一样在定义域上积分等于 1.0，这保证了能量守恒：</p>
+<p><img src="/v2-f1a78dc668e25d92d2587805f85b6206_1440w.jpg"
+	
+	
+	
+	loading="lazy"
+	
+		alt="img"
+	
+	
+></p>
+<blockquote>
+<p>理解就是：1. 散射系数决定有多少能量会进行散射 2. 相位函数决定这些散射的能量有多少会沿着$\theta$方向进行散射（注意散射的能量才是渲染用的，而不是剩下的）</p>
+</blockquote>
+<p>将散射系数和相位函数简单相乘就能得到在某点发生一次散射之后，逃逸到某个方向上的能量大小</p>
+<p>$S = \sigma \cdot \text{phase}(\theta)$</p>
+<p>大气层并非完全均匀，大气分子的密度随着高度的增加而减少。越少的分子数目意味着发生散射的概率越低。此外大气对红、黄、蓝三种波长的光有着不同的散射量。因此散射系数通常是波长和高度的函数</p>
+<p>$\sigma(\lambda, h)$</p>
+<p>对于空气这种介质，它的密度通常随着海拔的增高而降低。密度的高低反应在数值上就是散射概率的减少，散射概率的减少对应着散射后剩余能量的增加。因此可以用海平面（Y=0）处的散射系数和海平面 h 处的高度密度衰减函数来描述任意高度的散射系数</p>
+<p>$\sigma(\lambda, h) = \sigma(\lambda, 0)\rho(h)$</p>
+<h3 id="单次散射预计算">单次散射预计算
+</h3><p>这篇论文使用的是4D表，属于是把计算结果全部打表了</p>
+<p>单次散射函数依赖 4 个参数：
+</p>
+$$
+(r, \mu, \mu_s, \nu)
+$$<ul>
+<li>$r$：观察点到地心的距离</li>
+<li>$\mu = \cos(\theta_v)$：视线方向与地心方向余弦</li>
+<li>$\mu_s = \cos(\theta_s)$：太阳方向与地心方向余弦</li>
+<li>$\nu = \cos(\theta_{vs})$：视线方向与太阳方向余弦</li>
+</ul>
+<h2 id="多重散射">多重散射
+</h2><blockquote>
+<p>二次散射的计算需要一次散射，三次需要二次，所以一层一层往上算来得到多重散射效果。</p>
+</blockquote>
+<p><img src="/%e6%88%aa%e5%b1%8f2025-11-07-21.37.36.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="截屏2025-11-07 21.37.36"
+	
+	
+></p>
+<p>太阳光可能散射两次才散射到ViewDir</p>
+<p><img src="/v2-76ac54ea1123e2db7030774145ae911e_1440w.jpg"
+	
+	
+	
+	loading="lazy"
+	
+		alt="img"
+	
+	
+></p>
+<p>沿着ViewDir上某一点的计算不仅要计算来自太阳的散射，而是一个球面积分（也就是说任意方向都可能散射到这个点），对于球面上任何一点的贡献计算又是一层积分运算（球面积分的每一个采样方向，都要逐步进行 raymarch 到大气层边缘。如下图最右边蓝色线条）。所有2次多重散射就需要3重积分来求解</p>
+<p><img src="/v2-18ee51863994b0ffa85d127b13ce3c81_1440w.jpg"
+	
+	
+	
+	loading="lazy"
+	
+		alt="img"
+	
+	
+></p>
+<p>设：</p>
+<ul>
+<li>$L^{(1)}(p, \omega)$：点 p 向方向 ω 的单次散射光。</li>
+<li>$L^{(2)}(p, \omega)$：点 p 向方向 ω 的二次散射光。</li>
+<li>$L^{(3)}(p, \omega)$：点 p 向方向 ω 的三次散射光。</li>
+</ul>
+<p>那么：
+</p>
+$$
+L^{(2)}(p, \omega)
+= \int_{q, \omega'} L^{(1)}(q, \omega') \cdot f_s(\omega', \omega)
+$$<p>
+以此类推：
+</p>
+$$
+L^{(n)}(p, \omega)
+= \int_{q, \omega'} L^{(n-1)}(q, \omega') \cdot f_s(\omega', \omega)
+$$<p>
+所以：</p>
+<blockquote>
+<p>计算第 n 阶散射，必须先有第 n−1 阶的结果。</p>
+</blockquote>
+<blockquote>
+<p>有点懂，但没完全懂&hellip;.</p>
+</blockquote>
+<h1 id="">
+</h1><h1 id="a-scalable-and-production-ready-sky-and-atmosphere-rendering-technique">A Scalable and Production Ready Sky and Atmosphere Rendering Technique
+</h1><blockquote>
+<p>2020年Epic发表介绍大气渲染的论文</p>
+</blockquote>
+<h2 id="多重散射的优化">多重散射的优化
+</h2><p>这篇论文主要对多重散射需要一层一层计算迭代来实现的情况做了简化。作者通过做出一些对结果影响不大的简化假设，大幅度地降低了Multiple Scattering计算的消耗，并且使用数值方法计算无穷阶Scattering之和变为可能。</p>
+<p>论文提到的<strong>Sky-View LUT</strong>就是最终渲染结果存储的纹理</p>
+<p>TODO: 在靠近地平线部分大气散射会变得高频，因此UV的映射不是线性，而是靠近地平线部分会分配更多像素</p>
+<h2 id="大气透视查找表">大气透视查找表
+</h2><p>除了天空，远处被大气覆盖的物体也要受到大气的影响。远处的物体对相机的贡献主要来自于两点，物体自身的颜色乘以着色点到相机的 transmittance，以及相机到着色点这段路径中间受到的大气散射。对应下图两条不同颜色的路径：</p>
+<p><img src="/v2-d04e6eb731f9b0472cae55d07740ed58_1440w.jpg"
+	
+	
+	
+	loading="lazy"
+	
+		alt="img"
+	
+	
+></p>
+<ol>
+<li>分割Camera Frustum（和Cluster Rendering中的分割一样），计算每个格子到Camera方向的In-Scattering和Transmittance，保存在Volume Texture中；</li>
+<li>在Volume Texture的z轴方向上根据Transmittance累加In-Scattering，使得每一个单元格保存的是该单元格到Camera的Luminance；</li>
+<li>在Opaque渲染之后，做一次Post Processing，采样上述的Volume Texture，对场景中的物体添加Aerial Perspective；</li>
+<li>Transparent物体渲染时在VS中采样Volume Texture添加Aerial Perspective。</li>
+</ol>
+<h1 id="引擎实践">引擎实践
+</h1>
+</section>
+
+
+    <footer class="article-footer">
+    
+
+    
+    <section class="article-copyright">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
+</svg>
+
+
+
+        <span>Licensed under CC BY-NC-SA 4.0</span>
+    </section>
+    </footer>
+
+
+    
+        <link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css"integrity="sha384-n8MVd4RsNIU0tAv4ct0nTaAbDJwPJzDEaqSD1odI&#43;WdtXRGWt2kTvGFasHpSy3SV"crossorigin="anonymous"
+            ><script 
+                src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"integrity="sha384-XjKyOOlGwcjNTAIQHIpgOno0Hl1YQqzUOEleOLALmuqehneUG&#43;vnGctmUb0ZY0l8"crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"integrity="sha384-&#43;VBxd3r6XgURycqtZ117nYw44OOcIax56Z4dCRWbxyPt0Koah1uHoK0o4&#43;/RRE05"crossorigin="anonymous"
+                defer
+                >
+            </script><script>
+    window.addEventListener("DOMContentLoaded", () => {
+	const mainArticleElement = document.querySelector(".main-article");
+        renderMathInElement(mainArticleElement, {
+            delimiters: [
+                { left: "$$", right: "$$", display: true },
+                { left: "$", right: "$", display: false },
+                { left: "\\(", right: "\\)", display: false },
+                { left: "\\[", right: "\\]", display: true }
+            ],
+            ignoredClasses: ["gist"]
+        });})
+</script>
+
+    
+</article>
+
+    
+
+    
+
+     
+    
+        
+    <script
+    src="https://giscus.app/client.js"
+    data-repo="sdpyy1/sdpyy1.github.io"
+    data-repo-id="R_kgDOQEycpQ"
+    data-category="Announcements"
+    data-category-id="DIC_kwDOQEycpc4Cwz7v"
+    data-mapping="pathname"
+    data-strict="0"
+    data-reactions-enabled="1"
+    data-emit-metadata="0"
+    data-input-position="top"
+    data-theme="light"
+    data-lang="en"
+    data-loading=""
+    crossorigin="anonymous"
+    async
+></script>
+<script>
+    function setGiscusTheme(theme) {
+        let giscus = document.querySelector("iframe.giscus-frame");
+        if (giscus) {
+            giscus.contentWindow.postMessage(
+                {
+                    giscus: {
+                        setConfig: {
+                            theme: theme,
+                        },
+                    },
+                },
+                "https://giscus.app"
+            );
+        }
+    }
+
+    (function () {
+        addEventListener("message", (e) => {
+            if (event.origin !== "https://giscus.app") return;
+            handler();
+        });
+        window.addEventListener("onColorSchemeChange", handler);
+
+        function handler() {
+            if (document.documentElement.dataset.scheme === "light") {
+                setGiscusTheme('light');
+            } else {
+                setGiscusTheme('light');
+            }
+        }
+    })();
+</script>
+
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+            2020 - 
+        
+        2025 爱喝东方树叶
+    </section>
+    <section style="display: flex; gap: 30px; align-items: center;">
+      
+      
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+      <span>📚 文章数: 50</span>
+      <span>✍️ 总字数: 
+        
+        
+        169.10K
+      </span>
+    </section>
+
+    <section class="powerby">
+    
+    <div class="busuanzi-footer">
+        <span id="busuanzi_container_site_pv">
+          本站总访问量<span id="busuanzi_value_site_pv"></span>次
+        </span>
+        <span id="busuanzi_container_site_uv">
+          本站访客数<span id="busuanzi_value_site_uv"></span>人次
+        </span>
+      </div></section>
+
+</footer>
+
+
+    
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    
+    <div class="pswp__bg"></div>
+
+    
+    <div class="pswp__scroll-wrap">
+
+        
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                
+                
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                        <div class="pswp__preloader__cut">
+                            <div class="pswp__preloader__donut"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div>
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js"integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo="crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js"integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU="crossorigin="anonymous"
+                defer
+                >
+            </script><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css"crossorigin="anonymous"
+            ><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css"crossorigin="anonymous"
+            >
+
+            </main>
+        </div>
+        <script 
+                src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js"integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z&#43;KMkF24hUW8WePSA9HM="crossorigin="anonymous"
+                
+                >
+            </script><script type="text/javascript" src="/ts/main.1e9a3bafd846ced4c345d084b355fb8c7bae75701c338f8a1f8a82c780137826.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>

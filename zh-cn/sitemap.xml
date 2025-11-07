@@ -2,6 +2,25 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
+    <loc>https://sdpyy1.github.io/</loc>
+    <lastmod>2025-11-07T18:08:43+08:00</lastmod>
+    <xhtml:link
+                rel="alternate"
+                hreflang="en"
+                href="https://sdpyy1.github.io/en/"
+                />
+    <xhtml:link
+                rel="alternate"
+                hreflang="zh-cn"
+                href="https://sdpyy1.github.io/"
+                />
+  </url><url>
+    <loc>https://sdpyy1.github.io/post/</loc>
+    <lastmod>2025-11-07T18:08:43+08:00</lastmod>
+  </url><url>
+    <loc>https://sdpyy1.github.io/p/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E5%BC%80%E5%8F%91%E5%AE%9E%E8%B7%B5%E5%A4%A7%E6%B0%94%E6%B8%B2%E6%9F%93/</loc>
+    <lastmod>2025-11-07T18:08:43+08:00</lastmod>
+  </url><url>
     <loc>https://sdpyy1.github.io/categories/</loc>
     <lastmod>2025-11-04T11:04:19+08:00</lastmod>
     <xhtml:link
@@ -25,22 +44,6 @@
     <lastmod>2025-11-04T11:04:19+08:00</lastmod>
   </url><url>
     <loc>https://sdpyy1.github.io/p/games104%E7%89%A9%E7%90%86%E5%BC%95%E6%93%8E%E7%9A%84%E5%9F%BA%E7%A1%80%E7%90%86%E8%AE%BA/</loc>
-    <lastmod>2025-11-04T11:04:19+08:00</lastmod>
-  </url><url>
-    <loc>https://sdpyy1.github.io/</loc>
-    <lastmod>2025-11-04T11:04:19+08:00</lastmod>
-    <xhtml:link
-                rel="alternate"
-                hreflang="en"
-                href="https://sdpyy1.github.io/en/"
-                />
-    <xhtml:link
-                rel="alternate"
-                hreflang="zh-cn"
-                href="https://sdpyy1.github.io/"
-                />
-  </url><url>
-    <loc>https://sdpyy1.github.io/post/</loc>
     <lastmod>2025-11-04T11:04:19+08:00</lastmod>
   </url><url>
     <loc>https://sdpyy1.github.io/tags/</loc>

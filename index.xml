@@ -7,7 +7,284 @@
         <generator>Hugo -- gohugo.io</generator>
         <language>zh-cn</language>
         <copyright>爱喝东方树叶</copyright>
-        <lastBuildDate>Tue, 04 Nov 2025 11:04:19 +0800</lastBuildDate><atom:link href="https://sdpyy1.github.io/index.xml" rel="self" type="application/rss+xml" /><item>
+        <lastBuildDate>Fri, 07 Nov 2025 18:08:43 +0800</lastBuildDate><atom:link href="https://sdpyy1.github.io/index.xml" rel="self" type="application/rss+xml" /><item>
+        <title>游戏引擎开发实践（大气渲染）</title>
+        <link>https://sdpyy1.github.io/p/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E5%BC%80%E5%8F%91%E5%AE%9E%E8%B7%B5%E5%A4%A7%E6%B0%94%E6%B8%B2%E6%9F%93/</link>
+        <pubDate>Fri, 07 Nov 2025 18:08:43 +0800</pubDate>
+        
+        <guid>https://sdpyy1.github.io/p/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E5%BC%80%E5%8F%91%E5%AE%9E%E8%B7%B5%E5%A4%A7%E6%B0%94%E6%B8%B2%E6%9F%93/</guid>
+        <description>&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-11-07-19.17.27.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-11-07 19.17.27&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-11-07-18.15.57.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-11-07 18.15.57&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;其实OpenGL渲染器已经完成的单次散射的大气渲染，但是对原理理解不透彻，这次准备更完善一点，并且实现整套的多重散射大气渲染，参考UE的实现，以及几篇论文&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h1 id=&#34;precomputed-atmospheric-scattering&#34;&gt;Precomputed Atmospheric Scattering
+&lt;/h1&gt;&lt;blockquote&gt;
+&lt;p&gt;Eric Bruneton, Fabrice Neyret在2008年发表的论文，在2017年有了一个示例代码&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h2 id=&#34;transmittance-透射率&#34;&gt;Transmittance 透射率
+&lt;/h2&gt;&lt;p&gt;基本概念：透射是可乘的&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;对于 &lt;strong&gt;三点共线&lt;/strong&gt; $p, q, r$（顺序为 $p \to q \to r$）&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;从 p 到 r 的透射率&lt;/strong&gt; = 从 p 到 q 的透射 × 从 q 到 r 的透射&lt;/li&gt;
+&lt;/ul&gt;
+$$
+T(p,r) = T(p,q) \cdot T(q,r)
+$$&lt;ul&gt;
+&lt;li&gt;这是光线传输的乘法性质，因为大气衰减是指数衰减，连续段可以相乘。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;处理大气边界&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;对于点对 $p, q$&lt;/li&gt;
+&lt;li&gt;将从 $p$ 出发到 $q$ 的射线延长，找到它 &lt;strong&gt;与大气上下边界的最近交点 $i$&lt;/strong&gt;&lt;/li&gt;
+&lt;li&gt;透射可以表示为：&lt;/li&gt;
+&lt;/ul&gt;
+$$
+T(p,q) = \frac{T(p,i)}{T(q,i)}
+$$&lt;ul&gt;
+&lt;li&gt;特殊情况：如果 $[p,q]$ 与地面相交 → 透射为 0（光被阻挡）&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;直观理解&lt;/strong&gt;：
+你只需要知道从大气内部某点到大气边界的透射，再通过除法就能得到任意点对的透射。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h3 id=&#34;透射率的预计算&#34;&gt;透射率的预计算
+&lt;/h3&gt;&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/v2-4055228b35712abec9c292680f0be070_1440w.jpg&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;img&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;离地心的距离 r 和天顶角的余弦$\mu = \cos\theta$这两个参数，就可以描述从任意点出发沿着任意方向到大气层的路径上的传输衰减。&lt;/p&gt;
+&lt;p&gt;所以预计算的是摄像机在任意高度，不同抬头角度看向大气层的边界的投射率&lt;/p&gt;
+&lt;p&gt;// TODO: 知乎https://zhuanlan.zhihu.com/p/595576594上对坐标到纹理的重映射方法与论文不一样&lt;/p&gt;
+&lt;h2 id=&#34;单次散射&#34;&gt;单次散射
+&lt;/h2&gt;&lt;p&gt;光路即使没有经过太阳，太阳也对这条光路有贡献，因为本来不应该经过视线的光由于空气粒子的反弹进入了视线，形成光路&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/v2-009081b5f8f50f1243b3f7046c110df4_1440w.jpg&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;img&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;光线在空气中主要会发生两种物理现象：散射和透射。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;散射：散射是指一束光和大气层中的微粒发生碰撞之后，众多粒子各奔东西四散而逃的物理现象。我们把逃逸到视线方向进而产生颜色贡献的光照能量记作 ：S&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/v2-d732867caff2441913b1a2e0e229e101_1440w.jpg&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;img&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;透射（Transmittance）描述的是光在介质中穿行所造成的能量衰减，记作 ：$I = T(I_0)$&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/v2-22f066c8879e81493dccec28ec77907f_1440w.jpg&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;img&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;所以单次散射的流程：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;T1透射 （衰减）&lt;/li&gt;
+&lt;li&gt;S点散射&lt;/li&gt;
+&lt;li&gt;T2透射 （衰减）&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/v2-121814a840482242b46443719d55a961_1440w.jpg&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;img&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;事实上在大气层内太阳光可以被看做是平行光，因此需要对视线方向做积分来重建无数条光路的总和：&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/v2-33d02b05c2cd834e923cfe10b2ef18a2_1440w.jpg&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;img&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;h3 id=&#34;散射理论&#34;&gt;散射理论
+&lt;/h3&gt;&lt;blockquote&gt;
+&lt;p&gt;解决散射系数和相位函数是什么&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;在大气渲染中也是类似的，我们通过 “散射系数” 和 “相位函数” 来描述光线散射的现象。散射系数$\sigma$ 描述了光线和空气分子发生一次反弹之后逃逸到各个方向的（失去的）能量 &lt;strong&gt;总和&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/v2-951d9ef2f4dceb06b3ccfd10f105f6b0_1440w.jpg&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;img&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;剩下的能量并非完全进入我们的视线，而是会四下逃窜。因此相位函数 $phase(\theta)$ 表述了反弹后剩下的能量有多少能够逃到指定的方向上。相位函数和 BRDF 一样在定义域上积分等于 1.0，这保证了能量守恒：&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/v2-f1a78dc668e25d92d2587805f85b6206_1440w.jpg&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;img&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;理解就是：1. 散射系数决定有多少能量会进行散射 2. 相位函数决定这些散射的能量有多少会沿着$\theta$方向进行散射（注意散射的能量才是渲染用的，而不是剩下的）&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;将散射系数和相位函数简单相乘就能得到在某点发生一次散射之后，逃逸到某个方向上的能量大小&lt;/p&gt;
+&lt;p&gt;$S = \sigma \cdot \text{phase}(\theta)$&lt;/p&gt;
+&lt;p&gt;大气层并非完全均匀，大气分子的密度随着高度的增加而减少。越少的分子数目意味着发生散射的概率越低。此外大气对红、黄、蓝三种波长的光有着不同的散射量。因此散射系数通常是波长和高度的函数&lt;/p&gt;
+&lt;p&gt;$\sigma(\lambda, h)$&lt;/p&gt;
+&lt;p&gt;对于空气这种介质，它的密度通常随着海拔的增高而降低。密度的高低反应在数值上就是散射概率的减少，散射概率的减少对应着散射后剩余能量的增加。因此可以用海平面（Y=0）处的散射系数和海平面 h 处的高度密度衰减函数来描述任意高度的散射系数&lt;/p&gt;
+&lt;p&gt;$\sigma(\lambda, h) = \sigma(\lambda, 0)\rho(h)$&lt;/p&gt;
+&lt;h3 id=&#34;单次散射预计算&#34;&gt;单次散射预计算
+&lt;/h3&gt;&lt;p&gt;这篇论文使用的是4D表，属于是把计算结果全部打表了&lt;/p&gt;
+&lt;p&gt;单次散射函数依赖 4 个参数：
+&lt;/p&gt;
+$$
+(r, \mu, \mu_s, \nu)
+$$&lt;ul&gt;
+&lt;li&gt;$r$：观察点到地心的距离&lt;/li&gt;
+&lt;li&gt;$\mu = \cos(\theta_v)$：视线方向与地心方向余弦&lt;/li&gt;
+&lt;li&gt;$\mu_s = \cos(\theta_s)$：太阳方向与地心方向余弦&lt;/li&gt;
+&lt;li&gt;$\nu = \cos(\theta_{vs})$：视线方向与太阳方向余弦&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;多重散射&#34;&gt;多重散射
+&lt;/h2&gt;&lt;blockquote&gt;
+&lt;p&gt;二次散射的计算需要一次散射，三次需要二次，所以一层一层往上算来得到多重散射效果。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-11-07-21.37.36.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-11-07 21.37.36&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;太阳光可能散射两次才散射到ViewDir&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/v2-76ac54ea1123e2db7030774145ae911e_1440w.jpg&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;img&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;沿着ViewDir上某一点的计算不仅要计算来自太阳的散射，而是一个球面积分（也就是说任意方向都可能散射到这个点），对于球面上任何一点的贡献计算又是一层积分运算（球面积分的每一个采样方向，都要逐步进行 raymarch 到大气层边缘。如下图最右边蓝色线条）。所有2次多重散射就需要3重积分来求解&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/v2-18ee51863994b0ffa85d127b13ce3c81_1440w.jpg&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;img&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;设：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;$L^{(1)}(p, \omega)$：点 p 向方向 ω 的单次散射光。&lt;/li&gt;
+&lt;li&gt;$L^{(2)}(p, \omega)$：点 p 向方向 ω 的二次散射光。&lt;/li&gt;
+&lt;li&gt;$L^{(3)}(p, \omega)$：点 p 向方向 ω 的三次散射光。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;那么：
+&lt;/p&gt;
+$$
+L^{(2)}(p, \omega)
+= \int_{q, \omega&#39;} L^{(1)}(q, \omega&#39;) \cdot f_s(\omega&#39;, \omega)
+$$&lt;p&gt;
+以此类推：
+&lt;/p&gt;
+$$
+L^{(n)}(p, \omega)
+= \int_{q, \omega&#39;} L^{(n-1)}(q, \omega&#39;) \cdot f_s(\omega&#39;, \omega)
+$$&lt;p&gt;
+所以：&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;计算第 n 阶散射，必须先有第 n−1 阶的结果。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;blockquote&gt;
+&lt;p&gt;有点懂，但没完全懂&amp;hellip;.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h1 id=&#34;&#34;&gt;
+&lt;/h1&gt;&lt;h1 id=&#34;a-scalable-and-production-ready-sky-and-atmosphere-rendering-technique&#34;&gt;A Scalable and Production Ready Sky and Atmosphere Rendering Technique
+&lt;/h1&gt;&lt;blockquote&gt;
+&lt;p&gt;2020年Epic发表介绍大气渲染的论文&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h2 id=&#34;多重散射的优化&#34;&gt;多重散射的优化
+&lt;/h2&gt;&lt;p&gt;这篇论文主要对多重散射需要一层一层计算迭代来实现的情况做了简化。作者通过做出一些对结果影响不大的简化假设，大幅度地降低了Multiple Scattering计算的消耗，并且使用数值方法计算无穷阶Scattering之和变为可能。&lt;/p&gt;
+&lt;p&gt;论文提到的&lt;strong&gt;Sky-View LUT&lt;/strong&gt;就是最终渲染结果存储的纹理&lt;/p&gt;
+&lt;p&gt;TODO: 在靠近地平线部分大气散射会变得高频，因此UV的映射不是线性，而是靠近地平线部分会分配更多像素&lt;/p&gt;
+&lt;h2 id=&#34;大气透视查找表&#34;&gt;大气透视查找表
+&lt;/h2&gt;&lt;p&gt;除了天空，远处被大气覆盖的物体也要受到大气的影响。远处的物体对相机的贡献主要来自于两点，物体自身的颜色乘以着色点到相机的 transmittance，以及相机到着色点这段路径中间受到的大气散射。对应下图两条不同颜色的路径：&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/v2-d04e6eb731f9b0472cae55d07740ed58_1440w.jpg&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;img&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;分割Camera Frustum（和Cluster Rendering中的分割一样），计算每个格子到Camera方向的In-Scattering和Transmittance，保存在Volume Texture中；&lt;/li&gt;
+&lt;li&gt;在Volume Texture的z轴方向上根据Transmittance累加In-Scattering，使得每一个单元格保存的是该单元格到Camera的Luminance；&lt;/li&gt;
+&lt;li&gt;在Opaque渲染之后，做一次Post Processing，采样上述的Volume Texture，对场景中的物体添加Aerial Perspective；&lt;/li&gt;
+&lt;li&gt;Transparent物体渲染时在VS中采样Volume Texture添加Aerial Perspective。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h1 id=&#34;引擎实践&#34;&gt;引擎实践
+&lt;/h1&gt;</description>
+        </item>
+        <item>
         <title>Games104：物理引擎的基础理论</title>
         <link>https://sdpyy1.github.io/p/games104%E7%89%A9%E7%90%86%E5%BC%95%E6%93%8E%E7%9A%84%E5%9F%BA%E7%A1%80%E7%90%86%E8%AE%BA/</link>
         <pubDate>Tue, 04 Nov 2025 11:04:19 +0800</pubDate>
