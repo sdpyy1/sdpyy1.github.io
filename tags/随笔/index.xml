@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+    <channel>
+        <title>随笔 on wanfeng</title>
+        <link>https://sdpyy1.github.io/tags/%E9%9A%8F%E7%AC%94/</link>
+        <description>Recent content in 随笔 on wanfeng</description>
+        <generator>Hugo -- gohugo.io</generator>
+        <language>zh-cn</language>
+        <copyright>爱喝东方树叶</copyright>
+        <lastBuildDate>Tue, 11 Nov 2025 13:43:46 +0800</lastBuildDate><atom:link href="https://sdpyy1.github.io/tags/%E9%9A%8F%E7%AC%94/index.xml" rel="self" type="application/rss+xml" /><item>
+        <title>博客日记（记录看大佬博客的一些思考）</title>
+        <link>https://sdpyy1.github.io/p/%E5%8D%9A%E5%AE%A2%E6%97%A5%E8%AE%B0%E8%AE%B0%E5%BD%95%E7%9C%8B%E5%A4%A7%E4%BD%AC%E5%8D%9A%E5%AE%A2%E7%9A%84%E4%B8%80%E4%BA%9B%E6%80%9D%E8%80%83/</link>
+        <pubDate>Tue, 11 Nov 2025 13:43:46 +0800</pubDate>
+        
+        <guid>https://sdpyy1.github.io/p/%E5%8D%9A%E5%AE%A2%E6%97%A5%E8%AE%B0%E8%AE%B0%E5%BD%95%E7%9C%8B%E5%A4%A7%E4%BD%AC%E5%8D%9A%E5%AE%A2%E7%9A%84%E4%B8%80%E4%BA%9B%E6%80%9D%E8%80%83/</guid>
+        <description>&lt;h1 id=&#34;20251111-saeruhikari&#34;&gt;2025.11.11 &lt;a class=&#34;link&#34; href=&#34;https://www.zhihu.com/people/SaeruHikari&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;SaeruHikari&lt;/a&gt;
+&lt;/h1&gt;&lt;h2 id=&#34;gbuffer压缩&#34;&gt;GBuffer压缩
+&lt;/h2&gt;&lt;blockquote&gt;
+&lt;p&gt;Gbuffer是可以压缩的(&lt;a class=&#34;link&#34; href=&#34;https://zhuanlan.zhihu.com/p/95824400&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;https://zhuanlan.zhihu.com/p/95824400&lt;/a&gt;)。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;blockquote&gt;
+&lt;p&gt;GBuffer会带来显卡的带宽压力, 所以现在的游戏一般会把GBuffer压缩到2~3张。比如把法线压缩到2通道并在使用时进行Decode, 或者不保存PosW到GBuffer, 而是在使用时使用深度重建。可以参照顽皮狗在Sig16分享的方案:&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/v2-608ab351d2c8eab45c19db643a4c2383_1440w.jpg&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;img&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;h2 id=&#34;不同的brdf方案&#34;&gt;不同的BRDF方案
+&lt;/h2&gt;&lt;blockquote&gt;
+&lt;p&gt;可以学习并实践一下不同的BRDF方案，而不是就还是Lambert + Cook-Torrance&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;Diffuse&lt;/p&gt;
+&lt;p&gt;首先看漫反射部分, 目前比较流行的公式有这些可选:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Lambert&lt;/li&gt;
+&lt;li&gt;Burley(Disney)[sig2012]&lt;/li&gt;
+&lt;li&gt;Renormalized Disney Diffuse[sig2014]&lt;/li&gt;
+&lt;li&gt;PBR diffuse for GGX_Smith[GDC 2017]&lt;/li&gt;
+&lt;li&gt;MultiScattering Diffuse BRDF[sig2018]&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;在五个模型都尝试一遍过后选择了RenormalizedDisneyDiffuse。&lt;/p&gt;
+&lt;p&gt;这里特别要提一句的是MultiScattering版本的diffuse BRDF, 在今年的sig也有对它实现的补充以及改进分享。但是实测之后发现效果并不好, 因为多散射对diffuse的影响实在太小, 这个模型并不能带来太多可见的改善。&lt;/p&gt;
+&lt;p&gt;而Frostbite在14年sig[&lt;a class=&#34;link&#34; href=&#34;https://zhuanlan.zhihu.com/p/95824400#ref_3&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;3]&lt;/a&gt;提出的Renormalized Disney Diffuse是带来观感改善较大的一个:&lt;/p&gt;
+&lt;p&gt;&lt;a class=&#34;link&#34; href=&#34;https://link.zhihu.com/?target=https%3A//www.ea.com/frostbite/news/moving-frostbite-to-pb&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;&lt;img src=&#34;https://sdpyy1.github.io/v2-dd4c129afd548efa0dc31ea40c158247_180x120.jpg&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;img&#34;
+	
+	
+&gt;Moving Frostbite To PBRwww.ea.com/frostbite/news/moving-frostbite-to-pb&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;它主要对Burley模型进行了改进, 根据视角入射角对Diffuse进行补正来维持能量守恒, 在视角移动时产生的视觉效果更加细腻(当然光源太复杂就没那么明显了&amp;hellip;)。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/v2-9f1bedb8c658d0a90fce08bf99c3ad20_1440w.jpg&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;img&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;Specular&lt;/p&gt;
+&lt;p&gt;接下来来到BRDF里最重要, 组装起来也最好玩的Specular BRDF项:&lt;/p&gt;
+&lt;p&gt;(Cook-Torrance)&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;D(h):&lt;/strong&gt; 法线分布函数, 描述微面元法线分布的概率, 具有正确朝向，能够将来自l的光反射到v的表面点的相对于表面面积的浓度。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;F(l,h) :&lt;/strong&gt; 菲涅尔方程, 描述不同的表面角下表面所反射的光线所占的比率。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;G(l,v,h) :&lt;/strong&gt; 几何函数/几何遮蔽，描述微平面自成阴影的属性，即m = h的未被遮蔽的表面点的百分比。&lt;/li&gt;
+&lt;li&gt;**分母 4(n·l)(n·v）：**校正因子，作为微观几何的局部空间和整个宏观表面的局部空间之间变换的微平面量的校正。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;这里不再细致解释, 列出常用的模型, 这些模型在UE4几乎都有实现, 可以到BRDF.ush去参考(抄):&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Specular D:&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Blinn-Phong[1977]&lt;/strong&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;GGX/GTR[2007/2012] (GGX(GTR2)作为GTR的特例)&lt;/strong&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;以及各种各向异性版本&amp;hellip;&lt;/strong&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;SpecularF&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Cook-Torrance[1982]&lt;/strong&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Schlick[1994] (一般选用这个, 便宜且曲线非常贴紧参考值)&lt;/strong&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;SpecularG&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;Cook-Torrance[1982]&lt;/strong&gt;&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;Smith[1967] (被拓展为l, v的联合遮蔽函数, 具有多种变体)&lt;/strong&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;taa&#34;&gt;TAA
+&lt;/h2&gt;&lt;blockquote&gt;
+&lt;p&gt;一直没管过引擎的走样问题。。。待学习完善&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h2 id=&#34;rgd&#34;&gt;RGD
+&lt;/h2&gt;&lt;blockquote&gt;
+&lt;p&gt;&lt;a class=&#34;link&#34; href=&#34;https://zhuanlan.zhihu.com/p/97022384&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;https://zhuanlan.zhihu.com/p/97022384&lt;/a&gt; 这里有RGD的实现思路，学习RGD可以参考&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h2 id=&#34;反射&#34;&gt;反射
+&lt;/h2&gt;&lt;blockquote&gt;
+&lt;p&gt;&lt;a class=&#34;link&#34; href=&#34;https://link.zhihu.com/?target=https%3A//github.com/rttrorg/rttr&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;https://link.zhihu.com/?target=https%3A//github.com/rttrorg/rttr&lt;/a&gt; ， &lt;a class=&#34;link&#34; href=&#34;https://www.zhihu.com/people/SaeruHikari&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;SaeruHikari&lt;/a&gt;用的这个反射&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h2 id=&#34;多线程渲染&#34;&gt;多线程渲染?
+&lt;/h2&gt;&lt;blockquote&gt;
+&lt;p&gt;博客提到的多线程是指多个queue，和我现在实现不一样啊&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h1 id=&#34;20251112&#34;&gt;2025.11.12
+&lt;/h1&gt;&lt;h2 id=&#34;匿名资源临时资源&#34;&gt;匿名资源、临时资源
+&lt;/h2&gt;&lt;blockquote&gt;
+&lt;p&gt;这个东西我的项目有进行规整，所有资源都做了保存    （应该：无名未注册的资源会被保持在一个池内, 并由系统进行自动化的复用。）&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h2 id=&#34;rdg&#34;&gt;RDG
+&lt;/h2&gt;&lt;p&gt;蓝色表示PassNode, 白色圆角表示ResourceNode, 实际资源存储在Container中。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/v2-023ed73f03abd924d664599d8eb17235_1440w.jpg&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;img&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;纹理、Buffer、Pass创建都是走的RDG&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;RDG需要处理多帧资源比如TAA&lt;/p&gt;
+&lt;/blockquote&gt;
+</description>
+        </item>
+        
+    </channel>
+</rss>

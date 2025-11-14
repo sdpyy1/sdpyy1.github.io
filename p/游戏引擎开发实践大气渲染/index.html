@@ -12,7 +12,7 @@
 <meta property='og:description' content="\n其实OpenGL渲染器已经完成的单次散射的大气渲染，但是对原理理解不透彻，这次准备更完善一点，并且实现整套的多重散射大气渲染，参考UE的实现，以及几篇论文\n">
 <meta property='og:url' content='https://sdpyy1.github.io/p/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E5%BC%80%E5%8F%91%E5%AE%9E%E8%B7%B5%E5%A4%A7%E6%B0%94%E6%B8%B2%E6%9F%93/'>
 <meta property='og:site_name' content='wanfeng'>
-<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:published_time' content='2025-11-07T18:08:43&#43;08:00'/><meta property='article:modified_time' content='2025-11-07T18:08:43&#43;08:00'/>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='体积渲染' /><meta property='article:tag' content='渲染Pass' /><meta property='article:published_time' content='2025-11-07T18:08:43&#43;08:00'/><meta property='article:modified_time' content='2025-11-07T18:08:43&#43;08:00'/>
 <meta name="twitter:title" content="游戏引擎开发实践（大气渲染）">
 <meta name="twitter:description" content="\n其实OpenGL渲染器已经完成的单次散射的大气渲染，但是对原理理解不透彻，这次准备更完善一点，并且实现整套的多重散射大气渲染，参考UE的实现，以及几篇论文\n">
     <link rel="shortcut icon" href="/favicon.ico" />
@@ -309,7 +309,13 @@
         <li><a href="#大气透视查找表">大气透视查找表</a></li>
       </ol>
     </li>
-    <li><a href="#引擎实践">引擎实践</a></li>
+    <li><a href="#引擎实践">引擎实践</a>
+      <ol>
+        <li><a href="#transmittance-lut">Transmittance Lut</a></li>
+        <li></li>
+        <li><a href="#skyview-lut">SkyView Lut</a></li>
+      </ol>
+    </li>
   </ol>
 </nav>
         </div>
@@ -325,6 +331,57 @@
     <header class="article-header">
 
     <div class="article-details">
+    
+    <header class="article-category">
+        
+        
+             
+            
+            
+            
+            <div class="category-hierarchy">
+                
+                    
+                    
+                    
+                        
+                    
+                     
+                    
+                    
+                    
+                    <a href="/categories/projects/" 
+                       >
+                        Projects
+                    </a>
+                    
+                    
+                    
+                        <span class="category-separator">/</span>
+                    
+                
+                    
+                    
+                    
+                        
+                    
+                        
+                    
+                     
+                    
+                    
+                    
+                    <a href="/categories/projects/gameengine/" 
+                       >
+                        GameEngine
+                    </a>
+                    
+                    
+                    
+                
+            </div>
+        
+    </header>
     
 
     <div class="article-title-wrapper">
@@ -366,7 +423,7 @@
 
 
                 <time class="article-time--reading">
-                    阅读时长: 5 分钟
+                    阅读时长: 8 分钟
                 </time>
             </div>
         
@@ -681,12 +738,389 @@ $$<p>
 <li>Transparent物体渲染时在VS中采样Volume Texture添加Aerial Perspective。</li>
 </ol>
 <h1 id="引擎实践">引擎实践
-</h1>
+</h1><h2 id="transmittance-lut">Transmittance Lut
+</h2><blockquote>
+<p>用ComputerShader预计算一张2D表，记录每个高度，每个天顶角到大气外圈的透射率。</p>
+<p>流程是把UV坐标映射到X：不同天顶角余弦值（-1，1）,Y：不同高度（0，1）用得到的数据计算透射率后保存</p>
+</blockquote>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-glsl" data-lang="glsl"><span class="line"><span class="cl"><span class="cp">#version 450 core</span>
+</span></span><span class="line"><span class="cl"><span class="cp">#ifdef COMPUTE_SHADER</span>
+</span></span><span class="line"><span class="cl"><span class="cp">#define LOCAL_SIZE 8</span>
+</span></span><span class="line"><span class="cl"><span class="cp">#include &#34;include/SkyCommon.glslh&#34;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">layout</span><span class="p">(</span><span class="n">rgba32f</span><span class="p">,</span> <span class="n">binding</span> <span class="o">=</span> <span class="mo">0</span><span class="p">)</span> <span class="k">uniform</span> <span class="n">writeonly</span> <span class="n">image2D</span> <span class="n">transmittanceLut</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">layout</span><span class="p">(</span><span class="n">local_size_x</span> <span class="o">=</span> <span class="n">LOCAL_SIZE</span><span class="p">,</span> <span class="n">local_size_y</span> <span class="o">=</span> <span class="n">LOCAL_SIZE</span><span class="p">,</span> <span class="n">local_size_z</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="k">in</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="k">void</span> <span class="n">main</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">ivec2</span> <span class="n">texelCoord</span> <span class="o">=</span> <span class="k">ivec2</span><span class="p">(</span><span class="n">gl_GlobalInvocationID</span><span class="p">.</span><span class="n">xy</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="n">AtmosphereParameter</span> <span class="n">Atmosphere</span><span class="p">;</span>  <span class="c1">// TODO: AtmosphereUniform</span>
+</span></span><span class="line"><span class="cl">    <span class="n">Atmosphere</span><span class="p">.</span><span class="n">PlanetRadius</span> <span class="o">=</span> <span class="mf">6360000.0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">Atmosphere</span><span class="p">.</span><span class="n">AtmosphereHeight</span> <span class="o">=</span> <span class="mf">60000.0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">Atmosphere</span><span class="p">.</span><span class="n">RayleighScatteringScalarHeight</span> <span class="o">=</span> <span class="mf">8000.0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">Atmosphere</span><span class="p">.</span><span class="n">MieScatteringScalarHeight</span> <span class="o">=</span> <span class="mf">1200.0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">Atmosphere</span><span class="p">.</span><span class="n">OzoneLevelCenterHeight</span> <span class="o">=</span> <span class="mf">25000.0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">Atmosphere</span><span class="p">.</span><span class="n">OzoneLevelWidth</span> <span class="o">=</span> <span class="mf">15000.0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="k">float</span> <span class="n">bottomRadius</span> <span class="o">=</span> <span class="n">Atmosphere</span><span class="p">.</span><span class="n">PlanetRadius</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="k">float</span> <span class="n">topRadius</span> <span class="o">=</span> <span class="n">Atmosphere</span><span class="p">.</span><span class="n">PlanetRadius</span> <span class="o">+</span> <span class="n">Atmosphere</span><span class="p">.</span><span class="n">AtmosphereHeight</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">ivec2</span> <span class="n">lutSize</span> <span class="o">=</span> <span class="n">imageSize</span><span class="p">(</span><span class="n">transmittanceLut</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="k">float</span> <span class="n">viewHeight</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">float</span> <span class="n">viewZenithCosAngle</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">vec2</span> <span class="n">uv</span> <span class="o">=</span> <span class="k">vec2</span><span class="p">(</span><span class="n">texelCoord</span><span class="p">)</span> <span class="o">/</span> <span class="k">vec2</span><span class="p">(</span><span class="n">lutSize</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="k">float</span> <span class="n">r</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">UvToTransmittanceLutParams</span><span class="p">(</span><span class="n">bottomRadius</span><span class="p">,</span> <span class="n">topRadius</span><span class="p">,</span> <span class="n">uv</span><span class="p">,</span> <span class="n">viewZenithCosAngle</span><span class="p">,</span> <span class="n">r</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="k">float</span> <span class="n">sin_theta</span> <span class="o">=</span> <span class="n">sqrt</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">viewZenithCosAngle</span> <span class="o">*</span> <span class="n">viewZenithCosAngle</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="k">vec3</span> <span class="n">CameraPosition</span> <span class="o">=</span> <span class="k">vec3</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">r</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="k">vec3</span> <span class="n">viewDir</span> <span class="o">=</span> <span class="k">vec3</span><span class="p">(</span><span class="n">sin_theta</span><span class="p">,</span> <span class="n">viewZenithCosAngle</span><span class="p">,</span> <span class="mo">0</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="k">float</span> <span class="n">dis</span> <span class="o">=</span> <span class="n">RayIntersectSphere</span><span class="p">(</span><span class="k">vec3</span><span class="p">(</span><span class="mo">0</span><span class="p">,</span><span class="mo">0</span><span class="p">,</span><span class="mo">0</span><span class="p">),</span> <span class="n">topRadius</span><span class="p">,</span> <span class="n">CameraPosition</span><span class="p">,</span> <span class="n">viewDir</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="k">vec3</span> <span class="n">hitPoint</span> <span class="o">=</span> <span class="n">CameraPosition</span> <span class="o">+</span> <span class="n">viewDir</span> <span class="o">*</span> <span class="n">dis</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="k">vec3</span> <span class="n">color</span> <span class="o">=</span> <span class="n">Transmittance</span><span class="p">(</span><span class="n">Atmosphere</span><span class="p">,</span> <span class="n">CameraPosition</span><span class="p">,</span> <span class="n">hitPoint</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">imageStore</span><span class="p">(</span><span class="n">transmittanceLut</span><span class="p">,</span> <span class="n">texelCoord</span><span class="p">,</span> <span class="k">vec4</span><span class="p">(</span><span class="n">color</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="cp">#endif</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-glsl" data-lang="glsl"><span class="line"><span class="cl"><span class="c1">// UV转LUT参数（高度、天顶角的余弦值）</span>
+</span></span><span class="line"><span class="cl"><span class="k">void</span> <span class="n">UvToTransmittanceLutParams</span><span class="p">(</span><span class="k">float</span> <span class="n">bottomRadius</span><span class="p">,</span> <span class="k">float</span> <span class="n">topRadius</span><span class="p">,</span> <span class="k">vec2</span> <span class="n">uv</span><span class="p">,</span> <span class="k">out</span> <span class="k">float</span> <span class="n">mu</span><span class="p">,</span> <span class="k">out</span> <span class="k">float</span> <span class="n">r</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">float</span> <span class="n">x_mu</span> <span class="o">=</span> <span class="n">uv</span><span class="p">.</span><span class="n">x</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">float</span> <span class="n">x_r</span> <span class="o">=</span> <span class="n">uv</span><span class="p">.</span><span class="n">y</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">float</span> <span class="n">H</span> <span class="o">=</span> <span class="n">sqrt</span><span class="p">(</span><span class="n">max</span><span class="p">(</span><span class="mf">0.0</span><span class="n">f</span><span class="p">,</span> <span class="n">topRadius</span> <span class="o">*</span> <span class="n">topRadius</span> <span class="o">-</span> <span class="n">bottomRadius</span> <span class="o">*</span> <span class="n">bottomRadius</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">    <span class="k">float</span> <span class="n">rho</span> <span class="o">=</span> <span class="n">H</span> <span class="o">*</span> <span class="n">x_r</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">r</span> <span class="o">=</span> <span class="n">sqrt</span><span class="p">(</span><span class="n">max</span><span class="p">(</span><span class="mf">0.0</span><span class="n">f</span><span class="p">,</span> <span class="n">rho</span> <span class="o">*</span> <span class="n">rho</span> <span class="o">+</span> <span class="n">bottomRadius</span> <span class="o">*</span> <span class="n">bottomRadius</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">float</span> <span class="n">d_min</span> <span class="o">=</span> <span class="n">topRadius</span> <span class="o">-</span> <span class="n">r</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">float</span> <span class="n">d_max</span> <span class="o">=</span> <span class="n">rho</span> <span class="o">+</span> <span class="n">H</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">float</span> <span class="n">d</span> <span class="o">=</span> <span class="n">d_min</span> <span class="o">+</span> <span class="n">x_mu</span> <span class="o">*</span> <span class="p">(</span><span class="n">d_max</span> <span class="o">-</span> <span class="n">d_min</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">mu</span> <span class="o">=</span> <span class="n">d</span> <span class="o">==</span> <span class="mf">0.0</span><span class="n">f</span> <span class="o">?</span> <span class="mf">1.0</span><span class="n">f</span> <span class="o">:</span> <span class="p">(</span><span class="n">H</span> <span class="o">*</span> <span class="n">H</span> <span class="o">-</span> <span class="n">rho</span> <span class="o">*</span> <span class="n">rho</span> <span class="o">-</span> <span class="n">d</span> <span class="o">*</span> <span class="n">d</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mf">2.0</span><span class="n">f</span> <span class="o">*</span> <span class="n">r</span> <span class="o">*</span> <span class="n">d</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">mu</span> <span class="o">=</span> <span class="n">clamp</span><span class="p">(</span><span class="n">mu</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.0</span><span class="n">f</span><span class="p">,</span> <span class="mf">1.0</span><span class="n">f</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>最终生成的lut如下，在Vulkan中，0,0在右上角，所以和参考博客生成的lutY轴反转了</p>
+<p><img src="/image-20251108211434231.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251108211434231"
+	
+	
+></p>
+<h2 id="">
+</h2><h2 id="skyview-lut">SkyView Lut
+</h2><blockquote>
+<p>用一张2D（球面坐标）纹理存储不同ViewDir下的大气渲染结果</p>
+</blockquote>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
+</span><span class="lnt">56
+</span><span class="lnt">57
+</span><span class="lnt">58
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-glsl" data-lang="glsl"><span class="line"><span class="cl"><span class="cp">#version 450 core</span>
+</span></span><span class="line"><span class="cl"><span class="cp">#ifdef COMPUTE_SHADER</span>
+</span></span><span class="line"><span class="cl"><span class="cp">#define LOCAL_SIZE 8</span>
+</span></span><span class="line"><span class="cl"><span class="cp">#include &#34;include/SkyCommon.glslh&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="c1">// 二维 UV 坐标当作球面坐标 (θ, φ) 映射到单位球方向向量。 一个技巧：用2D球面来存储3D的方向向量了</span>
+</span></span><span class="line"><span class="cl"><span class="k">vec3</span> <span class="n">UVToViewDir</span><span class="p">(</span><span class="k">vec2</span> <span class="n">uv</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">float</span> <span class="n">theta</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">uv</span><span class="p">.</span><span class="n">y</span><span class="p">)</span> <span class="o">*</span> <span class="n">PI</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">float</span> <span class="n">phi</span> <span class="o">=</span> <span class="p">(</span><span class="n">uv</span><span class="p">.</span><span class="n">x</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">PI</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="k">float</span> <span class="n">x</span> <span class="o">=</span> <span class="n">sin</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span> <span class="o">*</span> <span class="n">cos</span><span class="p">(</span><span class="n">phi</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="k">float</span> <span class="n">z</span> <span class="o">=</span> <span class="n">sin</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span> <span class="o">*</span> <span class="n">sin</span><span class="p">(</span><span class="n">phi</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="k">float</span> <span class="n">y</span> <span class="o">=</span> <span class="n">cos</span><span class="p">(</span><span class="n">theta</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="k">vec3</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="n">layout</span><span class="p">(</span><span class="n">rgba32f</span><span class="p">,</span> <span class="n">binding</span> <span class="o">=</span> <span class="mo">0</span><span class="p">)</span> <span class="k">uniform</span> <span class="n">writeonly</span> <span class="n">image2D</span> <span class="n">SkyViewLut</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">layout</span><span class="p">(</span><span class="n">binding</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="k">uniform</span> <span class="k">sampler2D</span> <span class="n">u_TransmittanceLut</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">layout</span><span class="p">(</span><span class="n">binding</span> <span class="o">=</span> <span class="mi">2</span><span class="p">)</span> <span class="k">uniform</span> <span class="k">sampler2D</span> <span class="n">u_MultiScatteringLut</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">layout</span><span class="p">(</span><span class="n">std140</span><span class="p">,</span> <span class="n">set</span> <span class="o">=</span> <span class="mo">0</span><span class="p">,</span> <span class="n">binding</span> <span class="o">=</span> <span class="mi">3</span><span class="p">)</span> <span class="k">uniform</span> <span class="n">SceneData</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="n">DirectionalLight</span> <span class="n">DirectionalLights</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="k">float</span> <span class="n">EnvironmentMapIntensity</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span> <span class="n">u_Scene</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">layout</span><span class="p">(</span><span class="n">set</span> <span class="o">=</span> <span class="mo">0</span><span class="p">,</span><span class="n">binding</span> <span class="o">=</span> <span class="mi">4</span><span class="p">)</span> <span class="k">uniform</span> <span class="n">CameraDataUniform</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">mat4</span> <span class="n">view</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">mat4</span> <span class="n">proj</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="n">mat4</span> <span class="n">viewProj</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="k">float</span> <span class="n">width</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="k">float</span> <span class="n">height</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="k">float</span> <span class="n">Near</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="k">float</span> <span class="n">Far</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="k">vec3</span> <span class="n">CameraPosition</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span> <span class="n">u_CameraData</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">layout</span><span class="p">(</span><span class="n">local_size_x</span> <span class="o">=</span> <span class="n">LOCAL_SIZE</span><span class="p">,</span> <span class="n">local_size_y</span> <span class="o">=</span> <span class="n">LOCAL_SIZE</span><span class="p">,</span> <span class="n">local_size_z</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="k">in</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="k">void</span> <span class="n">main</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">ivec2</span> <span class="n">texelCoord</span> <span class="o">=</span> <span class="k">ivec2</span><span class="p">(</span><span class="n">gl_GlobalInvocationID</span><span class="p">.</span><span class="n">xy</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="n">AtmosphereParameter</span> <span class="n">Atmosphere</span> <span class="o">=</span> <span class="n">BuildAtmosphereParameter</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="k">ivec2</span> <span class="n">lutSize</span> <span class="o">=</span> <span class="n">imageSize</span><span class="p">(</span><span class="n">SkyViewLut</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="k">vec2</span> <span class="n">uv</span> <span class="o">=</span> <span class="k">vec2</span><span class="p">(</span><span class="n">texelCoord</span><span class="p">)</span> <span class="o">/</span> <span class="k">vec2</span><span class="p">(</span><span class="n">lutSize</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="k">vec3</span> <span class="n">viewDir</span> <span class="o">=</span> <span class="n">UVToViewDir</span><span class="p">(</span><span class="n">uv</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="k">vec3</span> <span class="n">lightDir</span> <span class="o">=</span> <span class="n">normalize</span><span class="p">(</span><span class="o">-</span><span class="n">u_Scene</span><span class="p">.</span><span class="n">DirectionalLights</span><span class="p">.</span><span class="n">Direction</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="k">vec3</span> <span class="n">cameraPosition</span> <span class="o">=</span> <span class="n">normalize</span><span class="p">(</span><span class="n">u_CameraData</span><span class="p">.</span><span class="n">CameraPosition</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="k">float</span> <span class="n">h</span> <span class="o">=</span> <span class="n">cameraPosition</span><span class="p">.</span><span class="n">y</span> <span class="o">-</span> <span class="n">Atmosphere</span><span class="p">.</span><span class="n">SeaLevel</span> <span class="o">+</span> <span class="n">Atmosphere</span><span class="p">.</span><span class="n">PlanetRadius</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="k">vec3</span> <span class="n">eyePos</span> <span class="o">=</span> <span class="k">vec3</span><span class="p">(</span><span class="mo">0</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="mo">0</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="k">vec3</span> <span class="n">color</span> <span class="o">=</span> <span class="n">GetSkyView</span><span class="p">(</span><span class="n">Atmosphere</span><span class="p">,</span> <span class="n">eyePos</span><span class="p">,</span> <span class="n">viewDir</span><span class="p">,</span> <span class="n">lightDir</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.0</span><span class="n">f</span><span class="p">,</span><span class="n">u_TransmittanceLut</span><span class="p">,</span> <span class="n">u_MultiScatteringLut</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">imageStore</span><span class="p">(</span><span class="n">SkyViewLut</span><span class="p">,</span> <span class="n">texelCoord</span><span class="p">,</span> <span class="k">vec4</span><span class="p">(</span><span class="n">color</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="cp">#endif</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-glsl" data-lang="glsl"><span class="line"><span class="cl"><span class="k">vec3</span> <span class="n">GetSkyView</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">    <span class="k">in</span> <span class="n">AtmosphereParameter</span> <span class="n">param</span><span class="p">,</span> <span class="k">vec3</span> <span class="n">eyePos</span><span class="p">,</span> <span class="k">vec3</span> <span class="n">viewDir</span><span class="p">,</span> <span class="k">vec3</span> <span class="n">lightDir</span><span class="p">,</span> <span class="k">float</span> <span class="n">maxDis</span><span class="p">,</span> 
+</span></span><span class="line"><span class="cl">    <span class="k">sampler2D</span> <span class="n">_transmittanceLut</span><span class="p">,</span> <span class="k">sampler2D</span> <span class="n">_multiScatteringLut</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">const</span> <span class="k">int</span> <span class="n">N_SAMPLE</span> <span class="o">=</span> <span class="mi">32</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">vec3</span> <span class="n">color</span> <span class="o">=</span> <span class="k">vec3</span><span class="p">(</span><span class="mo">0</span><span class="p">,</span> <span class="mo">0</span><span class="p">,</span> <span class="mo">0</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// 光线和大气层, 星球求交</span>
+</span></span><span class="line"><span class="cl">    <span class="k">float</span> <span class="n">dis</span> <span class="o">=</span> <span class="n">RayIntersectSphere</span><span class="p">(</span><span class="k">vec3</span><span class="p">(</span><span class="mo">0</span><span class="p">,</span><span class="mo">0</span><span class="p">,</span><span class="mo">0</span><span class="p">),</span> <span class="n">param</span><span class="p">.</span><span class="n">PlanetRadius</span> <span class="o">+</span> <span class="n">param</span><span class="p">.</span><span class="n">AtmosphereHeight</span><span class="p">,</span> <span class="n">eyePos</span><span class="p">,</span> <span class="n">viewDir</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="k">float</span> <span class="n">d</span> <span class="o">=</span> <span class="n">RayIntersectSphere</span><span class="p">(</span><span class="k">vec3</span><span class="p">(</span><span class="mo">0</span><span class="p">,</span><span class="mo">0</span><span class="p">,</span><span class="mo">0</span><span class="p">),</span> <span class="n">param</span><span class="p">.</span><span class="n">PlanetRadius</span><span class="p">,</span> <span class="n">eyePos</span><span class="p">,</span> <span class="n">viewDir</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span><span class="p">(</span><span class="n">dis</span> <span class="o">&lt;</span> <span class="mo">0</span><span class="p">)</span> <span class="k">return</span> <span class="n">color</span><span class="p">;</span> 
+</span></span><span class="line"><span class="cl">    <span class="k">if</span><span class="p">(</span><span class="n">d</span> <span class="o">&gt;</span> <span class="mo">0</span><span class="p">)</span> <span class="n">dis</span> <span class="o">=</span> <span class="n">min</span><span class="p">(</span><span class="n">dis</span><span class="p">,</span> <span class="n">d</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span><span class="p">(</span><span class="n">maxDis</span> <span class="o">&gt;</span> <span class="mo">0</span><span class="p">)</span> <span class="n">dis</span> <span class="o">=</span> <span class="n">min</span><span class="p">(</span><span class="n">dis</span><span class="p">,</span> <span class="n">maxDis</span><span class="p">);</span>  <span class="c1">// 带最长距离 maxDis 限制, 方便 aerial perspective lut 部分复用代码</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">float</span> <span class="n">ds</span> <span class="o">=</span> <span class="n">dis</span> <span class="o">/</span> <span class="k">float</span><span class="p">(</span><span class="n">N_SAMPLE</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="k">vec3</span> <span class="n">p</span> <span class="o">=</span> <span class="n">eyePos</span> <span class="o">+</span> <span class="p">(</span><span class="n">viewDir</span> <span class="o">*</span> <span class="n">ds</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.5</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">vec3</span> <span class="n">sunLuminance</span> <span class="o">=</span> <span class="n">param</span><span class="p">.</span><span class="n">SunLightColor</span> <span class="o">*</span> <span class="n">param</span><span class="p">.</span><span class="n">SunLightIntensity</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">vec3</span> <span class="n">opticalDepth</span> <span class="o">=</span> <span class="k">vec3</span><span class="p">(</span><span class="mo">0</span><span class="p">,</span> <span class="mo">0</span><span class="p">,</span> <span class="mo">0</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">for</span><span class="p">(</span><span class="k">int</span> <span class="n">i</span><span class="o">=</span><span class="mo">0</span><span class="p">;</span> <span class="n">i</span><span class="o">&lt;</span><span class="n">N_SAMPLE</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// 积累沿途的湮灭系数</span>
+</span></span><span class="line"><span class="cl">        <span class="k">float</span> <span class="n">h</span> <span class="o">=</span> <span class="n">length</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="o">-</span> <span class="n">param</span><span class="p">.</span><span class="n">PlanetRadius</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="k">vec3</span> <span class="n">extinction</span> <span class="o">=</span> <span class="n">RayleighCoefficient</span><span class="p">(</span><span class="n">param</span><span class="p">,</span> <span class="n">h</span><span class="p">)</span> <span class="o">+</span> <span class="n">MieCoefficient</span><span class="p">(</span><span class="n">param</span><span class="p">,</span> <span class="n">h</span><span class="p">)</span> <span class="o">+</span>  <span class="c1">// scattering</span>
+</span></span><span class="line"><span class="cl">                            <span class="n">OzoneAbsorption</span><span class="p">(</span><span class="n">param</span><span class="p">,</span> <span class="n">h</span><span class="p">)</span> <span class="o">+</span> <span class="n">MieAbsorption</span><span class="p">(</span><span class="n">param</span><span class="p">,</span> <span class="n">h</span><span class="p">);</span>        <span class="c1">// absorption</span>
+</span></span><span class="line"><span class="cl">        <span class="n">opticalDepth</span> <span class="o">+=</span> <span class="n">extinction</span> <span class="o">*</span> <span class="n">ds</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="k">vec3</span> <span class="n">t1</span> <span class="o">=</span> <span class="n">TransmittanceToAtmosphere</span><span class="p">(</span><span class="n">param</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">lightDir</span><span class="p">,</span> <span class="n">_transmittanceLut</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="k">vec3</span> <span class="n">s</span>  <span class="o">=</span> <span class="n">Scattering</span><span class="p">(</span><span class="n">param</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">lightDir</span><span class="p">,</span> <span class="n">viewDir</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="k">vec3</span> <span class="n">t2</span> <span class="o">=</span> <span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">opticalDepth</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        
+</span></span><span class="line"><span class="cl">        <span class="c1">// 单次散射</span>
+</span></span><span class="line"><span class="cl">        <span class="k">vec3</span> <span class="n">inScattering</span> <span class="o">=</span> <span class="n">t1</span> <span class="o">*</span> <span class="n">s</span> <span class="o">*</span> <span class="n">t2</span> <span class="o">*</span> <span class="n">ds</span> <span class="o">*</span> <span class="n">sunLuminance</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="n">color</span> <span class="o">+=</span> <span class="n">inScattering</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="c1">// 多重散射</span>
+</span></span><span class="line"><span class="cl">        <span class="k">vec3</span> <span class="n">multiScattering</span> <span class="o">=</span> <span class="n">GetMultiScattering</span><span class="p">(</span><span class="n">param</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">lightDir</span><span class="p">,</span> <span class="n">_multiScatteringLut</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">color</span> <span class="o">+=</span> <span class="n">multiScattering</span> <span class="o">*</span> <span class="n">t2</span> <span class="o">*</span> <span class="n">ds</span> <span class="o">*</span> <span class="n">sunLuminance</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="n">p</span> <span class="o">+=</span> <span class="n">viewDir</span> <span class="o">*</span> <span class="n">ds</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">color</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div>
 </section>
 
 
     <footer class="article-footer">
     
+    <section class="article-tags">
+        
+            <a href="/tags/%E4%BD%93%E7%A7%AF%E6%B8%B2%E6%9F%93/">体积渲染</a>
+        
+            <a href="/tags/%E6%B8%B2%E6%9F%93pass/">渲染Pass</a>
+        
+    </section>
+
 
     
     <section class="article-copyright">
@@ -735,6 +1169,336 @@ $$<p>
     
 
     
+
+<aside class="related-content--wrapper">
+    <h2 class="section-title">相关文章</h2>
+    <div class="related-content">
+        <div class="flex article-list--tile">
+            
+                
+<article class="article-card no-image">
+    <a href="/p/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E5%BC%80%E5%8F%91%E5%AE%9E%E8%B7%B5%E9%98%B4%E5%BD%B1%E7%AF%87/">
+        
+        
+        <div class="article-details">
+            <h2 class="article-title">游戏引擎开发实践（阴影篇）</h2>
+        </div>
+        
+    </a>
+
+    <style>
+     
+    .article-card {
+        background: rgba(255, 255, 255, 0.25);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        margin: 10px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .article-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    }
+
+    .article-card a {
+        display: flex;
+        flex-direction: column;
+        text-decoration: none;
+        color: inherit;
+        height: 100%;
+    }
+
+     
+    .article-image-card {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        overflow: hidden;
+    }
+    .article-image-card img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+    .article-image-card:hover img {
+        transform: scale(1.05);
+    }
+
+     
+    .article-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: rgba(0,0,0,0.3);  
+        padding: 10px;
+        box-sizing: border-box;
+        text-align: center;
+    }
+    .article-overlay .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #fff;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .article-card.no-image .article-details {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 15px;
+    }
+    .article-card.no-image .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #222;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .articles-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 20px;
+    }
+    </style>
+</article>
+            
+                
+<article class="article-card no-image">
+    <a href="/p/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E5%BC%80%E5%8F%91%E5%AE%9E%E8%B7%B5vulkan%E6%9E%B6%E6%9E%84%E7%AF%87image/">
+        
+        
+        <div class="article-details">
+            <h2 class="article-title">游戏引擎开发实践（Vulkan架构篇：Image）</h2>
+        </div>
+        
+    </a>
+
+    <style>
+     
+    .article-card {
+        background: rgba(255, 255, 255, 0.25);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        margin: 10px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .article-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    }
+
+    .article-card a {
+        display: flex;
+        flex-direction: column;
+        text-decoration: none;
+        color: inherit;
+        height: 100%;
+    }
+
+     
+    .article-image-card {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        overflow: hidden;
+    }
+    .article-image-card img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+    .article-image-card:hover img {
+        transform: scale(1.05);
+    }
+
+     
+    .article-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: rgba(0,0,0,0.3);  
+        padding: 10px;
+        box-sizing: border-box;
+        text-align: center;
+    }
+    .article-overlay .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #fff;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .article-card.no-image .article-details {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 15px;
+    }
+    .article-card.no-image .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #222;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .articles-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 20px;
+    }
+    </style>
+</article>
+            
+                
+<article class="article-card has-image">
+    <a href="/p/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E5%BC%80%E5%8F%91%E5%AE%9E%E8%B7%B5%E5%AE%9E%E4%BE%8B%E5%8C%96%E6%B8%B2%E6%9F%93/">
+        
+        <div class="article-image-card">
+            
+                <img src="/image-20251022010105969.png" loading="lazy" data-key="" data-hash="/image-20251022010105969.png"/>
+            
+
+            
+            <div class="article-overlay">
+                <h2 class="article-title">游戏引擎开发实践（实例化渲染）</h2>
+            </div>
+        </div>
+        
+    </a>
+
+    <style>
+     
+    .article-card {
+        background: rgba(255, 255, 255, 0.25);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        margin: 10px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .article-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    }
+
+    .article-card a {
+        display: flex;
+        flex-direction: column;
+        text-decoration: none;
+        color: inherit;
+        height: 100%;
+    }
+
+     
+    .article-image-card {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        overflow: hidden;
+    }
+    .article-image-card img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+    .article-image-card:hover img {
+        transform: scale(1.05);
+    }
+
+     
+    .article-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: rgba(0,0,0,0.3);  
+        padding: 10px;
+        box-sizing: border-box;
+        text-align: center;
+    }
+    .article-overlay .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #fff;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .article-card.no-image .article-details {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 15px;
+    }
+    .article-card.no-image .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #222;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .articles-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 20px;
+    }
+    </style>
+</article>
+            
+        </div>
+    </div>
+</aside>
 
      
     
@@ -904,12 +1668,18 @@ $$<p>
       
         
       
+        
+      
+        
+      
+        
+      
     
-      <span>📚 文章数: 50</span>
+      <span>📚 文章数: 53</span>
       <span>✍️ 总字数: 
         
         
-        169.10K
+        174.61K
       </span>
     </section>
 

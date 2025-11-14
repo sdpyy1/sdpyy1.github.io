@@ -7,7 +7,55 @@
         <generator>Hugo -- gohugo.io</generator>
         <language>zh-cn</language>
         <copyright>爱喝东方树叶</copyright>
-        <lastBuildDate>Tue, 04 Nov 2025 11:04:19 +0800</lastBuildDate><atom:link href="https://sdpyy1.github.io/tags/index.xml" rel="self" type="application/rss+xml" /><item>
+        <lastBuildDate>Thu, 13 Nov 2025 20:22:40 +0800</lastBuildDate><atom:link href="https://sdpyy1.github.io/tags/index.xml" rel="self" type="application/rss+xml" /><item>
+        <title>UE源码</title>
+        <link>https://sdpyy1.github.io/tags/ue%E6%BA%90%E7%A0%81/</link>
+        <pubDate>Thu, 13 Nov 2025 20:22:40 +0800</pubDate>
+        
+        <guid>https://sdpyy1.github.io/tags/ue%E6%BA%90%E7%A0%81/</guid>
+        <description></description>
+        </item>
+        <item>
+        <title>RayTracing</title>
+        <link>https://sdpyy1.github.io/tags/raytracing/</link>
+        <pubDate>Wed, 12 Nov 2025 13:26:10 +0800</pubDate>
+        
+        <guid>https://sdpyy1.github.io/tags/raytracing/</guid>
+        <description></description>
+        </item>
+        <item>
+        <title>RayTracingOneWeek</title>
+        <link>https://sdpyy1.github.io/tags/raytracingoneweek/</link>
+        <pubDate>Wed, 12 Nov 2025 13:26:10 +0800</pubDate>
+        
+        <guid>https://sdpyy1.github.io/tags/raytracingoneweek/</guid>
+        <description></description>
+        </item>
+        <item>
+        <title>随笔</title>
+        <link>https://sdpyy1.github.io/tags/%E9%9A%8F%E7%AC%94/</link>
+        <pubDate>Tue, 11 Nov 2025 13:43:46 +0800</pubDate>
+        
+        <guid>https://sdpyy1.github.io/tags/%E9%9A%8F%E7%AC%94/</guid>
+        <description></description>
+        </item>
+        <item>
+        <title>体积渲染</title>
+        <link>https://sdpyy1.github.io/tags/%E4%BD%93%E7%A7%AF%E6%B8%B2%E6%9F%93/</link>
+        <pubDate>Fri, 07 Nov 2025 18:08:43 +0800</pubDate>
+        
+        <guid>https://sdpyy1.github.io/tags/%E4%BD%93%E7%A7%AF%E6%B8%B2%E6%9F%93/</guid>
+        <description></description>
+        </item>
+        <item>
+        <title>渲染Pass</title>
+        <link>https://sdpyy1.github.io/tags/%E6%B8%B2%E6%9F%93pass/</link>
+        <pubDate>Fri, 07 Nov 2025 18:08:43 +0800</pubDate>
+        
+        <guid>https://sdpyy1.github.io/tags/%E6%B8%B2%E6%9F%93pass/</guid>
+        <description></description>
+        </item>
+        <item>
         <title>Games104</title>
         <link>https://sdpyy1.github.io/tags/games104/</link>
         <pubDate>Tue, 04 Nov 2025 11:04:19 +0800</pubDate>
@@ -24,11 +72,11 @@
         <description></description>
         </item>
         <item>
-        <title>Hazel</title>
-        <link>https://sdpyy1.github.io/tags/hazel/</link>
+        <title>RHI</title>
+        <link>https://sdpyy1.github.io/tags/rhi/</link>
         <pubDate>Sun, 02 Nov 2025 20:46:56 +0800</pubDate>
         
-        <guid>https://sdpyy1.github.io/tags/hazel/</guid>
+        <guid>https://sdpyy1.github.io/tags/rhi/</guid>
         <description></description>
         </item>
         <item>
@@ -37,14 +85,6 @@
         <pubDate>Sun, 02 Nov 2025 20:46:56 +0800</pubDate>
         
         <guid>https://sdpyy1.github.io/tags/vulkan/</guid>
-        <description></description>
-        </item>
-        <item>
-        <title>游戏引擎</title>
-        <link>https://sdpyy1.github.io/tags/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E/</link>
-        <pubDate>Sun, 02 Nov 2025 20:46:56 +0800</pubDate>
-        
-        <guid>https://sdpyy1.github.io/tags/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E/</guid>
         <description></description>
         </item>
         <item>
@@ -77,14 +117,6 @@
         <pubDate>Wed, 29 Oct 2025 12:17:56 +0800</pubDate>
         
         <guid>https://sdpyy1.github.io/tags/api%E5%AD%A6%E4%B9%A0/</guid>
-        <description></description>
-        </item>
-        <item>
-        <title>渲染管线</title>
-        <link>https://sdpyy1.github.io/tags/%E6%B8%B2%E6%9F%93%E7%AE%A1%E7%BA%BF/</link>
-        <pubDate>Sat, 25 Oct 2025 20:49:55 +0800</pubDate>
-        
-        <guid>https://sdpyy1.github.io/tags/%E6%B8%B2%E6%9F%93%E7%AE%A1%E7%BA%BF/</guid>
         <description></description>
         </item>
         <item>

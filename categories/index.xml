@@ -7,7 +7,39 @@
         <generator>Hugo -- gohugo.io</generator>
         <language>zh-cn</language>
         <copyright>爱喝东方树叶</copyright>
-        <lastBuildDate>Tue, 04 Nov 2025 11:04:19 +0800</lastBuildDate><atom:link href="https://sdpyy1.github.io/categories/index.xml" rel="self" type="application/rss+xml" /><item>
+        <lastBuildDate>Thu, 13 Nov 2025 20:22:40 +0800</lastBuildDate><atom:link href="https://sdpyy1.github.io/categories/index.xml" rel="self" type="application/rss+xml" /><item>
+        <title>Engines</title>
+        <link>https://sdpyy1.github.io/categories/engines/</link>
+        <pubDate>Thu, 13 Nov 2025 20:22:40 +0800</pubDate>
+        
+        <guid>https://sdpyy1.github.io/categories/engines/</guid>
+        <description></description>
+        </item>
+        <item>
+        <title>UE</title>
+        <link>https://sdpyy1.github.io/categories/engines/ue/</link>
+        <pubDate>Thu, 13 Nov 2025 20:22:40 +0800</pubDate>
+        
+        <guid>https://sdpyy1.github.io/categories/engines/ue/</guid>
+        <description></description>
+        </item>
+        <item>
+        <title>GameEngine</title>
+        <link>https://sdpyy1.github.io/categories/projects/gameengine/</link>
+        <pubDate>Fri, 07 Nov 2025 18:08:43 +0800</pubDate>
+        
+        <guid>https://sdpyy1.github.io/categories/projects/gameengine/</guid>
+        <description></description>
+        </item>
+        <item>
+        <title>Projects</title>
+        <link>https://sdpyy1.github.io/categories/projects/</link>
+        <pubDate>Fri, 07 Nov 2025 18:08:43 +0800</pubDate>
+        
+        <guid>https://sdpyy1.github.io/categories/projects/</guid>
+        <description></description>
+        </item>
+        <item>
         <title>Courses</title>
         <link>https://sdpyy1.github.io/categories/course/</link>
         <pubDate>Tue, 04 Nov 2025 11:04:19 +0800</pubDate>
@@ -21,22 +53,6 @@
         <pubDate>Tue, 04 Nov 2025 11:04:19 +0800</pubDate>
         
         <guid>https://sdpyy1.github.io/categories/course/games104/</guid>
-        <description></description>
-        </item>
-        <item>
-        <title>GameEngine</title>
-        <link>https://sdpyy1.github.io/categories/projects/gameengine/</link>
-        <pubDate>Sun, 02 Nov 2025 20:46:56 +0800</pubDate>
-        
-        <guid>https://sdpyy1.github.io/categories/projects/gameengine/</guid>
-        <description></description>
-        </item>
-        <item>
-        <title>Projects</title>
-        <link>https://sdpyy1.github.io/categories/projects/</link>
-        <pubDate>Sun, 02 Nov 2025 20:46:56 +0800</pubDate>
-        
-        <guid>https://sdpyy1.github.io/categories/projects/</guid>
         <description></description>
         </item>
         <item>
@@ -125,14 +141,6 @@
         <pubDate>Sun, 19 Oct 2025 13:32:46 +0800</pubDate>
         
         <guid>https://sdpyy1.github.io/categories/course/games101/</guid>
-        <description></description>
-        </item>
-        <item>
-        <title>Engines</title>
-        <link>https://sdpyy1.github.io/categories/engines/</link>
-        <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-        
-        <guid>https://sdpyy1.github.io/categories/engines/</guid>
         <description></description>
         </item>
         
