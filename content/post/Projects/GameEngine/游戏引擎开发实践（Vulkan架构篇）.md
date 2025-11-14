@@ -3,7 +3,7 @@ date = '2025-11-02T20:46:56+08:00'
 draft = false
 title = '游戏引擎开发实践（Vulkan架构篇：Image）'
 categories = ["Projects/GameEngine"]
-tags = ["游戏引擎","Vulkan","Hazel"]
+tags = ["Vulkan","RHI"]
 +++
 > 本文主要讲解GameEngine项目Vulkan封装，在渲染层只需要调用RHI层接口即可
 # 总览
