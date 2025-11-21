@@ -1,12 +1,17 @@
 +++
 date = '2025-11-13T20:22:40+08:00'
 draft = false
-title = 'UE源码学习（RHI）'
+title = '初识UE源码（RHI）'
 categories = ["Engines/UE"]
 tags = ["UE源码"]
+image = 'image-20251121130145117.png'
 +++
 
-# FRHIResource
+
+
+# 向下
+
+## FRHIResource
 
 > /** The base type of RHI resources. */
 
@@ -107,7 +112,7 @@ public:
 
 这套架构已经简单实现
 
-# FDynamicRHI
+## FDynamicRHI
 
 > 类似创建操作(上下文无关操作)是在FDynamicRHI，上下文有关的操作（也就是在固定生命周期内执行的操作）是在IRHICommandContext
 
@@ -198,7 +203,53 @@ public:
 - 渲染管线状态（着色器、混合状态、深度测试等）的配置与绑定；
 - 绘制命令（Draw Call）的提交与执行。
 
-# FRHICommand
+## IRHICommandContext
+
+> 定义上下文相关的操作，比如RHIDispatchComputeShader，这明显需要在Pass中间调用。`RHIDrawPrimitive``RHIDrawPrimitiveIndirect``RHIDrawIndexedIndirect`这些，内部都是虚函数，由具体平台实现
+
+```c++
+/** The interface RHI command context. Sometimes the RHI handles these. On platforms that can processes command lists in parallel, it is a separate object. */
+class IRHICommandContext : public IRHIComputeContext
+{
+public:
+	virtual ~IRHICommandContext()
+	{
+	}
+
+	virtual ERHIPipeline GetPipeline() const override
+	{
+		return ERHIPipeline::Graphics;
+	}
+
+	virtual void RHIDispatchComputeShader(uint32 ThreadGroupCountX, uint32 ThreadGroupCountY, uint32 ThreadGroupCountZ) = 0;
+	...
+}
+```
+
+进入API层，类内部都会有一个用于定义当前上下文的对象，比如FVulkanCommandListContext,在执行上边那些命令时，会使用Manager来获得当前激活的commandBuffer来记录命令
+
+```c++
+	class FVulkanCommandListContext : public IRHICommandContext{
+        ...
+    private:
+        ...
+        FVulkanCommandBufferManager* CommandBufferManager;
+        ...
+    }
+
+```
+
+当创建一个IRHICommandContext时，在Vulkan中就是创建一个新的CommandBuffer
+
+```c++
+// Create CommandBufferManager, contain all active buffers
+CommandBufferManager = new FVulkanCommandBufferManager(InDevice, this);
+CommandBufferManager->Init(this);
+```
+
+# 向上
+
+## FRHICommand
 
 > UE的命令是用链表串起来的
 
@@ -288,7 +339,22 @@ void FRHICommandSetViewport::Execute(FRHICommandListBase& CmdList)
 
 再下面就是各个API具体的实现了
 
-# FRHICommandList
+## FRHICommandList
+
+它内部的函数也是这种API，根据情况`Bypass()`选择直接调用API还是把命令缓存起来
+
+```c++
+FORCEINLINE_DEBUGGABLE void DrawPrimitive(uint32 BaseVertexIndex, uint32 NumPrimitives, uint32 NumInstances)
+{
+	//check(IsOutsideRenderPass());
+	if (Bypass())
+	{
+		GetContext().RHIDrawPrimitive(BaseVertexIndex, NumPrimitives, NumInstances);
+		return;
+	}
+	ALLOC_COMMAND(FRHICommandDrawPrimitive)(BaseVertexIndex, NumPrimitives, NumInstances);
+}
+```
 
 主要看两个指针
 
@@ -330,11 +396,267 @@ class FRHICommandList : public FRHIComputeCommandList
 class FRHICommandListImmediate : public FRHICommandList
 ```
 
-还有一个Context的系列，里边也是一些命令的接口，Context的执行就需要用到上边的FRHICommand
-
-```c++
-class IRHICommandContext : public IRHIComputeContext
-```
-
 > 再进到API层面还有封装
 
+# Mesh的DrawCall流程
+
+> 数据流转：
+>
+> FPrimitiveSceneProxy->FMeshBatch->FMeshDrawCommand->RHICommandList->GPU
+
+![img](1617944-20210319203846059-346871767.jpg)
+
+## FMeshDrawCommand
+
+> 存储渲染一个Mesh的具体信息，粒度是DrawCall级别的了，上层的收集工作目的就是生成各种FMeshDrawCommand，FMeshDrawCommand进一步才转化成RHI层指令（CommandList）
+
+```c++
+class FMeshDrawCommand
+{
+public:
+	
+	/**
+	 * Resource bindings
+	 */
+	FMeshDrawShaderBindings ShaderBindings;  // 着色器顶点输入信息
+	FVertexInputStreamArray VertexStreams; // 顶点数据
+	FRHIBuffer* IndexBuffer; // 索引数据
+    
+	/**
+	 * PSO
+	 */
+	FGraphicsMinimalPipelineStateId CachedPipelineId; // PSO
+    
+     /**
+	 * Draw command parameters    三角形相关信息
+	 */
+	uint32 FirstIndex;
+	uint32 NumPrimitives;
+	uint32 NumInstances;   // 实例数量，这也就是说DrawCommand对应的是一个SubMesh的所有实例
+
+    /** Submits commands to the RHI Commandlist to draw the MeshDrawCommand. */
+    /** 提交这个DrawCall到CommandList **/
+static bool SubmitDraw(
+	const FMeshDrawCommand& RESTRICT MeshDrawCommand,
+	const FGraphicsMinimalPipelineStateSet& GraphicsMinimalPipelineStateSet,
+	const FMeshDrawCommandSceneArgs& SceneArgs,
+	uint32 InstanceFactor,
+	FRHICommandList& CommandList,
+	class FMeshDrawCommandStateCache& RESTRICT StateCache);
+ .....   
+}
+
+```
+
+SubmitDraw主要是一个Begin和一个End组成
+
+```c++
+// SubmitDraw的实现
+bool FMeshDrawCommand::SubmitDraw(
+	const FMeshDrawCommand& RESTRICT MeshDrawCommand,
+	const FGraphicsMinimalPipelineStateSet& GraphicsMinimalPipelineStateSet,
+	const FMeshDrawCommandSceneArgs& SceneArgs,
+	uint32 InstanceFactor,
+	FRHICommandList& RHICmdList,
+	FMeshDrawCommandStateCache& RESTRICT StateCache)
+{
+#if WANTS_DRAW_MESH_EVENTS
+	RHI_BREADCRUMB_EVENT_CONDITIONAL(RHICmdList, GShowMaterialDrawEvents != 0, "%s %s (%u instances)"
+		, MeshDrawCommand.DebugData.MaterialRenderProxy->GetMaterialName()
+		, MeshDrawCommand.DebugData.ResourceName
+		, MeshDrawCommand.NumInstances * InstanceFactor
+	);
+#endif
+
+	bool bAllowSkipDrawCommand = true;
+	if (SubmitDrawBegin(MeshDrawCommand, GraphicsMinimalPipelineStateSet, SceneArgs, InstanceFactor, RHICmdList, StateCache, bAllowSkipDrawCommand))
+	{
+		SubmitDrawEnd(MeshDrawCommand, SceneArgs, InstanceFactor, RHICmdList);
+		return true;
+	}
+
+	return false;
+}
+// Begin 调用RHI设置各种参数
+bool FMeshDrawCommand::SubmitDrawBegin(
+	const FMeshDrawCommand& RESTRICT MeshDrawCommand, 
+	const FGraphicsMinimalPipelineStateSet& GraphicsMinimalPipelineStateSet,
+	const FMeshDrawCommandSceneArgs& SceneArgs,
+	uint32 InstanceFactor,
+	FRHICommandList& RHICmdList,
+	FMeshDrawCommandStateCache& RESTRICT StateCache,
+	bool bAllowSkipDrawCommand)
+{
+    // 1. PipeLineState的设置，下到RHI层
+    RHICmdList.SetGraphicsPipelineState(PipelineState, Initializer.BoundShaderState, StencilRef, bApplyAdditionalState);
+	.....
+}
+
+// End中主要就是调用RHI的DrawIndexedPrimitive（上层是把对应的Command存储的RHICommandList而已）
+void FMeshDrawCommand::SubmitDrawEnd(const FMeshDrawCommand& MeshDrawCommand, const FMeshDrawCommandSceneArgs& SceneArgs, uint32 InstanceFactor, FRHICommandList& RHICmdList)
+{
+    .....
+	if (MeshDrawCommand.IndexBuffer)
+	{
+		if (MeshDrawCommand.NumPrimitives > 0 && !bDoOverrideArgs)
+		{
+			RHICmdList.DrawIndexedPrimitive(
+				MeshDrawCommand.IndexBuffer,
+				MeshDrawCommand.VertexParams.BaseVertexIndex,
+				0,
+				MeshDrawCommand.VertexParams.NumVertices,
+				MeshDrawCommand.FirstIndex,
+				MeshDrawCommand.NumPrimitives,
+				MeshDrawCommand.NumInstances * InstanceFactor
+			);
+		}
+	.....
+}
+```
+
+
+
+## FMeshBatch
+
+> 比如相同材质、相同xxx的一组模型放在一个Batch，一个Batch有一组FMeshBatchElement，FmeshBatch由FSceneRenderer的Gatherxxx这个函数来收集，这个函数有一个参数是
+
+
+
+MeshDrawCommand里没有材质信息，材质信息来自MeshBatch
+
+## FMeshPassProcessor
+
+> 上层收集组装成FMeshBatch，通过FMeshPassProcessor的BuildMeshDrawCommands来构建FMeshDrawCommand（有历史原因，4.22之前是没有FMeshDrawCommand的）
+
+```cpp
+// 代码里这个For可以看出来，Batch的每个element都变成了一个FMeshDrawCommand
+for (int32 BatchElementIndex = 0; BatchElementIndex < NumElements; BatchElementIndex++)
+{
+	if ((1ull << BatchElementIndex) & BatchElementMask)
+	{
+		const FMeshBatchElement& BatchElement = MeshBatch.Elements[BatchElementIndex];
+		FMeshDrawCommand& MeshDrawCommand = DrawListContext->AddCommand(SharedMeshDrawCommand, NumElements);
+```
+
+# RDG
+
+## FRDGResource
+
+> RDG层面也封装了一层Resource，其内部就是FRHIResource
+
+```c++
+/** Generic graph resource. */
+class FRDGResource
+{
+    .....
+private:
+	FRHIResource* ResourceRHI = nullptr;
+	.....
+};
+```
+
+> FRDGTexture继承来自FRDGResource。但是在RDG层的Resource不能自己创建，必须统一经过RDGBuilder来创建
+
+```c++
+/** A render graph resource with an allocation lifetime tracked by the graph. May have child resources which reference it (e.g. views). */
+class FRDGViewableResource
+	: public FRDGResource
+{
+/** Render graph tracked Texture. */
+class FRDGTexture final
+	: public FRDGViewableResource
+{....}
+```
+
+
+
+## FRDGPass
+
+> 把一个Pass的渲染指令进行存储
+
+## FRDGBuilder
+
+> 比如贴图的创建需要RDGBuilder的CreateTexture来创建
+
+```c++
+RENDERCORE_API FRDGTextureRef CreateTexture(const FRDGTextureDesc& Desc, const TCHAR* Name, ERDGTextureFlags Flags = ERDGTextureFlags::None);
+```
+
+> 对于已经存在的资源，也需要通过RDGBuilder进行注册，生命周期不经过RDG管理
+
+```c++
+** Registers a external pooled render target texture to be tracked by the render graph. The name of the registered RDG texture is pulled from the pooled render target. */
+RENDERCORE_API FRDGTextureRef RegisterExternalTexture(
+    const TRefCountPtr<IPooledRenderTarget>& ExternalPooledTexture,
+    ERDGTextureFlags Flags = ERDGTextureFlags::None);
+```
+
+> 一个Pass需要输出的资源需要经过Extraction来输出
+
+```c++
+	/** Queues a pooled render target extraction to happen at the end of graph execution. For graph-created textures, this extends
+	 *  the lifetime of the GPU resource until execution, at which point the pointer is filled. If specified, the texture is transitioned
+	 *  to the AccessFinal state, or kDefaultAccessFinal otherwise.
+	 */
+	RENDERCORE_API void QueueTextureExtraction(FRDGTextureRef Texture, TRefCountPtr<IPooledRenderTarget>* OutPooledTexturePtr, ERDGResourceExtractionFlags Flags = ERDGResourceExtractionFlags::None);
+	RENDERCORE_API void QueueTextureExtraction(FRDGTextureRef Texture, TRefCountPtr<IPooledRenderTarget>* OutPooledTexturePtr, ERHIAccess AccessFinal, ERDGResourceExtractionFlags Flags = ERDGResourceExtractionFlags::None);
+```
+
+上面三种情况就定义了资源在一个Pass的创建、输入、输出设置
+
+> 添加一个Pass到RDG，ExecuteLambda就是存储具体的渲染流程
+
+```c++
+template <typename ParameterStructType, typename ExecuteLambdaType>
+FRDGPassRef AddPass(FRDGEventName&& Name, const ParameterStructType* ParameterStruct, ERDGPassFlags Flags, ExecuteLambdaType&& ExecuteLambda){
+    // 创建一个Pass对象
+    FRDGDispatchPass* Pass = Allocators.Root.AllocNoDestruct<DispatchPassType>(
+	Forward<FRDGEventName&&>(Name),
+	ParametersMetadata,
+	ParameterStruct,
+	OverridePassFlags(NameString, Flags),
+	Forward<LaunchLambdaType&&>(LaunchLambda));
+
+	IF_RDG_ENABLE_DEBUG(ClobberPassOutputs(Pass));
+    // 存储Pass数组  	FRDGPassRegistry Passes;
+	Passes.Insert(Pass);
+    
+    
+    // 设置Pass的资源	
+	SetupParameterPass(Pass);
+
+}
+
+// 收集Passzi
+FRDGPass* FRDGBuilder::SetupParameterPass(FRDGPass* Pass)
+{
+	IF_RDG_ENABLE_DEBUG(UserValidation.ValidateAddPass(Pass, AuxiliaryPasses.IsActive()));
+	CSV_SCOPED_TIMING_STAT_EXCLUSIVE_CONDITIONAL(RDGBuilder_SetupPass, GRDGVerboseCSVStats != 0);
+
+#if RDG_EVENTS
+	TOptional<TRDGEventScopeGuard<FRDGScope_RHI>> PassNameScope;
+	if (ScopeState.ScopeMode == ERDGScopeMode::AllEventsAndPassNames)
+	{
+		FRDGEventName Name = Pass->GetEventName();
+		PassNameScope.Emplace(*this, ERDGScopeFlags::None, FRHIBreadcrumbData(__FILE__, __LINE__, TStatId(), NAME_None), MoveTemp(Name));
+	}
+#endif
+
+	SetupPassInternals(Pass);
+
+	if (ParallelSetup.bEnabled)
+	{
+		MarkResourcesAsProduced(Pass);
+		AsyncSetupQueue.Push(FAsyncSetupOp::SetupPassResources(Pass));
+	}
+	else
+	{
+		SetupPassResources(Pass);
+	}
+
+	SetupAuxiliaryPasses(Pass);
+	return Pass;
+}
+```
+
+![image-20251121130145117](image-20251121130145117.png)

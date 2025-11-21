@@ -2,7 +2,7 @@
 date = '2025-11-12T13:26:10+08:00'
 draft = false
 title = 'RayTracingOneWeek'
-tags = ["RayTracing","RayTracingOneWeek"]
+tags = ["RayTracing"]
 image = 'image-20251114165052053.png'
 +++
 
