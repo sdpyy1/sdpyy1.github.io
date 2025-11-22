@@ -3,7 +3,7 @@ date = '2025-11-15T12:22:52+08:00'
 draft = false
 title = 'RayTracingTheNextWeek'
 tags = ["RayTracing"]
-
+image = 'image-20251122210353992.png'
 +++
 
 # Motion Blur
@@ -248,3 +248,5 @@ color ray_color(const ray& r, int depth, const hittable& world) const {
 
      - 如果相交，得到的交点 `p` 和法向量 `normal` 是在物体的局部空间中的。
      - 我们需要将它们**正向旋转** `θ`（逆时针旋转 `θ`），变换回世界空间，作为最终的结果。
+
+![image-20251122210353992](image-20251122210353992.png)
