@@ -13,7 +13,97 @@
         <pubDate>Tue, 11 Nov 2025 13:43:46 +0800</pubDate>
         
         <guid>https://sdpyy1.github.io/p/%E5%8D%9A%E5%AE%A2%E6%97%A5%E8%AE%B0%E8%AE%B0%E5%BD%95%E7%9C%8B%E5%A4%A7%E4%BD%AC%E5%8D%9A%E5%AE%A2%E7%9A%84%E4%B8%80%E4%BA%9B%E6%80%9D%E8%80%83/</guid>
-        <description>&lt;h1 id=&#34;20251111-saeruhikari&#34;&gt;2025.11.11 &lt;a class=&#34;link&#34; href=&#34;https://www.zhihu.com/people/SaeruHikari&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+        <description>&lt;h1 id=&#34;20251121-丛越&#34;&gt;2025.11.21 &lt;a class=&#34;link&#34; href=&#34;https://www.zhihu.com/people/li-xiang-da-sheng&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;丛越&lt;/a&gt;
+&lt;/h1&gt;&lt;p&gt;&lt;a class=&#34;link&#34; href=&#34;https://zhuanlan.zhihu.com/p/73016473&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;https://zhuanlan.zhihu.com/p/73016473&lt;/a&gt;&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;看了人家的管线设计才发现自己费那么多劲琢磨架构是多么的无知，当前阶段还是多输入少输出吧&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/v2-6647fa57ba10d9e59ef450c95a5465e9_1440w.jpg&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;img&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;原来Buffer还能这么复用（在不同时段通过别名资源重用内存）&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/v2-a69ef401111d7e4daafba86bb45dc8e5_1440w.jpg&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;img&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;GPU驱动管线（下一步学习计划！）&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/v2-e31bb10597a4e179fa58b6c8ef2bc73e_1440w.jpg&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;img&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;h2 id=&#34;vulkan的内存模型&#34;&gt;Vulkan的内存模型
+&lt;/h2&gt;&lt;blockquote&gt;
+&lt;p&gt;Vulkan 的内存分为 Host 和 Device 两大类，下图可以看到哪些是Device可见的，哪些是Host可见的&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/v2-dd5c58d0b19d987f75ed0ab789aab700_1440w.jpg&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;img&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;h2 id=&#34;并行-command&#34;&gt;&lt;strong&gt;并行 Command&lt;/strong&gt;
+&lt;/h2&gt;&lt;p&gt;尽管从 API 层面来看 Command 是依次录制的，但 GPU 在执行时是将 Queue 中的指令同时分发给 GPU 多核中的 Pipeline 执行，这就是 GPU 的并行计算机制。而这种并行，是不会保证执行的顺序，所以对于提交到 GPU 执行的 Command，需要了解以下几个事实：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Command 在 Command Buffer 中顺序并不代表在 GPU 内部执行的顺序。&lt;/li&gt;
+&lt;li&gt;提交到同一 Command Queue 中不同 Command Buffer 的顺序并不代表在 GPU 内部执行的顺序。&lt;/li&gt;
+&lt;li&gt;不同 Command Queue 的提交顺序不代表在 GPU 内部执行的顺序。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;pipeline-barrier&#34;&gt;Pipeline Barrier
+&lt;/h2&gt;&lt;blockquote&gt;
+&lt;p&gt;TODO： &lt;a class=&#34;link&#34; href=&#34;https://zhuanlan.zhihu.com/p/100162469&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;https://zhuanlan.zhihu.com/p/100162469&lt;/a&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;下面图片的每个块表示一个Pipeline Stage&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/v2-2fd622b2f90bc15a58b64ad3bf40e2ca_1440w.jpg&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;img&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/v2-839b52b484211055dabf62f735ce8711_1440w.jpg&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;img&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;h1 id=&#34;20251111-saeruhikari&#34;&gt;2025.11.11 &lt;a class=&#34;link&#34; href=&#34;https://www.zhihu.com/people/SaeruHikari&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
     &gt;SaeruHikari&lt;/a&gt;
 &lt;/h1&gt;&lt;h2 id=&#34;gbuffer压缩&#34;&gt;GBuffer压缩
 &lt;/h2&gt;&lt;blockquote&gt;

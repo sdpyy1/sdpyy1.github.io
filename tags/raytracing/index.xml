@@ -13,7 +13,7 @@
         <pubDate>Sat, 15 Nov 2025 12:22:52 +0800</pubDate>
         
         <guid>https://sdpyy1.github.io/p/raytracingthenextweek/</guid>
-        <description>&lt;h1 id=&#34;motion-blur&#34;&gt;Motion Blur
+        <description>&lt;img src="https://sdpyy1.github.io/image-20251122210353992.png" alt="Featured image of post RayTracingTheNextWeek" /&gt;&lt;h1 id=&#34;motion-blur&#34;&gt;Motion Blur
 &lt;/h1&gt;&lt;blockquote&gt;
 &lt;p&gt;思路是给Ray定义一个时间，表示光线的行进时间，判断光线与模型求交时，先用Ray的持续时间来计算模型在当前时间的位置，在新的位置上计算求交，因为发送的射线的时间是随机设置的，所有他们与球求交的是空间上不一致的，所以移动的物体就会出现模糊，本质也就是渲染时，不同像素收集到的是不同时间段的模型颜色，真实相机拍摄运动物体时，快门从打开到关闭的这段时间（比如 1/100 秒）内，物体一直在移动，传感器会记录下这段时间内物体在不同位置的所有光线信息，所以这种近似属于Hack&lt;/p&gt;
 &lt;/blockquote&gt;
@@ -507,6 +507,16 @@
 &lt;/ol&gt;
 &lt;/li&gt;
 &lt;/ul&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/image-20251122210353992.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;image-20251122210353992&#34;
+	
+	
+&gt;&lt;/p&gt;
 </description>
         </item>
         <item>

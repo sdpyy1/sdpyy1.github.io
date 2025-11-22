@@ -3,18 +3,18 @@
     <head><meta charset='utf-8'>
 <meta name='viewport' content='width=device-width, initial-scale=1'>
 <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
-  <meta name="referrer" content="no-referrer-when-downgrade"><meta name='description' content="2025.11.11 SaeruHikari GBuffer压缩 Gbuffer是可以压缩的(https://zhuanlan.zhihu.com/p/95824400)。\nGBuffer会带来显卡的带宽压力, 所以现在的游戏一般会把GBuffer压缩到2~3张。比如把法线压缩到2通道并在使用时进行Decode, 或者不保存PosW到GBuffer, 而是在使用时使用深度重建。可以参照顽皮狗在Sig16分享的方案:\n">
+  <meta name="referrer" content="no-referrer-when-downgrade"><meta name='description' content="2025.11.21 丛越 https://zhuanlan.zhihu.com/p/73016473\n看了人家的管线设计才发现自己费那么多劲琢磨架构是多么的无知，当前阶段还是多输入少输出吧\n原来Buffer还能这么复用（在不同时段通过别名资源重用内存）\n">
 <title>博客日记（记录看大佬博客的一些思考）</title>
 
 <link rel='canonical' href='https://sdpyy1.github.io/p/%E5%8D%9A%E5%AE%A2%E6%97%A5%E8%AE%B0%E8%AE%B0%E5%BD%95%E7%9C%8B%E5%A4%A7%E4%BD%AC%E5%8D%9A%E5%AE%A2%E7%9A%84%E4%B8%80%E4%BA%9B%E6%80%9D%E8%80%83/'>
 
 <link rel="stylesheet" href="/scss/style.min.6a692fd055deae459f2a9767f57f3855ba80cafd5041317f24f7360f6ca47cdf.css"><meta property='og:title' content="博客日记（记录看大佬博客的一些思考）">
-<meta property='og:description' content="2025.11.11 SaeruHikari GBuffer压缩 Gbuffer是可以压缩的(https://zhuanlan.zhihu.com/p/95824400)。\nGBuffer会带来显卡的带宽压力, 所以现在的游戏一般会把GBuffer压缩到2~3张。比如把法线压缩到2通道并在使用时进行Decode, 或者不保存PosW到GBuffer, 而是在使用时使用深度重建。可以参照顽皮狗在Sig16分享的方案:\n">
+<meta property='og:description' content="2025.11.21 丛越 https://zhuanlan.zhihu.com/p/73016473\n看了人家的管线设计才发现自己费那么多劲琢磨架构是多么的无知，当前阶段还是多输入少输出吧\n原来Buffer还能这么复用（在不同时段通过别名资源重用内存）\n">
 <meta property='og:url' content='https://sdpyy1.github.io/p/%E5%8D%9A%E5%AE%A2%E6%97%A5%E8%AE%B0%E8%AE%B0%E5%BD%95%E7%9C%8B%E5%A4%A7%E4%BD%AC%E5%8D%9A%E5%AE%A2%E7%9A%84%E4%B8%80%E4%BA%9B%E6%80%9D%E8%80%83/'>
 <meta property='og:site_name' content='wanfeng'>
 <meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='随笔' /><meta property='article:published_time' content='2025-11-11T13:43:46&#43;08:00'/><meta property='article:modified_time' content='2025-11-11T13:43:46&#43;08:00'/>
 <meta name="twitter:title" content="博客日记（记录看大佬博客的一些思考）">
-<meta name="twitter:description" content="2025.11.11 SaeruHikari GBuffer压缩 Gbuffer是可以压缩的(https://zhuanlan.zhihu.com/p/95824400)。\nGBuffer会带来显卡的带宽压力, 所以现在的游戏一般会把GBuffer压缩到2~3张。比如把法线压缩到2通道并在使用时进行Decode, 或者不保存PosW到GBuffer, 而是在使用时使用深度重建。可以参照顽皮狗在Sig16分享的方案:\n">
+<meta name="twitter:description" content="2025.11.21 丛越 https://zhuanlan.zhihu.com/p/73016473\n看了人家的管线设计才发现自己费那么多劲琢磨架构是多么的无知，当前阶段还是多输入少输出吧\n原来Buffer还能这么复用（在不同时段通过别名资源重用内存）\n">
     <link rel="shortcut icon" href="/favicon.ico" />
 
     </head>
@@ -286,6 +286,13 @@
         <div class="widget--toc">
             <nav id="TableOfContents">
   <ol>
+    <li><a href="#20251121-丛越">2025.11.21 丛越</a>
+      <ol>
+        <li><a href="#vulkan的内存模型">Vulkan的内存模型</a></li>
+        <li><a href="#并行-command"><strong>并行 Command</strong></a></li>
+        <li><a href="#pipeline-barrier">Pipeline Barrier</a></li>
+      </ol>
+    </li>
     <li><a href="#20251111-saeruhikari">2025.11.11 SaeruHikari</a>
       <ol>
         <li><a href="#gbuffer压缩">GBuffer压缩</a></li>
@@ -358,7 +365,7 @@
 
 
                 <time class="article-time--reading">
-                    阅读时长: 3 分钟
+                    阅读时长: 4 分钟
                 </time>
             </div>
         
@@ -404,7 +411,97 @@
     <section class="article-content">
     
     
-    <h1 id="20251111-saeruhikari">2025.11.11 <a class="link" href="https://www.zhihu.com/people/SaeruHikari"  target="_blank" rel="noopener"
+    <h1 id="20251121-丛越">2025.11.21 <a class="link" href="https://www.zhihu.com/people/li-xiang-da-sheng"  target="_blank" rel="noopener"
+    >丛越</a>
+</h1><p><a class="link" href="https://zhuanlan.zhihu.com/p/73016473"  target="_blank" rel="noopener"
+    >https://zhuanlan.zhihu.com/p/73016473</a></p>
+<blockquote>
+<p>看了人家的管线设计才发现自己费那么多劲琢磨架构是多么的无知，当前阶段还是多输入少输出吧</p>
+</blockquote>
+<p><img src="/v2-6647fa57ba10d9e59ef450c95a5465e9_1440w.jpg"
+	
+	
+	
+	loading="lazy"
+	
+		alt="img"
+	
+	
+></p>
+<blockquote>
+<p>原来Buffer还能这么复用（在不同时段通过别名资源重用内存）</p>
+</blockquote>
+<p><img src="/v2-a69ef401111d7e4daafba86bb45dc8e5_1440w.jpg"
+	
+	
+	
+	loading="lazy"
+	
+		alt="img"
+	
+	
+></p>
+<blockquote>
+<p>GPU驱动管线（下一步学习计划！）</p>
+</blockquote>
+<p><img src="/v2-e31bb10597a4e179fa58b6c8ef2bc73e_1440w.jpg"
+	
+	
+	
+	loading="lazy"
+	
+		alt="img"
+	
+	
+></p>
+<h2 id="vulkan的内存模型">Vulkan的内存模型
+</h2><blockquote>
+<p>Vulkan 的内存分为 Host 和 Device 两大类，下图可以看到哪些是Device可见的，哪些是Host可见的</p>
+</blockquote>
+<p><img src="/v2-dd5c58d0b19d987f75ed0ab789aab700_1440w.jpg"
+	
+	
+	
+	loading="lazy"
+	
+		alt="img"
+	
+	
+></p>
+<h2 id="并行-command"><strong>并行 Command</strong>
+</h2><p>尽管从 API 层面来看 Command 是依次录制的，但 GPU 在执行时是将 Queue 中的指令同时分发给 GPU 多核中的 Pipeline 执行，这就是 GPU 的并行计算机制。而这种并行，是不会保证执行的顺序，所以对于提交到 GPU 执行的 Command，需要了解以下几个事实：</p>
+<ul>
+<li>Command 在 Command Buffer 中顺序并不代表在 GPU 内部执行的顺序。</li>
+<li>提交到同一 Command Queue 中不同 Command Buffer 的顺序并不代表在 GPU 内部执行的顺序。</li>
+<li>不同 Command Queue 的提交顺序不代表在 GPU 内部执行的顺序。</li>
+</ul>
+<h2 id="pipeline-barrier">Pipeline Barrier
+</h2><blockquote>
+<p>TODO： <a class="link" href="https://zhuanlan.zhihu.com/p/100162469"  target="_blank" rel="noopener"
+    >https://zhuanlan.zhihu.com/p/100162469</a></p>
+</blockquote>
+<p>下面图片的每个块表示一个Pipeline Stage</p>
+<p><img src="/v2-2fd622b2f90bc15a58b64ad3bf40e2ca_1440w.jpg"
+	
+	
+	
+	loading="lazy"
+	
+		alt="img"
+	
+	
+></p>
+<p><img src="/v2-839b52b484211055dabf62f735ce8711_1440w.jpg"
+	
+	
+	
+	loading="lazy"
+	
+		alt="img"
+	
+	
+></p>
+<h1 id="20251111-saeruhikari">2025.11.11 <a class="link" href="https://www.zhihu.com/people/SaeruHikari"  target="_blank" rel="noopener"
     >SaeruHikari</a>
 </h1><h2 id="gbuffer压缩">GBuffer压缩
 </h2><blockquote>
@@ -766,12 +863,14 @@
       
         
       
+        
+      
     
-      <span>📚 文章数: 54</span>
+      <span>📚 文章数: 55</span>
       <span>✍️ 总字数: 
         
         
-        178.69K
+        179.66K
       </span>
     </section>
 
