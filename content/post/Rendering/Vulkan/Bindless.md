@@ -42,3 +42,5 @@ writeDescriptorSet.pImageInfo = &imageInfo;
 所以在创建布局时，可以指定一个binding位置很大的descriptorCount，在Update时根据索引来更新，并且在Shader中写可以方便索引（当然需要传递索引到Shader）
 
 > 这种静态的方式带来的问题是无法根据实际情况来决定资源数量，造成复杂的资源驻留管理以及 Descriptor 空间浪费。在从越大佬的文章中，这种方式被称为“有限”Bindless 
+
+真bindless其实就是靠Vulkan自己添加的新特性，支持Shader指定数组时不需要填入数量
