@@ -7,7 +7,149 @@
         <generator>Hugo -- gohugo.io</generator>
         <language>zh-cn</language>
         <copyright>爱喝东方树叶</copyright>
-        <lastBuildDate>Fri, 21 Nov 2025 13:33:36 +0800</lastBuildDate><atom:link href="https://sdpyy1.github.io/post/index.xml" rel="self" type="application/rss+xml" /><item>
+        <lastBuildDate>Mon, 24 Nov 2025 11:14:58 +0800</lastBuildDate><atom:link href="https://sdpyy1.github.io/post/index.xml" rel="self" type="application/rss+xml" /><item>
+        <title>Cluster Based Lighting</title>
+        <link>https://sdpyy1.github.io/p/cluster-based-lighting/</link>
+        <pubDate>Mon, 24 Nov 2025 11:14:58 +0800</pubDate>
+        
+        <guid>https://sdpyy1.github.io/p/cluster-based-lighting/</guid>
+        <description>&lt;h1 id=&#34;cluster-based-lighting&#34;&gt;Cluster Based Lighting
+&lt;/h1&gt;&lt;blockquote&gt;
+&lt;p&gt;将相机视锥体分为若干簇，并为仅为每个簇分配若干有效的光源，可以避免大量无效的光照计算&lt;/p&gt;
+&lt;p&gt;在着色阶段的流程则比较简单。首先根据像素坐标计算像素所属 Cluster，然后遍历该 Cluster 的 “有效光源” 列表，逐一计算光照&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h2 id=&#34;分簇&#34;&gt;分簇
+&lt;/h2&gt;&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/v2-022d9a1c88aee7b022fb48107491dc1c_1440w.jpg&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;img&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;ComputerShader中每个线程一个簇，XY上分簇，Z上进行切分，每个簇就对应XYZ&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/v2-cdaa1cb1e8cbd9a82b46a019111615a2_1440w.jpg&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;img&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;所以执行时就是 &lt;code&gt;command-&amp;gt;Dispatch(  1, 1, LIGHT_CLUSTER_DEPTH);&lt;/code&gt;  LIGHT_CLUSTER_DEPTH就是Z坐标划分次数&lt;/p&gt;
+&lt;p&gt;在Shader中进行每个Group的在XY上进行划分。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;4
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;5
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;6
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;7
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;8
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-glsl&#34; data-lang=&#34;glsl&#34;&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;cp&#34;&gt;#define THREAD_SIZE_X LIGHT_CLUSTER_WIDTH&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;cp&#34;&gt;#define THREAD_SIZE_Y LIGHT_CLUSTER_HEIGHT&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;cp&#34;&gt;#define THREAD_SIZE_Z 1&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;n&#34;&gt;layout&lt;/span&gt; &lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;local_size_x&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;THREAD_SIZE_X&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;local_size_y&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;THREAD_SIZE_Y&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;local_size_z&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;THREAD_SIZE_Z&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt; &lt;span class=&#34;k&#34;&gt;in&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;k&#34;&gt;void&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;main&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(){&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;n&#34;&gt;uvec3&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;gID&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;gl_GlobalInvocationID&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;xyz&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;   &lt;span class=&#34;c1&#34;&gt;// 获得的就是每个簇的索引&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;}&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;接下来要找每个簇对应的视锥体范围的角点坐标&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/v2-d0ed99d9b69cb4fceb9eeeb26be29ef6_1440w.jpg&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;img&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;根据上边的信息可以屏幕空间上每个簇的角点UV，下面顺序是  屏幕UV-&amp;gt;NDC-&amp;gt;View，最终目的是拿到每个簇在View下的每个角点的坐标（转到世界坐标计算也行）&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/v2-81d582026a88713d0c0e464b0da760c1_1440w.jpg&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;img&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;h2 id=&#34;求交光照剔除&#34;&gt;求交光照剔除
+&lt;/h2&gt;&lt;blockquote&gt;
+&lt;p&gt;在每个簇中遍历场景中的所有光源范围，如果光源范围覆盖到了这个簇的位置，就把这个光源的索引信息存储到这个簇的信息中，具体怎么存就看具体光源是怎么管理的了&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;求交可以简单的判断簇的角点在不在光源位置内，或者用簇做一个包围盒，用包围盒与光源的球形包围盒进行求交运算来判断该光源是否会影响当前簇&lt;/p&gt;
+</description>
+        </item>
+        <item>
+        <title>要学的太多</title>
+        <link>https://sdpyy1.github.io/p/%E8%A6%81%E5%AD%A6%E7%9A%84%E5%A4%AA%E5%A4%9A/</link>
+        <pubDate>Mon, 24 Nov 2025 10:49:27 +0800</pubDate>
+        
+        <guid>https://sdpyy1.github.io/p/%E8%A6%81%E5%AD%A6%E7%9A%84%E5%A4%AA%E5%A4%9A/</guid>
+        <description>&lt;h1 id=&#34;pass&#34;&gt;Pass
+&lt;/h1&gt;&lt;h2 id=&#34;todo&#34;&gt;TODO
+&lt;/h2&gt;&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;ClipmapPass: 是一个基于光线追踪（Ray Tracing）的体素化（Voxelization）渲染通道，它的核心任务是高效地为体素化全局光照（VXGI）系统构建和更新一个动态的、多层次的体素场景表示&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;ClusterLightingPass:光照剔除 &lt;strong&gt;（2025.11.24 拿捏原理、待整合）&lt;/strong&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;DDGIPass：一点进度没有&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;ExposurePass：自动曝光&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;FXAA、TAA：抗锯齿得来点进度啊&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;GizmoPass：画在屏幕上的Debug信息不急&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;GPUCullingPass：GPU-Driven管线(Working&amp;hellip;&amp;hellip;.)&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;PathTracingPass：啊，把这东西搬到实时管线么。。。，可能只是研究API怎么用&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;ReprojectionPass：这个好像就是TAA用的motionVector的实现，待研究&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;ReSTIRDIPass：高效地计算场景中的直接光照（Direct Illumination），代替光照pass？&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;SSSR:更牛逼的SSR? 在 SSR 基础上引入 随机采样（Stochastic Sampling）和 时空域滤波（Temporal + Spatial Filtering），以低采样率实现高质量软反射&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;Surface CachePass：优化模型的Pass？&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;SVGFPass：在不模糊图像细节（如边缘、纹理）的前提下，高效地去除蒙特卡洛渲染中的噪声，应该是配合上边的ReSTIRDIPass&lt;/p&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;VolumetricFogPass：一直还没做过&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+        </item>
+        <item>
         <title>Bindless</title>
         <link>https://sdpyy1.github.io/p/bindless/</link>
         <pubDate>Fri, 21 Nov 2025 13:33:36 +0800</pubDate>
@@ -75,6 +217,7 @@
 &lt;blockquote&gt;
 &lt;p&gt;这种静态的方式带来的问题是无法根据实际情况来决定资源数量，造成复杂的资源驻留管理以及 Descriptor 空间浪费。在从越大佬的文章中，这种方式被称为“有限”Bindless&lt;/p&gt;
 &lt;/blockquote&gt;
+&lt;p&gt;真bindless其实就是靠Vulkan自己添加的新特性，支持Shader指定数组时不需要填入数量&lt;/p&gt;
 </description>
         </item>
         <item>

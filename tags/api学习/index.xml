@@ -75,6 +75,7 @@
 &lt;blockquote&gt;
 &lt;p&gt;这种静态的方式带来的问题是无法根据实际情况来决定资源数量，造成复杂的资源驻留管理以及 Descriptor 空间浪费。在从越大佬的文章中，这种方式被称为“有限”Bindless&lt;/p&gt;
 &lt;/blockquote&gt;
+&lt;p&gt;真bindless其实就是靠Vulkan自己添加的新特性，支持Shader指定数组时不需要填入数量&lt;/p&gt;
 </description>
         </item>
         <item>

@@ -2,6 +2,44 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
+    <loc>https://sdpyy1.github.io/p/cluster-based-lighting/</loc>
+    <lastmod>2025-11-24T11:14:58+08:00</lastmod>
+  </url><url>
+    <loc>https://sdpyy1.github.io/</loc>
+    <lastmod>2025-11-24T11:14:58+08:00</lastmod>
+    <xhtml:link
+                rel="alternate"
+                hreflang="en"
+                href="https://sdpyy1.github.io/en/"
+                />
+    <xhtml:link
+                rel="alternate"
+                hreflang="zh-cn"
+                href="https://sdpyy1.github.io/"
+                />
+  </url><url>
+    <loc>https://sdpyy1.github.io/post/</loc>
+    <lastmod>2025-11-24T11:14:58+08:00</lastmod>
+  </url><url>
+    <loc>https://sdpyy1.github.io/tags/</loc>
+    <lastmod>2025-11-24T11:14:58+08:00</lastmod>
+    <xhtml:link
+                rel="alternate"
+                hreflang="en"
+                href="https://sdpyy1.github.io/en/tags/"
+                />
+    <xhtml:link
+                rel="alternate"
+                hreflang="zh-cn"
+                href="https://sdpyy1.github.io/tags/"
+                />
+  </url><url>
+    <loc>https://sdpyy1.github.io/tags/%E6%B8%B2%E6%9F%93pass%E5%AD%A6%E4%B9%A0/</loc>
+    <lastmod>2025-11-24T11:14:58+08:00</lastmod>
+  </url><url>
+    <loc>https://sdpyy1.github.io/p/%E8%A6%81%E5%AD%A6%E7%9A%84%E5%A4%AA%E5%A4%9A/</loc>
+    <lastmod>2025-11-24T10:49:27+08:00</lastmod>
+  </url><url>
     <loc>https://sdpyy1.github.io/tags/api%E5%AD%A6%E4%B9%A0/</loc>
     <lastmod>2025-11-21T13:33:36+08:00</lastmod>
   </url><url>
@@ -21,37 +59,8 @@
                 href="https://sdpyy1.github.io/categories/"
                 />
   </url><url>
-    <loc>https://sdpyy1.github.io/</loc>
-    <lastmod>2025-11-21T13:33:36+08:00</lastmod>
-    <xhtml:link
-                rel="alternate"
-                hreflang="en"
-                href="https://sdpyy1.github.io/en/"
-                />
-    <xhtml:link
-                rel="alternate"
-                hreflang="zh-cn"
-                href="https://sdpyy1.github.io/"
-                />
-  </url><url>
-    <loc>https://sdpyy1.github.io/post/</loc>
-    <lastmod>2025-11-21T13:33:36+08:00</lastmod>
-  </url><url>
     <loc>https://sdpyy1.github.io/categories/rendering/</loc>
     <lastmod>2025-11-21T13:33:36+08:00</lastmod>
-  </url><url>
-    <loc>https://sdpyy1.github.io/tags/</loc>
-    <lastmod>2025-11-21T13:33:36+08:00</lastmod>
-    <xhtml:link
-                rel="alternate"
-                hreflang="en"
-                href="https://sdpyy1.github.io/en/tags/"
-                />
-    <xhtml:link
-                rel="alternate"
-                hreflang="zh-cn"
-                href="https://sdpyy1.github.io/tags/"
-                />
   </url><url>
     <loc>https://sdpyy1.github.io/categories/rendering/vulkan/</loc>
     <lastmod>2025-11-21T13:33:36+08:00</lastmod>
