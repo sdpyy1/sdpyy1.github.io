@@ -2,7 +2,7 @@
 date = '2025-11-24T11:14:58+08:00'
 draft = false
 title = 'Cluster Based Lighting'
-tags = '渲染Pass学习'
+tags = ['渲染Pass学习']
 
 +++
 

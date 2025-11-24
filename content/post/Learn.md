@@ -10,7 +10,7 @@ title = '要学的太多'
 
 - ClipmapPass: 是一个基于光线追踪（Ray Tracing）的体素化（Voxelization）渲染通道，它的核心任务是高效地为体素化全局光照（VXGI）系统构建和更新一个动态的、多层次的体素场景表示
 
-- ClusterLightingPass:光照剔除 （2025.11.24 拿捏原理、待整合）
+- ClusterLightingPass:光照剔除 **（2025.11.24 拿捏原理、待整合）**
 
 - DDGIPass：一点进度没有
 - ExposurePass：自动曝光
