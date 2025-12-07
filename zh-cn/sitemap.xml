@@ -2,11 +2,8 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
-    <loc>https://sdpyy1.github.io/p/cluster-based-lighting/</loc>
-    <lastmod>2025-11-24T11:14:58+08:00</lastmod>
-  </url><url>
     <loc>https://sdpyy1.github.io/</loc>
-    <lastmod>2025-11-24T11:14:58+08:00</lastmod>
+    <lastmod>2025-12-04T18:58:15+08:00</lastmod>
     <xhtml:link
                 rel="alternate"
                 hreflang="en"
@@ -19,10 +16,10 @@
                 />
   </url><url>
     <loc>https://sdpyy1.github.io/post/</loc>
-    <lastmod>2025-11-24T11:14:58+08:00</lastmod>
+    <lastmod>2025-12-04T18:58:15+08:00</lastmod>
   </url><url>
     <loc>https://sdpyy1.github.io/tags/</loc>
-    <lastmod>2025-11-24T11:14:58+08:00</lastmod>
+    <lastmod>2025-12-04T18:58:15+08:00</lastmod>
     <xhtml:link
                 rel="alternate"
                 hreflang="en"
@@ -33,6 +30,24 @@
                 hreflang="zh-cn"
                 href="https://sdpyy1.github.io/tags/"
                 />
+  </url><url>
+    <loc>https://sdpyy1.github.io/tags/%E6%8A%97%E9%94%AF%E9%BD%BF/</loc>
+    <lastmod>2025-12-04T18:58:15+08:00</lastmod>
+  </url><url>
+    <loc>https://sdpyy1.github.io/p/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E5%BC%80%E5%8F%91%E5%AE%9E%E8%B7%B5%E6%8A%97%E9%94%AF%E9%BD%BF/</loc>
+    <lastmod>2025-12-04T18:58:15+08:00</lastmod>
+  </url><url>
+    <loc>https://sdpyy1.github.io/tags/vulkan/</loc>
+    <lastmod>2025-12-02T16:22:18+08:00</lastmod>
+  </url><url>
+    <loc>https://sdpyy1.github.io/tags/%E5%85%89%E7%BA%BF%E8%BF%BD%E8%B8%AA/</loc>
+    <lastmod>2025-12-02T16:22:18+08:00</lastmod>
+  </url><url>
+    <loc>https://sdpyy1.github.io/p/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E5%BC%80%E5%8F%91%E5%AE%9E%E8%B7%B5vulkan%E6%8E%A5%E5%85%A5%E5%85%89%E7%BA%BF%E8%BF%BD%E8%B8%AA%E5%85%89%E7%BA%BF/</loc>
+    <lastmod>2025-12-02T16:22:18+08:00</lastmod>
+  </url><url>
+    <loc>https://sdpyy1.github.io/p/cluster-based-lighting/</loc>
+    <lastmod>2025-11-24T11:14:58+08:00</lastmod>
   </url><url>
     <loc>https://sdpyy1.github.io/tags/%E6%B8%B2%E6%9F%93pass%E5%AD%A6%E4%B9%A0/</loc>
     <lastmod>2025-11-24T11:14:58+08:00</lastmod>
@@ -65,9 +80,6 @@
     <loc>https://sdpyy1.github.io/categories/rendering/vulkan/</loc>
     <lastmod>2025-11-21T13:33:36+08:00</lastmod>
   </url><url>
-    <loc>https://sdpyy1.github.io/tags/vulkan/</loc>
-    <lastmod>2025-11-21T13:33:36+08:00</lastmod>
-  </url><url>
     <loc>https://sdpyy1.github.io/tags/raytracing/</loc>
     <lastmod>2025-11-15T12:22:52+08:00</lastmod>
   </url><url>
@@ -92,7 +104,7 @@
     <loc>https://sdpyy1.github.io/p/%E5%8D%9A%E5%AE%A2%E6%97%A5%E8%AE%B0%E8%AE%B0%E5%BD%95%E7%9C%8B%E5%A4%A7%E4%BD%AC%E5%8D%9A%E5%AE%A2%E7%9A%84%E4%B8%80%E4%BA%9B%E6%80%9D%E8%80%83/</loc>
     <lastmod>2025-11-11T13:43:46+08:00</lastmod>
   </url><url>
-    <loc>https://sdpyy1.github.io/tags/%E9%9A%8F%E7%AC%94/</loc>
+    <loc>https://sdpyy1.github.io/tags/%E6%B5%8F%E8%A7%88%E7%AC%94%E8%AE%B0/</loc>
     <lastmod>2025-11-11T13:43:46+08:00</lastmod>
   </url><url>
     <loc>https://sdpyy1.github.io/categories/projects/gameengine/</loc>

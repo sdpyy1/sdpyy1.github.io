@@ -14,6 +14,9 @@
         
         <guid>https://sdpyy1.github.io/p/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E5%BC%80%E5%8F%91%E5%AE%9E%E8%B7%B5vulkan%E6%9E%B6%E6%9E%84%E7%AF%87image/</guid>
         <description>&lt;blockquote&gt;
+&lt;p&gt;这里涉及的整套结构已经废弃，转为研究更轻薄的RHI层，放弃过度封装！&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;blockquote&gt;
 &lt;p&gt;本文主要讲解GameEngine项目Vulkan封装，在渲染层只需要调用RHI层接口即可&lt;/p&gt;
 &lt;/blockquote&gt;
 &lt;h1 id=&#34;总览&#34;&gt;总览

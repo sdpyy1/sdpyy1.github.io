@@ -1,0 +1,1491 @@
+<!DOCTYPE html>
+<html lang="zh-cn" dir="ltr">
+    <head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'>
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+  <meta name="referrer" content="no-referrer-when-downgrade"><meta name='description' content=" 总体来看TAA思想比较简单易懂，实现思路更多是实践性的经验总结\nTAA TAA (Temporal Anti-Aliasing) 综合历史帧的数据来实现抗锯齿，这样会将每个像素点的多次采样均摊到多个帧中，相对的开销要小得多。在 MSAA 中，我们在一帧中，在每个像素中放置了多个次像素采样点。在 TAA 中，我们实现的方式，就是在每帧采样时，将采样的点进行偏移，实现抖动 (jitter)。\n">
+<title>游戏引擎开发实践（抗锯齿）</title>
+
+<link rel='canonical' href='https://sdpyy1.github.io/p/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E5%BC%80%E5%8F%91%E5%AE%9E%E8%B7%B5%E6%8A%97%E9%94%AF%E9%BD%BF/'>
+
+<link rel="stylesheet" href="/scss/style.min.6a692fd055deae459f2a9767f57f3855ba80cafd5041317f24f7360f6ca47cdf.css"><meta property='og:title' content="游戏引擎开发实践（抗锯齿）">
+<meta property='og:description' content=" 总体来看TAA思想比较简单易懂，实现思路更多是实践性的经验总结\nTAA TAA (Temporal Anti-Aliasing) 综合历史帧的数据来实现抗锯齿，这样会将每个像素点的多次采样均摊到多个帧中，相对的开销要小得多。在 MSAA 中，我们在一帧中，在每个像素中放置了多个次像素采样点。在 TAA 中，我们实现的方式，就是在每帧采样时，将采样的点进行偏移，实现抖动 (jitter)。\n">
+<meta property='og:url' content='https://sdpyy1.github.io/p/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E5%BC%80%E5%8F%91%E5%AE%9E%E8%B7%B5%E6%8A%97%E9%94%AF%E9%BD%BF/'>
+<meta property='og:site_name' content='wanfeng'>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='抗锯齿' /><meta property='article:published_time' content='2025-12-04T18:58:15&#43;08:00'/><meta property='article:modified_time' content='2025-12-04T18:58:15&#43;08:00'/><meta property='og:image' content='https://sdpyy1.github.io/image-20251207191240613.png' />
+<meta name="twitter:title" content="游戏引擎开发实践（抗锯齿）">
+<meta name="twitter:description" content=" 总体来看TAA思想比较简单易懂，实现思路更多是实践性的经验总结\nTAA TAA (Temporal Anti-Aliasing) 综合历史帧的数据来实现抗锯齿，这样会将每个像素点的多次采样均摊到多个帧中，相对的开销要小得多。在 MSAA 中，我们在一帧中，在每个像素中放置了多个次像素采样点。在 TAA 中，我们实现的方式，就是在每帧采样时，将采样的点进行偏移，实现抖动 (jitter)。\n"><meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content='https://sdpyy1.github.io/image-20251207191240613.png' />
+    <link rel="shortcut icon" href="/favicon.ico" />
+
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="切换菜单">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        
+            
+            <figure class="site-avatar">
+                <a href="/">
+                
+                    
+                    
+                    
+                        
+                        <img src="/img/avatar_hu_f59158f730715054.png" width="300"
+                            height="300" class="site-logo" loading="lazy" alt="Avatar">
+                    
+                
+                </a>
+                
+                    <span class="emoji">🧐</span>
+                
+            </figure>
+            
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="/">wanfeng</a></h1>
+            <h2 class="site-description">Blog</h2>
+        </div>
+    </header><ol class="menu-social">
+            
+                <li>
+                    <a 
+                        href='https://space.bilibili.com/287473737'
+                        target="_blank"
+                        title="Bilibili"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-brand-bilibili"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 10a4 4 0 0 1 4 -4h10a4 4 0 0 1 4 4v6a4 4 0 0 1 -4 4h-10a4 4 0 0 1 -4 -4v-6z" /><path d="M8 3l2 3" /><path d="M16 3l-2 3" /><path d="M9 13v-2" /><path d="M15 11v2" /></svg>
+                        
+                    </a>
+                </li>
+            
+                <li>
+                    <a 
+                        href='https://github.com/sdpyy1'
+                        target="_blank"
+                        title="GitHub"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
+</svg>
+
+
+
+                        
+                    </a>
+                </li>
+            
+        </ol><ol class="menu" id="main-menu">
+        
+        
+        
+        <li >
+            <a href='/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>Home</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/about/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>About</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>Archives</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/search/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>Search</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/links/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5" />
+  <path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5" />
+</svg>
+
+
+
+                
+                <span>Links</span>
+            </a>
+        </li>
+        
+        <li class="menu-bottom-section">
+            <ol class="menu">
+                    
+                        <li id="i18n-switch">  
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-language" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M4 5h7" />
+  <path d="M9 3v2c0 4.418 -2.239 8 -5 8" />
+  <path d="M5 9c-.003 2.144 2.952 3.908 6.7 4" />
+  <path d="M12 20l4 -9l4 9" />
+  <path d="M19.1 18h-6.2" />
+</svg>
+
+
+
+                            <select name="language" title="language" onchange="window.location.href = this.selectedOptions[0].value">
+                                
+                                    <option value="https://sdpyy1.github.io/en/" >English</option>
+                                
+                                    <option value="https://sdpyy1.github.io/" selected>中文</option>
+                                
+                            </select>
+                        </li>
+                    
+                
+
+                
+                    <li id="dark-mode-toggle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <span>暗色模式</span>
+                    </li>
+                
+            </ol>
+        </li>
+    </ol>
+</aside>
+
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">目录</h2>
+        
+        <div class="widget--toc">
+            <nav id="TableOfContents">
+  <ol>
+    <li><a href="#taa">TAA</a>
+      <ol>
+        <li><a href="#静态场景">静态场景</a></li>
+        <li><a href="#动态物体">动态物体</a></li>
+        <li><a href="#历史结果处理">历史结果处理</a></li>
+        <li><a href="#混合结果">混合结果</a></li>
+      </ol>
+    </li>
+    <li><a href="#实战">实战</a>
+      <ol>
+        <li><a href="#motionvector">MotionVector</a></li>
+        <li><a href="#混合历史信息">混合历史信息</a></li>
+        <li><a href="#处理拖影">处理拖影</a></li>
+      </ol>
+    </li>
+  </ol>
+</nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+            <main class="main full-width">
+    <article class="has-image main-article">
+    <header class="article-header">
+        <div class="article-image">
+            <a href="/p/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E5%BC%80%E5%8F%91%E5%AE%9E%E8%B7%B5%E6%8A%97%E9%94%AF%E9%BD%BF/">
+                
+                    <img src="/image-20251207191240613.png" loading="lazy" alt="Featured image of post 游戏引擎开发实践（抗锯齿）" />
+                
+            </a>
+        </div>
+    
+
+    <div class="article-details">
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="/p/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E5%BC%80%E5%8F%91%E5%AE%9E%E8%B7%B5%E6%8A%97%E9%94%AF%E9%BD%BF/">游戏引擎开发实践（抗锯齿）</a>
+        </h2>
+    
+        
+    </div>
+
+    
+    
+    
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published">Dec 04, 2025</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-time--reading">
+                    阅读时长: 8 分钟
+                </time>
+            </div>
+        
+
+        
+            
+    </footer>
+    
+    
+</div>
+<style>
+    .category-hierarchy {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;  
+        margin-right: 12px;  
+        margin-bottom: 8px;  
+    }
+    
+    .category-separator {
+        color: #999;
+        user-select: none;
+        font-size: 1em;  
+    }
+    
+    .article-category a {
+        text-decoration: none;
+        padding: 6px 12px;  
+        border-radius: 6px;  
+        font-size: 0.95em;  
+        transition: all 0.2s ease;
+        line-height: 1.5;  
+    }
+    
+    .article-category a:hover {
+        opacity: 0.9;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 6px rgba(0,0,0,0.1);  
+    }
+</style>
+</header>
+
+    <section class="article-content">
+    
+    
+    <blockquote>
+<p>总体来看TAA思想比较简单易懂，实现思路更多是实践性的经验总结</p>
+</blockquote>
+<h1 id="taa">TAA
+</h1><blockquote>
+<p><strong>TAA (Temporal Anti-Aliasing)</strong> 综合历史帧的数据来实现抗锯齿，这样会将每个像素点的多次采样均摊到多个帧中，相对的开销要小得多。在 MSAA 中，我们在一帧中，在每个像素中放置了多个次像素采样点。在 TAA 中，我们实现的方式，就是在每帧采样时，将采样的点进行偏移，实现<strong>抖动 (jitter)</strong>。</p>
+</blockquote>
+<h2 id="静态场景">静态场景
+</h2><blockquote>
+<p>在静态场景下，上一帧与本帧的颜色信息很好获得，只需要取相同位置进行采样，然后进行一个插值即可，然后用jitter进行抖动</p>
+</blockquote>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-glsl" data-lang="glsl"><span class="line"><span class="cl"><span class="n">float3</span> <span class="n">currColor</span> <span class="o">=</span> <span class="n">currBuffer</span><span class="p">.</span><span class="n">Load</span><span class="p">(</span><span class="n">pos</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="n">float3</span> <span class="n">historyColor</span> <span class="o">=</span> <span class="n">historyBuffer</span><span class="p">.</span><span class="n">Load</span><span class="p">(</span><span class="n">pos</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="k">return</span> <span class="n">lerp</span><span class="p">(</span><span class="n">historyColor</span><span class="p">,</span> <span class="n">currColor</span><span class="p">,</span> <span class="mf">0.05</span><span class="n">f</span><span class="p">);</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>这里的取混合系数为0.05，意味着最新的一帧渲染结果，只对最终结果产生了5%的贡献。</p>
+<p>将累计的过程展开来看的话，可以看出当前帧 TAA 后的结果，是包含了所有的历史帧结果的，说明这种方式是合理的：</p>
+<p><img src="/image-20251204194048454.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251204194048454"
+	
+	
+></p>
+<p>在 TAA 中，我们实现的方式，就是在每帧采样时，将采样的点进行偏移，实现<strong>抖动 (jitter)</strong>。采样点抖动的偏移，是和 MSAA 的次像素采样点放置是相同的，都需要使用低差异的采样序列，来实现更好的抗锯齿效果。TAA 中都会直接使用 <a class="link" href="https://zhida.zhihu.com/search?content_id=182626622&amp;content_type=Article&amp;match_order=1&amp;q=Halton&#43;%e5%ba%8f%e5%88%97&amp;zhida_source=entity"  target="_blank" rel="noopener"
+    >Halton 序列</a>，采样的点位置如下所示：</p>
+<p><img src="/v2-7585c87dde80b1f19b908d8c74724cfc_1440w.jpg"
+	
+	
+	
+	loading="lazy"
+	
+		alt="img"
+	
+	
+></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="c1">// 先将Halton序列的值转化为 -0.5~0.5范围的偏移；再除以屏幕长度，得到UV下的偏移值；最后乘以2，是转化到裁剪空间中的偏移值
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="n">ProjectionMatrix</span><span class="p">.</span><span class="n">m02</span> <span class="o">+=</span> <span class="p">(</span><span class="n">HaltonSequence</span><span class="p">[</span><span class="n">Index</span><span class="p">].</span><span class="n">x</span> <span class="o">-</span> <span class="mf">0.5f</span><span class="p">)</span> <span class="o">/</span> <span class="n">ScreenWidth</span> <span class="o">*</span> <span class="mi">2</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">ProjectionMatrix</span><span class="p">.</span><span class="n">m12</span> <span class="o">+=</span> <span class="p">(</span><span class="n">HaltonSequence</span><span class="p">[</span><span class="n">Index</span><span class="p">].</span><span class="n">y</span> <span class="o">-</span> <span class="mf">0.5f</span><span class="p">)</span> <span class="o">/</span> <span class="n">ScreenHeight</span> <span class="o">*</span> <span class="mi">2</span><span class="p">;</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><img src="/v2-8d8a5aa106b1145ac7398723f7f01906_1440w.jpg"
+	
+	
+	
+	loading="lazy"
+	
+		alt="img"
+	
+	
+></p>
+<h2 id="动态物体">动态物体
+</h2><blockquote>
+<p>要对历史数据进行混合，就要能够还原出当前物体在屏幕中投影的位置。为了能够精确地记录物体在屏幕空间中的移动，我们使用 Motion Vector 贴图来记录物体在屏幕空间中的变化距离，表示当前帧和上一帧中，物体在屏幕空间投影坐标的变化值</p>
+</blockquote>
+<p>记录上一帧的投影矩阵和上一帧的模型位置，在本帧使用上一帧的透视变换逆变换就能把模型还原到上一帧的视角下，在上一帧视角下对比两帧模型的位置来拿到Motion Vector（这种有点麻烦，实战不用这种方案）</p>
+<p><strong>使用 MotionVector</strong></p>
+<blockquote>
+<p>已经知道模型的运动变化了，在本帧中复原模型到上一帧的位置，算出对应的屏幕坐标</p>
+</blockquote>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="c1">// 减去抖动坐标值，得到当前实际的像素中心UV值
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="n">uv</span> <span class="o">-=</span> <span class="n">_Jitter</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="c1">// 减去Motion值，算出上帧的投影坐标
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="n">float2</span> <span class="n">uvLast</span> <span class="o">=</span> <span class="n">uv</span> <span class="o">-</span> <span class="n">motionVectorBuffer</span><span class="p">.</span><span class="n">Sample</span><span class="p">(</span><span class="n">point</span><span class="p">,</span> <span class="n">uv</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="c1">//使用双线性模式采样
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="n">float3</span> <span class="n">historyColor</span> <span class="o">=</span> <span class="n">historyBuffer</span><span class="p">.</span><span class="n">Sample</span><span class="p">(</span><span class="n">linear</span><span class="p">,</span> <span class="n">uvLast</span><span class="p">);</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>这样使用也是有问题的。比如 一扇门，本来模型在门后，现在向右位移模型出现，但是按照MontionVector去采样上一帧的颜色时，其实采样到了门上。</p>
+<p>因此为了得到更加平滑的数据，可以在当前像素点周围判断深度，取距离镜头最近的点位置，来采样 Motion Vector 的值，这样可以减弱遮挡错误的影响。</p>
+<blockquote>
+<p><strong>优化手法</strong>：使用 <code>lerp</code> 代替 if-else，可以在 GPU 并行计算中避免分支，提高效率</p>
+</blockquote>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-glsl" data-lang="glsl"><span class="line"><span class="cl"><span class="n">float2</span> <span class="n">GetClosestFragment</span><span class="p">(</span><span class="n">float2</span> <span class="n">uv</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">float2</span> <span class="n">k</span> <span class="o">=</span> <span class="n">_CameraDepthTexture_TexelSize</span><span class="p">.</span><span class="n">xy</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">//在上下左右四个点</span>
+</span></span><span class="line"><span class="cl">    <span class="k">const</span> <span class="n">float4</span> <span class="n">neighborhood</span> <span class="o">=</span> <span class="n">float4</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">        <span class="n">SAMPLE_DEPTH_TEXTURE</span><span class="p">(</span><span class="n">_CameraDepthTexture</span><span class="p">,</span> <span class="n">sampler_PointClamp</span><span class="p">,</span> <span class="n">clamp</span><span class="p">(</span><span class="n">uv</span> <span class="o">-</span> <span class="n">k</span><span class="p">)),</span>
+</span></span><span class="line"><span class="cl">        <span class="n">SAMPLE_DEPTH_TEXTURE</span><span class="p">(</span><span class="n">_CameraDepthTexture</span><span class="p">,</span> <span class="n">sampler_PointClamp</span><span class="p">,</span> <span class="n">clamp</span><span class="p">(</span><span class="n">uv</span> <span class="o">+</span> <span class="n">float2</span><span class="p">(</span><span class="n">k</span><span class="p">.</span><span class="n">x</span><span class="p">,</span> <span class="o">-</span><span class="n">k</span><span class="p">.</span><span class="n">y</span><span class="p">))),</span>
+</span></span><span class="line"><span class="cl">        <span class="n">SAMPLE_DEPTH_TEXTURE</span><span class="p">(</span><span class="n">_CameraDepthTexture</span><span class="p">,</span> <span class="n">sampler_PointClamp</span><span class="p">,</span> <span class="n">clamp</span><span class="p">(</span><span class="n">uv</span> <span class="o">+</span> <span class="n">float2</span><span class="p">(</span><span class="o">-</span><span class="n">k</span><span class="p">.</span><span class="n">x</span><span class="p">,</span> <span class="n">k</span><span class="p">.</span><span class="n">y</span><span class="p">))),</span>
+</span></span><span class="line"><span class="cl">        <span class="n">SAMPLE_DEPTH_TEXTURE</span><span class="p">(</span><span class="n">_CameraDepthTexture</span><span class="p">,</span> <span class="n">sampler_PointClamp</span><span class="p">,</span> <span class="n">clamp</span><span class="p">(</span><span class="n">uv</span> <span class="o">+</span> <span class="n">k</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">    <span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 获取离相机最近的点</span>
+</span></span><span class="line"><span class="cl">    <span class="err">#</span><span class="k">if</span> <span class="o">defined</span><span class="p">(</span><span class="n">UNITY_REVERSED_Z</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="err">#</span><span class="n">define</span> <span class="n">COMPARE_DEPTH</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span> <span class="n">step</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">a</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="err">#</span><span class="k">else</span>
+</span></span><span class="line"><span class="cl">        <span class="err">#</span><span class="n">define</span> <span class="n">COMPARE_DEPTH</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span> <span class="n">step</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="err">#</span><span class="n">endif</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// 获取离相机最近的点，这里使用 lerp 是避免在shader中写分支判断</span>
+</span></span><span class="line"><span class="cl">    <span class="n">float3</span> <span class="n">result</span> <span class="o">=</span> <span class="n">float3</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">SAMPLE_DEPTH_TEXTURE</span><span class="p">(</span><span class="n">_CameraDepthTexture</span><span class="p">,</span> <span class="n">sampler_PointClamp</span><span class="p">,</span> <span class="n">uv</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">    <span class="n">result</span> <span class="o">=</span> <span class="n">lerp</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">float3</span><span class="p">(</span><span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">neighborhood</span><span class="p">.</span><span class="n">x</span><span class="p">),</span> <span class="n">COMPARE_DEPTH</span><span class="p">(</span><span class="n">neighborhood</span><span class="p">.</span><span class="n">x</span><span class="p">,</span> <span class="n">result</span><span class="p">.</span><span class="n">z</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">    <span class="n">result</span> <span class="o">=</span> <span class="n">lerp</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">float3</span><span class="p">(</span> <span class="mf">1.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">neighborhood</span><span class="p">.</span><span class="n">y</span><span class="p">),</span> <span class="n">COMPARE_DEPTH</span><span class="p">(</span><span class="n">neighborhood</span><span class="p">.</span><span class="n">y</span><span class="p">,</span> <span class="n">result</span><span class="p">.</span><span class="n">z</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">    <span class="n">result</span> <span class="o">=</span> <span class="n">lerp</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">float3</span><span class="p">(</span><span class="o">-</span><span class="mf">1.0</span><span class="p">,</span>  <span class="mf">1.0</span><span class="p">,</span> <span class="n">neighborhood</span><span class="p">.</span><span class="n">z</span><span class="p">),</span> <span class="n">COMPARE_DEPTH</span><span class="p">(</span><span class="n">neighborhood</span><span class="p">.</span><span class="n">z</span><span class="p">,</span> <span class="n">result</span><span class="p">.</span><span class="n">z</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">    <span class="n">result</span> <span class="o">=</span> <span class="n">lerp</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">float3</span><span class="p">(</span> <span class="mf">1.0</span><span class="p">,</span>  <span class="mf">1.0</span><span class="p">,</span> <span class="n">neighborhood</span><span class="p">.</span><span class="n">w</span><span class="p">),</span> <span class="n">COMPARE_DEPTH</span><span class="p">(</span><span class="n">neighborhood</span><span class="p">.</span><span class="n">w</span><span class="p">,</span> <span class="n">result</span><span class="p">.</span><span class="n">z</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="p">(</span><span class="n">uv</span> <span class="o">+</span> <span class="n">result</span><span class="p">.</span><span class="n">xy</span> <span class="o">*</span> <span class="n">k</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">//在周围像素中，寻找离相机最近的点</span>
+</span></span><span class="line"><span class="cl"><span class="n">float2</span> <span class="n">closest</span> <span class="o">=</span> <span class="n">GetClosestFragment</span><span class="p">(</span><span class="n">uv</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="c1">//使用周围最近点，得到Velocity值，来计算上帧投影位置</span>
+</span></span><span class="line"><span class="cl"><span class="n">float2</span> <span class="n">uvLast</span> <span class="o">=</span> <span class="n">uv</span> <span class="o">-</span> <span class="n">motionVectorBuffer</span><span class="p">.</span><span class="n">Sample</span><span class="p">(</span><span class="n">point</span><span class="p">,</span> <span class="n">closest</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="c1">//...</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><blockquote>
+<p>另外对应历史点的采样，可以使用 Catmull–Rom 采样进行进一步优化，而不是使用默认的双线性采样</p>
+</blockquote>
+<p>因为使用了双线性采样，所以得到的值会混合周围像素的颜色，造成结果略微模糊。如果想要使得到的历史结果质量更好，也可以使用一些特殊的过滤方式进行处理。比如UE4中使用 Catmull–Rom 的方式进行锐化过滤。<strong>Catmull-Rom</strong>方式的采样，会在目标点周围进行 5 次采样，然后根据相应权重进行过滤混合，额外的开销也非常大。</p>
+<h2 id="历史结果处理">历史结果处理
+</h2><blockquote>
+<p>由于像素抖动，模型变化，渲染光照变化导致渲染结果发生变化时，会导致历史帧得到的像素值失效，就会产生 <strong>鬼影/ghosting</strong> 和 <strong>闪烁 /flicking</strong> 问题。</p>
+</blockquote>
+<p><img src="/v2-6fce51deace9ef886f4077b610a74601_1440w.jpg"
+	
+	
+	
+	loading="lazy"
+	
+		alt="img"
+	
+	
+></p>
+<p>为了缓解鬼影和闪烁的问题，我们还要对采样的历史帧和当前帧数据进行对比，将历史帧数据 <strong>clamp/截断</strong> 在合理的范围内。要确定当前帧目标像素的亮度范围，就需要读取当前帧数据目标像素周围 5 个或者 9 个像素点的颜色范围：</p>
+<p><img src="/v2-9b19fd5c60b7a80d84a5cd63236d8c83_1440w.jpg"
+	
+	
+	
+	loading="lazy"
+	
+		alt="img"
+	
+	
+></p>
+<p>简单的做法就是直接进行 clamp：就是先在当前位置像素领域内判断颜色范围，之后采样历史点时把历史点的颜色clamp到这个范围内，防止它颜色变化太大</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="n">float3</span> <span class="n">AABBMin</span><span class="p">,</span> <span class="n">AABBMax</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">AABBMax</span> <span class="o">=</span> <span class="n">AABBMin</span> <span class="o">=</span> <span class="n">RGBToYCoCg</span><span class="p">(</span><span class="n">Color</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="c1">// 取得YCoCg色彩空间下，Clip的范围
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">for</span><span class="p">(</span><span class="kt">int</span> <span class="n">k</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">k</span> <span class="o">&lt;</span> <span class="mi">9</span><span class="p">;</span> <span class="n">k</span><span class="o">++</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">float3</span> <span class="n">C</span> <span class="o">=</span> <span class="n">RGBToYCoCg</span><span class="p">(</span><span class="n">_MainTex</span><span class="p">.</span><span class="n">Sample</span><span class="p">(</span><span class="n">sampler_PointClamp</span><span class="p">,</span> <span class="n">uv</span><span class="p">,</span> <span class="n">kOffsets3x3</span><span class="p">[</span><span class="n">k</span><span class="p">]));</span>
+</span></span><span class="line"><span class="cl">    <span class="n">AABBMin</span> <span class="o">=</span> <span class="n">min</span><span class="p">(</span><span class="n">AABBMin</span><span class="p">,</span> <span class="n">C</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">AABBMax</span> <span class="o">=</span> <span class="n">max</span><span class="p">(</span><span class="n">AABBMax</span><span class="p">,</span> <span class="n">C</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="c1">// 需要 Clip处理的历史数据
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="n">float3</span> <span class="n">HistoryYCoCg</span> <span class="o">=</span> <span class="n">RGBToYCoCg</span><span class="p">(</span><span class="n">HistoryColor</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// 简单地进行Clmap
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="n">float3</span> <span class="n">ResultYCoCg</span> <span class="o">=</span>  <span class="n">clmap</span><span class="p">(</span><span class="n">History</span><span class="p">,</span> <span class="n">AABBMin</span><span class="p">,</span> <span class="n">AABBMax</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="c1">//还原到RGB色彩空间，得到最终结果
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="n">HistoryColor</span><span class="p">.</span><span class="n">rgb</span> <span class="o">=</span> <span class="n">YCoCgToRGB</span><span class="p">(</span><span class="n">ResultYCoCg</span><span class="p">));</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>另外一种做法是进行 clip，clip的效果会更好，计算量也会相对较大二者的差别可从下图看出：</p>
+<p>Clip和Clamp的区别，clamp简单粗暴地把颜色固定到范围角点上，clip则效果更好，首先获取范围内颜色的中间值，然后从历史点颜色 发送射线到中间值，取射线与AABB盒交点位置的颜色值</p>
+<p><img src="/v2-54b001f4bf178d72cfe9fc4bd437ea57_1440w.jpg"
+	
+	
+	
+	loading="lazy"
+	
+		alt="img"
+	
+	
+></p>
+<h2 id="混合结果">混合结果
+</h2><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c" data-lang="c"><span class="line"><span class="cl"><span class="c1">// 与上帧相比移动距离越远，就越倾向于使用当前的像素的值
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="n">blendFactor</span> <span class="o">=</span> <span class="nf">saturate</span><span class="p">(</span><span class="mf">0.05</span> <span class="o">+</span> <span class="nf">length</span><span class="p">(</span><span class="n">motion</span><span class="p">)</span> <span class="o">*</span> <span class="mi">100</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="k">return</span> <span class="nf">lerp</span><span class="p">(</span><span class="n">historyColor</span><span class="p">,</span> <span class="n">currColor</span><span class="p">,</span> <span class="n">blendFactor</span><span class="p">);</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>因为我们用到了很多双线性采样，会使得得到的结果有些模糊，因此我们根据情况选择是否对结果进行一次简单的锐化。</p>
+<p><img src="/v2-48b08cc48d1bc5b0c8263aba60e82a08_1440w.jpg"
+	
+	
+	
+	loading="lazy"
+	
+		alt="img"
+	
+	
+></p>
+<h1 id="实战">实战
+</h1><h2 id="motionvector">MotionVector
+</h2><blockquote>
+<p>这块逻辑很清晰。  因为模型在世界的位置只取决于模型实例的Model变换。  而模型在屏幕像素的位置取决于投影矩阵和摄像机矩阵。  所以 每个模型都需要额外存储一个glm::mat4来存储上一帧的模型变换，摄像机也需要额外存储上一帧的投影矩阵（不过这个一般不会变），已经上一帧的View矩阵</p>
+</blockquote>
+<p>在GBufferPass时，获取模型上一帧的Model矩阵，在FragShader中，根据像素存储插值出来的本帧Position和上帧Position进行计算，得到MotionVector</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-glsl" data-lang="glsl"><span class="line"><span class="cl"><span class="k">vec2</span> <span class="n">CalculateVelocity</span><span class="p">(</span><span class="k">vec4</span> <span class="n">pos</span><span class="p">,</span> <span class="k">vec4</span> <span class="n">prevPos</span><span class="p">){</span>
+</span></span><span class="line"><span class="cl">    <span class="k">vec4</span> <span class="n">curNDC</span>  <span class="o">=</span> <span class="n">CAMERAINFO</span><span class="p">.</span><span class="n">data</span><span class="p">.</span><span class="n">proj</span> <span class="o">*</span> <span class="n">CAMERAINFO</span><span class="p">.</span><span class="n">data</span><span class="p">.</span><span class="n">view</span> <span class="o">*</span> <span class="n">pos</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">curNDC</span> <span class="o">/=</span> <span class="n">curNDC</span><span class="p">.</span><span class="n">w</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">vec2</span> <span class="n">curUV</span> <span class="o">=</span> <span class="n">curNDC</span><span class="p">.</span><span class="n">xy</span> <span class="o">*</span> <span class="mf">0.5</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">vec4</span> <span class="n">prevNDC</span> <span class="o">=</span> <span class="n">CAMERAINFO</span><span class="p">.</span><span class="n">data</span><span class="p">.</span><span class="n">prevProj</span> <span class="o">*</span> <span class="n">CAMERAINFO</span><span class="p">.</span><span class="n">data</span><span class="p">.</span><span class="n">prevView</span> <span class="o">*</span> <span class="n">prevPos</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">prevNDC</span> <span class="o">/=</span> <span class="n">prevNDC</span><span class="p">.</span><span class="n">w</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">vec2</span> <span class="n">prevUV</span> <span class="o">=</span> <span class="n">prevNDC</span><span class="p">.</span><span class="n">xy</span> <span class="o">*</span> <span class="mf">0.5</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="k">vec2</span><span class="p">(</span><span class="n">curUV</span><span class="p">.</span><span class="n">xy</span> <span class="o">-</span> <span class="n">prevUV</span><span class="p">.</span><span class="n">xy</span><span class="p">);</span>  <span class="c1">// MotionVector存储的是当前像素与上一帧中该位置信息所在的像素的偏移增量</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="混合历史信息">混合历史信息
+</h2><blockquote>
+<p>在TAApass，读取当前ViewPort，根据MotionVector把像素值偏移到上一帧位置，读取历史信息，混合历史信息和当前信息</p>
+</blockquote>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
+</span><span class="lnt">56
+</span><span class="lnt">57
+</span><span class="lnt">58
+</span><span class="lnt">59
+</span><span class="lnt">60
+</span><span class="lnt">61
+</span><span class="lnt">62
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-glsl" data-lang="glsl"><span class="line"><span class="cl"><span class="cp">#version 450 core</span>
+</span></span><span class="line"><span class="cl"><span class="cp">#include &#34;../common/common.glsl&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="cp">#ifdef COMPUTE_SHADER</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">layout</span><span class="p">(</span><span class="n">set</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span><span class="n">binding</span> <span class="o">=</span> <span class="mo">0</span><span class="p">,</span><span class="n">rgba32f</span><span class="p">)</span> <span class="k">uniform</span> <span class="n">image2D</span> <span class="n">out_texture</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">layout</span><span class="p">(</span><span class="n">set</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span><span class="n">binding</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="k">uniform</span> <span class="n">texture2D</span> <span class="n">velocityTexture</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">layout</span><span class="p">(</span><span class="n">set</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span><span class="n">binding</span> <span class="o">=</span> <span class="mi">2</span><span class="p">)</span> <span class="k">uniform</span> <span class="n">texture2D</span> <span class="n">historyTexture</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">layout</span><span class="p">(</span><span class="n">set</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span><span class="n">binding</span> <span class="o">=</span> <span class="mi">3</span><span class="p">)</span> <span class="k">uniform</span> <span class="n">texture2D</span> <span class="n">curTexture</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">layout</span><span class="p">(</span><span class="n">set</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span><span class="n">binding</span> <span class="o">=</span> <span class="mi">4</span><span class="p">)</span> <span class="k">uniform</span> <span class="n">texture2D</span> <span class="n">depthTexture</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">vec2</span> <span class="n">GetClosestFragment</span><span class="p">(</span><span class="k">vec2</span> <span class="n">uv</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">vec2</span> <span class="n">k</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="k">vec2</span><span class="p">(</span><span class="n">imageSize</span><span class="p">(</span><span class="n">out_texture</span><span class="p">));</span> 
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="k">float</span> <span class="n">depth0</span> <span class="o">=</span> <span class="n">texture</span><span class="p">(</span><span class="k">sampler2D</span><span class="p">(</span><span class="n">depthTexture</span><span class="p">,</span> <span class="n">SAMPLER</span><span class="p">[</span><span class="mo">0</span><span class="p">]),</span> <span class="n">clamp</span><span class="p">(</span><span class="n">uv</span> <span class="o">-</span> <span class="n">k</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)).</span><span class="n">r</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">float</span> <span class="n">depth1</span> <span class="o">=</span> <span class="n">texture</span><span class="p">(</span><span class="k">sampler2D</span><span class="p">(</span><span class="n">depthTexture</span><span class="p">,</span> <span class="n">SAMPLER</span><span class="p">[</span><span class="mo">0</span><span class="p">]),</span> <span class="n">clamp</span><span class="p">(</span><span class="n">uv</span> <span class="o">+</span> <span class="k">vec2</span><span class="p">(</span><span class="n">k</span><span class="p">.</span><span class="n">x</span><span class="p">,</span> <span class="o">-</span><span class="n">k</span><span class="p">.</span><span class="n">y</span><span class="p">),</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)).</span><span class="n">r</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">float</span> <span class="n">depth2</span> <span class="o">=</span> <span class="n">texture</span><span class="p">(</span><span class="k">sampler2D</span><span class="p">(</span><span class="n">depthTexture</span><span class="p">,</span> <span class="n">SAMPLER</span><span class="p">[</span><span class="mo">0</span><span class="p">]),</span> <span class="n">clamp</span><span class="p">(</span><span class="n">uv</span> <span class="o">+</span> <span class="k">vec2</span><span class="p">(</span><span class="o">-</span><span class="n">k</span><span class="p">.</span><span class="n">x</span><span class="p">,</span> <span class="n">k</span><span class="p">.</span><span class="n">y</span><span class="p">),</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)).</span><span class="n">r</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">float</span> <span class="n">depth3</span> <span class="o">=</span> <span class="n">texture</span><span class="p">(</span><span class="k">sampler2D</span><span class="p">(</span><span class="n">depthTexture</span><span class="p">,</span> <span class="n">SAMPLER</span><span class="p">[</span><span class="mo">0</span><span class="p">]),</span> <span class="n">clamp</span><span class="p">(</span><span class="n">uv</span> <span class="o">+</span> <span class="n">k</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)).</span><span class="n">r</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="k">vec4</span> <span class="n">neighborhood</span> <span class="o">=</span> <span class="k">vec4</span><span class="p">(</span><span class="n">depth0</span><span class="p">,</span> <span class="n">depth1</span><span class="p">,</span> <span class="n">depth2</span><span class="p">,</span> <span class="n">depth3</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="err">#</span><span class="n">define</span> <span class="n">COMPARE_DEPTH</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span> <span class="n">step</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">vec3</span> <span class="n">result</span> <span class="o">=</span> <span class="k">vec3</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">texture</span><span class="p">(</span><span class="k">sampler2D</span><span class="p">(</span><span class="n">depthTexture</span><span class="p">,</span> <span class="n">SAMPLER</span><span class="p">[</span><span class="mo">0</span><span class="p">]),</span> <span class="n">uv</span><span class="p">).</span><span class="n">r</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    
+</span></span><span class="line"><span class="cl">    <span class="n">result</span> <span class="o">=</span> <span class="n">mix</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="k">vec3</span><span class="p">(</span><span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">neighborhood</span><span class="p">.</span><span class="n">x</span><span class="p">),</span> <span class="n">COMPARE_DEPTH</span><span class="p">(</span><span class="n">neighborhood</span><span class="p">.</span><span class="n">x</span><span class="p">,</span> <span class="n">result</span><span class="p">.</span><span class="n">z</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">    <span class="n">result</span> <span class="o">=</span> <span class="n">mix</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="k">vec3</span><span class="p">(</span> <span class="mf">1.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">neighborhood</span><span class="p">.</span><span class="n">y</span><span class="p">),</span> <span class="n">COMPARE_DEPTH</span><span class="p">(</span><span class="n">neighborhood</span><span class="p">.</span><span class="n">y</span><span class="p">,</span> <span class="n">result</span><span class="p">.</span><span class="n">z</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">    <span class="n">result</span> <span class="o">=</span> <span class="n">mix</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="k">vec3</span><span class="p">(</span><span class="o">-</span><span class="mf">1.0</span><span class="p">,</span>  <span class="mf">1.0</span><span class="p">,</span> <span class="n">neighborhood</span><span class="p">.</span><span class="n">z</span><span class="p">),</span> <span class="n">COMPARE_DEPTH</span><span class="p">(</span><span class="n">neighborhood</span><span class="p">.</span><span class="n">z</span><span class="p">,</span> <span class="n">result</span><span class="p">.</span><span class="n">z</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">    <span class="n">result</span> <span class="o">=</span> <span class="n">mix</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="k">vec3</span><span class="p">(</span> <span class="mf">1.0</span><span class="p">,</span>  <span class="mf">1.0</span><span class="p">,</span> <span class="n">neighborhood</span><span class="p">.</span><span class="n">w</span><span class="p">),</span> <span class="n">COMPARE_DEPTH</span><span class="p">(</span><span class="n">neighborhood</span><span class="p">.</span><span class="n">w</span><span class="p">,</span> <span class="n">result</span><span class="p">.</span><span class="n">z</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="err">#</span><span class="n">undef</span> <span class="n">COMPARE_DEPTH</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">uv</span> <span class="o">+</span> <span class="n">result</span><span class="p">.</span><span class="n">xy</span> <span class="o">*</span> <span class="n">k</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">layout</span><span class="p">(</span><span class="n">local_size_x</span> <span class="o">=</span> <span class="mi">16</span><span class="p">,</span> <span class="n">local_size_y</span> <span class="o">=</span> <span class="mi">16</span><span class="p">,</span> <span class="n">local_size_z</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="k">in</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="k">void</span> <span class="n">main</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// TODO: 此处的重投影逻辑可能在别的地方一会用到，应该写成单独的一个pass,把重投影后的UV写在一个纹理中</span>
+</span></span><span class="line"><span class="cl">    <span class="k">ivec2</span> <span class="n">imgSize</span> <span class="o">=</span> <span class="k">ivec2</span><span class="p">(</span><span class="n">imageSize</span><span class="p">(</span><span class="n">out_texture</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">    <span class="k">ivec2</span> <span class="n">invocID</span> <span class="o">=</span> <span class="k">ivec2</span><span class="p">(</span><span class="n">gl_GlobalInvocationID</span><span class="p">.</span><span class="n">xy</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="n">invocID</span><span class="p">.</span><span class="n">x</span> <span class="o">&gt;=</span> <span class="n">imgSize</span><span class="p">.</span><span class="n">x</span> <span class="o">||</span> <span class="n">invocID</span><span class="p">.</span><span class="n">y</span> <span class="o">&gt;=</span> <span class="n">imgSize</span><span class="p">.</span><span class="n">y</span><span class="p">)</span> 
+</span></span><span class="line"><span class="cl">        <span class="k">return</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">vec2</span> <span class="n">texCoords</span> <span class="o">=</span> <span class="p">(</span><span class="k">vec2</span><span class="p">(</span><span class="n">invocID</span><span class="p">)</span> <span class="o">+</span> <span class="mf">0.5</span><span class="n">f</span><span class="p">)</span> <span class="o">/</span> <span class="k">vec2</span><span class="p">(</span><span class="n">imgSize</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">vec2</span> <span class="n">ClosestUv</span> <span class="o">=</span> <span class="n">GetClosestFragment</span><span class="p">(</span><span class="n">texCoords</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">vec2</span> <span class="n">velocity</span> <span class="o">=</span> <span class="n">texture</span><span class="p">(</span><span class="k">sampler2D</span><span class="p">(</span><span class="n">velocityTexture</span><span class="p">,</span><span class="n">SAMPLER</span><span class="p">[</span><span class="mo">0</span><span class="p">]),</span> <span class="n">ClosestUv</span><span class="p">).</span><span class="n">rg</span><span class="p">;</span>  <span class="c1">// 用采样点周围离摄像头最近的深度的UV来采样速度值</span>
+</span></span><span class="line"><span class="cl">    <span class="k">vec2</span> <span class="n">historyTexCoords</span> <span class="o">=</span> <span class="n">texCoords</span> <span class="o">-</span> <span class="n">velocity</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">bool</span> <span class="n">valid</span> <span class="o">=</span> <span class="n">historyTexCoords</span><span class="p">.</span><span class="n">x</span> <span class="o">&gt;</span> <span class="mf">0.0</span><span class="n">f</span> <span class="o">?</span> <span class="k">true</span> <span class="o">:</span> <span class="k">false</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">float</span> <span class="n">blend</span> <span class="o">=</span> <span class="mf">0.95</span><span class="n">f</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span><span class="p">(</span><span class="o">!</span><span class="n">valid</span><span class="p">)</span>  <span class="n">blend</span> <span class="o">=</span> <span class="mf">1.0</span><span class="n">f</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">vec3</span> <span class="n">historyColor</span> <span class="o">=</span> <span class="n">texture</span><span class="p">(</span><span class="k">sampler2D</span><span class="p">(</span><span class="n">historyTexture</span><span class="p">,</span><span class="n">SAMPLER</span><span class="p">[</span><span class="mo">0</span><span class="p">]),</span> <span class="n">historyTexCoords</span><span class="p">).</span><span class="n">rgb</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">vec3</span> <span class="n">curColor</span> <span class="o">=</span> <span class="n">texture</span><span class="p">(</span><span class="k">sampler2D</span><span class="p">(</span><span class="n">curTexture</span><span class="p">,</span><span class="n">SAMPLER</span><span class="p">[</span><span class="mo">0</span><span class="p">]),</span> <span class="n">texCoords</span><span class="p">).</span><span class="n">rgb</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">vec3</span> <span class="n">mixColor</span> <span class="o">=</span> <span class="n">mix</span><span class="p">(</span><span class="n">curColor</span><span class="p">,</span><span class="n">historyColor</span><span class="p">,</span> <span class="n">blend</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">imageStore</span><span class="p">(</span><span class="n">out_texture</span><span class="p">,</span> <span class="n">invocID</span><span class="p">,</span> <span class="k">vec4</span><span class="p">(</span><span class="n">mixColor</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="cp">#endif</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>当然目前只是简单混合了颜色，渲染结果能看出来TAA的效果，但是移动物体或者摄像机时，鬼影十分严重</p>
+<p><img src="/image-20251205173015847.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251205173015847"
+	
+	
+></p>
+<h2 id="处理拖影">处理拖影
+</h2><blockquote>
+<p>对比当前数据和历史数据，把历史数据clamp到合理范围内</p>
+</blockquote>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">  1
+</span><span class="lnt">  2
+</span><span class="lnt">  3
+</span><span class="lnt">  4
+</span><span class="lnt">  5
+</span><span class="lnt">  6
+</span><span class="lnt">  7
+</span><span class="lnt">  8
+</span><span class="lnt">  9
+</span><span class="lnt"> 10
+</span><span class="lnt"> 11
+</span><span class="lnt"> 12
+</span><span class="lnt"> 13
+</span><span class="lnt"> 14
+</span><span class="lnt"> 15
+</span><span class="lnt"> 16
+</span><span class="lnt"> 17
+</span><span class="lnt"> 18
+</span><span class="lnt"> 19
+</span><span class="lnt"> 20
+</span><span class="lnt"> 21
+</span><span class="lnt"> 22
+</span><span class="lnt"> 23
+</span><span class="lnt"> 24
+</span><span class="lnt"> 25
+</span><span class="lnt"> 26
+</span><span class="lnt"> 27
+</span><span class="lnt"> 28
+</span><span class="lnt"> 29
+</span><span class="lnt"> 30
+</span><span class="lnt"> 31
+</span><span class="lnt"> 32
+</span><span class="lnt"> 33
+</span><span class="lnt"> 34
+</span><span class="lnt"> 35
+</span><span class="lnt"> 36
+</span><span class="lnt"> 37
+</span><span class="lnt"> 38
+</span><span class="lnt"> 39
+</span><span class="lnt"> 40
+</span><span class="lnt"> 41
+</span><span class="lnt"> 42
+</span><span class="lnt"> 43
+</span><span class="lnt"> 44
+</span><span class="lnt"> 45
+</span><span class="lnt"> 46
+</span><span class="lnt"> 47
+</span><span class="lnt"> 48
+</span><span class="lnt"> 49
+</span><span class="lnt"> 50
+</span><span class="lnt"> 51
+</span><span class="lnt"> 52
+</span><span class="lnt"> 53
+</span><span class="lnt"> 54
+</span><span class="lnt"> 55
+</span><span class="lnt"> 56
+</span><span class="lnt"> 57
+</span><span class="lnt"> 58
+</span><span class="lnt"> 59
+</span><span class="lnt"> 60
+</span><span class="lnt"> 61
+</span><span class="lnt"> 62
+</span><span class="lnt"> 63
+</span><span class="lnt"> 64
+</span><span class="lnt"> 65
+</span><span class="lnt"> 66
+</span><span class="lnt"> 67
+</span><span class="lnt"> 68
+</span><span class="lnt"> 69
+</span><span class="lnt"> 70
+</span><span class="lnt"> 71
+</span><span class="lnt"> 72
+</span><span class="lnt"> 73
+</span><span class="lnt"> 74
+</span><span class="lnt"> 75
+</span><span class="lnt"> 76
+</span><span class="lnt"> 77
+</span><span class="lnt"> 78
+</span><span class="lnt"> 79
+</span><span class="lnt"> 80
+</span><span class="lnt"> 81
+</span><span class="lnt"> 82
+</span><span class="lnt"> 83
+</span><span class="lnt"> 84
+</span><span class="lnt"> 85
+</span><span class="lnt"> 86
+</span><span class="lnt"> 87
+</span><span class="lnt"> 88
+</span><span class="lnt"> 89
+</span><span class="lnt"> 90
+</span><span class="lnt"> 91
+</span><span class="lnt"> 92
+</span><span class="lnt"> 93
+</span><span class="lnt"> 94
+</span><span class="lnt"> 95
+</span><span class="lnt"> 96
+</span><span class="lnt"> 97
+</span><span class="lnt"> 98
+</span><span class="lnt"> 99
+</span><span class="lnt">100
+</span><span class="lnt">101
+</span><span class="lnt">102
+</span><span class="lnt">103
+</span><span class="lnt">104
+</span><span class="lnt">105
+</span><span class="lnt">106
+</span><span class="lnt">107
+</span><span class="lnt">108
+</span><span class="lnt">109
+</span><span class="lnt">110
+</span><span class="lnt">111
+</span><span class="lnt">112
+</span><span class="lnt">113
+</span><span class="lnt">114
+</span><span class="lnt">115
+</span><span class="lnt">116
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-glsl" data-lang="glsl"><span class="line"><span class="cl"><span class="cp">#version 450 core</span>
+</span></span><span class="line"><span class="cl"><span class="cp">#include &#34;../common/common.glsl&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="cp">#include &#34;../common/TAA.glsl&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="cp">#include &#34;../common/math.glsl&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="cp">#ifdef COMPUTE_SHADER</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">layout</span><span class="p">(</span><span class="n">set</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span><span class="n">binding</span> <span class="o">=</span> <span class="mo">0</span><span class="p">,</span><span class="n">rgba32f</span><span class="p">)</span> <span class="k">uniform</span> <span class="n">image2D</span> <span class="n">out_texture</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">layout</span><span class="p">(</span><span class="n">set</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span><span class="n">binding</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="k">uniform</span> <span class="n">texture2D</span> <span class="n">velocityTexture</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">layout</span><span class="p">(</span><span class="n">set</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span><span class="n">binding</span> <span class="o">=</span> <span class="mi">2</span><span class="p">)</span> <span class="k">uniform</span> <span class="n">texture2D</span> <span class="n">historyTexture</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">layout</span><span class="p">(</span><span class="n">set</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span><span class="n">binding</span> <span class="o">=</span> <span class="mi">3</span><span class="p">)</span> <span class="k">uniform</span> <span class="n">texture2D</span> <span class="n">curTexture</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">layout</span><span class="p">(</span><span class="n">set</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span><span class="n">binding</span> <span class="o">=</span> <span class="mi">4</span><span class="p">)</span> <span class="k">uniform</span> <span class="n">texture2D</span> <span class="n">depthTexture</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">layout</span><span class="p">(</span><span class="n">local_size_x</span> <span class="o">=</span> <span class="mi">16</span><span class="p">,</span> <span class="n">local_size_y</span> <span class="o">=</span> <span class="mi">16</span><span class="p">,</span> <span class="n">local_size_z</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="k">in</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">void</span> <span class="n">main</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">ivec2</span> <span class="n">invocID</span> <span class="o">=</span> <span class="k">ivec2</span><span class="p">(</span><span class="n">gl_GlobalInvocationID</span><span class="p">.</span><span class="n">xy</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="k">ivec2</span> <span class="n">imgSize</span> <span class="o">=</span> <span class="k">ivec2</span><span class="p">(</span><span class="n">imageSize</span><span class="p">(</span><span class="n">out_texture</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="n">invocID</span><span class="p">.</span><span class="n">x</span> <span class="o">&gt;=</span> <span class="n">imgSize</span><span class="p">.</span><span class="n">x</span> <span class="o">||</span> <span class="n">invocID</span><span class="p">.</span><span class="n">y</span> <span class="o">&gt;=</span> <span class="n">imgSize</span><span class="p">.</span><span class="n">y</span><span class="p">)</span> 
+</span></span><span class="line"><span class="cl">        <span class="k">return</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span><span class="p">(</span><span class="n">GetPostprocessSetting</span><span class="p">().</span><span class="n">TaaSetting</span><span class="p">.</span><span class="n">enable</span> <span class="o">==</span> <span class="mo">0</span><span class="p">){</span>
+</span></span><span class="line"><span class="cl">        <span class="k">vec2</span> <span class="n">texCoords</span> <span class="o">=</span> <span class="p">(</span><span class="k">vec2</span><span class="p">(</span><span class="n">invocID</span><span class="p">)</span> <span class="o">+</span> <span class="mf">0.5</span><span class="n">f</span><span class="p">)</span> <span class="o">/</span> <span class="k">vec2</span><span class="p">(</span><span class="n">imgSize</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="k">vec3</span> <span class="n">curColor</span> <span class="o">=</span> <span class="n">texture</span><span class="p">(</span><span class="k">sampler2D</span><span class="p">(</span><span class="n">curTexture</span><span class="p">,</span><span class="n">SAMPLER</span><span class="p">[</span><span class="mo">0</span><span class="p">]),</span> <span class="n">texCoords</span><span class="p">).</span><span class="n">rgb</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="n">imageStore</span><span class="p">(</span><span class="n">out_texture</span><span class="p">,</span> <span class="n">invocID</span><span class="p">,</span> <span class="k">vec4</span><span class="p">(</span><span class="n">curColor</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="k">vec2</span> <span class="n">texelSize</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="k">vec2</span><span class="p">(</span><span class="n">imgSize</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="k">vec2</span> <span class="n">baseTexCoords</span> <span class="o">=</span> <span class="p">(</span><span class="k">vec2</span><span class="p">(</span><span class="n">invocID</span><span class="p">)</span> <span class="o">+</span> <span class="mf">0.5</span><span class="n">f</span><span class="p">)</span> <span class="o">/</span> <span class="k">vec2</span><span class="p">(</span><span class="n">imgSize</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="k">vec2</span> <span class="n">jitterUV</span> <span class="o">=</span> <span class="n">GetPostprocessSetting</span><span class="p">().</span><span class="n">TaaSetting</span><span class="p">.</span><span class="n">UVjetter</span> <span class="o">*</span> <span class="n">texelSize</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">vec2</span> <span class="n">texCoordsWithJitter</span> <span class="o">=</span> <span class="n">baseTexCoords</span> <span class="o">+</span> <span class="n">jitterUV</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">vec2</span> <span class="n">ClosestUv</span> <span class="o">=</span> <span class="n">GetClosestFragment</span><span class="p">(</span><span class="n">baseTexCoords</span><span class="p">,</span> <span class="n">texelSize</span><span class="p">,</span> <span class="n">depthTexture</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="k">vec2</span> <span class="n">velocity</span> <span class="o">=</span> <span class="n">texture</span><span class="p">(</span><span class="k">sampler2D</span><span class="p">(</span><span class="n">velocityTexture</span><span class="p">,</span><span class="n">SAMPLER</span><span class="p">[</span><span class="mo">0</span><span class="p">]),</span> <span class="n">ClosestUv</span><span class="p">).</span><span class="n">rg</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">vec2</span> <span class="n">historyTexCoords</span> <span class="o">=</span> <span class="n">baseTexCoords</span> <span class="o">-</span> <span class="n">velocity</span><span class="p">;</span> 
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// 采样当前帧（带抖动）、历史帧（无抖动）颜色</span>
+</span></span><span class="line"><span class="cl">    <span class="k">vec3</span> <span class="n">historyColor</span> <span class="o">=</span> <span class="n">texture</span><span class="p">(</span><span class="k">sampler2D</span><span class="p">(</span><span class="n">historyTexture</span><span class="p">,</span><span class="n">SAMPLER</span><span class="p">[</span><span class="mo">0</span><span class="p">]),</span> <span class="n">historyTexCoords</span><span class="p">).</span><span class="n">rgb</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">vec3</span> <span class="n">curColor</span> <span class="o">=</span> <span class="n">texture</span><span class="p">(</span><span class="k">sampler2D</span><span class="p">(</span><span class="n">curTexture</span><span class="p">,</span><span class="n">SAMPLER</span><span class="p">[</span><span class="mo">0</span><span class="p">]),</span> <span class="n">texCoordsWithJitter</span><span class="p">).</span><span class="n">rgb</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">const</span> <span class="k">vec2</span> <span class="n">kOffsets3x3</span><span class="p">[</span><span class="mi">9</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">vec2</span><span class="p">(</span><span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">),</span> <span class="k">vec2</span><span class="p">(</span> <span class="mf">0.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">),</span> <span class="k">vec2</span><span class="p">(</span> <span class="mf">1.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">),</span>
+</span></span><span class="line"><span class="cl">        <span class="k">vec2</span><span class="p">(</span><span class="o">-</span><span class="mf">1.0</span><span class="p">,</span>  <span class="mf">0.0</span><span class="p">),</span> <span class="k">vec2</span><span class="p">(</span> <span class="mf">0.0</span><span class="p">,</span>  <span class="mf">0.0</span><span class="p">),</span> <span class="k">vec2</span><span class="p">(</span> <span class="mf">1.0</span><span class="p">,</span>  <span class="mf">0.0</span><span class="p">),</span>
+</span></span><span class="line"><span class="cl">        <span class="k">vec2</span><span class="p">(</span><span class="o">-</span><span class="mf">1.0</span><span class="p">,</span>  <span class="mf">1.0</span><span class="p">),</span> <span class="k">vec2</span><span class="p">(</span> <span class="mf">0.0</span><span class="p">,</span>  <span class="mf">1.0</span><span class="p">),</span> <span class="k">vec2</span><span class="p">(</span> <span class="mf">1.0</span><span class="p">,</span>  <span class="mf">1.0</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">};</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// fix 拖影：3x3邻域使用带抖动的UV，且钳位边界</span>
+</span></span><span class="line"><span class="cl">    <span class="k">vec3</span> <span class="n">AABBMin</span> <span class="o">=</span> <span class="n">RGBToYCoCg</span><span class="p">(</span><span class="n">curColor</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="k">vec3</span> <span class="n">AABBMax</span> <span class="o">=</span> <span class="n">AABBMin</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">for</span><span class="p">(</span><span class="k">int</span> <span class="n">k</span> <span class="o">=</span> <span class="mo">0</span><span class="p">;</span> <span class="n">k</span> <span class="o">&lt;</span> <span class="mi">9</span><span class="p">;</span> <span class="n">k</span><span class="o">++</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">vec2</span> <span class="n">uvOffset</span> <span class="o">=</span> <span class="n">kOffsets3x3</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">*</span> <span class="n">texelSize</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="k">vec2</span> <span class="n">neighborUV</span> <span class="o">=</span> <span class="n">texCoordsWithJitter</span> <span class="o">+</span> <span class="n">uvOffset</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="n">neighborUV</span> <span class="o">=</span> <span class="n">clamp</span><span class="p">(</span><span class="n">neighborUV</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="k">vec3</span> <span class="n">C</span> <span class="o">=</span> <span class="n">RGBToYCoCg</span><span class="p">(</span><span class="n">texture</span><span class="p">(</span><span class="k">sampler2D</span><span class="p">(</span><span class="n">curTexture</span><span class="p">,</span> <span class="n">SAMPLER</span><span class="p">[</span><span class="mo">0</span><span class="p">]),</span> <span class="n">neighborUV</span><span class="p">).</span><span class="n">rgb</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">AABBMin</span> <span class="o">=</span> <span class="n">min</span><span class="p">(</span><span class="n">AABBMin</span><span class="p">,</span> <span class="n">C</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">AABBMax</span> <span class="o">=</span> <span class="n">max</span><span class="p">(</span><span class="n">AABBMax</span><span class="p">,</span> <span class="n">C</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// Clip处理核心逻辑（无问题）</span>
+</span></span><span class="line"><span class="cl">    <span class="k">vec3</span> <span class="n">HistoryYCoCg</span> <span class="o">=</span> <span class="n">RGBToYCoCg</span><span class="p">(</span><span class="n">historyColor</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="k">vec3</span> <span class="n">Filtered</span> <span class="o">=</span> <span class="p">(</span><span class="n">AABBMin</span> <span class="o">+</span> <span class="n">AABBMax</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.5</span><span class="n">f</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">vec3</span> <span class="n">RayOrigin</span> <span class="o">=</span> <span class="n">HistoryYCoCg</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">vec3</span> <span class="n">RayDir</span> <span class="o">=</span> <span class="n">Filtered</span> <span class="o">-</span> <span class="n">RayOrigin</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">float</span> <span class="n">epsilon</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="mf">65536.0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">RayDir</span> <span class="o">=</span> <span class="n">mix</span><span class="p">(</span><span class="k">vec3</span><span class="p">(</span><span class="n">epsilon</span><span class="p">),</span> <span class="n">RayDir</span><span class="p">,</span> <span class="n">greaterThan</span><span class="p">(</span><span class="n">abs</span><span class="p">(</span><span class="n">RayDir</span><span class="p">),</span> <span class="k">vec3</span><span class="p">(</span><span class="n">epsilon</span><span class="p">)));</span>
+</span></span><span class="line"><span class="cl">    <span class="k">vec3</span> <span class="n">InvRayDir</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="n">RayDir</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">vec3</span> <span class="n">MinIntersect</span> <span class="o">=</span> <span class="p">(</span><span class="n">AABBMin</span> <span class="o">-</span> <span class="n">RayOrigin</span><span class="p">)</span> <span class="o">*</span> <span class="n">InvRayDir</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">vec3</span> <span class="n">MaxIntersect</span> <span class="o">=</span> <span class="p">(</span><span class="n">AABBMax</span> <span class="o">-</span> <span class="n">RayOrigin</span><span class="p">)</span> <span class="o">*</span> <span class="n">InvRayDir</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">vec3</span> <span class="n">EnterIntersect</span> <span class="o">=</span> <span class="n">min</span><span class="p">(</span><span class="n">MinIntersect</span><span class="p">,</span> <span class="n">MaxIntersect</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="k">float</span> <span class="n">ClipBlend</span> <span class="o">=</span> <span class="n">max</span><span class="p">(</span><span class="n">EnterIntersect</span><span class="p">.</span><span class="n">x</span><span class="p">,</span> <span class="n">max</span><span class="p">(</span><span class="n">EnterIntersect</span><span class="p">.</span><span class="n">y</span><span class="p">,</span> <span class="n">EnterIntersect</span><span class="p">.</span><span class="n">z</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">    <span class="n">ClipBlend</span> <span class="o">=</span> <span class="n">clamp</span><span class="p">(</span><span class="n">ClipBlend</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="k">vec3</span> <span class="n">ResultYCoCg</span> <span class="o">=</span> <span class="n">mix</span><span class="p">(</span><span class="n">HistoryYCoCg</span><span class="p">,</span> <span class="n">Filtered</span><span class="p">,</span> <span class="n">ClipBlend</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">historyColor</span> <span class="o">=</span> <span class="n">YCoCgToRGB</span><span class="p">(</span><span class="n">ResultYCoCg</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">float</span> <span class="n">motionLength</span> <span class="o">=</span> <span class="n">length</span><span class="p">(</span><span class="n">velocity</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="k">float</span> <span class="n">blendFactor</span> <span class="o">=</span> <span class="n">Saturate</span><span class="p">(</span><span class="mf">0.05</span> <span class="o">+</span> <span class="n">motionLength</span> <span class="o">*</span> <span class="mf">1000.0</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="k">bool</span> <span class="n">valid</span> <span class="o">=</span> <span class="p">(</span><span class="n">historyTexCoords</span><span class="p">.</span><span class="n">x</span> <span class="o">&gt;=</span> <span class="mf">0.0</span> <span class="o">&amp;&amp;</span> <span class="n">historyTexCoords</span><span class="p">.</span><span class="n">x</span> <span class="o">&lt;=</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">&amp;&amp;</span> 
+</span></span><span class="line"><span class="cl">                 <span class="p">(</span><span class="n">historyTexCoords</span><span class="p">.</span><span class="n">y</span> <span class="o">&gt;=</span> <span class="mf">0.0</span> <span class="o">&amp;&amp;</span> <span class="n">historyTexCoords</span><span class="p">.</span><span class="n">y</span> <span class="o">&lt;=</span> <span class="mf">1.0</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">valid</span><span class="p">)</span> <span class="p">{</span><span class="n">blendFactor</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">;}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="n">GetPostprocessSetting</span><span class="p">().</span><span class="n">TaaSetting</span><span class="p">.</span><span class="n">shaper</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">float</span> <span class="n">strength</span> <span class="o">=</span> <span class="n">GetPostprocessSetting</span><span class="p">().</span><span class="n">TaaSetting</span><span class="p">.</span><span class="n">shaperStrength</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="k">vec2</span> <span class="n">topUV</span>     <span class="o">=</span> <span class="n">clamp</span><span class="p">(</span><span class="n">texCoordsWithJitter</span> <span class="o">+</span> <span class="k">vec2</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="o">-</span><span class="n">texelSize</span><span class="p">.</span><span class="n">y</span><span class="p">),</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="k">vec2</span> <span class="n">leftUV</span>    <span class="o">=</span> <span class="n">clamp</span><span class="p">(</span><span class="n">texCoordsWithJitter</span> <span class="o">+</span> <span class="k">vec2</span><span class="p">(</span><span class="o">-</span><span class="n">texelSize</span><span class="p">.</span><span class="n">x</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="k">vec2</span> <span class="n">rightUV</span>   <span class="o">=</span> <span class="n">clamp</span><span class="p">(</span><span class="n">texCoordsWithJitter</span> <span class="o">+</span> <span class="k">vec2</span><span class="p">(</span><span class="n">texelSize</span><span class="p">.</span><span class="n">x</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="k">vec2</span> <span class="n">bottomUV</span>  <span class="o">=</span> <span class="n">clamp</span><span class="p">(</span><span class="n">texCoordsWithJitter</span> <span class="o">+</span> <span class="k">vec2</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">texelSize</span><span class="p">.</span><span class="n">y</span><span class="p">),</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="k">vec3</span> <span class="n">topColor</span>    <span class="o">=</span> <span class="n">RGBToYCoCg</span><span class="p">(</span><span class="n">texture</span><span class="p">(</span><span class="k">sampler2D</span><span class="p">(</span><span class="n">curTexture</span><span class="p">,</span> <span class="n">SAMPLER</span><span class="p">[</span><span class="mo">0</span><span class="p">]),</span> <span class="n">topUV</span><span class="p">).</span><span class="n">rgb</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="k">vec3</span> <span class="n">leftColor</span>   <span class="o">=</span> <span class="n">RGBToYCoCg</span><span class="p">(</span><span class="n">texture</span><span class="p">(</span><span class="k">sampler2D</span><span class="p">(</span><span class="n">curTexture</span><span class="p">,</span> <span class="n">SAMPLER</span><span class="p">[</span><span class="mo">0</span><span class="p">]),</span> <span class="n">leftUV</span><span class="p">).</span><span class="n">rgb</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="k">vec3</span> <span class="n">centerColor</span> <span class="o">=</span> <span class="n">RGBToYCoCg</span><span class="p">(</span><span class="n">curColor</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="k">vec3</span> <span class="n">rightColor</span>  <span class="o">=</span> <span class="n">RGBToYCoCg</span><span class="p">(</span><span class="n">texture</span><span class="p">(</span><span class="k">sampler2D</span><span class="p">(</span><span class="n">curTexture</span><span class="p">,</span> <span class="n">SAMPLER</span><span class="p">[</span><span class="mo">0</span><span class="p">]),</span> <span class="n">rightUV</span><span class="p">).</span><span class="n">rgb</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="k">vec3</span> <span class="n">bottomColor</span> <span class="o">=</span> <span class="n">RGBToYCoCg</span><span class="p">(</span><span class="n">texture</span><span class="p">(</span><span class="k">sampler2D</span><span class="p">(</span><span class="n">curTexture</span><span class="p">,</span> <span class="n">SAMPLER</span><span class="p">[</span><span class="mo">0</span><span class="p">]),</span> <span class="n">bottomUV</span><span class="p">).</span><span class="n">rgb</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="k">vec3</span> <span class="n">sharpenSum</span> <span class="o">=</span> <span class="k">vec3</span><span class="p">(</span><span class="mf">0.0</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">sharpenSum</span> <span class="o">+=</span> <span class="p">(</span><span class="o">-</span><span class="mf">1.0</span> <span class="o">*</span> <span class="n">strength</span><span class="p">)</span> <span class="o">*</span> <span class="n">topColor</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="n">sharpenSum</span> <span class="o">+=</span> <span class="p">(</span><span class="o">-</span><span class="mf">1.0</span> <span class="o">*</span> <span class="n">strength</span><span class="p">)</span> <span class="o">*</span> <span class="n">leftColor</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="n">sharpenSum</span> <span class="o">+=</span> <span class="p">(</span><span class="mf">5.0</span> <span class="o">*</span> <span class="n">strength</span><span class="p">)</span> <span class="o">*</span> <span class="n">centerColor</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="n">sharpenSum</span> <span class="o">+=</span> <span class="p">(</span><span class="o">-</span><span class="mf">1.0</span> <span class="o">*</span> <span class="n">strength</span><span class="p">)</span> <span class="o">*</span> <span class="n">rightColor</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="n">sharpenSum</span> <span class="o">+=</span> <span class="p">(</span><span class="o">-</span><span class="mf">1.0</span> <span class="o">*</span> <span class="n">strength</span><span class="p">)</span> <span class="o">*</span> <span class="n">bottomColor</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="k">vec3</span> <span class="n">sharpenedColor</span> <span class="o">=</span> <span class="n">YCoCgToRGB</span><span class="p">(</span><span class="n">sharpenSum</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">sharpenedColor</span> <span class="o">=</span> <span class="n">max</span><span class="p">(</span><span class="n">sharpenedColor</span><span class="p">,</span> <span class="k">vec3</span><span class="p">(</span><span class="mf">0.0</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">        <span class="n">curColor</span> <span class="o">=</span> <span class="n">sharpenedColor</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// HDR需要先转为LDRmix后再恢复， 如果不这样，目前测试发现会出现一个黑点，然后移动后越来越大</span>
+</span></span><span class="line"><span class="cl">    <span class="n">historyColor</span> <span class="o">=</span> <span class="n">ToneMapping</span><span class="p">(</span><span class="n">max</span><span class="p">(</span><span class="n">historyColor</span><span class="p">,</span> <span class="mf">0.0</span><span class="n">f</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">    <span class="n">curColor</span> <span class="o">=</span> <span class="n">ToneMapping</span><span class="p">(</span><span class="n">max</span><span class="p">(</span><span class="n">curColor</span><span class="p">,</span> <span class="mf">0.0</span><span class="n">f</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">    <span class="k">vec3</span> <span class="n">mixColor</span> <span class="o">=</span> <span class="n">mix</span><span class="p">(</span><span class="n">historyColor</span><span class="p">,</span> <span class="n">curColor</span><span class="p">,</span> <span class="n">blendFactor</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">mixColor</span> <span class="o">=</span> <span class="n">InverseToneMapping</span><span class="p">(</span><span class="n">max</span><span class="p">(</span><span class="n">mixColor</span><span class="p">,</span> <span class="mf">0.0</span><span class="n">f</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">imageStore</span><span class="p">(</span><span class="n">out_texture</span><span class="p">,</span> <span class="n">invocID</span><span class="p">,</span> <span class="k">vec4</span><span class="p">(</span><span class="n">mixColor</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="cp">#endif</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><img src="/image-20251207191231636.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251207191231636"
+	
+	
+></p>
+<p><img src="/image-20251207191240613.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251207191240613"
+	
+	
+></p>
+
+</section>
+
+
+    <footer class="article-footer">
+    
+    <section class="article-tags">
+        
+            <a href="/tags/%E6%8A%97%E9%94%AF%E9%BD%BF/">抗锯齿</a>
+        
+    </section>
+
+
+    
+    <section class="article-copyright">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
+</svg>
+
+
+
+        <span>Licensed under CC BY-NC-SA 4.0</span>
+    </section>
+    </footer>
+
+
+    
+        <link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css"integrity="sha384-n8MVd4RsNIU0tAv4ct0nTaAbDJwPJzDEaqSD1odI&#43;WdtXRGWt2kTvGFasHpSy3SV"crossorigin="anonymous"
+            ><script 
+                src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"integrity="sha384-XjKyOOlGwcjNTAIQHIpgOno0Hl1YQqzUOEleOLALmuqehneUG&#43;vnGctmUb0ZY0l8"crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"integrity="sha384-&#43;VBxd3r6XgURycqtZ117nYw44OOcIax56Z4dCRWbxyPt0Koah1uHoK0o4&#43;/RRE05"crossorigin="anonymous"
+                defer
+                >
+            </script><script>
+    window.addEventListener("DOMContentLoaded", () => {
+	const mainArticleElement = document.querySelector(".main-article");
+        renderMathInElement(mainArticleElement, {
+            delimiters: [
+                { left: "$$", right: "$$", display: true },
+                { left: "$", right: "$", display: false },
+                { left: "\\(", right: "\\)", display: false },
+                { left: "\\[", right: "\\]", display: true }
+            ],
+            ignoredClasses: ["gist"]
+        });})
+</script>
+
+    
+</article>
+
+    
+
+    
+
+     
+    
+        
+    <script
+    src="https://giscus.app/client.js"
+    data-repo="sdpyy1/sdpyy1.github.io"
+    data-repo-id="R_kgDOQEycpQ"
+    data-category="Announcements"
+    data-category-id="DIC_kwDOQEycpc4Cwz7v"
+    data-mapping="pathname"
+    data-strict="0"
+    data-reactions-enabled="1"
+    data-emit-metadata="0"
+    data-input-position="top"
+    data-theme="light"
+    data-lang="en"
+    data-loading=""
+    crossorigin="anonymous"
+    async
+></script>
+<script>
+    function setGiscusTheme(theme) {
+        let giscus = document.querySelector("iframe.giscus-frame");
+        if (giscus) {
+            giscus.contentWindow.postMessage(
+                {
+                    giscus: {
+                        setConfig: {
+                            theme: theme,
+                        },
+                    },
+                },
+                "https://giscus.app"
+            );
+        }
+    }
+
+    (function () {
+        addEventListener("message", (e) => {
+            if (event.origin !== "https://giscus.app") return;
+            handler();
+        });
+        window.addEventListener("onColorSchemeChange", handler);
+
+        function handler() {
+            if (document.documentElement.dataset.scheme === "light") {
+                setGiscusTheme('light');
+            } else {
+                setGiscusTheme('light');
+            }
+        }
+    })();
+</script>
+
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+            2020 - 
+        
+        2025 爱喝东方树叶
+    </section>
+    <section style="display: flex; gap: 30px; align-items: center;">
+      
+      
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+      <span>📚 文章数: 59</span>
+      <span>✍️ 总字数: 
+        
+        
+        186.57K
+      </span>
+    </section>
+
+    <section class="powerby">
+    
+    <div class="busuanzi-footer">
+        <span id="busuanzi_container_site_pv">
+          本站总访问量<span id="busuanzi_value_site_pv"></span>次
+        </span>
+        <span id="busuanzi_container_site_uv">
+          本站访客数<span id="busuanzi_value_site_uv"></span>人次
+        </span>
+      </div></section>
+
+</footer>
+
+
+    
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    
+    <div class="pswp__bg"></div>
+
+    
+    <div class="pswp__scroll-wrap">
+
+        
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                
+                
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                        <div class="pswp__preloader__cut">
+                            <div class="pswp__preloader__donut"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div>
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js"integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo="crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js"integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU="crossorigin="anonymous"
+                defer
+                >
+            </script><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css"crossorigin="anonymous"
+            ><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css"crossorigin="anonymous"
+            >
+
+            </main>
+        </div>
+        <script 
+                src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js"integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z&#43;KMkF24hUW8WePSA9HM="crossorigin="anonymous"
+                
+                >
+            </script><script type="text/javascript" src="/ts/main.1e9a3bafd846ced4c345d084b355fb8c7bae75701c338f8a1f8a82c780137826.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>

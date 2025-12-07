@@ -3,18 +3,18 @@
     <head><meta charset='utf-8'>
 <meta name='viewport' content='width=device-width, initial-scale=1'>
 <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
-  <meta name="referrer" content="no-referrer-when-downgrade"><meta name='description' content=" 本文主要讲解GameEngine项目Vulkan封装，在渲染层只需要调用RHI层接口即可\n总览 所有底层对象创建都需要使用xxxSpecification来说明创建需求，调用RHI接口函数，创建底层Vulkan对象\n">
+  <meta name="referrer" content="no-referrer-when-downgrade"><meta name='description' content=" 这里涉及的整套结构已经废弃，转为研究更轻薄的RHI层，放弃过度封装！\n本文主要讲解GameEngine项目Vulkan封装，在渲染层只需要调用RHI层接口即可\n">
 <title>游戏引擎开发实践（Vulkan架构篇：Image）</title>
 
 <link rel='canonical' href='https://sdpyy1.github.io/p/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E5%BC%80%E5%8F%91%E5%AE%9E%E8%B7%B5vulkan%E6%9E%B6%E6%9E%84%E7%AF%87image/'>
 
 <link rel="stylesheet" href="/scss/style.min.6a692fd055deae459f2a9767f57f3855ba80cafd5041317f24f7360f6ca47cdf.css"><meta property='og:title' content="游戏引擎开发实践（Vulkan架构篇：Image）">
-<meta property='og:description' content=" 本文主要讲解GameEngine项目Vulkan封装，在渲染层只需要调用RHI层接口即可\n总览 所有底层对象创建都需要使用xxxSpecification来说明创建需求，调用RHI接口函数，创建底层Vulkan对象\n">
+<meta property='og:description' content=" 这里涉及的整套结构已经废弃，转为研究更轻薄的RHI层，放弃过度封装！\n本文主要讲解GameEngine项目Vulkan封装，在渲染层只需要调用RHI层接口即可\n">
 <meta property='og:url' content='https://sdpyy1.github.io/p/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E5%BC%80%E5%8F%91%E5%AE%9E%E8%B7%B5vulkan%E6%9E%B6%E6%9E%84%E7%AF%87image/'>
 <meta property='og:site_name' content='wanfeng'>
 <meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='Vulkan' /><meta property='article:tag' content='RHI' /><meta property='article:published_time' content='2025-11-02T20:46:56&#43;08:00'/><meta property='article:modified_time' content='2025-11-02T20:46:56&#43;08:00'/>
 <meta name="twitter:title" content="游戏引擎开发实践（Vulkan架构篇：Image）">
-<meta name="twitter:description" content=" 本文主要讲解GameEngine项目Vulkan封装，在渲染层只需要调用RHI层接口即可\n总览 所有底层对象创建都需要使用xxxSpecification来说明创建需求，调用RHI接口函数，创建底层Vulkan对象\n">
+<meta name="twitter:description" content=" 这里涉及的整套结构已经废弃，转为研究更轻薄的RHI层，放弃过度封装！\n本文主要讲解GameEngine项目Vulkan封装，在渲染层只需要调用RHI层接口即可\n">
     <link rel="shortcut icon" href="/favicon.ico" />
 
     </head>
@@ -443,6 +443,9 @@
     
     
     <blockquote>
+<p>这里涉及的整套结构已经废弃，转为研究更轻薄的RHI层，放弃过度封装！</p>
+</blockquote>
+<blockquote>
 <p>本文主要讲解GameEngine项目Vulkan封装，在渲染层只需要调用RHI层接口即可</p>
 </blockquote>
 <h1 id="总览">总览
@@ -1938,12 +1941,16 @@
       
         
       
+        
+      
+        
+      
     
-      <span>📚 文章数: 57</span>
+      <span>📚 文章数: 59</span>
       <span>✍️ 总字数: 
         
         
-        180.84K
+        186.57K
       </span>
     </section>
 
