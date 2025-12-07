@@ -5,6 +5,10 @@ title = '游戏引擎开发实践（Vulkan架构篇：Image）'
 categories = ["Projects/GameEngine"]
 tags = ["Vulkan","RHI"]
 +++
+
+> 这里涉及的整套结构已经废弃，转为研究更轻薄的RHI层，放弃过度封装！
+
+
 > 本文主要讲解GameEngine项目Vulkan封装，在渲染层只需要调用RHI层接口即可
 # 总览
 > 所有底层对象创建都需要使用xxxSpecification来说明创建需求，调用RHI接口函数，创建底层Vulkan对象
