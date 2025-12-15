@@ -12,7 +12,7 @@
 <meta property='og:description' content="DDGIVolume 把探针组组成一个包围盒，定义探针数量和间距，以及DDGI的各种参数，这里实现了一个新的探针组件来表达它，并实现了他的可视化\nProbeTrace 这个阶段利用光追，计算并保存每个探针发射的每根光线的Radiance 信息（在每个击中点进行一次光照计算）\n">
 <meta property='og:url' content='https://sdpyy1.github.io/p/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E5%BC%80%E5%8F%91%E5%AE%9E%E8%B7%B5ddgi/'>
 <meta property='og:site_name' content='wanfeng'>
-<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='全局光照' /><meta property='article:published_time' content='2025-12-07T20:36:06&#43;08:00'/><meta property='article:modified_time' content='2025-12-07T20:36:06&#43;08:00'/><meta property='og:image' content='https://sdpyy1.github.io/image-20251211235847350.png' />
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='全局光照' /><meta property='article:tag' content='光线追踪' /><meta property='article:published_time' content='2025-12-07T20:36:06&#43;08:00'/><meta property='article:modified_time' content='2025-12-07T20:36:06&#43;08:00'/><meta property='og:image' content='https://sdpyy1.github.io/image-20251211235847350.png' />
 <meta name="twitter:title" content="游戏引擎开发实践（DDGI）">
 <meta name="twitter:description" content="DDGIVolume 把探针组组成一个包围盒，定义探针数量和间距，以及DDGI的各种参数，这里实现了一个新的探针组件来表达它，并实现了他的可视化\nProbeTrace 这个阶段利用光追，计算并保存每个探针发射的每根光线的Radiance 信息（在每个击中点进行一次光照计算）\n"><meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:image" content='https://sdpyy1.github.io/image-20251211235847350.png' />
@@ -296,6 +296,7 @@
         <li><a href="#indirectlight">IndirectLight</a></li>
       </ol>
     </li>
+    <li><a href="#math">Math</a></li>
     <li><a href="#总结">总结</a></li>
   </ol>
 </nav>
@@ -320,6 +321,57 @@
     
 
     <div class="article-details">
+    
+    <header class="article-category">
+        
+        
+             
+            
+            
+            
+            <div class="category-hierarchy">
+                
+                    
+                    
+                    
+                        
+                    
+                     
+                    
+                    
+                    
+                    <a href="/categories/projects/" 
+                       >
+                        Projects
+                    </a>
+                    
+                    
+                    
+                        <span class="category-separator">/</span>
+                    
+                
+                    
+                    
+                    
+                        
+                    
+                        
+                    
+                     
+                    
+                    
+                    
+                    <a href="/categories/projects/gameengine/" 
+                       >
+                        GameEngine
+                    </a>
+                    
+                    
+                    
+                
+            </div>
+        
+    </header>
     
 
     <div class="article-title-wrapper">
@@ -361,7 +413,7 @@
 
 
                 <time class="article-time--reading">
-                    阅读时长: 10 分钟
+                    阅读时长: 11 分钟
                 </time>
             </div>
         
@@ -1557,6 +1609,61 @@
 	
 	
 ></p>
+<h1 id="math">Math
+</h1><p>首先回顾Irrandiance是单位半球上各个方向的Radiance的积分（×cos）</p>
+<p><img src="/image-20251212153745281.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251212153745281"
+	
+	
+></p>
+<p>均匀分布的蒙特卡洛积分来近似上边这个积分式</p>
+<p><img src="/image-20251212153935702.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251212153935702"
+	
+	
+></p>
+<p>DDGI存储一个Irrandiance时，并不是/N，而是/余弦权重之和，目的是减少方差</p>
+<p><img src="/image-20251212154846841.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251212154846841"
+	
+	
+></p>
+<p>他的期望是N/2,对比蒙特卡洛积分还需要*2</p>
+<p><img src="/image-20251212160809707.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251212160809707"
+	
+	
+></p>
+<p><img src="/image-20251212161019252.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251212161019252"
+	
+	
+></p>
 <h1 id="总结">总结
 </h1><ol>
 <li>
@@ -1582,6 +1689,8 @@
     <section class="article-tags">
         
             <a href="/tags/%E5%85%A8%E5%B1%80%E5%85%89%E7%85%A7/">全局光照</a>
+        
+            <a href="/tags/%E5%85%89%E7%BA%BF%E8%BF%BD%E8%B8%AA/">光线追踪</a>
         
     </section>
 
@@ -1633,6 +1742,552 @@
     
 
     
+
+<aside class="related-content--wrapper">
+    <h2 class="section-title">相关文章</h2>
+    <div class="related-content">
+        <div class="flex article-list--tile">
+            
+                
+<article class="article-card has-image">
+    <a href="/p/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E5%BC%80%E5%8F%91%E5%AE%9E%E8%B7%B5%E6%8A%97%E9%94%AF%E9%BD%BF/">
+        
+        <div class="article-image-card">
+            
+                <img src="/image-20251207191240613.png" loading="lazy" data-key="" data-hash="/image-20251207191240613.png"/>
+            
+
+            
+            <div class="article-overlay">
+                <h2 class="article-title">游戏引擎开发实践（抗锯齿）</h2>
+            </div>
+        </div>
+        
+    </a>
+
+    <style>
+     
+    .article-card {
+        background: rgba(255, 255, 255, 0.25);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        margin: 10px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .article-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    }
+
+    .article-card a {
+        display: flex;
+        flex-direction: column;
+        text-decoration: none;
+        color: inherit;
+        height: 100%;
+    }
+
+     
+    .article-image-card {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        overflow: hidden;
+    }
+    .article-image-card img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+    .article-image-card:hover img {
+        transform: scale(1.05);
+    }
+
+     
+    .article-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: rgba(0,0,0,0.3);  
+        padding: 10px;
+        box-sizing: border-box;
+        text-align: center;
+    }
+    .article-overlay .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #fff;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .article-card.no-image .article-details {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 15px;
+    }
+    .article-card.no-image .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #222;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .articles-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 20px;
+    }
+    </style>
+</article>
+            
+                
+<article class="article-card no-image">
+    <a href="/p/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E5%BC%80%E5%8F%91%E5%AE%9E%E8%B7%B5%E5%A4%A7%E6%B0%94%E6%B8%B2%E6%9F%93/">
+        
+        
+        <div class="article-details">
+            <h2 class="article-title">游戏引擎开发实践（大气渲染）</h2>
+        </div>
+        
+    </a>
+
+    <style>
+     
+    .article-card {
+        background: rgba(255, 255, 255, 0.25);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        margin: 10px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .article-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    }
+
+    .article-card a {
+        display: flex;
+        flex-direction: column;
+        text-decoration: none;
+        color: inherit;
+        height: 100%;
+    }
+
+     
+    .article-image-card {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        overflow: hidden;
+    }
+    .article-image-card img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+    .article-image-card:hover img {
+        transform: scale(1.05);
+    }
+
+     
+    .article-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: rgba(0,0,0,0.3);  
+        padding: 10px;
+        box-sizing: border-box;
+        text-align: center;
+    }
+    .article-overlay .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #fff;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .article-card.no-image .article-details {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 15px;
+    }
+    .article-card.no-image .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #222;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .articles-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 20px;
+    }
+    </style>
+</article>
+            
+                
+<article class="article-card no-image">
+    <a href="/p/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E5%BC%80%E5%8F%91%E5%AE%9E%E8%B7%B5vulkan%E6%9E%B6%E6%9E%84%E7%AF%87image/">
+        
+        
+        <div class="article-details">
+            <h2 class="article-title">游戏引擎开发实践（Vulkan架构篇：Image）</h2>
+        </div>
+        
+    </a>
+
+    <style>
+     
+    .article-card {
+        background: rgba(255, 255, 255, 0.25);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        margin: 10px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .article-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    }
+
+    .article-card a {
+        display: flex;
+        flex-direction: column;
+        text-decoration: none;
+        color: inherit;
+        height: 100%;
+    }
+
+     
+    .article-image-card {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        overflow: hidden;
+    }
+    .article-image-card img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+    .article-image-card:hover img {
+        transform: scale(1.05);
+    }
+
+     
+    .article-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: rgba(0,0,0,0.3);  
+        padding: 10px;
+        box-sizing: border-box;
+        text-align: center;
+    }
+    .article-overlay .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #fff;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .article-card.no-image .article-details {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 15px;
+    }
+    .article-card.no-image .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #222;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .articles-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 20px;
+    }
+    </style>
+</article>
+            
+                
+<article class="article-card no-image">
+    <a href="/p/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E5%BC%80%E5%8F%91%E5%AE%9E%E8%B7%B5%E9%98%B4%E5%BD%B1%E7%AF%87/">
+        
+        
+        <div class="article-details">
+            <h2 class="article-title">游戏引擎开发实践（阴影篇）</h2>
+        </div>
+        
+    </a>
+
+    <style>
+     
+    .article-card {
+        background: rgba(255, 255, 255, 0.25);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        margin: 10px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .article-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    }
+
+    .article-card a {
+        display: flex;
+        flex-direction: column;
+        text-decoration: none;
+        color: inherit;
+        height: 100%;
+    }
+
+     
+    .article-image-card {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        overflow: hidden;
+    }
+    .article-image-card img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+    .article-image-card:hover img {
+        transform: scale(1.05);
+    }
+
+     
+    .article-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: rgba(0,0,0,0.3);  
+        padding: 10px;
+        box-sizing: border-box;
+        text-align: center;
+    }
+    .article-overlay .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #fff;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .article-card.no-image .article-details {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 15px;
+    }
+    .article-card.no-image .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #222;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .articles-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 20px;
+    }
+    </style>
+</article>
+            
+                
+<article class="article-card has-image">
+    <a href="/p/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E5%BC%80%E5%8F%91%E5%AE%9E%E8%B7%B5%E5%AE%9E%E4%BE%8B%E5%8C%96%E6%B8%B2%E6%9F%93/">
+        
+        <div class="article-image-card">
+            
+                <img src="/image-20251022010105969.png" loading="lazy" data-key="" data-hash="/image-20251022010105969.png"/>
+            
+
+            
+            <div class="article-overlay">
+                <h2 class="article-title">游戏引擎开发实践（实例化渲染）</h2>
+            </div>
+        </div>
+        
+    </a>
+
+    <style>
+     
+    .article-card {
+        background: rgba(255, 255, 255, 0.25);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        margin: 10px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .article-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    }
+
+    .article-card a {
+        display: flex;
+        flex-direction: column;
+        text-decoration: none;
+        color: inherit;
+        height: 100%;
+    }
+
+     
+    .article-image-card {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        overflow: hidden;
+    }
+    .article-image-card img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+    .article-image-card:hover img {
+        transform: scale(1.05);
+    }
+
+     
+    .article-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: rgba(0,0,0,0.3);  
+        padding: 10px;
+        box-sizing: border-box;
+        text-align: center;
+    }
+    .article-overlay .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #fff;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .article-card.no-image .article-details {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 15px;
+    }
+    .article-card.no-image .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #222;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .articles-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 20px;
+    }
+    </style>
+</article>
+            
+        </div>
+    </div>
+</aside>
 
      
     
@@ -1822,12 +2477,14 @@
       
         
       
+        
+      
     
-      <span>📚 文章数: 60</span>
+      <span>📚 文章数: 61</span>
       <span>✍️ 总字数: 
         
         
-        191.50K
+        201.76K
       </span>
     </section>
 
