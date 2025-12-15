@@ -1,13 +1,14 @@
 +++
 date = '2025-11-13T20:22:40+08:00'
 draft = false
-title = '初识UE源码（RHI）'
+title = '初识UE源码（RHI、渲染机制、RDG）'
 categories = ["Engines/UE"]
 tags = ["UE源码"]
 image = 'image-20251121130145117.png'
+
 +++
 
-
+> 初次简单了解一下UE的代码长什么样子，参考视频https://www.bilibili.com/video/BV1VK411x7bH?spm_id_from=333.788.videopod.sections&vd_source=9df9034e2f1978b1018f5b387ec3eacd
 
 # 向下
 

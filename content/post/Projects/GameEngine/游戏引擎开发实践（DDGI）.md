@@ -2,7 +2,8 @@
 date = '2025-12-07T20:36:06+08:00'
 draft = false
 title = '游戏引擎开发实践（DDGI）'
-tags = ['全局光照']
+tags = ['全局光照','光线追踪']
+categories = ["Projects/GameEngine"]
 image = 'image-20251211235847350.png'
 +++
 
@@ -584,6 +585,26 @@ vec3 DDGIGetIrrandianceByWorldPosition(vec3 worldPosition, vec3 direction, DDGIS
 ![image-20251212010040843](image-20251212010040843.png)
 
 ![image-20251212010142086](image-20251212010142086.png)
+
+# Math
+
+首先回顾Irrandiance是单位半球上各个方向的Radiance的积分（×cos）
+
+![image-20251212153745281](image-20251212153745281.png)
+
+均匀分布的蒙特卡洛积分来近似上边这个积分式
+
+![image-20251212153935702](image-20251212153935702.png)
+
+DDGI存储一个Irrandiance时，并不是/N，而是/余弦权重之和，目的是减少方差
+
+![image-20251212154846841](image-20251212154846841.png)
+
+他的期望是N/2,对比蒙特卡洛积分还需要*2
+
+![image-20251212160809707](image-20251212160809707.png)
+
+![image-20251212161019252](image-20251212161019252.png)
 
 # 总结
 
