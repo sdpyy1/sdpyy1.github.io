@@ -2,8 +2,9 @@
 date = '2025-12-16T13:30:40+08:00'
 draft = false
 title = '游戏引擎开发实践（GPU Driven）'
+image = 'image-20251221171023893.png'
 +++
-
+> 上图展示了Mesh被另外一个摄像机剔除（剩下了AABB盒）、摄像机视锥被灯光影响的分簇结果
 # 间接绘制
 
 ```c++
@@ -534,3 +535,268 @@ void main()
 ```
 
 > 目前的剔除完成了最简单的版本，每个Pass都会进行自己需要的Mesh的剔除，在间接渲染时拿着被修改的IndirectDrawBuffer去渲染
+
+
+
+
+
+
+
+
+
+# Cluster Based Lighting
+
+> 把摄像机视锥分簇，每个簇记录会影响它的光源信息，计算光照时，先判断着色点属于哪个簇，只遍历影响它的光源
+
+## 数据结构
+
+目前灯光存储依靠两个结构
+
+```c++
+// 获取灯光信息的地方
+struct LightInfo
+{
+	uint32_t directionLightCount = 0;
+	uint32_t pointLightCount = 0;
+	uint32_t spotLightCount = 0;
+	uint32_t _padding0;
+
+	DirectionLight dirLights;
+	PointLight pointLights[MAX_POINT_LIGHT_SIZE];
+	SpotLight spotLights[MAX_SPOT_LIGHT_SIZE];
+};
+
+// 所有的光源信息统一存储在
+layout(set = 0, binding = GLORBAL_RESOURCE_BINDING_LIGHTINFO) readonly buffer LightInfoBuffer {
+    LightInfo data;
+} LIGHTINFO;
+LightInfo GetLightInfo()
+{
+    return LIGHTINFO.data;
+}
+DirectionLight GetDirectionLight()
+{
+    return LIGHTINFO.data.dirLights;
+}
+PointLight GetPointLight(uint index)
+{
+    return LIGHTINFO.data.pointLights[index];
+}
+SpotLight GetSpotLight(uint index)
+{
+    return LIGHTINFO.data.spotLights[index];
+}
+uint GetPointLightCount()
+{
+    return LIGHTINFO.data.pointLightCount;
+}
+uint GetSpotLightCount()
+{
+    return LIGHTINFO.data.spotLightCount;
+}
+```
+
+参考下图进行架构簇，每个簇存储起始位置和数量，所有簇的灯光id信息统一存储在lightAssignBuffer中，在簇Buffer中只存储起始索引和数量
+
+![img](v2-d929612850f09a21c025c203e58e16e1_1440w.jpg)
+
+## 簇的划分
+
+![img](v2-022d9a1c88aee7b022fb48107491dc1c_1440w.jpg)
+
+先存Forward方向进行深度划分，可以采样平均切分或者对数切分
+
+![img](v2-cdaa1cb1e8cbd9a82b46a019111615a2_1440w.jpg)
+
+在写Shader时疏忽了一个很早之前的知识点，线性深度和非线性深度。
+
+在当前场景下，如果在near-far之间定义深度，是线性深度，但是如果想通过逆变换把屏幕空间坐标转回世界坐标，必须提供非线性深度，但是直接把自己自定义的深度转为非线性后配合当前UV来计算是错的，因为深度与XY的计算是有联系的，自定义深度破坏了这种联系
+
+```c++
+float minZ 	= (far - near) / LIGHT_CLUSTER_DEPTH * float(globalID.z) + near;
+float maxZ 	= (far - near) / LIGHT_CLUSTER_DEPTH * float(globalID.z + 1) + near;
+```
+
+所以采用射线来定义方向，再用深度来计算最终的世界位置深度
+
+```c++
+/*
+	传入自定义深度（线性深度[near-far]）
+*/
+vec3 SceenToWorldCustomDepth(vec2 uv, float viewZ, Camera camera)
+{
+    vec2 ndcXY = uv * 2.0 - 1.0;
+    vec4 ndcPos = vec4(ndcXY, 0.0, 1.0);
+    vec4 viewPos = camera.invProj * ndcPos;
+    viewPos /= viewPos.w;
+    vec3 viewDir = normalize(viewPos.xyz);
+    float t = viewZ / (-viewDir.z);
+    vec3 finalViewPos = viewDir * t;
+    vec4 worldPos = camera.invView * vec4(finalViewPos, 1.0);
+    return worldPos.xyz;
+}
+```
+
+> 哎这种写起来太麻烦，重新看了一眼博客，它的做法是直接拿near和Far进行映射，然后再切分，也就是转为世界坐标的点都在Near和Far上，然后调整按比例调整
+
+最终版本，还捎带实现了多摄像机系统，为了方便调试
+
+```c++
+#version 450 core
+#include "../common/common.glsl"
+#include "../common/constant.glsl"
+#include "../common/intersection.glsl"
+#include "../common/math.glsl"
+#include "../common/gizmo.glsl"
+#ifdef COMPUTE_SHADER
+
+layout(set = 1, binding = 0, rg32ui) uniform  uimage2DArray u_Clusters;   // FORMAT_R32G32_UINT
+layout(set = 1, binding = 1) buffer lightIDs{
+
+    uint lightID[];
+
+}u_lightIDs;
+
+#define THREAD_SIZE_X 8
+#define THREAD_SIZE_Y 8
+#define THREAD_SIZE_Z 1
+layout (local_size_x = THREAD_SIZE_X, 
+		local_size_y = THREAD_SIZE_Y, 
+		local_size_z = THREAD_SIZE_Z) in;
+
+void main()
+{
+    uvec3 globalID = gl_GlobalInvocationID;
+    Camera camera;
+    if(GetRenderSetting().ClusterLightFrustum == 1){ 
+        camera = GetDefaultCamera();
+    }else{
+        camera = GetCamera();
+    }
+    camera.InverseViewProj = inverse(camera.projNoJetter * camera.view);  // 后续都用的projNoJetter
+    float w = camera.width;
+    float h = camera.height;
+	uint clusterX = uint((w + LIGHT_CLUSTER_GRID_SIZE - 1) / LIGHT_CLUSTER_GRID_SIZE);
+    uint clusterY = uint((h + LIGHT_CLUSTER_GRID_SIZE - 1) / LIGHT_CLUSTER_GRID_SIZE);
+    uint clusterZ = LIGHT_CLUSTER_DEPTH;
+    uint clusterCount = clusterX * clusterY * clusterZ;
+
+
+    if (globalID.x >= clusterX || globalID.y >= clusterY || globalID.z >= clusterZ) {
+        return;
+    }
+
+    //////////////////////////////////////// 计算每个簇的世界坐标（先计算NDC坐标下8个顶点位置，转到世界空间即可） ///////////////////////////////////////////
+    float ndcMinx = float(globalID.x) / float(clusterX);
+    float ndcMiny = float(globalID.y) / float(clusterY);
+    float ndcMaxx = (float(globalID.x) + 1) / float(clusterX);
+    float ndcMaxy = (float(globalID.y) + 1) / float(clusterY);
+
+    // 线性划分
+    float minZ = float(globalID.z) / float(clusterZ);
+    float maxZ = float((globalID.z + 1)) / float(clusterZ);
+
+    // 一长条的簇
+    vec3 p0 = SceenToWorld(vec2(ndcMinx, ndcMiny), 0, camera);
+    vec3 p1 = SceenToWorld(vec2(ndcMinx, ndcMiny), 1, camera);
+    vec3 p2 = SceenToWorld(vec2(ndcMinx, ndcMaxy), 0, camera);
+    vec3 p3 = SceenToWorld(vec2(ndcMinx, ndcMaxy), 1, camera);
+    vec3 p4 = SceenToWorld(vec2(ndcMaxx, ndcMiny), 0, camera);
+    vec3 p5 = SceenToWorld(vec2(ndcMaxx, ndcMiny), 1, camera);
+    vec3 p6 = SceenToWorld(vec2(ndcMaxx, ndcMaxy), 0, camera);
+    vec3 p7 = SceenToWorld(vec2(ndcMaxx, ndcMaxy), 1, camera);
+
+
+    // 在World下切分深度
+    vec3 clusterP0 = p0 + minZ * (p1-p0);
+    vec3 clusterP1 = p0 + maxZ * (p1-p0);
+    vec3 clusterP2 = p2 + minZ * (p3-p2);
+    vec3 clusterP3 = p2 + maxZ * (p3-p2);
+    vec3 clusterP4 = p4 + minZ * (p5-p4);
+    vec3 clusterP5 = p4 + maxZ * (p5-p4);
+    vec3 clusterP6 = p6 + minZ * (p7-p6);
+    vec3 clusterP7 = p6 + maxZ * (p7-p6);
+
+
+
+    vec3 clusterCenter = (clusterP0 + clusterP1 + clusterP2 + clusterP3 + clusterP4 + clusterP5 + clusterP6 + clusterP7) / 8;
+
+    // 构建视锥
+    Frustum frustum;
+    frustum.planes[0] = calculatePlane(clusterP0, clusterP2,clusterP4, clusterCenter); // 近平面
+    frustum.planes[1] = calculatePlane(clusterP5, clusterP7, clusterP1, clusterCenter); // 远平面
+    frustum.planes[2] = calculatePlane(clusterP0, clusterP1, clusterP2, clusterCenter); // 左平面
+    frustum.planes[3] = calculatePlane(clusterP4, clusterP6,clusterP5, clusterCenter); // 右平面
+    frustum.planes[4] = calculatePlane(clusterP0, clusterP4, clusterP5, clusterCenter); // 下平面
+    frustum.planes[5] = calculatePlane(clusterP2, clusterP3, clusterP6, clusterCenter); // 上平面
+
+    //////////////////////////////////////// 相加测试与记录数据 ///////////////////////////////////////////
+	uint lightIDs[MAX_LIGHTS_PER_CLUSTER];
+    uint lightCount = 0;
+    for(int i = 0; i < GetPointLightCount(); i++){
+	    BoundingSphere sphere = GetPointLight(i).sphere;
+        bool isVisiable = FrustumIntersectSphere(frustum, sphere);
+        if(isVisiable){
+            lightIDs[lightCount++] = i;
+            if(GetRenderSetting().ClusterLightFrustum == 1){ // debug受影响的视锥
+                DrawFrustumEdges(clusterP0, clusterP2,clusterP6, clusterP4, clusterP1, clusterP3,  clusterP7, clusterP5, vec4(1, 0, 0, 1.0));
+            }
+        }
+	}
+
+    // 记录数据
+    uint startOffset = atomicAdd(LIGHTINFO.data.clusterAtomicOffset,lightCount);   // 它返回的是操作前的数据
+    for(uint i = 0; i < lightCount; i++){
+        u_lightIDs.lightID[startOffset + i] = lightIDs[i];
+    }
+    imageStore(u_Clusters, ivec3(globalID), uvec4(uvec2(lightCount, startOffset), 0, 0));
+
+}
+#endif
+```
+
+```c++
+ivec3 GetClusterIndex(vec3 worldPos,Camera camera)
+{
+    vec3 viewPos = (camera.view * vec4(worldPos, 1.0)).xyz;
+
+    float zView = -viewPos.z;
+
+    if (zView <= camera.Near)
+        zView = camera.Near;
+    if (zView >= camera.Far)
+        zView = camera.Far;
+
+
+    vec4 clipPos = camera.proj * vec4(viewPos, 1.0);
+    vec3 ndcPos  = clipPos.xyz / clipPos.w;   // [-1, 1]
+
+    vec2 screenUV = ndcPos.xy * 0.5 + 0.5;     // [0, 1]
+    vec2 pixelPos = screenUV * vec2(camera.width, camera.height);
+
+    uint clusterX = uint((camera.width  + LIGHT_CLUSTER_GRID_SIZE - 1)
+                          / LIGHT_CLUSTER_GRID_SIZE);
+    uint clusterY = uint((camera.height + LIGHT_CLUSTER_GRID_SIZE - 1)
+                          / LIGHT_CLUSTER_GRID_SIZE);
+    uint clusterZ = LIGHT_CLUSTER_DEPTH;
+
+    uint x = uint(pixelPos.x / LIGHT_CLUSTER_GRID_SIZE);
+    uint y = uint(pixelPos.y / LIGHT_CLUSTER_GRID_SIZE);
+
+    x = clamp(x, 0u, clusterX - 1);
+    y = clamp(y, 0u, clusterY - 1);
+
+    float zNorm = (zView - camera.Near) / (camera.Far - camera.Near);
+    uint  z     = uint(zNorm * float(clusterZ));
+
+    z = clamp(z, 0u, clusterZ - 1);
+
+    return ivec3(x, y, z);
+}
+```
+
+![image-20251221170715668](image-20251221170715668.png)
+
+这张图展示了Mesh剔除和灯光分簇
+
+![image-20251221171023893](image-20251221171023893.png)
