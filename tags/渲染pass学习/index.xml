@@ -15,6 +15,9 @@
         <guid>https://sdpyy1.github.io/p/cluster-based-lighting/</guid>
         <description>&lt;h1 id=&#34;cluster-based-lighting&#34;&gt;Cluster Based Lighting
 &lt;/h1&gt;&lt;blockquote&gt;
+&lt;p&gt;这里只介绍原理，实现篇放在游戏引擎开发实践（GPU-Driven）中&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;blockquote&gt;
 &lt;p&gt;将相机视锥体分为若干簇，并为仅为每个簇分配若干有效的光源，可以避免大量无效的光照计算&lt;/p&gt;
 &lt;p&gt;在着色阶段的流程则比较简单。首先根据像素坐标计算像素所属 Cluster，然后遍历该 Cluster 的 “有效光源” 列表，逐一计算光照&lt;/p&gt;
 &lt;/blockquote&gt;

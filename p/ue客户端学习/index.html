@@ -1,0 +1,1041 @@
+<!DOCTYPE html>
+<html lang="zh-cn" dir="ltr">
+    <head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'>
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+  <meta name="referrer" content="no-referrer-when-downgrade"><meta name='description' content=" 一边实现一款FPS游戏，一边学习UE的使用\n参考教程：https://www.bilibili.com/video/BV1iN4y1i7dZ?spm_id_from=333.788.videopod.episodes&amp;vd_source=9df9034e2f1978b1018f5b387ec3eacd&amp;p=6\n">
+<title>UE客户端学习</title>
+
+<link rel='canonical' href='https://sdpyy1.github.io/p/ue%E5%AE%A2%E6%88%B7%E7%AB%AF%E5%AD%A6%E4%B9%A0/'>
+
+<link rel="stylesheet" href="/scss/style.min.6a692fd055deae459f2a9767f57f3855ba80cafd5041317f24f7360f6ca47cdf.css"><meta property='og:title' content="UE客户端学习">
+<meta property='og:description' content=" 一边实现一款FPS游戏，一边学习UE的使用\n参考教程：https://www.bilibili.com/video/BV1iN4y1i7dZ?spm_id_from=333.788.videopod.episodes&amp;vd_source=9df9034e2f1978b1018f5b387ec3eacd&amp;p=6\n">
+<meta property='og:url' content='https://sdpyy1.github.io/p/ue%E5%AE%A2%E6%88%B7%E7%AB%AF%E5%AD%A6%E4%B9%A0/'>
+<meta property='og:site_name' content='wanfeng'>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:published_time' content='2025-12-20T16:09:45&#43;08:00'/><meta property='article:modified_time' content='2025-12-20T16:09:45&#43;08:00'/>
+<meta name="twitter:title" content="UE客户端学习">
+<meta name="twitter:description" content=" 一边实现一款FPS游戏，一边学习UE的使用\n参考教程：https://www.bilibili.com/video/BV1iN4y1i7dZ?spm_id_from=333.788.videopod.episodes&amp;vd_source=9df9034e2f1978b1018f5b387ec3eacd&amp;p=6\n">
+    <link rel="shortcut icon" href="/favicon.ico" />
+
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="切换菜单">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        
+            
+            <figure class="site-avatar">
+                <a href="/">
+                
+                    
+                    
+                    
+                        
+                        <img src="/img/avatar_hu_f59158f730715054.png" width="300"
+                            height="300" class="site-logo" loading="lazy" alt="Avatar">
+                    
+                
+                </a>
+                
+                    <span class="emoji">🧐</span>
+                
+            </figure>
+            
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="/">wanfeng</a></h1>
+            <h2 class="site-description">Blog</h2>
+        </div>
+    </header><ol class="menu-social">
+            
+                <li>
+                    <a 
+                        href='https://space.bilibili.com/287473737'
+                        target="_blank"
+                        title="Bilibili"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-brand-bilibili"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 10a4 4 0 0 1 4 -4h10a4 4 0 0 1 4 4v6a4 4 0 0 1 -4 4h-10a4 4 0 0 1 -4 -4v-6z" /><path d="M8 3l2 3" /><path d="M16 3l-2 3" /><path d="M9 13v-2" /><path d="M15 11v2" /></svg>
+                        
+                    </a>
+                </li>
+            
+                <li>
+                    <a 
+                        href='https://github.com/sdpyy1'
+                        target="_blank"
+                        title="GitHub"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
+</svg>
+
+
+
+                        
+                    </a>
+                </li>
+            
+        </ol><ol class="menu" id="main-menu">
+        
+        
+        
+        <li >
+            <a href='/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>Home</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/about/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>About</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>Archives</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/search/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>Search</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/links/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5" />
+  <path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5" />
+</svg>
+
+
+
+                
+                <span>Links</span>
+            </a>
+        </li>
+        
+        <li class="menu-bottom-section">
+            <ol class="menu">
+                    
+                        <li id="i18n-switch">  
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-language" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M4 5h7" />
+  <path d="M9 3v2c0 4.418 -2.239 8 -5 8" />
+  <path d="M5 9c-.003 2.144 2.952 3.908 6.7 4" />
+  <path d="M12 20l4 -9l4 9" />
+  <path d="M19.1 18h-6.2" />
+</svg>
+
+
+
+                            <select name="language" title="language" onchange="window.location.href = this.selectedOptions[0].value">
+                                
+                                    <option value="https://sdpyy1.github.io/en/" >English</option>
+                                
+                                    <option value="https://sdpyy1.github.io/" selected>中文</option>
+                                
+                            </select>
+                        </li>
+                    
+                
+
+                
+                    <li id="dark-mode-toggle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <span>暗色模式</span>
+                    </li>
+                
+            </ol>
+        </li>
+    </ol>
+</aside>
+
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">目录</h2>
+        
+        <div class="widget--toc">
+            <nav id="TableOfContents">
+  <ol>
+    <li><a href="#蓝图">蓝图</a>
+      <ol>
+        <li><a href="#蓝图的界面">蓝图的界面</a></li>
+        <li><a href="#宏">宏</a></li>
+        <li><a href="#蓝图接口">蓝图接口</a></li>
+        <li><a href="#数据资产">数据资产</a></li>
+        <li><a href="#枚举">枚举</a></li>
+      </ol>
+    </li>
+    <li><a href="#物理">物理</a>
+      <ol>
+        <li><a href="#碰撞">碰撞</a></li>
+        <li><a href="#通道">通道</a></li>
+        <li><a href="#物理表面">物理表面</a></li>
+      </ol>
+    </li>
+    <li><a href="#mesh">Mesh</a>
+      <ol>
+        <li><a href="#骨骼插槽">骨骼插槽</a></li>
+      </ol>
+    </li>
+    <li><a href="#动画">动画</a>
+      <ol>
+        <li><a href="#动画蒙太奇">动画蒙太奇</a></li>
+      </ol>
+    </li>
+  </ol>
+</nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+            <main class="main full-width">
+    <article class="main-article">
+    <header class="article-header">
+
+    <div class="article-details">
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="/p/ue%E5%AE%A2%E6%88%B7%E7%AB%AF%E5%AD%A6%E4%B9%A0/">UE客户端学习</a>
+        </h2>
+    
+        
+    </div>
+
+    
+    
+    
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published">Dec 20, 2025</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-time--reading">
+                    阅读时长: 3 分钟
+                </time>
+            </div>
+        
+
+        
+            
+    </footer>
+    
+    
+</div>
+<style>
+    .category-hierarchy {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;  
+        margin-right: 12px;  
+        margin-bottom: 8px;  
+    }
+    
+    .category-separator {
+        color: #999;
+        user-select: none;
+        font-size: 1em;  
+    }
+    
+    .article-category a {
+        text-decoration: none;
+        padding: 6px 12px;  
+        border-radius: 6px;  
+        font-size: 0.95em;  
+        transition: all 0.2s ease;
+        line-height: 1.5;  
+    }
+    
+    .article-category a:hover {
+        opacity: 0.9;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 6px rgba(0,0,0,0.1);  
+    }
+</style>
+</header>
+
+    <section class="article-content">
+    
+    
+    <blockquote>
+<p>一边实现一款FPS游戏，一边学习UE的使用</p>
+<p>参考教程：https://www.bilibili.com/video/BV1iN4y1i7dZ?spm_id_from=333.788.videopod.episodes&amp;vd_source=9df9034e2f1978b1018f5b387ec3eacd&amp;p=6</p>
+</blockquote>
+<h1 id="蓝图">蓝图
+</h1><blockquote>
+<p>创建蓝图时看到的那些“可放进场景的选项”，本质上都是 <code>AActor</code> 的某个子类；
+创建一个蓝图 = 创建一个“继承自你所选父类”的新子类（运行时生成的 UClass）。</p>
+</blockquote>
+<h2 id="蓝图的界面">蓝图的界面
+</h2><blockquote>
+<p>Construction Scirpt 相当于类构造器执行，这里初始化时把这个Actor的StaticMesh设置为WeaponDa中定义的默认值</p>
+</blockquote>
+<p><img src="/image-20251220163929300.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251220163929300"
+	
+	
+></p>
+<blockquote>
+<p>事件图表，就是在设置类函数的执行流程，比如这里三个就是默认就有的三个函数，这里做了在第一次执行时，把静态网格体的物理模拟打开</p>
+</blockquote>
+<p><img src="/image-20251220164644571.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251220164644571"
+	
+	
+></p>
+<h2 id="宏">宏
+</h2><blockquote>
+<p>蓝图中定义的宏相当于设置了一个函数</p>
+</blockquote>
+<p><img src="/image-20251220170449467.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251220170449467"
+	
+	
+></p>
+<h2 id="蓝图接口">蓝图接口
+</h2><blockquote>
+<p>和C++的纯虚类一样，定义函数</p>
+</blockquote>
+<p>其他蓝图可以在类设置中添加接口，把这些函数进行实现</p>
+<p><img src="/image-20251220173445089.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251220173445089"
+	
+	
+></p>
+<p><img src="/image-20251220173451323.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251220173451323"
+	
+	
+></p>
+<h2 id="数据资产">数据资产
+</h2><blockquote>
+<p>目前看起来就是一个结构体，用来定义一些属性的合集</p>
+</blockquote>
+<p>定义武器资产的属性，只有一些变量</p>
+<p><img src="/image-20251220161859526.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251220161859526"
+	
+	
+></p>
+<h2 id="枚举">枚举
+</h2><blockquote>
+<p>UE有直接可以用的enum</p>
+</blockquote>
+<p>这里用于定义武器类型的枚举</p>
+<p><img src="/image-20251220162014126.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251220162014126"
+	
+	
+></p>
+<p>目前的结构就是武器类数据资产，有两个子类用来定义每种武器的属性</p>
+<p><img src="/image-20251220162234396.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251220162234396"
+	
+	
+></p>
+<h1 id="物理">物理
+</h1><h2 id="碰撞">碰撞
+</h2><blockquote>
+<p>在 UE 中，碰撞有三个核心属性</p>
+</blockquote>
+<p>1️⃣ <strong>Collision Enabled（碰撞启用）</strong></p>
+<ul>
+<li>None → 不参与碰撞</li>
+<li>Query Only → 只参与射线 / 检测，不会阻挡物理</li>
+<li>Physics Only → 只参与物理模拟阻挡，不可被射线检测</li>
+<li>Query and Physics → 射线检测 + 阻挡</li>
+</ul>
+<p>2️⃣ <strong>Object Type（对象类型）</strong></p>
+<ul>
+<li>定义这个组件是什么类型的对象</li>
+<li>比如 WorldStatic / WorldDynamic / Pawn / Camera / Vehicle …</li>
+</ul>
+<p>3️⃣ <strong>Collision Response（碰撞响应）</strong></p>
+<ul>
+<li>对不同 Object Type 的响应</li>
+<li>Block → 阻挡</li>
+<li>Overlap → 触发重叠事件</li>
+<li>Ignore → 忽略</li>
+</ul>
+<blockquote>
+<p>碰撞预设（Collision Presets）就是组合好的快捷方式</p>
+</blockquote>
+<ul>
+<li><strong>BlockAll</strong> → 对所有类型都阻挡</li>
+<li><strong>Pawn</strong> → 对玩家阻挡，对其他忽略</li>
+<li><strong>PhysicsActor</strong> → 对物理物体阻挡，对射线可检测</li>
+<li><strong>Custom</strong> → 自己手动设置 Object Type 和 Response</li>
+</ul>
+<p><img src="/image-20251220165923872.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251220165923872"
+	
+	
+></p>
+<h2 id="通道">通道
+</h2><blockquote>
+<p>用于指定射线检测“想看哪类对象”</p>
+<p>系统自带：</p>
+<ul>
+<li>Visibility → 可视检测（枪瞄准、视线）</li>
+<li>Camera → 摄像机遮挡检测</li>
+</ul>
+<p>可以自定义 Trace Channel（Project Settings → Collision → Trace Channels）</p>
+<p>通道相当于指定一种射线查询类型，射线查询即使命中某个actor，也不会返回，先看看是不是对这个通道有响应，有响应才会算检测到</p>
+</blockquote>
+<p><img src="/image-20251220170900764.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251220170900764"
+	
+	
+></p>
+<p><img src="/image-20251220170937851.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251220170937851"
+	
+	
+></p>
+<p>当某个Mesh的交互检测通道设置为阻挡时，才会被这个通道的射线检测到</p>
+<p><img src="/image-20251220171036835.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251220171036835"
+	
+	
+></p>
+<h2 id="物理表面">物理表面
+</h2><blockquote>
+<p>用于物理材质，物理材质又应用于材质</p>
+</blockquote>
+<p><img src="/image-20251221002625346.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251221002625346"
+	
+	
+></p>
+<p>物理材质是一个可创建的资产对象</p>
+<p><img src="/image-20251221002751655.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251221002751655"
+	
+	
+></p>
+<p><img src="/image-20251221002845866.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251221002845866"
+	
+	
+>这一项的设置就来自上边在项目设置中设置的自定义物理表面</p>
+<p>这个东西是设置在材质设置中的</p>
+<p><img src="/image-20251221003201275.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251221003201275"
+	
+	
+></p>
+<h1 id="mesh">Mesh
+</h1><h2 id="骨骼插槽">骨骼插槽
+</h2><blockquote>
+<p>Socket = 骨骼上的一个挂点（Transform），可以附加 Static Mesh、Skeletal Mesh、粒子、光源等物体。</p>
+</blockquote>
+<h1 id="动画">动画
+</h1><h2 id="动画蒙太奇">动画蒙太奇
+</h2>
+</section>
+
+
+    <footer class="article-footer">
+    
+
+    
+    <section class="article-copyright">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
+</svg>
+
+
+
+        <span>Licensed under CC BY-NC-SA 4.0</span>
+    </section>
+    </footer>
+
+
+    
+        <link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css"integrity="sha384-n8MVd4RsNIU0tAv4ct0nTaAbDJwPJzDEaqSD1odI&#43;WdtXRGWt2kTvGFasHpSy3SV"crossorigin="anonymous"
+            ><script 
+                src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"integrity="sha384-XjKyOOlGwcjNTAIQHIpgOno0Hl1YQqzUOEleOLALmuqehneUG&#43;vnGctmUb0ZY0l8"crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"integrity="sha384-&#43;VBxd3r6XgURycqtZ117nYw44OOcIax56Z4dCRWbxyPt0Koah1uHoK0o4&#43;/RRE05"crossorigin="anonymous"
+                defer
+                >
+            </script><script>
+    window.addEventListener("DOMContentLoaded", () => {
+	const mainArticleElement = document.querySelector(".main-article");
+        renderMathInElement(mainArticleElement, {
+            delimiters: [
+                { left: "$$", right: "$$", display: true },
+                { left: "$", right: "$", display: false },
+                { left: "\\(", right: "\\)", display: false },
+                { left: "\\[", right: "\\]", display: true }
+            ],
+            ignoredClasses: ["gist"]
+        });})
+</script>
+
+    
+</article>
+
+    
+
+    
+
+     
+    
+        
+    <script
+    src="https://giscus.app/client.js"
+    data-repo="sdpyy1/sdpyy1.github.io"
+    data-repo-id="R_kgDOQEycpQ"
+    data-category="Announcements"
+    data-category-id="DIC_kwDOQEycpc4Cwz7v"
+    data-mapping="pathname"
+    data-strict="0"
+    data-reactions-enabled="1"
+    data-emit-metadata="0"
+    data-input-position="top"
+    data-theme="light"
+    data-lang="en"
+    data-loading=""
+    crossorigin="anonymous"
+    async
+></script>
+<script>
+    function setGiscusTheme(theme) {
+        let giscus = document.querySelector("iframe.giscus-frame");
+        if (giscus) {
+            giscus.contentWindow.postMessage(
+                {
+                    giscus: {
+                        setConfig: {
+                            theme: theme,
+                        },
+                    },
+                },
+                "https://giscus.app"
+            );
+        }
+    }
+
+    (function () {
+        addEventListener("message", (e) => {
+            if (event.origin !== "https://giscus.app") return;
+            handler();
+        });
+        window.addEventListener("onColorSchemeChange", handler);
+
+        function handler() {
+            if (document.documentElement.dataset.scheme === "light") {
+                setGiscusTheme('light');
+            } else {
+                setGiscusTheme('light');
+            }
+        }
+    })();
+</script>
+
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+            2020 - 
+        
+        2025 爱喝东方树叶
+    </section>
+    <section style="display: flex; gap: 30px; align-items: center;">
+      
+      
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+      <span>📚 文章数: 63</span>
+      <span>✍️ 总字数: 
+        
+        
+        212.35K
+      </span>
+    </section>
+
+    <section class="powerby">
+    
+    <div class="busuanzi-footer">
+        <span id="busuanzi_container_site_pv">
+          本站总访问量<span id="busuanzi_value_site_pv"></span>次
+        </span>
+        <span id="busuanzi_container_site_uv">
+          本站访客数<span id="busuanzi_value_site_uv"></span>人次
+        </span>
+      </div></section>
+
+</footer>
+
+
+    
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    
+    <div class="pswp__bg"></div>
+
+    
+    <div class="pswp__scroll-wrap">
+
+        
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                
+                
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                        <div class="pswp__preloader__cut">
+                            <div class="pswp__preloader__donut"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div>
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js"integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo="crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js"integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU="crossorigin="anonymous"
+                defer
+                >
+            </script><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css"crossorigin="anonymous"
+            ><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css"crossorigin="anonymous"
+            >
+
+            </main>
+        </div>
+        <script 
+                src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js"integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z&#43;KMkF24hUW8WePSA9HM="crossorigin="anonymous"
+                
+                >
+            </script><script type="text/javascript" src="/ts/main.1e9a3bafd846ced4c345d084b355fb8c7bae75701c338f8a1f8a82c780137826.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>

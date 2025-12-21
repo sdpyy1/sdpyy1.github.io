@@ -3,18 +3,19 @@
     <head><meta charset='utf-8'>
 <meta name='viewport' content='width=device-width, initial-scale=1'>
 <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
-  <meta name="referrer" content="no-referrer-when-downgrade"><meta name='description' content="间接绘制 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 void VulkanRHICommandContext::DrawIndirect(RHIBufferRef argumentBuffer, uint32_t offset, uint32_t drawCount) { /* *\t绘制指令参数： //indexed draw VKAPI_ATTR void VKAPI_CALL vkCmdDrawIndexedIndirect( VkCommandBuffer commandBuffer, VkBuffer buffer, // 存储绘制参数的Buffer VkDeviceSize offset, // Buffer起始偏移 uint32_t drawCount, // 绘制的次数 uint32_t stride); // Buffer中每个绘制指令的大小 //non indexed draw VKAPI_ATTR void VKAPI_CALL vkCmdDrawIndirect( // 参数与vkCmdDrawIndirect一致 VkCommandBuffer commandBuffer, VkBuffer buffer, VkDeviceSize offset, uint32_t drawCount, uint32_t stride); 绘制Buffer参数：这个Buffer中存储的参数实际就是直接调用vkCmdDrawIndexed、vkCmdDraw需要的参数 //indexed struct VkDrawIndexedIndirectCommand { uint32_t indexCount;\t// 索引数量 uint32_t instanceCount;\t// 实例数量 uint32_t firstIndex;\t// 索引偏移 int32_t vertexOffset;\t// 顶点偏移 uint32_t firstInstance;\t// 实例偏移 }; //non indexed typedef struct VkDrawIndirectCommand { uint32_t vertexCount; // 顶点数量 uint32_t instanceCount; // 实例数量 uint32_t firstVertex; // 顶点偏移 uint32_t firstInstance; // 实例偏移 } VkDrawIndirectCommand; */ vkCmdDrawIndirect(handle, CAST&lt;VulkanRHIBuffer&gt;(argumentBuffer)-&gt;GetHandle(), offset, drawCount, sizeof(RHIIndirectCommand)); } 在支持Multi Draw时，一次API可以提交多个IndirectCommand绘制指令，drawCount参数为执行指令的数量，这样在多个Mesh共享同一个VBO和IBO的情况下，可以做到画多种Mesh只需要一次API提交。\n">
+  <meta name="referrer" content="no-referrer-when-downgrade"><meta name='description' content=" 上图展示了Mesh被另外一个摄像机剔除（剩下了AABB盒）、摄像机视锥被灯光影响的分簇结果\n间接绘制 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 void VulkanRHICommandContext::DrawIndirect(RHIBufferRef argumentBuffer, uint32_t offset, uint32_t drawCount) { /* *\t绘制指令参数： //indexed draw VKAPI_ATTR void VKAPI_CALL vkCmdDrawIndexedIndirect( VkCommandBuffer commandBuffer, VkBuffer buffer, // 存储绘制参数的Buffer VkDeviceSize offset, // Buffer起始偏移 uint32_t drawCount, // 绘制的次数 uint32_t stride); // Buffer中每个绘制指令的大小 //non indexed draw VKAPI_ATTR void VKAPI_CALL vkCmdDrawIndirect( // 参数与vkCmdDrawIndirect一致 VkCommandBuffer commandBuffer, VkBuffer buffer, VkDeviceSize offset, uint32_t drawCount, uint32_t stride); 绘制Buffer参数：这个Buffer中存储的参数实际就是直接调用vkCmdDrawIndexed、vkCmdDraw需要的参数 //indexed struct VkDrawIndexedIndirectCommand { uint32_t indexCount;\t// 索引数量 uint32_t instanceCount;\t// 实例数量 uint32_t firstIndex;\t// 索引偏移 int32_t vertexOffset;\t// 顶点偏移 uint32_t firstInstance;\t// 实例偏移 }; //non indexed typedef struct VkDrawIndirectCommand { uint32_t vertexCount; // 顶点数量 uint32_t instanceCount; // 实例数量 uint32_t firstVertex; // 顶点偏移 uint32_t firstInstance; // 实例偏移 } VkDrawIndirectCommand; */ vkCmdDrawIndirect(handle, CAST&lt;VulkanRHIBuffer&gt;(argumentBuffer)-&gt;GetHandle(), offset, drawCount, sizeof(RHIIndirectCommand)); } 在支持Multi Draw时，一次API可以提交多个IndirectCommand绘制指令，drawCount参数为执行指令的数量，这样在多个Mesh共享同一个VBO和IBO的情况下，可以做到画多种Mesh只需要一次API提交。\n">
 <title>游戏引擎开发实践（GPU Driven）</title>
 
 <link rel='canonical' href='https://sdpyy1.github.io/p/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E5%BC%80%E5%8F%91%E5%AE%9E%E8%B7%B5gpu-driven/'>
 
 <link rel="stylesheet" href="/scss/style.min.6a692fd055deae459f2a9767f57f3855ba80cafd5041317f24f7360f6ca47cdf.css"><meta property='og:title' content="游戏引擎开发实践（GPU Driven）">
-<meta property='og:description' content="间接绘制 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 void VulkanRHICommandContext::DrawIndirect(RHIBufferRef argumentBuffer, uint32_t offset, uint32_t drawCount) { /* *\t绘制指令参数： //indexed draw VKAPI_ATTR void VKAPI_CALL vkCmdDrawIndexedIndirect( VkCommandBuffer commandBuffer, VkBuffer buffer, // 存储绘制参数的Buffer VkDeviceSize offset, // Buffer起始偏移 uint32_t drawCount, // 绘制的次数 uint32_t stride); // Buffer中每个绘制指令的大小 //non indexed draw VKAPI_ATTR void VKAPI_CALL vkCmdDrawIndirect( // 参数与vkCmdDrawIndirect一致 VkCommandBuffer commandBuffer, VkBuffer buffer, VkDeviceSize offset, uint32_t drawCount, uint32_t stride); 绘制Buffer参数：这个Buffer中存储的参数实际就是直接调用vkCmdDrawIndexed、vkCmdDraw需要的参数 //indexed struct VkDrawIndexedIndirectCommand { uint32_t indexCount;\t// 索引数量 uint32_t instanceCount;\t// 实例数量 uint32_t firstIndex;\t// 索引偏移 int32_t vertexOffset;\t// 顶点偏移 uint32_t firstInstance;\t// 实例偏移 }; //non indexed typedef struct VkDrawIndirectCommand { uint32_t vertexCount; // 顶点数量 uint32_t instanceCount; // 实例数量 uint32_t firstVertex; // 顶点偏移 uint32_t firstInstance; // 实例偏移 } VkDrawIndirectCommand; */ vkCmdDrawIndirect(handle, CAST&lt;VulkanRHIBuffer&gt;(argumentBuffer)-&gt;GetHandle(), offset, drawCount, sizeof(RHIIndirectCommand)); } 在支持Multi Draw时，一次API可以提交多个IndirectCommand绘制指令，drawCount参数为执行指令的数量，这样在多个Mesh共享同一个VBO和IBO的情况下，可以做到画多种Mesh只需要一次API提交。\n">
+<meta property='og:description' content=" 上图展示了Mesh被另外一个摄像机剔除（剩下了AABB盒）、摄像机视锥被灯光影响的分簇结果\n间接绘制 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 void VulkanRHICommandContext::DrawIndirect(RHIBufferRef argumentBuffer, uint32_t offset, uint32_t drawCount) { /* *\t绘制指令参数： //indexed draw VKAPI_ATTR void VKAPI_CALL vkCmdDrawIndexedIndirect( VkCommandBuffer commandBuffer, VkBuffer buffer, // 存储绘制参数的Buffer VkDeviceSize offset, // Buffer起始偏移 uint32_t drawCount, // 绘制的次数 uint32_t stride); // Buffer中每个绘制指令的大小 //non indexed draw VKAPI_ATTR void VKAPI_CALL vkCmdDrawIndirect( // 参数与vkCmdDrawIndirect一致 VkCommandBuffer commandBuffer, VkBuffer buffer, VkDeviceSize offset, uint32_t drawCount, uint32_t stride); 绘制Buffer参数：这个Buffer中存储的参数实际就是直接调用vkCmdDrawIndexed、vkCmdDraw需要的参数 //indexed struct VkDrawIndexedIndirectCommand { uint32_t indexCount;\t// 索引数量 uint32_t instanceCount;\t// 实例数量 uint32_t firstIndex;\t// 索引偏移 int32_t vertexOffset;\t// 顶点偏移 uint32_t firstInstance;\t// 实例偏移 }; //non indexed typedef struct VkDrawIndirectCommand { uint32_t vertexCount; // 顶点数量 uint32_t instanceCount; // 实例数量 uint32_t firstVertex; // 顶点偏移 uint32_t firstInstance; // 实例偏移 } VkDrawIndirectCommand; */ vkCmdDrawIndirect(handle, CAST&lt;VulkanRHIBuffer&gt;(argumentBuffer)-&gt;GetHandle(), offset, drawCount, sizeof(RHIIndirectCommand)); } 在支持Multi Draw时，一次API可以提交多个IndirectCommand绘制指令，drawCount参数为执行指令的数量，这样在多个Mesh共享同一个VBO和IBO的情况下，可以做到画多种Mesh只需要一次API提交。\n">
 <meta property='og:url' content='https://sdpyy1.github.io/p/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E5%BC%80%E5%8F%91%E5%AE%9E%E8%B7%B5gpu-driven/'>
 <meta property='og:site_name' content='wanfeng'>
-<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:published_time' content='2025-12-16T13:30:40&#43;08:00'/><meta property='article:modified_time' content='2025-12-16T13:30:40&#43;08:00'/>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:published_time' content='2025-12-16T13:30:40&#43;08:00'/><meta property='article:modified_time' content='2025-12-16T13:30:40&#43;08:00'/><meta property='og:image' content='https://sdpyy1.github.io/image-20251221171023893.png' />
 <meta name="twitter:title" content="游戏引擎开发实践（GPU Driven）">
-<meta name="twitter:description" content="间接绘制 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 void VulkanRHICommandContext::DrawIndirect(RHIBufferRef argumentBuffer, uint32_t offset, uint32_t drawCount) { /* *\t绘制指令参数： //indexed draw VKAPI_ATTR void VKAPI_CALL vkCmdDrawIndexedIndirect( VkCommandBuffer commandBuffer, VkBuffer buffer, // 存储绘制参数的Buffer VkDeviceSize offset, // Buffer起始偏移 uint32_t drawCount, // 绘制的次数 uint32_t stride); // Buffer中每个绘制指令的大小 //non indexed draw VKAPI_ATTR void VKAPI_CALL vkCmdDrawIndirect( // 参数与vkCmdDrawIndirect一致 VkCommandBuffer commandBuffer, VkBuffer buffer, VkDeviceSize offset, uint32_t drawCount, uint32_t stride); 绘制Buffer参数：这个Buffer中存储的参数实际就是直接调用vkCmdDrawIndexed、vkCmdDraw需要的参数 //indexed struct VkDrawIndexedIndirectCommand { uint32_t indexCount;\t// 索引数量 uint32_t instanceCount;\t// 实例数量 uint32_t firstIndex;\t// 索引偏移 int32_t vertexOffset;\t// 顶点偏移 uint32_t firstInstance;\t// 实例偏移 }; //non indexed typedef struct VkDrawIndirectCommand { uint32_t vertexCount; // 顶点数量 uint32_t instanceCount; // 实例数量 uint32_t firstVertex; // 顶点偏移 uint32_t firstInstance; // 实例偏移 } VkDrawIndirectCommand; */ vkCmdDrawIndirect(handle, CAST&lt;VulkanRHIBuffer&gt;(argumentBuffer)-&gt;GetHandle(), offset, drawCount, sizeof(RHIIndirectCommand)); } 在支持Multi Draw时，一次API可以提交多个IndirectCommand绘制指令，drawCount参数为执行指令的数量，这样在多个Mesh共享同一个VBO和IBO的情况下，可以做到画多种Mesh只需要一次API提交。\n">
+<meta name="twitter:description" content=" 上图展示了Mesh被另外一个摄像机剔除（剩下了AABB盒）、摄像机视锥被灯光影响的分簇结果\n间接绘制 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 void VulkanRHICommandContext::DrawIndirect(RHIBufferRef argumentBuffer, uint32_t offset, uint32_t drawCount) { /* *\t绘制指令参数： //indexed draw VKAPI_ATTR void VKAPI_CALL vkCmdDrawIndexedIndirect( VkCommandBuffer commandBuffer, VkBuffer buffer, // 存储绘制参数的Buffer VkDeviceSize offset, // Buffer起始偏移 uint32_t drawCount, // 绘制的次数 uint32_t stride); // Buffer中每个绘制指令的大小 //non indexed draw VKAPI_ATTR void VKAPI_CALL vkCmdDrawIndirect( // 参数与vkCmdDrawIndirect一致 VkCommandBuffer commandBuffer, VkBuffer buffer, VkDeviceSize offset, uint32_t drawCount, uint32_t stride); 绘制Buffer参数：这个Buffer中存储的参数实际就是直接调用vkCmdDrawIndexed、vkCmdDraw需要的参数 //indexed struct VkDrawIndexedIndirectCommand { uint32_t indexCount;\t// 索引数量 uint32_t instanceCount;\t// 实例数量 uint32_t firstIndex;\t// 索引偏移 int32_t vertexOffset;\t// 顶点偏移 uint32_t firstInstance;\t// 实例偏移 }; //non indexed typedef struct VkDrawIndirectCommand { uint32_t vertexCount; // 顶点数量 uint32_t instanceCount; // 实例数量 uint32_t firstVertex; // 顶点偏移 uint32_t firstInstance; // 实例偏移 } VkDrawIndirectCommand; */ vkCmdDrawIndirect(handle, CAST&lt;VulkanRHIBuffer&gt;(argumentBuffer)-&gt;GetHandle(), offset, drawCount, sizeof(RHIIndirectCommand)); } 在支持Multi Draw时，一次API可以提交多个IndirectCommand绘制指令，drawCount参数为执行指令的数量，这样在多个Mesh共享同一个VBO和IBO的情况下，可以做到画多种Mesh只需要一次API提交。\n"><meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content='https://sdpyy1.github.io/image-20251221171023893.png' />
     <link rel="shortcut icon" href="/favicon.ico" />
 
     </head>
@@ -302,6 +303,12 @@
         <li><a href="#点光源剔除">点光源剔除</a></li>
       </ol>
     </li>
+    <li><a href="#cluster-based-lighting">Cluster Based Lighting</a>
+      <ol>
+        <li><a href="#数据结构">数据结构</a></li>
+        <li><a href="#簇的划分">簇的划分</a></li>
+      </ol>
+    </li>
   </ol>
 </nav>
         </div>
@@ -313,8 +320,16 @@
 
 
             <main class="main full-width">
-    <article class="main-article">
+    <article class="has-image main-article">
     <header class="article-header">
+        <div class="article-image">
+            <a href="/p/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E5%BC%80%E5%8F%91%E5%AE%9E%E8%B7%B5gpu-driven/">
+                
+                    <img src="/image-20251221171023893.png" loading="lazy" alt="Featured image of post 游戏引擎开发实践（GPU Driven）" />
+                
+            </a>
+        </div>
+    
 
     <div class="article-details">
     
@@ -358,7 +373,7 @@
 
 
                 <time class="article-time--reading">
-                    阅读时长: 10 分钟
+                    阅读时长: 14 分钟
                 </time>
             </div>
         
@@ -404,7 +419,10 @@
     <section class="article-content">
     
     
-    <h1 id="间接绘制">间接绘制
+    <blockquote>
+<p>上图展示了Mesh被另外一个摄像机剔除（剩下了AABB盒）、摄像机视锥被灯光影响的分簇结果</p>
+</blockquote>
+<h1 id="间接绘制">间接绘制
 </h1><div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt"> 1
@@ -1375,6 +1393,515 @@
 </div><blockquote>
 <p>目前的剔除完成了最简单的版本，每个Pass都会进行自己需要的Mesh的剔除，在间接渲染时拿着被修改的IndirectDrawBuffer去渲染</p>
 </blockquote>
+<h1 id="cluster-based-lighting">Cluster Based Lighting
+</h1><blockquote>
+<p>把摄像机视锥分簇，每个簇记录会影响它的光源信息，计算光照时，先判断着色点属于哪个簇，只遍历影响它的光源</p>
+</blockquote>
+<h2 id="数据结构">数据结构
+</h2><p>目前灯光存储依靠两个结构</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="c1">// 获取灯光信息的地方
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">struct</span> <span class="nc">LightInfo</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="kt">uint32_t</span> <span class="n">directionLightCount</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="kt">uint32_t</span> <span class="n">pointLightCount</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="kt">uint32_t</span> <span class="n">spotLightCount</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="kt">uint32_t</span> <span class="n">_padding0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="n">DirectionLight</span> <span class="n">dirLights</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="n">PointLight</span> <span class="n">pointLights</span><span class="p">[</span><span class="n">MAX_POINT_LIGHT_SIZE</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">	<span class="n">SpotLight</span> <span class="n">spotLights</span><span class="p">[</span><span class="n">MAX_SPOT_LIGHT_SIZE</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl"><span class="p">};</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// 所有的光源信息统一存储在
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="n">layout</span><span class="p">(</span><span class="n">set</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">binding</span> <span class="o">=</span> <span class="n">GLORBAL_RESOURCE_BINDING_LIGHTINFO</span><span class="p">)</span> <span class="n">readonly</span> <span class="n">buffer</span> <span class="n">LightInfoBuffer</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">LightInfo</span> <span class="n">data</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span> <span class="n">LIGHTINFO</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">LightInfo</span> <span class="nf">GetLightInfo</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">LIGHTINFO</span><span class="p">.</span><span class="n">data</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="n">DirectionLight</span> <span class="nf">GetDirectionLight</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">LIGHTINFO</span><span class="p">.</span><span class="n">data</span><span class="p">.</span><span class="n">dirLights</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="n">PointLight</span> <span class="nf">GetPointLight</span><span class="p">(</span><span class="n">uint</span> <span class="n">index</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">LIGHTINFO</span><span class="p">.</span><span class="n">data</span><span class="p">.</span><span class="n">pointLights</span><span class="p">[</span><span class="n">index</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="n">SpotLight</span> <span class="nf">GetSpotLight</span><span class="p">(</span><span class="n">uint</span> <span class="n">index</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">LIGHTINFO</span><span class="p">.</span><span class="n">data</span><span class="p">.</span><span class="n">spotLights</span><span class="p">[</span><span class="n">index</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="n">uint</span> <span class="nf">GetPointLightCount</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">LIGHTINFO</span><span class="p">.</span><span class="n">data</span><span class="p">.</span><span class="n">pointLightCount</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="n">uint</span> <span class="nf">GetSpotLightCount</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">LIGHTINFO</span><span class="p">.</span><span class="n">data</span><span class="p">.</span><span class="n">spotLightCount</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>参考下图进行架构簇，每个簇存储起始位置和数量，所有簇的灯光id信息统一存储在lightAssignBuffer中，在簇Buffer中只存储起始索引和数量</p>
+<p><img src="/v2-d929612850f09a21c025c203e58e16e1_1440w.jpg"
+	
+	
+	
+	loading="lazy"
+	
+		alt="img"
+	
+	
+></p>
+<h2 id="簇的划分">簇的划分
+</h2><p><img src="/v2-022d9a1c88aee7b022fb48107491dc1c_1440w.jpg"
+	
+	
+	
+	loading="lazy"
+	
+		alt="img"
+	
+	
+></p>
+<p>先存Forward方向进行深度划分，可以采样平均切分或者对数切分</p>
+<p><img src="/v2-cdaa1cb1e8cbd9a82b46a019111615a2_1440w.jpg"
+	
+	
+	
+	loading="lazy"
+	
+		alt="img"
+	
+	
+></p>
+<p>在写Shader时疏忽了一个很早之前的知识点，线性深度和非线性深度。</p>
+<p>在当前场景下，如果在near-far之间定义深度，是线性深度，但是如果想通过逆变换把屏幕空间坐标转回世界坐标，必须提供非线性深度，但是直接把自己自定义的深度转为非线性后配合当前UV来计算是错的，因为深度与XY的计算是有联系的，自定义深度破坏了这种联系</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="kt">float</span> <span class="n">minZ</span> 	<span class="o">=</span> <span class="p">(</span><span class="n">far</span> <span class="o">-</span> <span class="n">near</span><span class="p">)</span> <span class="o">/</span> <span class="n">LIGHT_CLUSTER_DEPTH</span> <span class="o">*</span> <span class="kt">float</span><span class="p">(</span><span class="n">globalID</span><span class="p">.</span><span class="n">z</span><span class="p">)</span> <span class="o">+</span> <span class="n">near</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="kt">float</span> <span class="n">maxZ</span> 	<span class="o">=</span> <span class="p">(</span><span class="n">far</span> <span class="o">-</span> <span class="n">near</span><span class="p">)</span> <span class="o">/</span> <span class="n">LIGHT_CLUSTER_DEPTH</span> <span class="o">*</span> <span class="kt">float</span><span class="p">(</span><span class="n">globalID</span><span class="p">.</span><span class="n">z</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="n">near</span><span class="p">;</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>所以采用射线来定义方向，再用深度来计算最终的世界位置深度</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="cm">/*
+</span></span></span><span class="line"><span class="cl"><span class="cm">	传入自定义深度（线性深度[near-far]）
+</span></span></span><span class="line"><span class="cl"><span class="cm">*/</span>
+</span></span><span class="line"><span class="cl"><span class="n">vec3</span> <span class="nf">SceenToWorldCustomDepth</span><span class="p">(</span><span class="n">vec2</span> <span class="n">uv</span><span class="p">,</span> <span class="kt">float</span> <span class="n">viewZ</span><span class="p">,</span> <span class="n">Camera</span> <span class="n">camera</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">vec2</span> <span class="n">ndcXY</span> <span class="o">=</span> <span class="n">uv</span> <span class="o">*</span> <span class="mf">2.0</span> <span class="o">-</span> <span class="mf">1.0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">vec4</span> <span class="n">ndcPos</span> <span class="o">=</span> <span class="n">vec4</span><span class="p">(</span><span class="n">ndcXY</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">vec4</span> <span class="n">viewPos</span> <span class="o">=</span> <span class="n">camera</span><span class="p">.</span><span class="n">invProj</span> <span class="o">*</span> <span class="n">ndcPos</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">viewPos</span> <span class="o">/=</span> <span class="n">viewPos</span><span class="p">.</span><span class="n">w</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">vec3</span> <span class="n">viewDir</span> <span class="o">=</span> <span class="n">normalize</span><span class="p">(</span><span class="n">viewPos</span><span class="p">.</span><span class="n">xyz</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">float</span> <span class="n">t</span> <span class="o">=</span> <span class="n">viewZ</span> <span class="o">/</span> <span class="p">(</span><span class="o">-</span><span class="n">viewDir</span><span class="p">.</span><span class="n">z</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">vec3</span> <span class="n">finalViewPos</span> <span class="o">=</span> <span class="n">viewDir</span> <span class="o">*</span> <span class="n">t</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">vec4</span> <span class="n">worldPos</span> <span class="o">=</span> <span class="n">camera</span><span class="p">.</span><span class="n">invView</span> <span class="o">*</span> <span class="n">vec4</span><span class="p">(</span><span class="n">finalViewPos</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">worldPos</span><span class="p">.</span><span class="n">xyz</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><blockquote>
+<p>哎这种写起来太麻烦，重新看了一眼博客，它的做法是直接拿near和Far进行映射，然后再切分，也就是转为世界坐标的点都在Near和Far上，然后调整按比例调整</p>
+</blockquote>
+<p>最终版本，还捎带实现了多摄像机系统，为了方便调试</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">  1
+</span><span class="lnt">  2
+</span><span class="lnt">  3
+</span><span class="lnt">  4
+</span><span class="lnt">  5
+</span><span class="lnt">  6
+</span><span class="lnt">  7
+</span><span class="lnt">  8
+</span><span class="lnt">  9
+</span><span class="lnt"> 10
+</span><span class="lnt"> 11
+</span><span class="lnt"> 12
+</span><span class="lnt"> 13
+</span><span class="lnt"> 14
+</span><span class="lnt"> 15
+</span><span class="lnt"> 16
+</span><span class="lnt"> 17
+</span><span class="lnt"> 18
+</span><span class="lnt"> 19
+</span><span class="lnt"> 20
+</span><span class="lnt"> 21
+</span><span class="lnt"> 22
+</span><span class="lnt"> 23
+</span><span class="lnt"> 24
+</span><span class="lnt"> 25
+</span><span class="lnt"> 26
+</span><span class="lnt"> 27
+</span><span class="lnt"> 28
+</span><span class="lnt"> 29
+</span><span class="lnt"> 30
+</span><span class="lnt"> 31
+</span><span class="lnt"> 32
+</span><span class="lnt"> 33
+</span><span class="lnt"> 34
+</span><span class="lnt"> 35
+</span><span class="lnt"> 36
+</span><span class="lnt"> 37
+</span><span class="lnt"> 38
+</span><span class="lnt"> 39
+</span><span class="lnt"> 40
+</span><span class="lnt"> 41
+</span><span class="lnt"> 42
+</span><span class="lnt"> 43
+</span><span class="lnt"> 44
+</span><span class="lnt"> 45
+</span><span class="lnt"> 46
+</span><span class="lnt"> 47
+</span><span class="lnt"> 48
+</span><span class="lnt"> 49
+</span><span class="lnt"> 50
+</span><span class="lnt"> 51
+</span><span class="lnt"> 52
+</span><span class="lnt"> 53
+</span><span class="lnt"> 54
+</span><span class="lnt"> 55
+</span><span class="lnt"> 56
+</span><span class="lnt"> 57
+</span><span class="lnt"> 58
+</span><span class="lnt"> 59
+</span><span class="lnt"> 60
+</span><span class="lnt"> 61
+</span><span class="lnt"> 62
+</span><span class="lnt"> 63
+</span><span class="lnt"> 64
+</span><span class="lnt"> 65
+</span><span class="lnt"> 66
+</span><span class="lnt"> 67
+</span><span class="lnt"> 68
+</span><span class="lnt"> 69
+</span><span class="lnt"> 70
+</span><span class="lnt"> 71
+</span><span class="lnt"> 72
+</span><span class="lnt"> 73
+</span><span class="lnt"> 74
+</span><span class="lnt"> 75
+</span><span class="lnt"> 76
+</span><span class="lnt"> 77
+</span><span class="lnt"> 78
+</span><span class="lnt"> 79
+</span><span class="lnt"> 80
+</span><span class="lnt"> 81
+</span><span class="lnt"> 82
+</span><span class="lnt"> 83
+</span><span class="lnt"> 84
+</span><span class="lnt"> 85
+</span><span class="lnt"> 86
+</span><span class="lnt"> 87
+</span><span class="lnt"> 88
+</span><span class="lnt"> 89
+</span><span class="lnt"> 90
+</span><span class="lnt"> 91
+</span><span class="lnt"> 92
+</span><span class="lnt"> 93
+</span><span class="lnt"> 94
+</span><span class="lnt"> 95
+</span><span class="lnt"> 96
+</span><span class="lnt"> 97
+</span><span class="lnt"> 98
+</span><span class="lnt"> 99
+</span><span class="lnt">100
+</span><span class="lnt">101
+</span><span class="lnt">102
+</span><span class="lnt">103
+</span><span class="lnt">104
+</span><span class="lnt">105
+</span><span class="lnt">106
+</span><span class="lnt">107
+</span><span class="lnt">108
+</span><span class="lnt">109
+</span><span class="lnt">110
+</span><span class="lnt">111
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="cp">#version 450 core
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&#34;../common/common.glsl&#34;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&#34;../common/constant.glsl&#34;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&#34;../common/intersection.glsl&#34;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&#34;../common/math.glsl&#34;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&#34;../common/gizmo.glsl&#34;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#ifdef COMPUTE_SHADER
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl"><span class="n">layout</span><span class="p">(</span><span class="n">set</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">binding</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">rg32ui</span><span class="p">)</span> <span class="n">uniform</span>  <span class="n">uimage2DArray</span> <span class="n">u_Clusters</span><span class="p">;</span>   <span class="c1">// FORMAT_R32G32_UINT
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="n">layout</span><span class="p">(</span><span class="n">set</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">binding</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="n">buffer</span> <span class="n">lightIDs</span><span class="p">{</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">uint</span> <span class="n">lightID</span><span class="p">[];</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="p">}</span><span class="n">u_lightIDs</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="cp">#define THREAD_SIZE_X 8
+</span></span></span><span class="line"><span class="cl"><span class="cp">#define THREAD_SIZE_Y 8
+</span></span></span><span class="line"><span class="cl"><span class="cp">#define THREAD_SIZE_Z 1
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span><span class="n">layout</span> <span class="p">(</span><span class="n">local_size_x</span> <span class="o">=</span> <span class="n">THREAD_SIZE_X</span><span class="p">,</span> 
+</span></span><span class="line"><span class="cl">		<span class="n">local_size_y</span> <span class="o">=</span> <span class="n">THREAD_SIZE_Y</span><span class="p">,</span> 
+</span></span><span class="line"><span class="cl">		<span class="n">local_size_z</span> <span class="o">=</span> <span class="n">THREAD_SIZE_Z</span><span class="p">)</span> <span class="n">in</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">void</span> <span class="nf">main</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">uvec3</span> <span class="n">globalID</span> <span class="o">=</span> <span class="n">gl_GlobalInvocationID</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">Camera</span> <span class="n">camera</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span><span class="p">(</span><span class="n">GetRenderSetting</span><span class="p">().</span><span class="n">ClusterLightFrustum</span> <span class="o">==</span> <span class="mi">1</span><span class="p">){</span> 
+</span></span><span class="line"><span class="cl">        <span class="n">camera</span> <span class="o">=</span> <span class="n">GetDefaultCamera</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span><span class="k">else</span><span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">camera</span> <span class="o">=</span> <span class="n">GetCamera</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="n">camera</span><span class="p">.</span><span class="n">InverseViewProj</span> <span class="o">=</span> <span class="n">inverse</span><span class="p">(</span><span class="n">camera</span><span class="p">.</span><span class="n">projNoJetter</span> <span class="o">*</span> <span class="n">camera</span><span class="p">.</span><span class="n">view</span><span class="p">);</span>  <span class="c1">// 后续都用的projNoJetter
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="kt">float</span> <span class="n">w</span> <span class="o">=</span> <span class="n">camera</span><span class="p">.</span><span class="n">width</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">float</span> <span class="n">h</span> <span class="o">=</span> <span class="n">camera</span><span class="p">.</span><span class="n">height</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="n">uint</span> <span class="n">clusterX</span> <span class="o">=</span> <span class="n">uint</span><span class="p">((</span><span class="n">w</span> <span class="o">+</span> <span class="n">LIGHT_CLUSTER_GRID_SIZE</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="n">LIGHT_CLUSTER_GRID_SIZE</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">uint</span> <span class="n">clusterY</span> <span class="o">=</span> <span class="n">uint</span><span class="p">((</span><span class="n">h</span> <span class="o">+</span> <span class="n">LIGHT_CLUSTER_GRID_SIZE</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="n">LIGHT_CLUSTER_GRID_SIZE</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">uint</span> <span class="n">clusterZ</span> <span class="o">=</span> <span class="n">LIGHT_CLUSTER_DEPTH</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">uint</span> <span class="n">clusterCount</span> <span class="o">=</span> <span class="n">clusterX</span> <span class="o">*</span> <span class="n">clusterY</span> <span class="o">*</span> <span class="n">clusterZ</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="n">globalID</span><span class="p">.</span><span class="n">x</span> <span class="o">&gt;=</span> <span class="n">clusterX</span> <span class="o">||</span> <span class="n">globalID</span><span class="p">.</span><span class="n">y</span> <span class="o">&gt;=</span> <span class="n">clusterY</span> <span class="o">||</span> <span class="n">globalID</span><span class="p">.</span><span class="n">z</span> <span class="o">&gt;=</span> <span class="n">clusterZ</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">//////////////////////////////////////// 计算每个簇的世界坐标（先计算NDC坐标下8个顶点位置，转到世界空间即可） ///////////////////////////////////////////
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="kt">float</span> <span class="n">ndcMinx</span> <span class="o">=</span> <span class="kt">float</span><span class="p">(</span><span class="n">globalID</span><span class="p">.</span><span class="n">x</span><span class="p">)</span> <span class="o">/</span> <span class="kt">float</span><span class="p">(</span><span class="n">clusterX</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">float</span> <span class="n">ndcMiny</span> <span class="o">=</span> <span class="kt">float</span><span class="p">(</span><span class="n">globalID</span><span class="p">.</span><span class="n">y</span><span class="p">)</span> <span class="o">/</span> <span class="kt">float</span><span class="p">(</span><span class="n">clusterY</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">float</span> <span class="n">ndcMaxx</span> <span class="o">=</span> <span class="p">(</span><span class="kt">float</span><span class="p">(</span><span class="n">globalID</span><span class="p">.</span><span class="n">x</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="kt">float</span><span class="p">(</span><span class="n">clusterX</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">float</span> <span class="n">ndcMaxy</span> <span class="o">=</span> <span class="p">(</span><span class="kt">float</span><span class="p">(</span><span class="n">globalID</span><span class="p">.</span><span class="n">y</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="kt">float</span><span class="p">(</span><span class="n">clusterY</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// 线性划分
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="kt">float</span> <span class="n">minZ</span> <span class="o">=</span> <span class="kt">float</span><span class="p">(</span><span class="n">globalID</span><span class="p">.</span><span class="n">z</span><span class="p">)</span> <span class="o">/</span> <span class="kt">float</span><span class="p">(</span><span class="n">clusterZ</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">float</span> <span class="n">maxZ</span> <span class="o">=</span> <span class="kt">float</span><span class="p">((</span><span class="n">globalID</span><span class="p">.</span><span class="n">z</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span> <span class="o">/</span> <span class="kt">float</span><span class="p">(</span><span class="n">clusterZ</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// 一长条的簇
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">vec3</span> <span class="n">p0</span> <span class="o">=</span> <span class="n">SceenToWorld</span><span class="p">(</span><span class="n">vec2</span><span class="p">(</span><span class="n">ndcMinx</span><span class="p">,</span> <span class="n">ndcMiny</span><span class="p">),</span> <span class="mi">0</span><span class="p">,</span> <span class="n">camera</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">vec3</span> <span class="n">p1</span> <span class="o">=</span> <span class="n">SceenToWorld</span><span class="p">(</span><span class="n">vec2</span><span class="p">(</span><span class="n">ndcMinx</span><span class="p">,</span> <span class="n">ndcMiny</span><span class="p">),</span> <span class="mi">1</span><span class="p">,</span> <span class="n">camera</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">vec3</span> <span class="n">p2</span> <span class="o">=</span> <span class="n">SceenToWorld</span><span class="p">(</span><span class="n">vec2</span><span class="p">(</span><span class="n">ndcMinx</span><span class="p">,</span> <span class="n">ndcMaxy</span><span class="p">),</span> <span class="mi">0</span><span class="p">,</span> <span class="n">camera</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">vec3</span> <span class="n">p3</span> <span class="o">=</span> <span class="n">SceenToWorld</span><span class="p">(</span><span class="n">vec2</span><span class="p">(</span><span class="n">ndcMinx</span><span class="p">,</span> <span class="n">ndcMaxy</span><span class="p">),</span> <span class="mi">1</span><span class="p">,</span> <span class="n">camera</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">vec3</span> <span class="n">p4</span> <span class="o">=</span> <span class="n">SceenToWorld</span><span class="p">(</span><span class="n">vec2</span><span class="p">(</span><span class="n">ndcMaxx</span><span class="p">,</span> <span class="n">ndcMiny</span><span class="p">),</span> <span class="mi">0</span><span class="p">,</span> <span class="n">camera</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">vec3</span> <span class="n">p5</span> <span class="o">=</span> <span class="n">SceenToWorld</span><span class="p">(</span><span class="n">vec2</span><span class="p">(</span><span class="n">ndcMaxx</span><span class="p">,</span> <span class="n">ndcMiny</span><span class="p">),</span> <span class="mi">1</span><span class="p">,</span> <span class="n">camera</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">vec3</span> <span class="n">p6</span> <span class="o">=</span> <span class="n">SceenToWorld</span><span class="p">(</span><span class="n">vec2</span><span class="p">(</span><span class="n">ndcMaxx</span><span class="p">,</span> <span class="n">ndcMaxy</span><span class="p">),</span> <span class="mi">0</span><span class="p">,</span> <span class="n">camera</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">vec3</span> <span class="n">p7</span> <span class="o">=</span> <span class="n">SceenToWorld</span><span class="p">(</span><span class="n">vec2</span><span class="p">(</span><span class="n">ndcMaxx</span><span class="p">,</span> <span class="n">ndcMaxy</span><span class="p">),</span> <span class="mi">1</span><span class="p">,</span> <span class="n">camera</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// 在World下切分深度
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">vec3</span> <span class="n">clusterP0</span> <span class="o">=</span> <span class="n">p0</span> <span class="o">+</span> <span class="n">minZ</span> <span class="o">*</span> <span class="p">(</span><span class="n">p1</span><span class="o">-</span><span class="n">p0</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">vec3</span> <span class="n">clusterP1</span> <span class="o">=</span> <span class="n">p0</span> <span class="o">+</span> <span class="n">maxZ</span> <span class="o">*</span> <span class="p">(</span><span class="n">p1</span><span class="o">-</span><span class="n">p0</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">vec3</span> <span class="n">clusterP2</span> <span class="o">=</span> <span class="n">p2</span> <span class="o">+</span> <span class="n">minZ</span> <span class="o">*</span> <span class="p">(</span><span class="n">p3</span><span class="o">-</span><span class="n">p2</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">vec3</span> <span class="n">clusterP3</span> <span class="o">=</span> <span class="n">p2</span> <span class="o">+</span> <span class="n">maxZ</span> <span class="o">*</span> <span class="p">(</span><span class="n">p3</span><span class="o">-</span><span class="n">p2</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">vec3</span> <span class="n">clusterP4</span> <span class="o">=</span> <span class="n">p4</span> <span class="o">+</span> <span class="n">minZ</span> <span class="o">*</span> <span class="p">(</span><span class="n">p5</span><span class="o">-</span><span class="n">p4</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">vec3</span> <span class="n">clusterP5</span> <span class="o">=</span> <span class="n">p4</span> <span class="o">+</span> <span class="n">maxZ</span> <span class="o">*</span> <span class="p">(</span><span class="n">p5</span><span class="o">-</span><span class="n">p4</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">vec3</span> <span class="n">clusterP6</span> <span class="o">=</span> <span class="n">p6</span> <span class="o">+</span> <span class="n">minZ</span> <span class="o">*</span> <span class="p">(</span><span class="n">p7</span><span class="o">-</span><span class="n">p6</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">vec3</span> <span class="n">clusterP7</span> <span class="o">=</span> <span class="n">p6</span> <span class="o">+</span> <span class="n">maxZ</span> <span class="o">*</span> <span class="p">(</span><span class="n">p7</span><span class="o">-</span><span class="n">p6</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">vec3</span> <span class="n">clusterCenter</span> <span class="o">=</span> <span class="p">(</span><span class="n">clusterP0</span> <span class="o">+</span> <span class="n">clusterP1</span> <span class="o">+</span> <span class="n">clusterP2</span> <span class="o">+</span> <span class="n">clusterP3</span> <span class="o">+</span> <span class="n">clusterP4</span> <span class="o">+</span> <span class="n">clusterP5</span> <span class="o">+</span> <span class="n">clusterP6</span> <span class="o">+</span> <span class="n">clusterP7</span><span class="p">)</span> <span class="o">/</span> <span class="mi">8</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// 构建视锥
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">Frustum</span> <span class="n">frustum</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">frustum</span><span class="p">.</span><span class="n">planes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">calculatePlane</span><span class="p">(</span><span class="n">clusterP0</span><span class="p">,</span> <span class="n">clusterP2</span><span class="p">,</span><span class="n">clusterP4</span><span class="p">,</span> <span class="n">clusterCenter</span><span class="p">);</span> <span class="c1">// 近平面
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">frustum</span><span class="p">.</span><span class="n">planes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">calculatePlane</span><span class="p">(</span><span class="n">clusterP5</span><span class="p">,</span> <span class="n">clusterP7</span><span class="p">,</span> <span class="n">clusterP1</span><span class="p">,</span> <span class="n">clusterCenter</span><span class="p">);</span> <span class="c1">// 远平面
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">frustum</span><span class="p">.</span><span class="n">planes</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">calculatePlane</span><span class="p">(</span><span class="n">clusterP0</span><span class="p">,</span> <span class="n">clusterP1</span><span class="p">,</span> <span class="n">clusterP2</span><span class="p">,</span> <span class="n">clusterCenter</span><span class="p">);</span> <span class="c1">// 左平面
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">frustum</span><span class="p">.</span><span class="n">planes</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">calculatePlane</span><span class="p">(</span><span class="n">clusterP4</span><span class="p">,</span> <span class="n">clusterP6</span><span class="p">,</span><span class="n">clusterP5</span><span class="p">,</span> <span class="n">clusterCenter</span><span class="p">);</span> <span class="c1">// 右平面
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">frustum</span><span class="p">.</span><span class="n">planes</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span> <span class="o">=</span> <span class="n">calculatePlane</span><span class="p">(</span><span class="n">clusterP0</span><span class="p">,</span> <span class="n">clusterP4</span><span class="p">,</span> <span class="n">clusterP5</span><span class="p">,</span> <span class="n">clusterCenter</span><span class="p">);</span> <span class="c1">// 下平面
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">frustum</span><span class="p">.</span><span class="n">planes</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span> <span class="o">=</span> <span class="n">calculatePlane</span><span class="p">(</span><span class="n">clusterP2</span><span class="p">,</span> <span class="n">clusterP3</span><span class="p">,</span> <span class="n">clusterP6</span><span class="p">,</span> <span class="n">clusterCenter</span><span class="p">);</span> <span class="c1">// 上平面
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl">    <span class="c1">//////////////////////////////////////// 相加测试与记录数据 ///////////////////////////////////////////
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="n">uint</span> <span class="n">lightIDs</span><span class="p">[</span><span class="n">MAX_LIGHTS_PER_CLUSTER</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">    <span class="n">uint</span> <span class="n">lightCount</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">for</span><span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">GetPointLightCount</span><span class="p">();</span> <span class="n">i</span><span class="o">++</span><span class="p">){</span>
+</span></span><span class="line"><span class="cl">	    <span class="n">BoundingSphere</span> <span class="n">sphere</span> <span class="o">=</span> <span class="n">GetPointLight</span><span class="p">(</span><span class="n">i</span><span class="p">).</span><span class="n">sphere</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="kt">bool</span> <span class="n">isVisiable</span> <span class="o">=</span> <span class="n">FrustumIntersectSphere</span><span class="p">(</span><span class="n">frustum</span><span class="p">,</span> <span class="n">sphere</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="k">if</span><span class="p">(</span><span class="n">isVisiable</span><span class="p">){</span>
+</span></span><span class="line"><span class="cl">            <span class="n">lightIDs</span><span class="p">[</span><span class="n">lightCount</span><span class="o">++</span><span class="p">]</span> <span class="o">=</span> <span class="n">i</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">            <span class="k">if</span><span class="p">(</span><span class="n">GetRenderSetting</span><span class="p">().</span><span class="n">ClusterLightFrustum</span> <span class="o">==</span> <span class="mi">1</span><span class="p">){</span> <span class="c1">// debug受影响的视锥
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>                <span class="n">DrawFrustumEdges</span><span class="p">(</span><span class="n">clusterP0</span><span class="p">,</span> <span class="n">clusterP2</span><span class="p">,</span><span class="n">clusterP6</span><span class="p">,</span> <span class="n">clusterP4</span><span class="p">,</span> <span class="n">clusterP1</span><span class="p">,</span> <span class="n">clusterP3</span><span class="p">,</span>  <span class="n">clusterP7</span><span class="p">,</span> <span class="n">clusterP5</span><span class="p">,</span> <span class="n">vec4</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">            <span class="p">}</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// 记录数据
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">uint</span> <span class="n">startOffset</span> <span class="o">=</span> <span class="n">atomicAdd</span><span class="p">(</span><span class="n">LIGHTINFO</span><span class="p">.</span><span class="n">data</span><span class="p">.</span><span class="n">clusterAtomicOffset</span><span class="p">,</span><span class="n">lightCount</span><span class="p">);</span>   <span class="c1">// 它返回的是操作前的数据
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="k">for</span><span class="p">(</span><span class="n">uint</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">lightCount</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">){</span>
+</span></span><span class="line"><span class="cl">        <span class="n">u_lightIDs</span><span class="p">.</span><span class="n">lightID</span><span class="p">[</span><span class="n">startOffset</span> <span class="o">+</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">lightIDs</span><span class="p">[</span><span class="n">i</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="n">imageStore</span><span class="p">(</span><span class="n">u_Clusters</span><span class="p">,</span> <span class="n">ivec3</span><span class="p">(</span><span class="n">globalID</span><span class="p">),</span> <span class="n">uvec4</span><span class="p">(</span><span class="n">uvec2</span><span class="p">(</span><span class="n">lightCount</span><span class="p">,</span> <span class="n">startOffset</span><span class="p">),</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="cp">#endif
+</span></span></span></code></pre></td></tr></table>
+</div>
+</div><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="n">ivec3</span> <span class="nf">GetClusterIndex</span><span class="p">(</span><span class="n">vec3</span> <span class="n">worldPos</span><span class="p">,</span><span class="n">Camera</span> <span class="n">camera</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">vec3</span> <span class="n">viewPos</span> <span class="o">=</span> <span class="p">(</span><span class="n">camera</span><span class="p">.</span><span class="n">view</span> <span class="o">*</span> <span class="n">vec4</span><span class="p">(</span><span class="n">worldPos</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)).</span><span class="n">xyz</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kt">float</span> <span class="n">zView</span> <span class="o">=</span> <span class="o">-</span><span class="n">viewPos</span><span class="p">.</span><span class="n">z</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="n">zView</span> <span class="o">&lt;=</span> <span class="n">camera</span><span class="p">.</span><span class="n">Near</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="n">zView</span> <span class="o">=</span> <span class="n">camera</span><span class="p">.</span><span class="n">Near</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="n">zView</span> <span class="o">&gt;=</span> <span class="n">camera</span><span class="p">.</span><span class="n">Far</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="n">zView</span> <span class="o">=</span> <span class="n">camera</span><span class="p">.</span><span class="n">Far</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">vec4</span> <span class="n">clipPos</span> <span class="o">=</span> <span class="n">camera</span><span class="p">.</span><span class="n">proj</span> <span class="o">*</span> <span class="n">vec4</span><span class="p">(</span><span class="n">viewPos</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">vec3</span> <span class="n">ndcPos</span>  <span class="o">=</span> <span class="n">clipPos</span><span class="p">.</span><span class="n">xyz</span> <span class="o">/</span> <span class="n">clipPos</span><span class="p">.</span><span class="n">w</span><span class="p">;</span>   <span class="c1">// [-1, 1]
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl">    <span class="n">vec2</span> <span class="n">screenUV</span> <span class="o">=</span> <span class="n">ndcPos</span><span class="p">.</span><span class="n">xy</span> <span class="o">*</span> <span class="mf">0.5</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">;</span>     <span class="c1">// [0, 1]
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">vec2</span> <span class="n">pixelPos</span> <span class="o">=</span> <span class="n">screenUV</span> <span class="o">*</span> <span class="n">vec2</span><span class="p">(</span><span class="n">camera</span><span class="p">.</span><span class="n">width</span><span class="p">,</span> <span class="n">camera</span><span class="p">.</span><span class="n">height</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">uint</span> <span class="n">clusterX</span> <span class="o">=</span> <span class="n">uint</span><span class="p">((</span><span class="n">camera</span><span class="p">.</span><span class="n">width</span>  <span class="o">+</span> <span class="n">LIGHT_CLUSTER_GRID_SIZE</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">                          <span class="o">/</span> <span class="n">LIGHT_CLUSTER_GRID_SIZE</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">uint</span> <span class="n">clusterY</span> <span class="o">=</span> <span class="n">uint</span><span class="p">((</span><span class="n">camera</span><span class="p">.</span><span class="n">height</span> <span class="o">+</span> <span class="n">LIGHT_CLUSTER_GRID_SIZE</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">                          <span class="o">/</span> <span class="n">LIGHT_CLUSTER_GRID_SIZE</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">uint</span> <span class="n">clusterZ</span> <span class="o">=</span> <span class="n">LIGHT_CLUSTER_DEPTH</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">uint</span> <span class="n">x</span> <span class="o">=</span> <span class="n">uint</span><span class="p">(</span><span class="n">pixelPos</span><span class="p">.</span><span class="n">x</span> <span class="o">/</span> <span class="n">LIGHT_CLUSTER_GRID_SIZE</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">uint</span> <span class="n">y</span> <span class="o">=</span> <span class="n">uint</span><span class="p">(</span><span class="n">pixelPos</span><span class="p">.</span><span class="n">y</span> <span class="o">/</span> <span class="n">LIGHT_CLUSTER_GRID_SIZE</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">x</span> <span class="o">=</span> <span class="n">clamp</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mi">0u</span><span class="p">,</span> <span class="n">clusterX</span> <span class="o">-</span> <span class="mi">1</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">y</span> <span class="o">=</span> <span class="n">clamp</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="mi">0u</span><span class="p">,</span> <span class="n">clusterY</span> <span class="o">-</span> <span class="mi">1</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="kt">float</span> <span class="n">zNorm</span> <span class="o">=</span> <span class="p">(</span><span class="n">zView</span> <span class="o">-</span> <span class="n">camera</span><span class="p">.</span><span class="n">Near</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">camera</span><span class="p">.</span><span class="n">Far</span> <span class="o">-</span> <span class="n">camera</span><span class="p">.</span><span class="n">Near</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">uint</span>  <span class="n">z</span>     <span class="o">=</span> <span class="n">uint</span><span class="p">(</span><span class="n">zNorm</span> <span class="o">*</span> <span class="kt">float</span><span class="p">(</span><span class="n">clusterZ</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">z</span> <span class="o">=</span> <span class="n">clamp</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="mi">0u</span><span class="p">,</span> <span class="n">clusterZ</span> <span class="o">-</span> <span class="mi">1</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="n">ivec3</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p><img src="/image-20251221170715668.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251221170715668"
+	
+	
+></p>
+<p>这张图展示了Mesh剔除和灯光分簇</p>
+<p><img src="/image-20251221171023893.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251221171023893"
+	
+	
+></p>
 
 </section>
 
@@ -1622,12 +2149,14 @@
       
         
       
+        
+      
     
-      <span>📚 文章数: 62</span>
+      <span>📚 文章数: 63</span>
       <span>✍️ 总字数: 
         
         
-        209.56K
+        212.35K
       </span>
     </section>
 
