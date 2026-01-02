@@ -8,12 +8,12 @@
         <language>zh-cn</language>
         <copyright>爱喝东方树叶</copyright>
         <lastBuildDate>Thu, 04 Dec 2025 18:58:15 +0800</lastBuildDate><atom:link href="https://sdpyy1.github.io/tags/%E6%8A%97%E9%94%AF%E9%BD%BF/index.xml" rel="self" type="application/rss+xml" /><item>
-        <title>游戏引擎开发实践（抗锯齿）</title>
-        <link>https://sdpyy1.github.io/p/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E5%BC%80%E5%8F%91%E5%AE%9E%E8%B7%B5%E6%8A%97%E9%94%AF%E9%BD%BF/</link>
+        <title>游戏引擎开发实践（抗锯齿 TAA）</title>
+        <link>https://sdpyy1.github.io/p/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E5%BC%80%E5%8F%91%E5%AE%9E%E8%B7%B5%E6%8A%97%E9%94%AF%E9%BD%BF-taa/</link>
         <pubDate>Thu, 04 Dec 2025 18:58:15 +0800</pubDate>
         
-        <guid>https://sdpyy1.github.io/p/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E5%BC%80%E5%8F%91%E5%AE%9E%E8%B7%B5%E6%8A%97%E9%94%AF%E9%BD%BF/</guid>
-        <description>&lt;img src="https://sdpyy1.github.io/image-20251207191240613.png" alt="Featured image of post 游戏引擎开发实践（抗锯齿）" /&gt;&lt;blockquote&gt;
+        <guid>https://sdpyy1.github.io/p/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E5%BC%80%E5%8F%91%E5%AE%9E%E8%B7%B5%E6%8A%97%E9%94%AF%E9%BD%BF-taa/</guid>
+        <description>&lt;img src="https://sdpyy1.github.io/image-20251207191240613.png" alt="Featured image of post 游戏引擎开发实践（抗锯齿 TAA）" /&gt;&lt;blockquote&gt;
 &lt;p&gt;总体来看TAA思想比较简单易懂，实现思路更多是实践性的经验总结&lt;/p&gt;
 &lt;/blockquote&gt;
 &lt;h1 id=&#34;taa&#34;&gt;TAA

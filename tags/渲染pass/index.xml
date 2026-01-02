@@ -7,7 +7,114 @@
         <generator>Hugo -- gohugo.io</generator>
         <language>zh-cn</language>
         <copyright>爱喝东方树叶</copyright>
-        <lastBuildDate>Fri, 07 Nov 2025 18:08:43 +0800</lastBuildDate><atom:link href="https://sdpyy1.github.io/tags/%E6%B8%B2%E6%9F%93pass/index.xml" rel="self" type="application/rss+xml" /><item>
+        <lastBuildDate>Mon, 10 Nov 2025 10:09:12 +0800</lastBuildDate><atom:link href="https://sdpyy1.github.io/tags/%E6%B8%B2%E6%9F%93pass/index.xml" rel="self" type="application/rss+xml" /><item>
+        <title>游戏引擎开发实践（高质量Bloom）</title>
+        <link>https://sdpyy1.github.io/p/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E5%BC%80%E5%8F%91%E5%AE%9E%E8%B7%B5%E9%AB%98%E8%B4%A8%E9%87%8Fbloom/</link>
+        <pubDate>Mon, 10 Nov 2025 10:09:12 +0800</pubDate>
+        
+        <guid>https://sdpyy1.github.io/p/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E5%BC%80%E5%8F%91%E5%AE%9E%E8%B7%B5%E9%AB%98%E8%B4%A8%E9%87%8Fbloom/</guid>
+        <description>&lt;h1 id=&#34;下采样&#34;&gt;下采样
+&lt;/h1&gt;&lt;h2 id=&#34;为什么要下采样&#34;&gt;为什么要下采样
+&lt;/h2&gt;&lt;ul&gt;
+&lt;li&gt;
+&lt;p&gt;要想光晕扩的足够大，第一件事情就是扩大模糊的范围。一种非常简单的思路就是死命加大滤波盒的尺寸，使用一个巨大的 kernal 对纹理进行模糊。但是性能上肯定是吃不消，单 pass 的纹理采样次数是 N^2 而双 pass 是 N+N&lt;/p&gt;
+&lt;p&gt;此外还有一个问题，在处理高分辨率纹理时你需要等比地增加滤波盒的尺寸，才能形成同等大小的模糊。比如在 1000x1000 分辨率下用 250 像素的 kernal，模糊的结果占 1/4 屏幕，当分辨率增加到 2000x2000 的时候，要使用 500 像素的 kernal 才能达到同样的效果&lt;/p&gt;
+&lt;p&gt;回到模糊的问题，模糊滤波的本质是查询 kernal 范围内的所有像素并加权平均，即范围查询问题。在计算机图形学中实现快速范围查询，通常会请到老朋友 &lt;a class=&#34;link&#34; href=&#34;https://zhida.zhihu.com/search?content_id=204910516&amp;amp;content_type=Article&amp;amp;match_order=1&amp;amp;q=Mipmap&amp;amp;zhida_source=entity&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;Mipmap&lt;/a&gt; 出场。Mipmap 将图像大小依次折半形成金字塔，mip[i] 中的单个像素代表了 mip[i-1] 中的 2x2 像素块均值，也代表 mip[i-2] 中的 4x4 像素块均值：&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;为什么不直接平均而是用高斯模糊&#34;&gt;为什么不直接平均，而是用高斯模糊
+&lt;/h2&gt;&lt;p&gt;为什么不直接用平均，而是用高斯模糊。 下图为直接使用mipmap，进行下采样&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/image-20251110101612859.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;image-20251110101612859&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;下图为高斯模糊，明显更加圆滑，直接MipMap还是方形的&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/v2-1f9ab3392905eaac3190e5e266a4a962_b.webp&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;动图&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;所以进行下采样时，使用高斯模糊，而不是普通的平均。  这只是第一步&lt;/p&gt;
+&lt;p&gt;直接将最高层级 mip 叠加到图像上虽然能够产生足够大的光晕扩散，但是发光物的中心区域不够明亮。此外，发光物和泛光之间没有过度而是直接跳变&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/v2-fa67671c61425333587c6634c0be3036_1440w.jpg&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;img&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;亮度跳变导致的&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/v2-72e75496f88c9e8e446ba7c8b2f00eed_1440w.jpg&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;img&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;为了实现发光物和最高层 mip 之间的过渡，我们需要叠加所有的 mip 层级到原图上。因为 mip[i] 是基于 mip[i-1] 进行计算的，相邻层级之间相对连续则不会产生跳变&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/v2-502d2c8ff257cea0f674949dacae7529_1440w.jpg&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;img&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/v2-bc52b48d43ef484eb09d79a89142ee3c_1440w.jpg&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;img&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;h1 id=&#34;上采样&#34;&gt;上采样
+&lt;/h1&gt;&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/v2-6e542ad0733116b074164331a782b6f6_1440w.jpg&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;img&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/v2-1be5032cc27dd55f156c4f6508f4f639_1440w.jpg&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;img&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;h1 id=&#34;引擎实践&#34;&gt;引擎实践
+&lt;/h1&gt;</description>
+        </item>
+        <item>
         <title>游戏引擎开发实践（大气渲染）</title>
         <link>https://sdpyy1.github.io/p/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E5%BC%80%E5%8F%91%E5%AE%9E%E8%B7%B5%E5%A4%A7%E6%B0%94%E6%B8%B2%E6%9F%93/</link>
         <pubDate>Fri, 07 Nov 2025 18:08:43 +0800</pubDate>

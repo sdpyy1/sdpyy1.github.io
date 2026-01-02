@@ -1,0 +1,1433 @@
+<!DOCTYPE html>
+<html lang="zh-cn" dir="ltr">
+    <head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'>
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+  <meta name="referrer" content="no-referrer-when-downgrade"><meta name='description' content="蒙特卡洛积分 开头一句话就解释了为什么渲染要用蒙特卡洛积分\n虽然梯形积分法或高斯求积等标准数值积分技术在求解低维光滑积分时效果显著，但对于渲染中常见的高维不连续积分，其收敛速度却明显不足。蒙特卡洛积分技术为此提供了解决方案，通过随机采样评估积分，其收敛速度与被积函数的维度无关\n">
+<title>PBRT（Monte Carlo Integration）</title>
+
+<link rel='canonical' href='https://sdpyy1.github.io/p/pbrtmonte-carlo-integration/'>
+
+<link rel="stylesheet" href="/scss/style.min.6a692fd055deae459f2a9767f57f3855ba80cafd5041317f24f7360f6ca47cdf.css"><meta property='og:title' content="PBRT（Monte Carlo Integration）">
+<meta property='og:description' content="蒙特卡洛积分 开头一句话就解释了为什么渲染要用蒙特卡洛积分\n虽然梯形积分法或高斯求积等标准数值积分技术在求解低维光滑积分时效果显著，但对于渲染中常见的高维不连续积分，其收敛速度却明显不足。蒙特卡洛积分技术为此提供了解决方案，通过随机采样评估积分，其收敛速度与被积函数的维度无关\n">
+<meta property='og:url' content='https://sdpyy1.github.io/p/pbrtmonte-carlo-integration/'>
+<meta property='og:site_name' content='wanfeng'>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:published_time' content='2025-12-22T13:17:37&#43;08:00'/><meta property='article:modified_time' content='2025-12-22T13:17:37&#43;08:00'/>
+<meta name="twitter:title" content="PBRT（Monte Carlo Integration）">
+<meta name="twitter:description" content="蒙特卡洛积分 开头一句话就解释了为什么渲染要用蒙特卡洛积分\n虽然梯形积分法或高斯求积等标准数值积分技术在求解低维光滑积分时效果显著，但对于渲染中常见的高维不连续积分，其收敛速度却明显不足。蒙特卡洛积分技术为此提供了解决方案，通过随机采样评估积分，其收敛速度与被积函数的维度无关\n">
+    <link rel="shortcut icon" href="/favicon.ico" />
+
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="切换菜单">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        
+            
+            <figure class="site-avatar">
+                <a href="/">
+                
+                    
+                    
+                    
+                        
+                        <img src="/img/avatar_hu_f59158f730715054.png" width="300"
+                            height="300" class="site-logo" loading="lazy" alt="Avatar">
+                    
+                
+                </a>
+                
+                    <span class="emoji">🧐</span>
+                
+            </figure>
+            
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="/">wanfeng</a></h1>
+            <h2 class="site-description">Blog</h2>
+        </div>
+    </header><ol class="menu-social">
+            
+                <li>
+                    <a 
+                        href='https://space.bilibili.com/287473737'
+                        target="_blank"
+                        title="Bilibili"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-brand-bilibili"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 10a4 4 0 0 1 4 -4h10a4 4 0 0 1 4 4v6a4 4 0 0 1 -4 4h-10a4 4 0 0 1 -4 -4v-6z" /><path d="M8 3l2 3" /><path d="M16 3l-2 3" /><path d="M9 13v-2" /><path d="M15 11v2" /></svg>
+                        
+                    </a>
+                </li>
+            
+                <li>
+                    <a 
+                        href='https://github.com/sdpyy1'
+                        target="_blank"
+                        title="GitHub"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
+</svg>
+
+
+
+                        
+                    </a>
+                </li>
+            
+        </ol><ol class="menu" id="main-menu">
+        
+        
+        
+        <li >
+            <a href='/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>Home</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/about/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>About</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>Archives</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/search/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>Search</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/links/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5" />
+  <path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5" />
+</svg>
+
+
+
+                
+                <span>Links</span>
+            </a>
+        </li>
+        
+        <li class="menu-bottom-section">
+            <ol class="menu">
+                    
+                        <li id="i18n-switch">  
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-language" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M4 5h7" />
+  <path d="M9 3v2c0 4.418 -2.239 8 -5 8" />
+  <path d="M5 9c-.003 2.144 2.952 3.908 6.7 4" />
+  <path d="M12 20l4 -9l4 9" />
+  <path d="M19.1 18h-6.2" />
+</svg>
+
+
+
+                            <select name="language" title="language" onchange="window.location.href = this.selectedOptions[0].value">
+                                
+                                    <option value="https://sdpyy1.github.io/en/" >English</option>
+                                
+                                    <option value="https://sdpyy1.github.io/" selected>中文</option>
+                                
+                            </select>
+                        </li>
+                    
+                
+
+                
+                    <li id="dark-mode-toggle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <span>暗色模式</span>
+                    </li>
+                
+            </ol>
+        </li>
+    </ol>
+</aside>
+
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">目录</h2>
+        
+        <div class="widget--toc">
+            <nav id="TableOfContents">
+  <ol>
+    <li><a href="#蒙特卡洛积分">蒙特卡洛积分</a>
+      <ol>
+        <li><a href="#概率论review">概率论Review</a></li>
+        <li><a href="#the-monte-carlo-estimator">The Monte Carlo Estimator</a></li>
+        <li><a href="#error-in-monte-carlo-estimators-蒙特卡洛积分的误差">Error in Monte Carlo Estimators 蒙特卡洛积分的误差</a></li>
+        <li><a href="#improving-efficiency-提升效率">Improving Efficiency 提升效率</a>
+          <ol>
+            <li><a href="#stratified-sampling-分层采样">Stratified Sampling 分层采样</a></li>
+            <li><a href="#importance-sampling-重要性采样">Importance Sampling 重要性采样</a></li>
+            <li><a href="#multiple-importance-sampling-多重重要性采样">Multiple Importance Sampling 多重重要性采样</a></li>
+            <li><a href="#mis-compensation-多重重要性采样补偿">MIS Compensation 多重重要性采样补偿</a></li>
+            <li><a href="#russian-roulette">Russian Roulette</a></li>
+            <li><a href="#splitting">Splitting</a></li>
+          </ol>
+        </li>
+        <li><a href="#sampling-using-the-inversion-method-逆变换法采样">Sampling Using the Inversion Method 逆变换法采样</a>
+          <ol>
+            <li><a href="#离散情况">离散情况</a></li>
+            <li><a href="#连续情况">连续情况</a></li>
+          </ol>
+        </li>
+        <li><a href="#transforming-between-distributions">Transforming between Distributions</a></li>
+      </ol>
+    </li>
+  </ol>
+</nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+            <main class="main full-width">
+    <article class="main-article">
+    <header class="article-header">
+
+    <div class="article-details">
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="/p/pbrtmonte-carlo-integration/">PBRT（Monte Carlo Integration）</a>
+        </h2>
+    
+        
+    </div>
+
+    
+    
+    
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published">Dec 22, 2025</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-time--reading">
+                    阅读时长: 7 分钟
+                </time>
+            </div>
+        
+
+        
+            
+    </footer>
+    
+    
+</div>
+<style>
+    .category-hierarchy {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;  
+        margin-right: 12px;  
+        margin-bottom: 8px;  
+    }
+    
+    .category-separator {
+        color: #999;
+        user-select: none;
+        font-size: 1em;  
+    }
+    
+    .article-category a {
+        text-decoration: none;
+        padding: 6px 12px;  
+        border-radius: 6px;  
+        font-size: 0.95em;  
+        transition: all 0.2s ease;
+        line-height: 1.5;  
+    }
+    
+    .article-category a:hover {
+        opacity: 0.9;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 6px rgba(0,0,0,0.1);  
+    }
+</style>
+</header>
+
+    <section class="article-content">
+    
+    
+    <h1 id="蒙特卡洛积分">蒙特卡洛积分
+</h1><blockquote>
+<p>开头一句话就解释了为什么渲染要用蒙特卡洛积分</p>
+<p>虽然梯形积分法或高斯求积等标准数值积分技术在求解低维光滑积分时效果显著，但对于渲染中常见的高维不连续积分，其收敛速度却明显不足。蒙特卡洛积分技术为此提供了解决方案，通过随机采样评估积分，其收敛速度与被积函数的维度无关</p>
+</blockquote>
+<h2 id="概率论review">概率论Review
+</h2><blockquote>
+<p>读一遍，关键是回顾一下PMF/PDF  CDF都是什么</p>
+</blockquote>
+<p>随机变量</p>
+<p><img src="/image-20251222132703722.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251222132703722"
+	
+	
+></p>
+<p>p(X)表达概率，称为PMF</p>
+<p><img src="/image-20251222133230031.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251222133230031"
+	
+	
+></p>
+<p>这个是真忘了</p>
+<p><img src="/image-20251222134038724.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251222134038724"
+	
+	
+></p>
+<blockquote>
+<p>对于连续随机变量，PMF取值始终是0，所以另外引入了PDF（概率密度函数）来表达连续性随机变量的概率情况</p>
+<p>计算PDF的理论方法就是，在随机域上对PDF进行积分的结果得=1，反退出来的PDF函数是什么</p>
+<p>另外PDF是累积分布函数的导数</p>
+</blockquote>
+<p><img src="/image-20251222135459581.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251222135459581"
+	
+	
+></p>
+<p>PDF作用就很好理解了，计算ab范围内的概率</p>
+<p><img src="/image-20251222135655753.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251222135655753"
+	
+	
+></p>
+<p>期望，X的期望就可以通过   积分X*PDF来计算</p>
+<p><img src="/image-20251222140008384.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251222140008384"
+	
+	
+></p>
+<h2 id="the-monte-carlo-estimator">The Monte Carlo Estimator
+</h2><blockquote>
+<p>蒙特卡洛公式的期望就等于原始需要计算的积分</p>
+</blockquote>
+<p><img src="/image-20251222141135863.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251222141135863"
+	
+	
+></p>
+<p>蒙特卡洛公式，代码流程就是从PDF表示的分布中随机采样，计算积分值 / pdf值，多个采样点求和后除以采样数</p>
+<p><img src="/image-20251222141338740.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251222141338740"
+	
+	
+></p>
+<p>可以看出一般形式的蒙特卡洛公式的期望仍然等于要求的积分</p>
+<p><img src="/image-20251222141449539.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251222141449539"
+	
+	
+></p>
+<h2 id="error-in-monte-carlo-estimators-蒙特卡洛积分的误差">Error in Monte Carlo Estimators 蒙特卡洛积分的误差
+</h2><blockquote>
+<p>使用方差与收敛时间评估蒙特卡洛积分</p>
+</blockquote>
+<p>回顾方差的含义就是函数与其期望值的预期平方偏差</p>
+<p><img src="/image-20251222142013027.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251222142013027"
+	
+	
+></p>
+<p>经典公式</p>
+<p><img src="/image-20251222142102875.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251222142102875"
+	
+	
+></p>
+<p>多个独立随机变量的方差可以直接求和得到总的方差</p>
+<p><img src="/image-20251222142255528.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251222142255528"
+	
+	
+></p>
+<p>蒙特卡洛积分相当于多个独立的随机变量的和，他的方差相当于每个随机变量的方差的和，因为另外因为蒙特卡洛积分要除以/N（样本数量），所以蒙特卡洛积分的方差会随着样本数量的增加而线性递减。</p>
+<p>下面这段话是想说明<strong>蒙特卡洛算法的收敛速度不受维度影响，因此成为高维积分唯一实用的数值积分算法</strong>，TODO: 其实不是特别理解在说什么</p>
+<p><img src="/image-20251222143627496.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251222143627496"
+	
+	
+></p>
+<p>使用方差线性递减这一特性，使用方差与运行实践来评估一个蒙特卡洛，方差和运行时间越小越好</p>
+<p><img src="/image-20251222143840533.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251222143840533"
+	
+	
+></p>
+<p>并非所有积分估计量的期望值都等于积分本身。这类估计量被称为有偏估计量</p>
+<p><img src="/image-20251222144016528.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251222144016528"
+	
+	
+></p>
+<blockquote>
+<p>虽然有偏，但随着样本数 N→∞N \to \inftyN→∞，误差会趋近 0，这类估计器称为一致（consistent）估计器</p>
+<p><strong>在积分估计中，有偏估计器虽然期望值不等于真实值，但可能方差更小、收敛更快，而且一致估计器随着样本数增加仍能得到正确结果；在 Monte Carlo 渲染中，绝大多数估计器是无偏的，光子映射是一个例外</strong>。</p>
+</blockquote>
+<p><img src="/image-20251222144349684.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251222144349684"
+	
+	
+></p>
+<p>MSE（均方误差）：估计值与真实值之间的平方误差的期望（方差是估计值与估计值比较，均方误差是估计值与实际值比较）</p>
+<p><img src="/image-20251222192358667.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251222192358667"
+	
+	
+></p>
+<p>对于无偏估计，那MSE就等于方差，否则即为方差与估计量偏差平方之和。</p>
+<blockquote>
+<p>最后这点东西介绍，需要明白 蒙特卡洛积分本身也是一个随机变量（因为他通过采样多个独立的随机变量来进行的），所以可以求蒙特卡洛的方差和均方误差，求法就是用样本进行估计，下边两幅图就是如何通过样本估计蒙特卡洛的方差和均方误差</p>
+</blockquote>
+<p>这里提到的应该就是用样本估计随机变量的方差（也就是如何量化一个蒙特卡洛积分的方差）</p>
+<p><img src="/image-20251222193052016.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251222193052016"
+	
+	
+></p>
+<p>利用样本估计的方差，是实际方差的估计值，所以本身也有方差</p>
+<p>另外提到了MSE如何估计</p>
+<p><img src="/image-20251222193315366.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251222193315366"
+	
+	
+></p>
+<h2 id="improving-efficiency-提升效率">Improving Efficiency 提升效率
+</h2><h3 id="stratified-sampling-分层采样">Stratified Sampling 分层采样
+</h3><blockquote>
+<p>简单理解就是把积分域划分为多个区域，每个区域按照自己的PDF去进行蒙特卡洛积分</p>
+<p>把随机采样改成了在每个子区域随机采样，</p>
+</blockquote>
+<p>下图i代表第i个积分区域，j代表第j个样本</p>
+<p><img src="/image-20251222194407175.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251222194407175"
+	
+	
+></p>
+<p>随机采样结果</p>
+<p><img src="/image-20251222194926344.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251222194926344"
+	
+	
+></p>
+<p>分层采样结果，对比能看出噪声更小了</p>
+<p><img src="/image-20251222194940114.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251222194940114"
+	
+	
+></p>
+<p>分层采样的缺点与维度有关，维度太多分层也变得复杂</p>
+<h3 id="importance-sampling-重要性采样">Importance Sampling 重要性采样
+</h3><blockquote>
+<p>重要性抽样是一种强大的方差缩减技术，其原理基于蒙特卡洛估计量的特性</p>
+<p>原理：若样本取自与被积函数函数形式相似的分布，则收敛速度更快。</p>
+</blockquote>
+<p>如果被积函数是上图，PDF用下图，那最终得到的蒙特卡洛的方差要比随机采样好很多</p>
+<p>PDF中间高，说明在这些点采样的概率高，在采样时也就更逼近真实的数据，很好理解的效果好</p>
+<p><img src="/image-20251222200644651.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251222200644651"
+	
+	
+></p>
+<h3 id="multiple-importance-sampling-多重重要性采样">Multiple Importance Sampling 多重重要性采样
+</h3><blockquote>
+<p>在面对被积函数是多个函数相乘<img src="/image-20251222201445993.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251222201445993"
+	
+	
+>（比如渲染方程就是BRDF Li cos 三项)的情况下的优化方案</p>
+</blockquote>
+<p>首先举个例子，假如有两个PDF，刚好对应两个f(x)，如果我们使用PDFa作为采样的PDF时，最终样本都会只剩下fb(x)，因为PDFa与fa(x)更好成比例</p>
+<p><img src="/image-20251222201537255.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251222201537255"
+	
+	
+></p>
+<p>此时蒙特卡洛积分的方差完全由fb(x)的方差决定，但他的方差可能是很高的，另外这是不可控的，因为被积函数是不能变动的。所以单纯依赖被积函数某一项的形状设计PDF，是不可靠的</p>
+<p>MIS就是用来解决这个问题的</p>
+<p><img src="/image-20251222203325327.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251222203325327"
+	
+	
+></p>
+<p><img src="/image-20251222203332792.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251222203332792"
+	
+	
+></p>
+<p><img src="/image-20251222203344643.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251222203344643"
+	
+	
+></p>
+<p>MIS的采样方案是</p>
+<p><img src="/image-20251222203600792.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251222203600792"
+	
+	
+></p>
+<p>也就是用光源相关的PDF采样一次，用BRDF相关的PDF采样一次，并乘以各自的权重。</p>
+<p>总结成公式就是</p>
+<p><img src="/image-20251222203731683.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251222203731683"
+	
+	
+></p>
+<p>那权重如何计算呢（<strong>MIS 的权重来自一个要求：在保持无偏的前提下，让方差尽可能小。</strong>）<strong>PBRT 默认使用的是 Balance Heuristic</strong>。</p>
+<p>抛开每种PDF生成的样本数量不谈，权重就是 PDF/所有PDF</p>
+<p><img src="/image-20251222204703129.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251222204703129"
+	
+	
+></p>
+<p>更进一步，乘个幂次</p>
+<p><img src="/image-20251222205049944.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251222205049944"
+	
+	
+></p>
+<p>紧接着提到单样本模型（Single-Sample MIS），其实就是上边的n都=1，就是每个PDF都只采样一次，方差就很低了</p>
+<h3 id="mis-compensation-多重重要性采样补偿">MIS Compensation 多重重要性采样补偿
+</h3><blockquote>
+<p>比如一个渲染场景，光源项PDF与BRDF的PDF两个PDF进行多重重要性采样</p>
+<p>这个东西必须学习完MIS并且实践后才能感悟他在干什么，这里先简单理解一下</p>
+</blockquote>
+<p>此时的蒙特卡洛估计的MIS</p>
+<p><img src="/image-20251223134446533.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251223134446533"
+	
+	
+></p>
+<p>BRDF在高光方向大量采样，但是这里的光源=0，最终采样样本=0</p>
+<p>光源方向采样也因为权重被削弱</p>
+<p><img src="/image-20251223134518331.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251223134518331"
+	
+	
+></p>
+<p>MIS虽然考虑到了不同的PDF的配合，但是如果一个PDF大量覆盖了积分接近0的区域，方差并不是最优</p>
+<p><img src="/image-20251223134643037.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251223134643037"
+	
+	
+></p>
+<blockquote>
+<p><strong>BSDF PDF 在“根本没有光”的方向仍然给了概率</strong>，总之就是在MIS的情况下，仍然会让积分区域接近0的位置分布大量的采样</p>
+</blockquote>
+<p>一种MIS补偿方案是锐化概率分布，就是说在概率很小的地方，直接让他概率为0，不进行采样</p>
+<ul>
+<li><strong>低于阈值的概率 → 直接砍掉</strong></li>
+<li><strong>剩下的概率 → 重新归一化</strong></li>
+<li>结果：PDF 更“尖锐”（sharpened）</li>
+</ul>
+<h3 id="russian-roulette">Russian Roulette
+</h3><blockquote>
+<p>跳过贡献度较小的样本，提升蒙特卡洛性能，同时保证无偏</p>
+</blockquote>
+<p>C通常是0，q是一个[0-1]均匀分布的随机变量，有1-q的概率继续计算，有q的概率停止</p>
+<p><img src="/image-20251223141853034.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251223141853034"
+	
+	
+></p>
+<p>可以看出来这样做并没有改变蒙特卡洛积分的无偏性</p>
+<p><img src="/image-20251223141947025.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251223141947025"
+	
+	
+></p>
+<h3 id="splitting">Splitting
+</h3><blockquote>
+<p>同样需要结合具体场景来学习，这里先简单过一下</p>
+</blockquote>
+<p>对于一个二重积分</p>
+<p><img src="/image-20251223142513325.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251223142513325"
+	
+	
+></p>
+<p>每次采样都需要重新计算x样本和y样本</p>
+<p><img src="/image-20251223142546689.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251223142546689"
+	
+	
+></p>
+<p>每次都要重新采 <code>x</code></p>
+<p>如果 <code>x</code> 很贵（比如一次主光线 / 路径前缀）</p>
+<p>Splitting：核心思想</p>
+<blockquote>
+<p><strong>x 很贵，y 很便宜，那就：</strong></p>
+<ul>
+<li>先采一次 x</li>
+<li>对这个 x，多采几个 y</li>
+</ul>
+</blockquote>
+<p><img src="/image-20251223142617942.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251223142617942"
+	
+	
+></p>
+<p><img src="/image-20251223142625057.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251223142625057"
+	
+	
+></p>
+<h2 id="sampling-using-the-inversion-method-逆变换法采样">Sampling Using the Inversion Method 逆变换法采样
+</h2><blockquote>
+<p>已知PDF情况下，解决如何按照这个PDF进行采样的方法：反演变换法     从CDF来进行采样</p>
+<p>一句话解释思路就是：1. 根据$\xi$ 得到一个[0-1]直接的随机数，然后让 CDF函数 = 这个值，反向求出X</p>
+</blockquote>
+<p>CDF图像的斜率就是PDF值，斜率越大，说明这个采样点的概率越大，同时斜率越大的区域在Y坐标被均匀采样的概率越大，总结结果就是用一个均匀分布采样结果为 PDF越大的区域越容易被采样</p>
+<p><img src="/image-20251224152458352.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251224152458352"
+	
+	
+></p>
+<h3 id="离散情况">离散情况
+</h3><blockquote>
+<p>利用均匀采样配合权重来按照权重进行采样，最终结果是按照权重来提高概率，算法本质是均匀采样</p>
+</blockquote>
+<p>需要前边的公式，$\xi$ 是[0-1]之间均匀分布的随机变量，  X是离散的随机变量，这个公式展示了如何从$\xi$去随机选择哪个X作为样本。 也就是说用均匀分布的随机变量来采样X</p>
+<p><img src="/image-20251223164719097.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251223164719097"
+	
+	
+></p>
+<p>这一操作在CDF图像上就是$\xi$ 取值作为Y轴位置，向右看对齐到哪一列就去Xi</p>
+<p><img src="/image-20251223170103261.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251223170103261"
+	
+	
+></p>
+<p>这个东西的作用是在一个权重数组中，通过均匀分布来选择其中一个   <strong>最终结果不是均匀采样的，而是按照权重大小来进行的， 但是过程本质利用的是均匀采样</strong></p>
+<p><img src="/image-20251223165626548.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251223165626548"
+	
+	
+></p>
+<p>这个代码最终返回一个权重索引，满足</p>
+<p><img src="/image-20251223170131649.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251223170131649"
+	
+	
+></p>
+<h3 id="连续情况">连续情况
+</h3><blockquote>
+<p>利用PDF对应的CDF来进行</p>
+</blockquote>
+<p>​	从PDF采样的步骤：</p>
+<ol>
+<li>
+<p>计算CDF<img src="/image-20251224134606570.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251224134606570"
+	
+	
+></p>
+</li>
+<li>
+<p>还是利用均匀分布产生的随机数<img src="/image-20251224134636124.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251224134636124"
+	
+	
+></p>
+</li>
+<li>
+<p>构建等式$\xi$  = CDF(X)，反过来就算出来X是什么了 <img src="/image-20251224134723594.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251224134723594"
+	
+	
+></p>
+</li>
+</ol>
+<h2 id="transforming-between-distributions">Transforming between Distributions
+</h2><blockquote>
+<p>把上一章讲的逆变换法推演到任意情况，随机变量X的信息都知道，现在利用X对随机变量Y=f(X）进行抽样的方法</p>
+<p>感觉目前不会遇到这样的问题，先跳过，不然学了也是忘</p>
+</blockquote>
+
+</section>
+
+
+    <footer class="article-footer">
+    
+
+    
+    <section class="article-copyright">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
+</svg>
+
+
+
+        <span>Licensed under CC BY-NC-SA 4.0</span>
+    </section>
+    </footer>
+
+
+    
+        <link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css"integrity="sha384-n8MVd4RsNIU0tAv4ct0nTaAbDJwPJzDEaqSD1odI&#43;WdtXRGWt2kTvGFasHpSy3SV"crossorigin="anonymous"
+            ><script 
+                src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"integrity="sha384-XjKyOOlGwcjNTAIQHIpgOno0Hl1YQqzUOEleOLALmuqehneUG&#43;vnGctmUb0ZY0l8"crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"integrity="sha384-&#43;VBxd3r6XgURycqtZ117nYw44OOcIax56Z4dCRWbxyPt0Koah1uHoK0o4&#43;/RRE05"crossorigin="anonymous"
+                defer
+                >
+            </script><script>
+    window.addEventListener("DOMContentLoaded", () => {
+	const mainArticleElement = document.querySelector(".main-article");
+        renderMathInElement(mainArticleElement, {
+            delimiters: [
+                { left: "$$", right: "$$", display: true },
+                { left: "$", right: "$", display: false },
+                { left: "\\(", right: "\\)", display: false },
+                { left: "\\[", right: "\\]", display: true }
+            ],
+            ignoredClasses: ["gist"]
+        });})
+</script>
+
+    
+</article>
+
+    
+
+    
+
+     
+    
+        
+    <script
+    src="https://giscus.app/client.js"
+    data-repo="sdpyy1/sdpyy1.github.io"
+    data-repo-id="R_kgDOQEycpQ"
+    data-category="Announcements"
+    data-category-id="DIC_kwDOQEycpc4Cwz7v"
+    data-mapping="pathname"
+    data-strict="0"
+    data-reactions-enabled="1"
+    data-emit-metadata="0"
+    data-input-position="top"
+    data-theme="light"
+    data-lang="en"
+    data-loading=""
+    crossorigin="anonymous"
+    async
+></script>
+<script>
+    function setGiscusTheme(theme) {
+        let giscus = document.querySelector("iframe.giscus-frame");
+        if (giscus) {
+            giscus.contentWindow.postMessage(
+                {
+                    giscus: {
+                        setConfig: {
+                            theme: theme,
+                        },
+                    },
+                },
+                "https://giscus.app"
+            );
+        }
+    }
+
+    (function () {
+        addEventListener("message", (e) => {
+            if (event.origin !== "https://giscus.app") return;
+            handler();
+        });
+        window.addEventListener("onColorSchemeChange", handler);
+
+        function handler() {
+            if (document.documentElement.dataset.scheme === "light") {
+                setGiscusTheme('light');
+            } else {
+                setGiscusTheme('light');
+            }
+        }
+    })();
+</script>
+
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+            2020 - 
+        
+        2026 爱喝东方树叶
+    </section>
+    <section style="display: flex; gap: 30px; align-items: center;">
+      
+      
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+      <span>📚 文章数: 67</span>
+      <span>✍️ 总字数: 
+        
+        
+        222.80K
+      </span>
+    </section>
+
+    <section class="powerby">
+    
+    <div class="busuanzi-footer">
+        <span id="busuanzi_container_site_pv">
+          本站总访问量<span id="busuanzi_value_site_pv"></span>次
+        </span>
+        <span id="busuanzi_container_site_uv">
+          本站访客数<span id="busuanzi_value_site_uv"></span>人次
+        </span>
+      </div></section>
+
+</footer>
+
+
+    
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    
+    <div class="pswp__bg"></div>
+
+    
+    <div class="pswp__scroll-wrap">
+
+        
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                
+                
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                        <div class="pswp__preloader__cut">
+                            <div class="pswp__preloader__donut"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div>
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js"integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo="crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js"integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU="crossorigin="anonymous"
+                defer
+                >
+            </script><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css"crossorigin="anonymous"
+            ><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css"crossorigin="anonymous"
+            >
+
+            </main>
+        </div>
+        <script 
+                src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js"integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z&#43;KMkF24hUW8WePSA9HM="crossorigin="anonymous"
+                
+                >
+            </script><script type="text/javascript" src="/ts/main.1e9a3bafd846ced4c345d084b355fb8c7bae75701c338f8a1f8a82c780137826.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>

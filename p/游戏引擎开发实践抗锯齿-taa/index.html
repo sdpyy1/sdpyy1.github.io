@@ -4,16 +4,16 @@
 <meta name='viewport' content='width=device-width, initial-scale=1'>
 <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
   <meta name="referrer" content="no-referrer-when-downgrade"><meta name='description' content=" 总体来看TAA思想比较简单易懂，实现思路更多是实践性的经验总结\nTAA TAA (Temporal Anti-Aliasing) 综合历史帧的数据来实现抗锯齿，这样会将每个像素点的多次采样均摊到多个帧中，相对的开销要小得多。在 MSAA 中，我们在一帧中，在每个像素中放置了多个次像素采样点。在 TAA 中，我们实现的方式，就是在每帧采样时，将采样的点进行偏移，实现抖动 (jitter)。\n">
-<title>游戏引擎开发实践（抗锯齿）</title>
+<title>游戏引擎开发实践（抗锯齿 TAA）</title>
 
-<link rel='canonical' href='https://sdpyy1.github.io/p/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E5%BC%80%E5%8F%91%E5%AE%9E%E8%B7%B5%E6%8A%97%E9%94%AF%E9%BD%BF/'>
+<link rel='canonical' href='https://sdpyy1.github.io/p/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E5%BC%80%E5%8F%91%E5%AE%9E%E8%B7%B5%E6%8A%97%E9%94%AF%E9%BD%BF-taa/'>
 
-<link rel="stylesheet" href="/scss/style.min.6a692fd055deae459f2a9767f57f3855ba80cafd5041317f24f7360f6ca47cdf.css"><meta property='og:title' content="游戏引擎开发实践（抗锯齿）">
+<link rel="stylesheet" href="/scss/style.min.6a692fd055deae459f2a9767f57f3855ba80cafd5041317f24f7360f6ca47cdf.css"><meta property='og:title' content="游戏引擎开发实践（抗锯齿 TAA）">
 <meta property='og:description' content=" 总体来看TAA思想比较简单易懂，实现思路更多是实践性的经验总结\nTAA TAA (Temporal Anti-Aliasing) 综合历史帧的数据来实现抗锯齿，这样会将每个像素点的多次采样均摊到多个帧中，相对的开销要小得多。在 MSAA 中，我们在一帧中，在每个像素中放置了多个次像素采样点。在 TAA 中，我们实现的方式，就是在每帧采样时，将采样的点进行偏移，实现抖动 (jitter)。\n">
-<meta property='og:url' content='https://sdpyy1.github.io/p/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E5%BC%80%E5%8F%91%E5%AE%9E%E8%B7%B5%E6%8A%97%E9%94%AF%E9%BD%BF/'>
+<meta property='og:url' content='https://sdpyy1.github.io/p/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E5%BC%80%E5%8F%91%E5%AE%9E%E8%B7%B5%E6%8A%97%E9%94%AF%E9%BD%BF-taa/'>
 <meta property='og:site_name' content='wanfeng'>
 <meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='抗锯齿' /><meta property='article:published_time' content='2025-12-04T18:58:15&#43;08:00'/><meta property='article:modified_time' content='2025-12-04T18:58:15&#43;08:00'/><meta property='og:image' content='https://sdpyy1.github.io/image-20251207191240613.png' />
-<meta name="twitter:title" content="游戏引擎开发实践（抗锯齿）">
+<meta name="twitter:title" content="游戏引擎开发实践（抗锯齿 TAA）">
 <meta name="twitter:description" content=" 总体来看TAA思想比较简单易懂，实现思路更多是实践性的经验总结\nTAA TAA (Temporal Anti-Aliasing) 综合历史帧的数据来实现抗锯齿，这样会将每个像素点的多次采样均摊到多个帧中，相对的开销要小得多。在 MSAA 中，我们在一帧中，在每个像素中放置了多个次像素采样点。在 TAA 中，我们实现的方式，就是在每帧采样时，将采样的点进行偏移，实现抖动 (jitter)。\n"><meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:image" content='https://sdpyy1.github.io/image-20251207191240613.png' />
     <link rel="shortcut icon" href="/favicon.ico" />
@@ -316,9 +316,9 @@
     <article class="has-image main-article">
     <header class="article-header">
         <div class="article-image">
-            <a href="/p/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E5%BC%80%E5%8F%91%E5%AE%9E%E8%B7%B5%E6%8A%97%E9%94%AF%E9%BD%BF/">
+            <a href="/p/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E5%BC%80%E5%8F%91%E5%AE%9E%E8%B7%B5%E6%8A%97%E9%94%AF%E9%BD%BF-taa/">
                 
-                    <img src="/image-20251207191240613.png" loading="lazy" alt="Featured image of post 游戏引擎开发实践（抗锯齿）" />
+                    <img src="/image-20251207191240613.png" loading="lazy" alt="Featured image of post 游戏引擎开发实践（抗锯齿 TAA）" />
                 
             </a>
         </div>
@@ -380,7 +380,7 @@
 
     <div class="article-title-wrapper">
         <h2 class="article-title">
-            <a href="/p/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E5%BC%80%E5%8F%91%E5%AE%9E%E8%B7%B5%E6%8A%97%E9%94%AF%E9%BD%BF/">游戏引擎开发实践（抗锯齿）</a>
+            <a href="/p/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E5%BC%80%E5%8F%91%E5%AE%9E%E8%B7%B5%E6%8A%97%E9%94%AF%E9%BD%BF-taa/">游戏引擎开发实践（抗锯齿 TAA）</a>
         </h2>
     
         
@@ -1350,6 +1350,111 @@
             
                 
 <article class="article-card no-image">
+    <a href="/p/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E5%BC%80%E5%8F%91%E5%AE%9E%E8%B7%B5%E9%AB%98%E8%B4%A8%E9%87%8Fbloom/">
+        
+        
+        <div class="article-details">
+            <h2 class="article-title">游戏引擎开发实践（高质量Bloom）</h2>
+        </div>
+        
+    </a>
+
+    <style>
+     
+    .article-card {
+        background: rgba(255, 255, 255, 0.25);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        margin: 10px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .article-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    }
+
+    .article-card a {
+        display: flex;
+        flex-direction: column;
+        text-decoration: none;
+        color: inherit;
+        height: 100%;
+    }
+
+     
+    .article-image-card {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        overflow: hidden;
+    }
+    .article-image-card img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+    .article-image-card:hover img {
+        transform: scale(1.05);
+    }
+
+     
+    .article-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: rgba(0,0,0,0.3);  
+        padding: 10px;
+        box-sizing: border-box;
+        text-align: center;
+    }
+    .article-overlay .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #fff;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .article-card.no-image .article-details {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 15px;
+    }
+    .article-card.no-image .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #222;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .articles-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 20px;
+    }
+    </style>
+</article>
+            
+                
+<article class="article-card no-image">
     <a href="/p/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E5%BC%80%E5%8F%91%E5%AE%9E%E8%B7%B5%E5%A4%A7%E6%B0%94%E6%B8%B2%E6%9F%93/">
         
         
@@ -1663,117 +1768,6 @@
     </style>
 </article>
             
-                
-<article class="article-card has-image">
-    <a href="/p/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E5%BC%80%E5%8F%91%E5%AE%9E%E8%B7%B5%E5%AE%9E%E4%BE%8B%E5%8C%96%E6%B8%B2%E6%9F%93/">
-        
-        <div class="article-image-card">
-            
-                <img src="/image-20251022010105969.png" loading="lazy" data-key="" data-hash="/image-20251022010105969.png"/>
-            
-
-            
-            <div class="article-overlay">
-                <h2 class="article-title">游戏引擎开发实践（实例化渲染）</h2>
-            </div>
-        </div>
-        
-    </a>
-
-    <style>
-     
-    .article-card {
-        background: rgba(255, 255, 255, 0.25);
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
-        border-radius: 16px;
-        overflow: hidden;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.12);
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-        margin: 10px;
-        display: flex;
-        flex-direction: column;
-    }
-
-    .article-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
-    }
-
-    .article-card a {
-        display: flex;
-        flex-direction: column;
-        text-decoration: none;
-        color: inherit;
-        height: 100%;
-    }
-
-     
-    .article-image-card {
-        position: relative;
-        width: 100%;
-        aspect-ratio: 16 / 9;
-        overflow: hidden;
-    }
-    .article-image-card img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        transition: transform 0.5s ease;
-    }
-    .article-image-card:hover img {
-        transform: scale(1.05);
-    }
-
-     
-    .article-overlay {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        background: rgba(0,0,0,0.3);  
-        padding: 10px;
-        box-sizing: border-box;
-        text-align: center;
-    }
-    .article-overlay .article-title {
-        font-size: 1.5rem;
-        font-weight: 700;
-        color: #fff;
-        margin: 0;
-        line-height: 1.3;
-    }
-
-     
-    .article-card.no-image .article-details {
-        flex: 1;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        text-align: center;
-        padding: 15px;
-    }
-    .article-card.no-image .article-title {
-        font-size: 1.5rem;
-        font-weight: 700;
-        color: #222;
-        margin: 0;
-        line-height: 1.3;
-    }
-
-     
-    .articles-list {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-        gap: 20px;
-    }
-    </style>
-</article>
-            
         </div>
     </div>
 </aside>
@@ -1840,7 +1834,7 @@
         
             2020 - 
         
-        2025 爱喝东方树叶
+        2026 爱喝东方树叶
     </section>
     <section style="display: flex; gap: 30px; align-items: center;">
       
@@ -1970,12 +1964,22 @@
       
         
       
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
     
-      <span>📚 文章数: 62</span>
+      <span>📚 文章数: 67</span>
       <span>✍️ 总字数: 
         
         
-        211.25K
+        222.80K
       </span>
     </section>
 

@@ -1,0 +1,1267 @@
+<!DOCTYPE html>
+<html lang="zh-cn" dir="ltr">
+    <head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'>
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+  <meta name="referrer" content="no-referrer-when-downgrade"><meta name='description' content=" 未完结\n因为直接看了第7章，第4章还没看，需要先回去看一下4.3.1的BRDF、BTDF、BSSRDF\nBXDF框架 BSDF BRDF 很熟悉了，只定义了反射如何进行\nHemispherical–Directional Reflectance（半球–方向反射率） 从BRDF延申出的一个概念，把光照设置为常量1，这时候的渲染方程就变成了这个东西\n">
+<title>PBRT（Reflection Models）</title>
+
+<link rel='canonical' href='https://sdpyy1.github.io/p/pbrtreflection-models/'>
+
+<link rel="stylesheet" href="/scss/style.min.6a692fd055deae459f2a9767f57f3855ba80cafd5041317f24f7360f6ca47cdf.css"><meta property='og:title' content="PBRT（Reflection Models）">
+<meta property='og:description' content=" 未完结\n因为直接看了第7章，第4章还没看，需要先回去看一下4.3.1的BRDF、BTDF、BSSRDF\nBXDF框架 BSDF BRDF 很熟悉了，只定义了反射如何进行\nHemispherical–Directional Reflectance（半球–方向反射率） 从BRDF延申出的一个概念，把光照设置为常量1，这时候的渲染方程就变成了这个东西\n">
+<meta property='og:url' content='https://sdpyy1.github.io/p/pbrtreflection-models/'>
+<meta property='og:site_name' content='wanfeng'>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:published_time' content='2025-12-25T14:10:44&#43;08:00'/><meta property='article:modified_time' content='2025-12-25T14:10:44&#43;08:00'/><meta property='og:image' content='https://sdpyy1.github.io/image-20260102161357849.png' />
+<meta name="twitter:title" content="PBRT（Reflection Models）">
+<meta name="twitter:description" content=" 未完结\n因为直接看了第7章，第4章还没看，需要先回去看一下4.3.1的BRDF、BTDF、BSSRDF\nBXDF框架 BSDF BRDF 很熟悉了，只定义了反射如何进行\nHemispherical–Directional Reflectance（半球–方向反射率） 从BRDF延申出的一个概念，把光照设置为常量1，这时候的渲染方程就变成了这个东西\n"><meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content='https://sdpyy1.github.io/image-20260102161357849.png' />
+    <link rel="shortcut icon" href="/favicon.ico" />
+
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="切换菜单">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        
+            
+            <figure class="site-avatar">
+                <a href="/">
+                
+                    
+                    
+                    
+                        
+                        <img src="/img/avatar_hu_f59158f730715054.png" width="300"
+                            height="300" class="site-logo" loading="lazy" alt="Avatar">
+                    
+                
+                </a>
+                
+                    <span class="emoji">🧐</span>
+                
+            </figure>
+            
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="/">wanfeng</a></h1>
+            <h2 class="site-description">Blog</h2>
+        </div>
+    </header><ol class="menu-social">
+            
+                <li>
+                    <a 
+                        href='https://space.bilibili.com/287473737'
+                        target="_blank"
+                        title="Bilibili"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-brand-bilibili"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 10a4 4 0 0 1 4 -4h10a4 4 0 0 1 4 4v6a4 4 0 0 1 -4 4h-10a4 4 0 0 1 -4 -4v-6z" /><path d="M8 3l2 3" /><path d="M16 3l-2 3" /><path d="M9 13v-2" /><path d="M15 11v2" /></svg>
+                        
+                    </a>
+                </li>
+            
+                <li>
+                    <a 
+                        href='https://github.com/sdpyy1'
+                        target="_blank"
+                        title="GitHub"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
+</svg>
+
+
+
+                        
+                    </a>
+                </li>
+            
+        </ol><ol class="menu" id="main-menu">
+        
+        
+        
+        <li >
+            <a href='/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>Home</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/about/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>About</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>Archives</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/search/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>Search</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/links/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5" />
+  <path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5" />
+</svg>
+
+
+
+                
+                <span>Links</span>
+            </a>
+        </li>
+        
+        <li class="menu-bottom-section">
+            <ol class="menu">
+                    
+                        <li id="i18n-switch">  
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-language" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M4 5h7" />
+  <path d="M9 3v2c0 4.418 -2.239 8 -5 8" />
+  <path d="M5 9c-.003 2.144 2.952 3.908 6.7 4" />
+  <path d="M12 20l4 -9l4 9" />
+  <path d="M19.1 18h-6.2" />
+</svg>
+
+
+
+                            <select name="language" title="language" onchange="window.location.href = this.selectedOptions[0].value">
+                                
+                                    <option value="https://sdpyy1.github.io/en/" >English</option>
+                                
+                                    <option value="https://sdpyy1.github.io/" selected>中文</option>
+                                
+                            </select>
+                        </li>
+                    
+                
+
+                
+                    <li id="dark-mode-toggle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <span>暗色模式</span>
+                    </li>
+                
+            </ol>
+        </li>
+    </ol>
+</aside>
+
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">目录</h2>
+        
+        <div class="widget--toc">
+            <nav id="TableOfContents">
+  <ol>
+    <li><a href="#bxdf框架">BXDF框架</a>
+      <ol>
+        <li><a href="#bsdf">BSDF</a>
+          <ol>
+            <li><a href="#brdf">BRDF</a>
+              <ol>
+                <li><a href="#hemisphericaldirectional-reflectance半球方向反射率">Hemispherical–Directional Reflectance（半球–方向反射率）</a></li>
+                <li><a href="#hemisphericalhemispherical-reflectance半球半球反射率">hemispherical–hemispherical reflectance（半球–半球反射率）</a></li>
+              </ol>
+            </li>
+            <li><a href="#btdf">BTDF</a></li>
+          </ol>
+        </li>
+        <li><a href="#bssrdf">BSSRDF</a></li>
+      </ol>
+    </li>
+    <li></li>
+    <li><a href="#基础理论">基础理论</a>
+      <ol>
+        <li><a href="#材料种类">材料种类</a>
+          <ol>
+            <li><a href="#电介质dielectrics">电介质（Dielectrics）</a></li>
+            <li><a href="#导体conductors">导体（Conductors）</a></li>
+            <li><a href="#半导体semiconductors">半导体（Semiconductors）</a></li>
+          </ol>
+        </li>
+        <li><a href="#反射定律">反射定律</a></li>
+        <li><a href="#折射定律">折射定律</a></li>
+        <li><a href="#菲涅耳方程">菲涅耳方程</a></li>
+      </ol>
+    </li>
+    <li><a href="#常见bxdf">常见BXDF</a>
+      <ol>
+        <li><a href="#完美模型">完美模型</a>
+          <ol>
+            <li><a href="#diffuse-reflection完美漫反射">Diffuse Reflection（完美漫反射）</a></li>
+            <li><a href="#conductor-brdf完美反射">Conductor BRDF（完美反射）</a></li>
+            <li><a href="#dielectric-bsdf完美反射完美折射">Dielectric BSDF（完美反射+完美折射）</a></li>
+            <li><a href="#thin-dielectric-bsdf薄电介质比如玻璃跳过">Thin Dielectric BSDF（薄电介质，比如玻璃（跳过））</a></li>
+            <li><a href="#non-symmetric-scattering-and-refraction跳过">Non-Symmetric Scattering and Refraction（跳过）</a></li>
+          </ol>
+        </li>
+        <li><a href="#粗糙模型">粗糙模型</a></li>
+      </ol>
+    </li>
+  </ol>
+</nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+            <main class="main full-width">
+    <article class="has-image main-article">
+    <header class="article-header">
+        <div class="article-image">
+            <a href="/p/pbrtreflection-models/">
+                
+                    <img src="/image-20260102161357849.png" loading="lazy" alt="Featured image of post PBRT（Reflection Models）" />
+                
+            </a>
+        </div>
+    
+
+    <div class="article-details">
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="/p/pbrtreflection-models/">PBRT（Reflection Models）</a>
+        </h2>
+    
+        
+    </div>
+
+    
+    
+    
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published">Dec 25, 2025</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-time--reading">
+                    阅读时长: 6 分钟
+                </time>
+            </div>
+        
+
+        
+            
+    </footer>
+    
+    
+</div>
+<style>
+    .category-hierarchy {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;  
+        margin-right: 12px;  
+        margin-bottom: 8px;  
+    }
+    
+    .category-separator {
+        color: #999;
+        user-select: none;
+        font-size: 1em;  
+    }
+    
+    .article-category a {
+        text-decoration: none;
+        padding: 6px 12px;  
+        border-radius: 6px;  
+        font-size: 0.95em;  
+        transition: all 0.2s ease;
+        line-height: 1.5;  
+    }
+    
+    .article-category a:hover {
+        opacity: 0.9;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 6px rgba(0,0,0,0.1);  
+    }
+</style>
+</header>
+
+    <section class="article-content">
+    
+    
+    <blockquote>
+<p>未完结</p>
+<p>因为直接看了第7章，第4章还没看，需要先回去看一下4.3.1的BRDF、BTDF、BSSRDF</p>
+</blockquote>
+<p><img src="/image-20260102161357849.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20260102161357849"
+	
+	
+></p>
+<h1 id="bxdf框架">BXDF框架
+</h1><h2 id="bsdf">BSDF
+</h2><h3 id="brdf">BRDF
+</h3><blockquote>
+<p>很熟悉了，只定义了反射如何进行</p>
+</blockquote>
+<p><img src="/image-20251225122834829.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251225122834829"
+	
+	
+></p>
+<h4 id="hemisphericaldirectional-reflectance半球方向反射率">Hemispherical–Directional Reflectance（半球–方向反射率）
+</h4><blockquote>
+<p>从BRDF延申出的一个概念，把光照设置为常量1，这时候的渲染方程就变成了这个东西</p>
+<p>它的意义是不关心光照，不关心各个方向的Radiance（均匀分布的光照），只关心材质本身往W0方向的Radiance</p>
+</blockquote>
+<p><img src="/image-20251225124453466.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251225124453466"
+	
+	
+></p>
+<p>它可以用来检查物理守恒，物理正确的材质必须满足：</p>
+<p><img src="/image-20251225124937597.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251225124937597"
+	
+	
+></p>
+<h4 id="hemisphericalhemispherical-reflectance半球半球反射率">hemispherical–hemispherical reflectance（半球–半球反射率）
+</h4><blockquote>
+<p>描述了一个面在所有入射方向上平均收到光照后，向所有方向反射的平均能量比例</p>
+</blockquote>
+<p>这不就是把上一个半球–方向反射率求了一个半球积分后的平均么</p>
+<p><img src="/image-20251225125219978.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251225125219978"
+	
+	
+></p>
+<p>上述两个东西，感觉是用在表达材质的反射效果的一个指标，并不是渲染需要的东西，写论文用的东西？</p>
+<h3 id="btdf">BTDF
+</h3><blockquote>
+<p>T 表示<em>transmittance</em> ，BTDF用于描述透射的分布</p>
+<p>这里特别提到BTDF并没有reciprocity 的特性，就是不能反着来</p>
+</blockquote>
+<p>BTDF和BRDF被统称为BSDF，因为他们都可以表达为<img src="/image-20251225125931610.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251225125931610"
+	
+	
+></p>
+<p>最终BSDF作用到渲染中为（注意这里绝对值符号是PBRT自己加的，他们意思是并不会修改模型的法线朝向模型外侧，可能有他们的考虑）</p>
+<p><img src="/image-20251225130037073.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251225130037073"
+	
+	
+></p>
+<p><img src="/image-20251225130247409.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251225130247409"
+	
+	
+></p>
+<p>整了半天4.3.1 原来并没有介绍具体的BSDF模型，只是引入了概念</p>
+<h2 id="bssrdf">BSSRDF
+</h2><p>今天属于是理清楚了 scattering是各种各样的改变光方向的行为的统称，并不是额外的效果。。。</p>
+<p>折射是透射的一种，透射是更上层的概念，透射就是进入某种介质的行为。。。</p>
+<blockquote>
+<p><strong><em>bidirectional scattering surface reflectance distribution function</em> (BSSRDF)</strong> 描述的是此表面反射的理论框架</p>
+</blockquote>
+<p>参数多了一个Pi，也就是Pi对着色点P0的贡献比例，比BSDF多一个维度，BSDF只考虑当前着色点</p>
+<p><img src="/image-20251225132839216.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251225132839216"
+	
+	
+></p>
+<p>看这张图能看出光先进入物体内部，不断散射后从着色点穿出后到达摄像机</p>
+<p><img src="/image-20251225132859453.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251225132859453"
+	
+	
+></p>
+<p>计算过程需要遍历每一个Pi，BSSDF定义这个Pi点的贡献值</p>
+<p>内层积分定义一个Pi点的渲染贡献，外层积分累积所有Pi点</p>
+<p><img src="/image-20251225133238326.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251225133238326"
+	
+	
+></p>
+<h1 id="">
+</h1><p>下图展示了(a) 漫反射 (b)高光反射 (c) 镜面反射（接近）（d）逆反射的Lobe</p>
+<p><img src="/image-20251225134317181.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251225134317181"
+	
+	
+></p>
+<p>另外也理解了各项同性和异性，  同性就是指如上图的摄像机位置，如果绕着法线进行旋转，得到的结果应该是一致的</p>
+<h1 id="基础理论">基础理论
+</h1><blockquote>
+<p>为可见光的波长（量级为米级）远小于渲染场景中物体的尺寸（毫米到米级），因此波动相关的现象通常不会在渲染图像中体现.</p>
+<p>但要深入理解光线撞击表面时的行为，就需要借助<strong>波动光学</strong>的理论，而且在几何光学的模拟框架中融入波动光学的结论，已经成为计算机图形学的常用设计模式。</p>
+</blockquote>
+<blockquote>
+<p>当光线照射到物体表面时，会激发材料原子外层的电子，使其发生快速振荡；振荡的电荷会产生次级电场振荡，这些次级振荡会发生<strong>相长干涉和相消干涉</strong>，这就是原子反射光线的核心机制。而干涉的具体表现，则由原子的种类和原子间的结合方式决定。</p>
+</blockquote>
+<h2 id="材料种类">材料种类
+</h2><h3 id="电介质dielectrics">电介质（Dielectrics）
+</h3><p>这是一大类<strong>电绝缘体</strong>，包括玻璃、水、矿物油、空气等气态、液态、固态物质。这类材料中，电子与原子的结合非常牢固，不会自由移动。</p>
+<h3 id="导体conductors">导体（Conductors）
+</h3><p>包括金属、合金以及类金属（如石墨）。这类材料的原子晶格中存在<strong>自由电子</strong>，入射电磁波激发的电子振荡可以让电子在较大范围内移动；同时，电子在晶格中移动时会以热量的形式耗散部分入射能量，导致光线在深入材料的过程中被快速吸收。</p>
+<p>关键特性：光线通常在材料表面<strong>0.1 米的深度内被完全吸收</strong>，只有极薄的金属薄膜才能透射可观的光线。</p>
+<h3 id="半导体semiconductors">半导体（Semiconductors）
+</h3><p>如硅、锗，兼具电介质和导体的特性。例如硅在可见光波段表现出金属的特性，但在红外波段是透明的，因此可用于红外相机的光学元件。</p>
+<blockquote>
+<p>PBRT后面介绍了IOR（折射率）的原理就是光速与在真空中的光速的比值，两种介质的折射率差值越大，分界面的反射效果越强。</p>
+</blockquote>
+<h2 id="反射定律">反射定律
+</h2><p>这张图解释了反射是如何计算的，分解成平行于法线和垂直于法线的两个向量后很容易计算</p>
+<p><img src="/image-20260101180417393.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20260101180417393"
+	
+	
+></p>
+<h2 id="折射定律">折射定律
+</h2><p><img src="/image-20260102142418192.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20260102142418192"
+	
+	
+><img src="/image-20260102142922953.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20260102142922953"
+	
+	
+></p>
+<p>经过一些推导最终折射的向量可以通过下面这个公式计算<img src="/image-20260102143119265.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20260102143119265"
+	
+	
+></p>
+<p><img src="/image-20260102143057184.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20260102143057184"
+	
+	
+></p>
+<p>折射需要有一个注意的地方：从折射率高进入折射率低（从水中看向空气）时，入射角度过大会导致折射算出来sin大于1了，此时发生的是全内反射，没有折射了</p>
+<p><img src="/image-20260102144300671.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20260102144300671"
+	
+	
+></p>
+<h2 id="菲涅耳方程">菲涅耳方程
+</h2><blockquote>
+<p>上述的折射和反射是会同时发生的，对于导体来说，折射会迅速消失。</p>
+<p>菲涅耳方程用来计算反射光的比例</p>
+</blockquote>
+<p>这块东西解释了入射波可以分解为垂直（垂直于入射向量和法线组成的平面）和平行两个，单独进行建模。菲涅尔方程描述了给定已知振幅的入射波时，反射波振幅与入射波振幅之间的关系。（这些内容没必要特别细看）</p>
+<p><img src="/image-20260102145251837.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20260102145251837"
+	
+	
+></p>
+<blockquote>
+<p>电介质、导体和半导体均遵循相同的菲涅尔方程。</p>
+</blockquote>
+<p>对于电介质，就按照上边的公式计算<img src="/image-20260102145737972.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20260102145737972"
+	
+	
+></p>
+<p>对于导体，折射率之比变成用复数表示，然后各种解释，不太理解，看这里最终eta是一个复数，而不是简单的float比值，这种东西就不细看了</p>
+<p><img src="/image-20260102150123885.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20260102150123885"
+	
+	
+></p>
+<h1 id="常见bxdf">常见BXDF
+</h1><h2 id="完美模型">完美模型
+</h2><h3 id="diffuse-reflection完美漫反射">Diffuse Reflection（完美漫反射）
+</h3><blockquote>
+<p>介绍了最简单的Lambertian model，完全均匀反射率的漫反射表面使用的模型</p>
+</blockquote>
+<p>下图解释了为什么要除以/Pi。 因为这样才能保证使总反射能量=R（反射率，用RGB就是albedo）</p>
+<p><img src="/image-20251227220249634.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251227220249634"
+	
+	
+></p>
+<h3 id="conductor-brdf完美反射">Conductor BRDF（完美反射）
+</h3><blockquote>
+<p>导体的BRDF依据两个观点：</p>
+<ol>
+<li>镜面反射定律为每条光线分配特定的反射方向，菲涅耳方程则确定反射光的分布范围。</li>
+<li>任何残余光线都会折射进入导体，并被迅速吸收转化为热能</li>
+</ol>
+<p>所以光滑导体只考虑BRDF、采样只会采样反射方向、PDF=1</p>
+</blockquote>
+<p>非常简单，对W0有贡献的点只有反射方向，所以不需要算积分了，F()是菲涅尔方程</p>
+<p><img src="/image-20260102150614949.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20260102150614949"
+	
+	
+></p>
+<p>计算积分时的采样函数不需要什么工具，而是直接找反射方向，然后用菲涅尔公式计算反射比值，返回对这个方向的采样结果，另外PDF直接取1即可</p>
+<p><img src="/image-20260102151300961.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20260102151300961"
+	
+	
+></p>
+<h3 id="dielectric-bsdf完美反射完美折射">Dielectric BSDF（完美反射+完美折射）
+</h3><blockquote>
+<p>不像导体，这里就必须考虑反射和折射了</p>
+<p>设置采样方向的方法是根据入射光角度，计算菲涅耳方程的反射比例，然后去一个随机数来概率选择BRDF还是BTDF</p>
+</blockquote>
+<ol>
+<li>等比例选择BRDF和BTDF</li>
+</ol>
+<p><img src="/image-20260102154533866.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20260102154533866"
+	
+	
+></p>
+<ol start="2">
+<li>根据反射比例来选择BRDF和BTDF，效果明显变好了，因为少了很多低贡献的采样</li>
+</ol>
+<p><img src="/image-20260102154629378.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20260102154629378"
+	
+	
+></p>
+<p>采样方式代码，会根据概率选择BRDF和BTDF</p>
+<p><img src="/image-20260102154749411.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20260102154749411"
+	
+	
+></p>
+<p>此时的PDF为</p>
+<p><img src="/image-20260102154957499.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20260102154957499"
+	
+	
+></p>
+<p>如果选择反射，和导体的采样方向一样</p>
+<p><img src="/image-20260102155330918.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20260102155330918"
+	
+	
+></p>
+<p>如果选择折射</p>
+<p><img src="/image-20260102155341114.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20260102155341114"
+	
+	
+></p>
+<h3 id="thin-dielectric-bsdf薄电介质比如玻璃跳过">Thin Dielectric BSDF（薄电介质，比如玻璃（跳过））
+</h3><p>先理解薄电介质的物理背景（为什么需要单独建模）：</p>
+<p>普通电介质（DielectricBxDF）只模拟 “单界面”（比如空气 - 玻璃），但实际的薄玻璃有<strong>两个平行界面</strong>（空气→玻璃→空气）：</p>
+<ol>
+<li>光线入射到第一层界面：一部分反射，一部分透射进入玻璃；</li>
+<li>透射光到达第二层界面：一部分透射出去，一部分反射回玻璃内部；</li>
+<li>反射回的光又会在第一层界面反射 / 透射…… 这个过程<strong>无限递归</strong>（如图 9.16）；</li>
+<li>薄电介质的核心假设：玻璃厚度极薄，光线的空间偏移可忽略，只需计算 “所有内部反射的总贡献”。</li>
+</ol>
+<p><img src="/image-20260102160138517.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20260102160138517"
+	
+	
+></p>
+<p>这个模型主要就是：多层内部反射的总反射率可以用<strong>几何级数</strong>求和简化（避免追踪无限次反射）</p>
+<p>具体就先不看了！</p>
+<h3 id="non-symmetric-scattering-and-refraction跳过">Non-Symmetric Scattering and Refraction（跳过）
+</h3><blockquote>
+<p>BTDF不能和BRDF一样反转使用，反转后必须修正系数才能保证物理正确。</p>
+<p>这就不看了，看了一时半会也用不着</p>
+</blockquote>
+<p><img src="/image-20260102160447941.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20260102160447941"
+	
+	
+></p>
+<h2 id="粗糙模型">粗糙模型
+</h2>
+</section>
+
+
+    <footer class="article-footer">
+    
+
+    
+    <section class="article-copyright">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
+</svg>
+
+
+
+        <span>Licensed under CC BY-NC-SA 4.0</span>
+    </section>
+    </footer>
+
+
+    
+        <link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css"integrity="sha384-n8MVd4RsNIU0tAv4ct0nTaAbDJwPJzDEaqSD1odI&#43;WdtXRGWt2kTvGFasHpSy3SV"crossorigin="anonymous"
+            ><script 
+                src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"integrity="sha384-XjKyOOlGwcjNTAIQHIpgOno0Hl1YQqzUOEleOLALmuqehneUG&#43;vnGctmUb0ZY0l8"crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"integrity="sha384-&#43;VBxd3r6XgURycqtZ117nYw44OOcIax56Z4dCRWbxyPt0Koah1uHoK0o4&#43;/RRE05"crossorigin="anonymous"
+                defer
+                >
+            </script><script>
+    window.addEventListener("DOMContentLoaded", () => {
+	const mainArticleElement = document.querySelector(".main-article");
+        renderMathInElement(mainArticleElement, {
+            delimiters: [
+                { left: "$$", right: "$$", display: true },
+                { left: "$", right: "$", display: false },
+                { left: "\\(", right: "\\)", display: false },
+                { left: "\\[", right: "\\]", display: true }
+            ],
+            ignoredClasses: ["gist"]
+        });})
+</script>
+
+    
+</article>
+
+    
+
+    
+
+     
+    
+        
+    <script
+    src="https://giscus.app/client.js"
+    data-repo="sdpyy1/sdpyy1.github.io"
+    data-repo-id="R_kgDOQEycpQ"
+    data-category="Announcements"
+    data-category-id="DIC_kwDOQEycpc4Cwz7v"
+    data-mapping="pathname"
+    data-strict="0"
+    data-reactions-enabled="1"
+    data-emit-metadata="0"
+    data-input-position="top"
+    data-theme="light"
+    data-lang="en"
+    data-loading=""
+    crossorigin="anonymous"
+    async
+></script>
+<script>
+    function setGiscusTheme(theme) {
+        let giscus = document.querySelector("iframe.giscus-frame");
+        if (giscus) {
+            giscus.contentWindow.postMessage(
+                {
+                    giscus: {
+                        setConfig: {
+                            theme: theme,
+                        },
+                    },
+                },
+                "https://giscus.app"
+            );
+        }
+    }
+
+    (function () {
+        addEventListener("message", (e) => {
+            if (event.origin !== "https://giscus.app") return;
+            handler();
+        });
+        window.addEventListener("onColorSchemeChange", handler);
+
+        function handler() {
+            if (document.documentElement.dataset.scheme === "light") {
+                setGiscusTheme('light');
+            } else {
+                setGiscusTheme('light');
+            }
+        }
+    })();
+</script>
+
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+            2020 - 
+        
+        2026 爱喝东方树叶
+    </section>
+    <section style="display: flex; gap: 30px; align-items: center;">
+      
+      
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+      <span>📚 文章数: 67</span>
+      <span>✍️ 总字数: 
+        
+        
+        222.80K
+      </span>
+    </section>
+
+    <section class="powerby">
+    
+    <div class="busuanzi-footer">
+        <span id="busuanzi_container_site_pv">
+          本站总访问量<span id="busuanzi_value_site_pv"></span>次
+        </span>
+        <span id="busuanzi_container_site_uv">
+          本站访客数<span id="busuanzi_value_site_uv"></span>人次
+        </span>
+      </div></section>
+
+</footer>
+
+
+    
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    
+    <div class="pswp__bg"></div>
+
+    
+    <div class="pswp__scroll-wrap">
+
+        
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                
+                
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                        <div class="pswp__preloader__cut">
+                            <div class="pswp__preloader__donut"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div>
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js"integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo="crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js"integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU="crossorigin="anonymous"
+                defer
+                >
+            </script><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css"crossorigin="anonymous"
+            ><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css"crossorigin="anonymous"
+            >
+
+            </main>
+        </div>
+        <script 
+                src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js"integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z&#43;KMkF24hUW8WePSA9HM="crossorigin="anonymous"
+                
+                >
+            </script><script type="text/javascript" src="/ts/main.1e9a3bafd846ced4c345d084b355fb8c7bae75701c338f8a1f8a82c780137826.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>
