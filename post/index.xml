@@ -7,7 +7,120 @@
         <generator>Hugo -- gohugo.io</generator>
         <language>zh-cn</language>
         <copyright>爱喝东方树叶</copyright>
-        <lastBuildDate>Thu, 25 Dec 2025 14:10:44 +0800</lastBuildDate><atom:link href="https://sdpyy1.github.io/post/index.xml" rel="self" type="application/rss+xml" /><item>
+        <lastBuildDate>Wed, 31 Dec 2025 21:34:50 +0800</lastBuildDate><atom:link href="https://sdpyy1.github.io/post/index.xml" rel="self" type="application/rss+xml" /><item>
+        <title>游戏引擎开发实践（切比雪夫不等式的应用）</title>
+        <link>https://sdpyy1.github.io/p/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E5%BC%80%E5%8F%91%E5%AE%9E%E8%B7%B5%E5%88%87%E6%AF%94%E9%9B%AA%E5%A4%AB%E4%B8%8D%E7%AD%89%E5%BC%8F%E7%9A%84%E5%BA%94%E7%94%A8/</link>
+        <pubDate>Wed, 31 Dec 2025 21:34:50 +0800</pubDate>
+        
+        <guid>https://sdpyy1.github.io/p/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E5%BC%80%E5%8F%91%E5%AE%9E%E8%B7%B5%E5%88%87%E6%AF%94%E9%9B%AA%E5%A4%AB%E4%B8%8D%E7%AD%89%E5%BC%8F%E7%9A%84%E5%BA%94%E7%94%A8/</guid>
+        <description>&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/image-20251231214212023.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;image-20251231214212023&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;随机变量X大于t的概率可以用随机变量X的均值和方差进行估计&lt;/p&gt;
+&lt;p&gt;这个是单边切比雪夫不等式，它给出的是概率上限，也就是X大于t的概率不会大于这个&lt;/p&gt;
+&lt;h1 id=&#34;vsm&#34;&gt;VSM
+&lt;/h1&gt;&lt;blockquote&gt;
+&lt;p&gt;软阴影需要在shadowMap上多次采样才行，采样点越多越软，但是并不能提前模糊光源深度图，模糊深度图后只是改变了比较的深度值，最终采样结果还是0-1，而VSM的思想就是通过概率论的公式直接估计一片区域内ShadowMap的深度比着色点深度更大的概率，只需要采样深度图一次即可（不过多了一个对深度图进行模糊的Pass）&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;流程很简单&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/image-20251231213906260.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;image-20251231213906260&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/image-20251231214019769.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;image-20251231214019769&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;操作简单，但是效果非常好。但是！漏光了！头盔左侧&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/image-20251231221222754.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;image-20251231221222754&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;如果直接用的话问题还是很大的&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/image-20251231225635215.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;image-20251231225635215&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;网上对漏光的解释是当我算C的阴影时，应该按照B的深度来估计，但是A也参与了，AB深度差距大，方差大，估算不准确&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/v2-b83fe28a6284b98619f8a45de0483e6b_1440w.jpg&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;img&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;大概理解一下就是一片区域进行采样的filter时，这片区域的深度变化非常大，不能称之为类似一个正态分布的情况，这就会导致你用切比雪夫不等式估算不准确。&lt;/p&gt;
+&lt;p&gt;实际测试下来就是发现深度变化大的地方就容易漏光&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/image-20251231225139792.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;image-20251231225139792&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;解决漏光可以使用ESVM，用指数函数$e^{kd}$对深度做变换，将多峰分布拉成单峰，压缩方差&lt;/p&gt;
+&lt;p&gt;改完之后确实有效果&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/image-20251231231318872.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;image-20251231231318872&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;但是并不能完全消除阴影，有些视角下还是有漏光的&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/image-20251231231345266.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;image-20251231231345266&#34;
+	
+	
+&gt;&lt;/p&gt;
+</description>
+        </item>
+        <item>
         <title>PBRT（Reflection Models）</title>
         <link>https://sdpyy1.github.io/p/pbrtreflection-models/</link>
         <pubDate>Thu, 25 Dec 2025 14:10:44 +0800</pubDate>
@@ -457,7 +570,91 @@
 	
 &gt;&lt;/p&gt;
 &lt;h2 id=&#34;粗糙模型&#34;&gt;粗糙模型
-&lt;/h2&gt;</description>
+&lt;/h2&gt;&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/image-20260107143103417.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;image-20260107143103417&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;微平面理论的关键洞见在于：&lt;strong&gt;无需对每个微平面进行显式几何建模，而是通过统计方法描述其集体行为&lt;/strong&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;微面反射模型需考虑的三个重要几何效应。&lt;/p&gt;
+&lt;p&gt;(a)遮蔽效应：目标微面因被其他微面遮挡而不可见。&lt;/p&gt;
+&lt;p&gt;(b)阴影效应：类似地，光线无法抵达该微面。&lt;/p&gt;
+&lt;p&gt;(c)反射间效应：光线在到达观察者前会在微面间发生多次反射。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/image-20260107144256138.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;image-20260107144256138&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;用法线分布来描述微表面，这里提到要让一小块微平面dA上方的面积投影下面积等于dA的面积&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/image-20260107150722093.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;image-20260107150722093&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;GGX法线分布&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/image-20260107151413372.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;image-20260107151413372&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;还有一种Beckmann法线分布&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/image-20260107152128179.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;image-20260107152128179&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;GGX的有点是拖尾，它的尾巴比较长，如下图橙色尾巴很长。而beckmannNDF在90°时已经衰减为非常接近0。如果把高出定义为高光，那backmannNDF高光周围会迅速衰减。而GGX会缓慢衰减，形成光晕的效果&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/image-20260107152241375.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;image-20260107152241375&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/image-20260107152320940.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;image-20260107152320940&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;后面介绍的过于理论了，感觉对目前帮助不大，先能进入行业再说，否则也没什么意义&lt;/p&gt;
+&lt;/blockquote&gt;
+</description>
         </item>
         <item>
         <title>PBRT（Monte Carlo Integration）</title>

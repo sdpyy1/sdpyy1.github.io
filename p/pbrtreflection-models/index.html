@@ -396,7 +396,7 @@
 
 
                 <time class="article-time--reading">
-                    阅读时长: 6 分钟
+                    阅读时长: 7 分钟
                 </time>
             </div>
         
@@ -886,7 +886,91 @@
 	
 ></p>
 <h2 id="粗糙模型">粗糙模型
-</h2>
+</h2><p><img src="/image-20260107143103417.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20260107143103417"
+	
+	
+></p>
+<blockquote>
+<p>微平面理论的关键洞见在于：<strong>无需对每个微平面进行显式几何建模，而是通过统计方法描述其集体行为</strong></p>
+</blockquote>
+<p>微面反射模型需考虑的三个重要几何效应。</p>
+<p>(a)遮蔽效应：目标微面因被其他微面遮挡而不可见。</p>
+<p>(b)阴影效应：类似地，光线无法抵达该微面。</p>
+<p>(c)反射间效应：光线在到达观察者前会在微面间发生多次反射。</p>
+<p><img src="/image-20260107144256138.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20260107144256138"
+	
+	
+></p>
+<p>用法线分布来描述微表面，这里提到要让一小块微平面dA上方的面积投影下面积等于dA的面积</p>
+<p><img src="/image-20260107150722093.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20260107150722093"
+	
+	
+></p>
+<p>GGX法线分布</p>
+<p><img src="/image-20260107151413372.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20260107151413372"
+	
+	
+></p>
+<p>还有一种Beckmann法线分布</p>
+<p><img src="/image-20260107152128179.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20260107152128179"
+	
+	
+></p>
+<p>GGX的有点是拖尾，它的尾巴比较长，如下图橙色尾巴很长。而beckmannNDF在90°时已经衰减为非常接近0。如果把高出定义为高光，那backmannNDF高光周围会迅速衰减。而GGX会缓慢衰减，形成光晕的效果</p>
+<p><img src="/image-20260107152241375.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20260107152241375"
+	
+	
+></p>
+<p><img src="/image-20260107152320940.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20260107152320940"
+	
+	
+></p>
+<blockquote>
+<p>后面介绍的过于理论了，感觉对目前帮助不大，先能进入行业再说，否则也没什么意义</p>
+</blockquote>
+
 </section>
 
 
@@ -1143,12 +1227,14 @@
       
         
       
+        
+      
     
-      <span>📚 文章数: 67</span>
+      <span>📚 文章数: 68</span>
       <span>✍️ 总字数: 
         
         
-        222.80K
+        223.65K
       </span>
     </section>
 
