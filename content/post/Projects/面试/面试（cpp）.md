@@ -311,7 +311,7 @@ struct A {
 - 对于类类型 → **比在类定义处初始化快**（避免多余默认构造）
 - 对于内置类型 → 差别可以忽略
 
-## ## C++的四种强制转换
+## C++的四种强制转换
 
 1. `reinterpret_cast`：对二进制数据的重新解释，将一段内存的二进制位**原封不动**地解释为另一种类型
 2. `const_cast`：只负责修改const、volatile这两个限定符，**不会改变变量的类型、内存布局或二进制值**，用处是给一个指针移除const或者添加const
@@ -327,3 +327,306 @@ struct A {
 
 3. `static_cast`：转换的合法性由编译器在编译阶段判断，运行时不检查，在继承关系中用于向上转换（安全），向下转换（不安全，没有动态类型检查 ，因为每个子类都有自己独有的东西，但是并不会报错，会输出垃圾值）、基本数据类型之间的转换、空指针类型转换
 4. `dynamic_cast`:**唯一支持运行时类型检查**的转换方式。转换时会通过 “运行时类型信息（RTTI）” 判断实际对象类型，而非仅做编译时语法检查，如果向下转换不合法会返回空指针，an'quan
+
+## C++ 指针++会发生什么？
+
+> 会根据这个指针指向的对象的sizeof来增加地址值
+
+```c++
+int main(){
+    int * p = new int(10);
+    char * q = new char(1);
+    p ++;
+    q++;
+    return 0;
+}
+
+        add     QWORD PTR [rbp-8], 4    // 加4
+        add     QWORD PTR [rbp-16], 1   // 加1
+```
+
+## 怎么判断两个浮点数是否相等
+
+> 直接==是危险操作，必须设置一个EPSILON然后通过减法来判断
+>
+> 从思路上  不管是float还是double都无法精确表示0.1  每次累加都是 “近似值 + 近似值”，误差会被不断放大
+>
+> ```
+> 十进制 0.1 → 二进制 0.00011001100110011...（循环节是0011）
+> 十进制转二进制是一直乘2，取整数部分，如果小数部分=0则停止
+> 
+> ```
+
+```c++
+// 用double类型，精度更高，误差更易体现
+float a = 1.1;
+float b = 0.0;
+for (int i = 0; i < 11; ++i) {
+    b += 0.1; // 累加11次0.1，理论上=1.1，实际有精度误差
+}
+
+// 显示20位有效数字，暴露差异
+cout.precision(20);
+cout << "a = " << a << endl;
+cout << "b = " << b << endl;
+cout << "a == b ? " << boolalpha << (a == b) << endl;
+
+// 正确的比较方式：判断差值小于阈值（double用1e-9）
+const double EPSILON = 1e-5;
+cout << "a ≈ b ? " << boolalpha << (fabs(a - b) < EPSILON) << endl;
+
+
+// 输出
+a = 1.1000000238418579102
+b = 1.1000001430511474609
+a == b ? false
+a ≈ b ? true
+```
+
+## 从汇编上理解指针传参和引用传参的区别
+
+> 两个汇编的函数都长得一样，但是main不一样
+>
+> 传递指针传递的是指针值
+>
+> 传递引用是直接把原数据在栈上的地址传递给函数了
+
+```c++
+void ptrFunc(int * p){
+    *p  = 100;
+}
+void refFunc(int & p){
+    p = 100;
+}
+int main(){
+    int a = 10;
+    int *p = &a;
+    ptrFunc(p);    
+}
+
+// 能看出来两个函数的汇编是一模一样的
+ptrFunc(int*):
+        push    rbp
+        mov     rbp, rsp
+        mov     QWORD PTR [rbp-8], rdi
+        mov     rax, QWORD PTR [rbp-8]
+        mov     DWORD PTR [rax], 100
+        nop
+        pop     rbp
+        ret
+refFunc(int&):
+        push    rbp
+        mov     rbp, rsp
+        mov     QWORD PTR [rbp-8], rdi
+        mov     rax, QWORD PTR [rbp-8]
+        mov     DWORD PTR [rax], 100
+        nop
+        pop     rbp
+        ret
+main:  // 指针
+        push    rbp
+        mov     rbp, rsp
+        sub     rsp, 16
+        mov     DWORD PTR [rbp-12], 10
+        lea     rax, [rbp-12]
+        mov     QWORD PTR [rbp-8], rax
+        mov     rax, QWORD PTR [rbp-8]   // 把指针值传如rax，进一步作为参数传递给rdi，rdi在函数内使用
+        mov     rdi, rax
+        call    ptrFunc(int*)
+        mov     eax, 0
+        leave
+        ret
+            
+main: // 引用
+        push    rbp
+        mov     rbp, rsp
+        sub     rsp, 16
+        mov     DWORD PTR [rbp-12], 10
+        lea     rax, [rbp-12]
+        mov     QWORD PTR [rbp-8], rax
+        lea     rax, [rbp-12]    // 直接把数字的地址传递给rax，剩下都一样
+        mov     rdi, rax
+        call    refFunc(int&)
+        mov     eax, 0
+        leave
+        ret
+```
+
+
+
+
+
+## 方法调用的原理
+
+> 看下边的汇编
+
+## 函数指针
+
+```c++
+void someF(int(*funcPtr)(int, int)) {  // 函数指针作为参数，调用时直接写入函数名即可
+	print(funcPtr(1, 2));
+}
+
+void someF1(std::function<int(int, int)> a) {  // 这样也行
+
+	print(a(1, 2));
+}
+
+// 方式1：typedef定义函数指针别名
+typedef int (*CalcFunc)(int, int);
+
+// 方式2：C++11 using（更直观，推荐）
+using CalcFuncAlias = int (*)(int, int);
+
+
+// 调用时
+someF1(add);  // 函数指针作为参数    函数指针主要用于回调，可以传入不同的返回和参数一样的函数
+
+
+```
+
+从汇编来看
+
+```c++
+int main(){
+     int(*funcPtr)(int, int) = add;
+     funcPtr(1,2);
+     add(1,2);
+}
+
+main:
+        push    rbp
+        mov     rbp, rsp
+        sub     rsp, 16
+        mov     QWORD PTR [rbp-8], OFFSET FLAT:add(int, int)   // 把这个函数的地址存入了栈中
+        mov     rax, QWORD PTR [rbp-8]
+        mov     esi, 2
+        mov     edi, 1
+        call    rax   // call的时候直接从寄存器拿函数地址
+        mov     esi, 2
+        mov     edi, 1
+        call    add(int, int)   // 直接调用
+        mov     eax, 0
+        leave
+        ret
+```
+
+## 模板类为什么一般都是放在.h文件
+
+> TODO:先理清楚编译流程再说
+
+# C++ 编译全流程
+
+![img](v2-eebd0f3fe5dab36fcfe73b3a85e25eb3_1440w.jpg)
+
+# 从汇编理解C++
+
+
+
+![img](v2-81a6666272fa64c6673ce3f4e8c64a6f_1440w.jpg)
+
+## 基本情况
+
+```c++
+int main(){
+    return 0;
+}
+
+main:
+        push    rbp  // 保存上一个栈帧的基地址到栈中
+        mov     rbp, rsp  // rsp写入rbp（rbp压栈后，当前栈顶地址rsp会自动更新，所以写入到rbp，作为当前栈帧的基地址）
+        mov     eax, 0  // 把立即数0写入eax寄存器，后续用来返回值
+        pop     rbp // 恢复上一个函数的rbp（执行后基地址就是上一个函数了）
+        ret   // 跳转回调用者（更新pc寄存器，这说明调用者的pc数据也压栈了），回收栈空间
+```
+
+1. rbp：栈帧基地址，在一个函数执行的内部，rbp指向的是这个栈帧的基地址，是栈空间中的一个地址
+2. rsp： 存储栈顶地址，会自动更新
+
+```c++
+int main(){
+    int a = 10;
+    return 0;
+}
+
+main:
+        push    rbp
+        mov     rbp, rsp
+        mov     DWORD PTR [rbp-4], 10   // rbp-4 也就是在rbp的地址上存储了一个立即数
+        mov     eax, 0
+        pop     rbp
+        ret
+```
+
+到这里大概懂了 临时变量是如何存储的
+
+```c++
+int main(){
+    int a = 10;
+    int b = a;
+    return 0;
+}
+
+main:
+        push    rbp
+        mov     rbp, rsp
+        mov     DWORD PTR [rbp-4], 10
+        mov     eax, DWORD PTR [rbp-4]   // 读取a，并存入寄存器eax
+        mov     DWORD PTR [rbp-8], eax   // 寄存器eax写入rbp-8的位置
+        mov     eax, 0
+        pop     rbp
+        ret
+```
+
+## 函数调用
+
+这里也理解了汇编层面上并没有class概念这些抽象概念，都是最基本的操作
+
+```c++
+void foo(){
+
+}
+int main(){
+    
+    foo();
+    return 0;
+}
+
+foo():
+        push    rbp
+        mov     rbp, rsp
+        nop  // 空指令（因为foo函数体无逻辑，编译器填充的占位符）
+        pop     rbp
+        ret
+main:
+        push    rbp
+        mov     rbp, rsp
+        call    foo   // 执行前保存下一条指令的地址（为了调用完成后写入PC指令寄存器）到栈中   另外这里foo已经是具体的指令地址了，在编译链接后已经确定了地址
+        mov     eax, 0
+        pop     rbp
+        ret
+```
+
+## 类
+
+```c++
+class Person{
+    public:
+    int a = 10;
+};
+
+
+int main(){
+    Person a;
+    return 0;
+}
+
+main:
+        push    rbp
+        mov     rbp, rsp
+        mov     DWORD PTR [rbp-4], 10   // 说明一个类只存储了成员变量
+        mov     eax, 0
+        pop     rbp
+        ret
+```
+
