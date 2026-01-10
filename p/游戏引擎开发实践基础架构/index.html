@@ -292,6 +292,7 @@
         <li><a href="#rdg">RDG</a></li>
         <li><a href="#多线程渲染">多线程渲染</a></li>
         <li><a href="#渲染资源管理">渲染资源管理</a></li>
+        <li><a href="#mesh渲染架构bindless--间接渲染-">Mesh渲染架构（Bindless + 间接渲染 ）</a></li>
       </ol>
     </li>
     <li><a href="#基础功能">基础功能</a>
@@ -355,7 +356,7 @@
 
 
                 <time class="article-time--reading">
-                    阅读时长: 24 分钟
+                    阅读时长: 26 分钟
                 </time>
             </div>
         
@@ -4496,6 +4497,206 @@
 </span></span><span class="line"><span class="cl">	<span class="p">}</span>
 </span></span></code></pre></td></tr></table>
 </div>
+</div><h2 id="mesh渲染架构bindless--间接渲染-">Mesh渲染架构（Bindless + 间接渲染 ）
+</h2><p>所有的Mesh相关数据，全部由Bindless管理</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="k">enum</span> <span class="nc">BindlessSlot</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="n">BINDLESS_SLOT_POSITION</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">	<span class="n">BINDLESS_SLOT_NORMAL</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">	<span class="n">BINDLESS_SLOT_TANGENT</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">	<span class="n">BINDLESS_SLOT_TEXCOORD</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">	<span class="n">BINDLESS_SLOT_COLOR</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">	<span class="n">BINDLESS_SLOT_BONE_INDEX</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">	<span class="n">BINDLESS_SLOT_BONE_WEIGHT</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">	<span class="n">BINDLESS_SLOT_ANIMATION</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">	<span class="n">BINDLESS_SLOT_INDEX</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="n">BINDLESS_SLOT_SAMPLER</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">	<span class="n">BINDLESS_SLOT_TEXTURE_1D</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">	<span class="n">BINDLESS_SLOT_TEXTURE_1D_ARRAY</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">	<span class="n">BINDLESS_SLOT_TEXTURE_2D</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">	<span class="n">BINDLESS_SLOT_TEXTURE_2D_ARRAY</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">	<span class="n">BINDLESS_SLOT_TEXTURE_CUBE</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">	<span class="n">BINDLESS_SLOT_TEXTURE_3D</span><span class="p">,</span>
+</span></span><span class="line"><span class="cl">	<span class="n">BINDLESS_SLOT_MAX_ENUM</span><span class="p">,</span>     <span class="c1">//
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">};</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>加载模型时，上传对应数据到对应槽位，并范围ID值，另外有一个Buffer专门存储所有顶点数据的各项（位置、法线、颜色）的ID，组成一个MeshInfo，也作为一个ArrayBuffer上传</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"> <span class="kt">void</span> <span class="n">VertexBuffer</span><span class="o">::</span><span class="n">SetBufferData</span><span class="p">(</span><span class="kt">void</span><span class="o">*</span> <span class="n">data</span><span class="p">,</span> <span class="kt">uint32_t</span> <span class="n">size</span><span class="p">,</span> <span class="n">RHIBufferRef</span><span class="o">&amp;</span> <span class="n">buffer</span><span class="p">,</span> <span class="kt">uint32_t</span><span class="o">&amp;</span> <span class="n">id</span><span class="p">,</span> <span class="kt">uint32_t</span> <span class="n">slot</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">     <span class="k">if</span> <span class="p">(</span><span class="n">size</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="k">return</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">     <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">buffer</span> <span class="o">||</span> <span class="n">buffer</span><span class="o">-&gt;</span><span class="n">GetInfo</span><span class="p">().</span><span class="n">size</span> <span class="o">&lt;</span> <span class="n">size</span><span class="p">)</span>  <span class="c1">// 创建buffer
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>     <span class="p">{</span>
+</span></span><span class="line"><span class="cl">         <span class="n">RHIBufferInfo</span> <span class="n">rHIBufferInfo</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">         <span class="n">rHIBufferInfo</span><span class="p">.</span><span class="n">type</span> <span class="o">=</span> <span class="n">RESOURCE_TYPE_RW_BUFFER</span> <span class="o">|</span> <span class="n">RESOURCE_TYPE_VERTEX_BUFFER</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">         <span class="n">rHIBufferInfo</span><span class="p">.</span><span class="n">size</span> <span class="o">=</span> <span class="n">size</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">         <span class="n">rHIBufferInfo</span><span class="p">.</span><span class="n">memoryUsage</span> <span class="o">=</span> <span class="n">MEMORY_USAGE_CPU_TO_GPU</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">         <span class="n">rHIBufferInfo</span><span class="p">.</span><span class="n">creationFlag</span> <span class="o">=</span> <span class="n">BUFFER_CREATION_PERSISTENT_MAP</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">         <span class="n">buffer</span> <span class="o">=</span> <span class="n">APP_DYNAMICRHI</span><span class="o">-&gt;</span><span class="n">CreateBuffer</span><span class="p">(</span><span class="n">rHIBufferInfo</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">         <span class="k">if</span> <span class="p">(</span><span class="n">id</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span> <span class="n">RENDER_RESOURCEMANAGER</span><span class="o">-&gt;</span><span class="n">ReleaseBindlessID</span><span class="p">(</span><span class="n">id</span><span class="p">,</span> <span class="p">(</span><span class="n">BindlessSlot</span><span class="p">)</span><span class="n">slot</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">         <span class="n">BindlessResourceInfo</span> <span class="n">bindlessResourceInfo</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">         <span class="n">bindlessResourceInfo</span><span class="p">.</span><span class="n">buffer</span> <span class="o">=</span> <span class="n">buffer</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">         <span class="n">bindlessResourceInfo</span><span class="p">.</span><span class="n">resourceType</span> <span class="o">=</span> <span class="n">RESOURCE_TYPE_RW_BUFFER</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">         <span class="n">bindlessResourceInfo</span><span class="p">.</span><span class="n">bufferOffset</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">         <span class="n">bindlessResourceInfo</span><span class="p">.</span><span class="n">bufferRange</span> <span class="o">=</span> <span class="n">size</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">         <span class="n">id</span> <span class="o">=</span> <span class="n">RENDER_RESOURCEMANAGER</span><span class="o">-&gt;</span><span class="n">AllocateBindlessID</span><span class="p">(</span><span class="n">bindlessResourceInfo</span><span class="p">,</span> <span class="p">(</span><span class="n">BindlessSlot</span><span class="p">)</span><span class="n">slot</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">     <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">     <span class="n">memcpy</span><span class="p">(</span><span class="n">buffer</span><span class="o">-&gt;</span><span class="n">Map</span><span class="p">(),</span> <span class="n">data</span><span class="p">,</span> <span class="n">size</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">     <span class="n">RENDER_RESOURCEMANAGER</span><span class="o">-&gt;</span><span class="n">SetMeshInfo</span><span class="p">(</span><span class="n">vertexInfo</span><span class="p">,</span> <span class="n">vertexID</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"> <span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>另外每个Mesh实例也会有一个ID，用于存储这个实例对应的MeshInfo的ID以及材质的ID，也作为ArrayBuffer上传</p>
+<p>所以每个实例在GPU层只是一些底层资源的ID集合（再加一个Model矩阵）</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="c1">// Mesh的实例信息
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">typedef</span> <span class="k">struct</span> <span class="nc">MeshInstanceInfo</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">glm</span><span class="o">::</span><span class="n">mat4</span> <span class="n">modelMatrix</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">glm</span><span class="o">::</span><span class="n">mat4</span> <span class="n">prevModelMatrix</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">uint32_t</span> <span class="n">animationID</span><span class="p">;</span>           <span class="c1">//TODO:动画索引
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="kt">uint32_t</span> <span class="n">materialID</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">uint32_t</span> <span class="n">vertexID</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">uint32_t</span> <span class="n">indexID</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span><span class="n">MeshInstanceInfo</span><span class="p">;</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>渲染时,DrawCall指定起始实例为对应的实例ID，在Shader内就能拿到这个ID，然后去全局资源中拿到关于这个实例的所有信息</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="k">for</span> <span class="p">(</span><span class="k">auto</span><span class="o">&amp;</span> <span class="nl">batch</span> <span class="p">:</span> <span class="n">meshBatch</span><span class="p">)</span> <span class="p">{</span> <span class="c1">// 收集这个PSO的绘制命令到m_IndirectCommands（最终一并上传）
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">RHIIndirectCommand</span> <span class="n">meshDrawCommand</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">meshDrawCommand</span><span class="p">.</span><span class="n">firstInstance</span> <span class="o">=</span> <span class="n">batch</span><span class="p">.</span><span class="n">instanceID</span><span class="p">;</span>   <span class="c1">// 在Shader中通过这个拿到实例ID
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">meshDrawCommand</span><span class="p">.</span><span class="n">vertexCount</span> <span class="o">=</span> <span class="n">batch</span><span class="p">.</span><span class="n">indexCount</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">meshDrawCommand</span><span class="p">.</span><span class="n">instanceCount</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">meshDrawCommand</span><span class="p">.</span><span class="n">firstVertex</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="n">m_IndirectCommands</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">meshDrawCommand</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>这样设计下配合间接渲染，可以一口气上传所有实例的DrawCall，因为中间并不涉及顶点缓冲的切换</p>
+<p>可以做到Pipeline一致的所有Mesh只需要一个DrawCall</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="kt">void</span> <span class="n">MeshPassProcessor</span><span class="o">::</span><span class="n">Draw</span><span class="p">(</span><span class="n">RHICommandListRef</span> <span class="n">command</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="p">(</span><span class="k">auto</span><span class="o">&amp;</span> <span class="nl">drawCommand</span> <span class="p">:</span> <span class="n">m_MeshDrawCommands</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">auto</span> <span class="p">[</span><span class="n">w</span><span class="p">,</span> <span class="n">h</span><span class="p">]</span> <span class="o">=</span> <span class="n">APP_WINDOWSIZE</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="n">command</span><span class="o">-&gt;</span><span class="n">SetGraphicsPipeline</span><span class="p">(</span><span class="n">drawCommand</span><span class="p">.</span><span class="n">pipeline</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="p">(</span><span class="n">drawCommand</span><span class="p">.</span><span class="n">meshCommandRange</span><span class="p">.</span><span class="n">size</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">        <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="n">command</span><span class="o">-&gt;</span><span class="n">DrawIndirect</span><span class="p">(</span>
+</span></span><span class="line"><span class="cl">                <span class="n">m_MeshIndirectDrawDataBuffer</span><span class="p">[</span><span class="n">APP_FRAMEINDEX</span><span class="p">]</span><span class="o">-&gt;</span><span class="n">GetRHIBuffer</span><span class="p">(),</span>
+</span></span><span class="line"><span class="cl">                <span class="mi">4</span> <span class="o">*</span> <span class="k">sizeof</span><span class="p">(</span><span class="kt">uint32_t</span><span class="p">)</span> <span class="o">+</span> <span class="n">drawCommand</span><span class="p">.</span><span class="n">meshCommandRange</span><span class="p">.</span><span class="n">begin</span> <span class="o">*</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">RHIIndirectCommand</span><span class="p">),</span>
+</span></span><span class="line"><span class="cl">                <span class="n">drawCommand</span><span class="p">.</span><span class="n">meshCommandRange</span><span class="p">.</span><span class="n">size</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
 </div><h1 id="基础功能">基础功能
 </h1><h2 id="摄像机系统">摄像机系统
 </h2><blockquote>
@@ -4981,7 +5182,7 @@
       <span>✍️ 总字数: 
         
         
-        235.56K
+        236.29K
       </span>
     </section>
 
