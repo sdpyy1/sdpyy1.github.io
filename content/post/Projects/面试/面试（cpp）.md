@@ -478,10 +478,8 @@ typedef int (*CalcFunc)(int, int);
 // 方式2：C++11 using（更直观，推荐）
 using CalcFuncAlias = int (*)(int, int);
 
-
 // 调用时
 someF1(add);  // 函数指针作为参数    函数指针主要用于回调，可以传入不同的返回和参数一样的函数
-
 
 ```
 
@@ -514,6 +512,151 @@ main:
 ## 模板类为什么一般都是放在.h文件
 
 > TODO:先理清楚编译流程再说
+
+## 模板的使用
+
+```c++
+template<typename T>
+template<class T>   // 这两种写法一模一样，class是之前的写法，是历史原因
+    
+template<typename T=int>  // default
+    
+template<int N>    // 模板不一定是类型，也可以是某个类型的具体数值（模板本质上就是 编译期机制，所以调用是传入的实例必须是编译期就能确定的）
+void printStars() {
+    for(int i=0;i<N;i++) std::cout << "*";
+    std::cout << std::endl;
+}
+```
+
+# C++ string底层
+
+> 首先他是一个模板，底层由模板类`basic_string`来实现
+
+```c++
+_EXPORT_STD using string  = basic_string<char, char_traits<char>, allocator<char>>;
+_EXPORT_STD using wstring = basic_string<wchar_t, char_traits<wchar_t>, allocator<wchar_t>>;
+#ifdef __cpp_lib_char8_t
+_EXPORT_STD using u8string = basic_string<char8_t, char_traits<char8_t>, allocator<char8_t>>;
+#endif // defined(__cpp_lib_char8_t)
+_EXPORT_STD using u16string = basic_string<char16_t, char_traits<char16_t>, allocator<char16_t>>;
+_EXPORT_STD using u32string = basic_string<char32_t, char_traits<char32_t>, allocator<char32_t>>;
+
+
+/*
+字符类型 (_Elem)  +  字符操作策略 (_Traits)  +  内存管理策略 (_Alloc)
+           ↓
+  生成不同类型的 string
+*/
+```
+
+这里看来string不止一种
+
+> 捎带捋一下字符编码：Unicode只说明了十进制对应关系，至于这个十进制数据怎么存储是UTF这些规范决定的 （有了 Unicode，我们知道每个符号是什么；有了 UTF，我们知道怎么在计算机里存储和传输。）
+
+```c++
+_EXPORT_STD template <class _Elem, class _Traits = char_traits<_Elem>, class _Alloc = allocator<_Elem>>
+class basic_string { // null-terminated transparent array of elements(这个注释意思是他的char数组结尾也是\0)
+    
+    // string = "aaa"; 时进入的构造器，（这里获取了Ptr的size，然后委托构造）
+    _CONSTEXPR20 basic_string(_In_z_ const _Elem* const _Ptr) : _Mypair(_Zero_then_variadic_args_t{}) {
+        _Construct<_Construct_strategy::_From_ptr>(_Ptr, _Convert_size<size_type>(_Traits::length(_Ptr)));
+    }
+	
+    // 最终的核心构造器
+    template <_Construct_strategy _Strat, class _Char_or_ptr>
+    _CONSTEXPR20 void _Construct(const _Char_or_ptr _Arg, _CRT_GUARDOVERFLOW const size_type _Count) {
+        auto& _My_data = _Mypair._Myval2;
+        _STL_INTERNAL_CHECK(!_My_data._Large_mode_engaged());
+
+        if constexpr (_Strat == _Construct_strategy::_From_char) {
+            _STL_INTERNAL_STATIC_ASSERT(is_same_v<_Char_or_ptr, _Elem>);
+        } else {
+            _STL_INTERNAL_STATIC_ASSERT(_Is_elem_cvptr<_Char_or_ptr>::value);
+        }
+
+        if (_Count > max_size()) {
+            _Xlen_string(); // result too long
+        }
+
+        auto& _Al     = _Getal();
+        auto _Alproxy = _STD _Get_proxy_allocator(_Al);
+        _Container_proxy_ptr<_Alty> _Proxy(_Alproxy, _My_data);
+		
+        // 小字符串优化SSO：如果字符串长度小于 SSO 最大容量 → 使用栈上存储
+        if (_Count <= _Small_string_capacity) {
+            _My_data._Mysize = _Count;
+            _My_data._Myres  = _Small_string_capacity;
+
+            if constexpr (_Strat == _Construct_strategy::_From_char) {
+                _Traits::assign(_My_data._Bx._Buf, _Count, _Arg);
+                _Traits::assign(_My_data._Bx._Buf[_Count], _Elem());
+            } else if constexpr (_Strat == _Construct_strategy::_From_ptr) {
+                _STD _Traits_copy_batch<_Traits>(_My_data._Bx._Buf, _Arg, _Count);
+                _Traits::assign(_My_data._Bx._Buf[_Count], _Elem());
+            } else { // _Strat == _Construct_strategy::_From_string
+    #ifdef _INSERT_STRING_ANNOTATION
+                _Traits::copy(_My_data._Bx._Buf, _Arg, _Count + 1);
+    #else // ^^^ _INSERT_STRING_ANNOTATION / !_INSERT_STRING_ANNOTATION vvv
+                _Traits::copy(_My_data._Bx._Buf, _Arg, _BUF_SIZE);
+    #endif // ^^^ !_INSERT_STRING_ANNOTATION ^^^
+            }
+
+            _Proxy._Release();
+            return;
+        }
+
+        size_type _New_capacity = _Calculate_growth(_Count, _Small_string_capacity, max_size());
+        const pointer _New_ptr  = _Allocate_for_capacity(_Al, _New_capacity); // throws
+        _Construct_in_place(_My_data._Bx._Ptr, _New_ptr);
+
+        _My_data._Mysize = _Count;
+        _My_data._Myres  = _New_capacity;
+        if constexpr (_Strat == _Construct_strategy::_From_char) {
+            _Traits::assign(_Unfancy(_New_ptr), _Count, _Arg);
+            _Traits::assign(_Unfancy(_New_ptr)[_Count], _Elem());
+        } else if constexpr (_Strat == _Construct_strategy::_From_ptr) {
+            _STD _Traits_copy_batch<_Traits>(_Unfancy(_New_ptr), _Arg, _Count);
+            _Traits::assign(_Unfancy(_New_ptr)[_Count], _Elem());
+        } else { // _Strat == _Construct_strategy::_From_string
+            _Traits::copy(_Unfancy(_New_ptr), _Arg, _Count + 1);
+        }
+
+        _ASAN_STRING_CREATE(*this);
+        _Proxy._Release();
+    }
+    
+    // 增长策略，1.5倍
+    _NODISCARD static _CONSTEXPR20 size_type _Calculate_growth(
+        const size_type _Requested, const size_type _Old, const size_type _Max) noexcept {
+        const size_type _Masked = _Requested | _Alloc_mask;
+        if (_Masked > _Max) { // the mask overflows, settle for max_size()
+            return _Max;
+        }
+
+        if (_Old > _Max - _Old / 2) { // similarly, geometric overflows
+            return _Max;
+        }
+
+        return (_STD max)(_Masked, _Old + _Old / 2);
+    }
+}
+```
+
+小字符串（≤15字节） → 数据直接在栈对象 `_My_data._Bx._Buf`
+
+大字符串（>15字节） → 数据堆分配，指针存储在栈对象
+
+`_Construct` 是把 “外部字符源” → 转换为 `std::string` 内部存储的核心逻辑
+
+> 至于这里的扩容 ：我看代码是1.5，但网上都说是2倍
+>
+> **GCC (libstdc++)**：默认按 **2 倍** 扩容（经典的 “倍增策略”）。
+>
+> 比如当前容量是 10 字节，扩容后会变成 20 字节；如果 20 字节还不够，会先满足实际需求，再按 2 倍兜底。
+>
+> **Clang (libc++)**：同样以 **2 倍** 为基础，部分场景会微调（比如小字符串优化 SSO 范围内不扩容）。
+>
+> **MSVC (Visual Studio)**：早期版本按 1.5 倍扩容，新版也逐步切换到 2 倍扩容。
 
 # C++ 编译全流程
 
