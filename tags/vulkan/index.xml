@@ -15,7 +15,8 @@
         <guid>https://sdpyy1.github.io/p/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E5%BC%80%E5%8F%91%E5%AE%9E%E8%B7%B5vulkan%E6%8E%A5%E5%85%A5%E5%85%89%E7%BA%BF%E8%BF%BD%E8%B8%AA%E5%85%89%E7%BA%BF/</guid>
         <description>&lt;h1 id=&#34;vulkan接入光追管线&#34;&gt;Vulkan接入光追管线
 &lt;/h1&gt;&lt;blockquote&gt;
-&lt;p&gt;参考NV的教程学习Vulkan的光追管线https://nvpro-samples.github.io/vk_raytracing_tutorial_KHR&lt;/p&gt;
+&lt;p&gt;参考https://nvpro-samples.github.io/vk_raytracing_tutorial_KHR 、 &lt;a class=&#34;link&#34; href=&#34;https://docs.vulkan.org/tutorial/latest/courses/18_Ray_tracing/02_Acceleration_structures.html&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;https://docs.vulkan.org/tutorial/latest/courses/18_Ray_tracing/02_Acceleration_structures.html&lt;/a&gt;&lt;/p&gt;
 &lt;/blockquote&gt;
 &lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/image-20251202193840017.png&#34;
 	
