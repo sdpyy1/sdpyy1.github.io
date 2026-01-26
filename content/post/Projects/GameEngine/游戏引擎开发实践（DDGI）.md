@@ -7,17 +7,31 @@ categories = ["Projects/GameEngine"]
 image = 'image-20251211235847350.png'
 +++
 
+> 总体流程
+>
+> 1. 探针收集光照信息：探针向四面八方发射256条光线，计算击中点的光照并存储 （此处可以额外计算击中点的间接光照，来模拟无限弹射的全局光照效果），另外还要存储hitT用来评估可见性
+> 2. 混合光照信息：每个探针分配6*6的像素，每个像素代表一个法线方向，通过蒙特卡洛积分来估计法线方向上的Irrandiance（其实和IBL思路一致），并进行时域加权混合，来获得更多的样本？
+> 3. 混合距离信息：每个探针分配 14*14的像素，计算每个方向上HitT的期望和平方的期望，时域混合（这两部都采用了八面体映射，另外这两步涉及到采样边界的问题，在像素外扩充一圈，用特定规则填充后存储）类似![img](v2-b44ad9ae0299421d6302ced05edde367_1440w.png)，保证在一个探针内采样时，不会采样到别的探针数据
+> 4. 光照Pass使用探针：根据着色点位置找到周围8个探针，从8个探针中获取对应法线位置的数据进行加权平均，有3种权重系数
+>    1. 如果probe离着色点较远，降低probe的权重（三线性插值系数）
+>    2. 如果着色点到probe的方向与表面法线的夹角过大，降低probe的权重（方向系数）
+>    3. 如果着色点与probe之间有较大的概率存在遮挡物，降低probe的权重（切比雪夫系数）
+
+# DDGI Probe
+
+![image-20260111152828201](image-20260111152828201.png)
+
 # DDGIVolume
 
 > 把探针组组成一个包围盒，定义探针数量和间距，以及DDGI的各种参数，这里实现了一个新的探针组件来表达它，并实现了他的可视化
 
 ![image-20251208164757361](image-20251208164757361.png)
 
-
+## 
 
 # ProbeTrace
 
-> 这个阶段利用光追，计算并保存每个探针发射的每根光线的Radiance 信息（在每个击中点进行一次光照计算）
+> 这个阶段利用光追，计算并保存每个探针发射四面八方的光线的Radiance 信息（在每个击中点进行一次光照计算）
 
 1. 获取volume的设置，采用y-up方向，作为Image2Darray的layer，所以每层的探针数量为probeCount.x * probeCount.z
 
@@ -40,7 +54,6 @@ uint32_t volumeLayerCount = probeCount.y;  // y-up
 		.RootSignature(m_VolumeTraceRootSignature)
 		.ReadWrite(1, 0, 0, rayTexture, VIEW_TYPE_2D_ARRAY, { TEXTURE_ASPECT_COLOR ,0,1,0,volumeLayerCount })
 		.Read(1, 1, 0, dirShadowMap, VIEW_TYPE_2D_ARRAY, { TEXTURE_ASPECT_DEPTH ,0,1,0,4 })
-		// 点光源阴影单独处理
 		.Read(1, 3, 0, skyBox, VIEW_TYPE_CUBE, { TEXTURE_ASPECT_COLOR ,0,1,0,6 })
 		.Read(1, 4, 0, irrandiance, VIEW_TYPE_2D_ARRAY, { TEXTURE_ASPECT_COLOR,0,1,0,volumeLayerCount })
 		.Read(1, 5, 0, distance, VIEW_TYPE_2D_ARRAY, { TEXTURE_ASPECT_COLOR,0,1,0,volumeLayerCount })
@@ -61,7 +74,7 @@ uint32_t volumeLayerCount = probeCount.y;  // y-up
 
 3. 光追Shader
 
-   > RayGen中需要为每个探针的每条光线的击中点计算光照和阴影，并且混合历史信息（计算击中点的周围8个探针历史信息的irrandiance，作为击中点的间接光照）
+   > RayGen中需要为每个探针的每条光线的击中点计算光照和阴影，并且混合历史信息（计算击中点的周围8个探针历史信息的irrandiance，作为击中点的间接光照（只计算漫反射部分））
 
    ```glsl
    struct Payload {
@@ -244,6 +257,10 @@ uint32_t volumeLayerCount = probeCount.y;  // y-up
    RayTrace结束后，获得了每个探针的每条光线携带的Radiance信息
 
 ![image-20251211141249979](image-20251211141249979.png)
+
+>  另外还会在着色点采样它周围8个探针的光照数据（就是上一帧的记录，也是该着色点的间接光照）这样做相当于得到了采样点的间接光照
+
+
 
 # ProbeBlend
 

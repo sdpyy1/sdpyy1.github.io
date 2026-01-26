@@ -8,7 +8,7 @@ tags = ["Vulkan","光线追踪"]
 
 # Vulkan接入光追管线
 
-> 参考NV的教程学习Vulkan的光追管线https://nvpro-samples.github.io/vk_raytracing_tutorial_KHR
+> 参考https://nvpro-samples.github.io/vk_raytracing_tutorial_KHR 、 https://docs.vulkan.org/tutorial/latest/courses/18_Ray_tracing/02_Acceleration_structures.html
 
 ![image-20251202193840017](image-20251202193840017.png)
 

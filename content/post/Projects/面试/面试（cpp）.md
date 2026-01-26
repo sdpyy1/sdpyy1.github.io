@@ -4,6 +4,10 @@ draft = true
 title = '面试（cpp）'
 +++
 
+# TODO
+
+1. 智能指针详细学习
+
 # 基础
 
 ## 内存对齐
@@ -113,9 +117,9 @@ void PtrConstAndConstPtr()
 
 ## 顶层和底层const
 
-> 顶层const：修饰对象本身是个常量
+> 顶层const：修饰对象本身是个常量，如果const修饰的是指针（表示这个指针本身不能被修改，这就是顶层const）
 >
-> 底层const: 修饰对象所指向的数据是一个常量
+> 底层const: 修饰对象所指向的数据是一个常量（const修饰的是指针指向的数据，指向的数据不能修改，这就是底层const）
 
 ## 初始化与赋值
 
@@ -136,6 +140,39 @@ void PtrConstAndConstPtr()
 3. 拷贝构造（注意需要在列表初始化中指定成员的拷贝构造，否则成员变量仍然走默认构造）、
 4. 移动构造（自定义了拷贝构造，就不会默认生成移动构造了），移动构造的设计思路是转移other的数据，而不是拷贝他们，比如`	std::string anotherStr = std::move(str);`
 5. 委托构造（交给其他构造器来执行）
+
+```c++
+class Dog : public Animal {
+public:
+	Dog() {
+        print("Dog构造");
+        a = std::make_shared<int>(10);
+    }
+	Dog(const Dog& other) {
+		print("Dog拷贝构造");
+	}
+	Dog(Dog&& other) {
+        print("Dog移动构造");
+    }
+	void makeSound() {
+        print("Woof!\n");
+	}
+	std::shared_ptr<int> a;
+	~Dog() {
+        print("Dog析构");
+    }
+};
+
+void STLLearn() {
+	std::vector<Dog> arr;
+	Dog dog;
+	arr.push_back(std::move(dog));
+}
+
+// push_back内部 如果传入的是右值，会走移动构造（如果没有定义移动构造，退化为拷贝构造），如果传入的左值，会走拷贝构造
+```
+
+
 
 ## std::move和std::forward
 
@@ -527,6 +564,385 @@ void printStars() {
     std::cout << std::endl;
 }
 ```
+
+## delete和delete[]
+
+delete调用一次析构
+
+delete[]调用每个元素的析构
+
+
+
+
+
+## C++的内存分区
+
+![image-20260118001646243](image-20260118001646243.png)
+
+## 定义一个类占据的存储空间
+
+> 1. 非静态成员的数据类型大小之和
+> 2. 编译器加入的额外成员变量（如指向虚函数表的指针）
+> 3. 为了边缘对齐优化加入的padding
+>
+> 定义一个空类时，size=1,  
+>
+> 作为父类时size=0（这句话的意思如下）
+
+```c++
+class EmptyClass {
+};
+class EmptyClassChild:public EmptyClass {
+	int x;
+};
+
+	EmptyClass a;
+	EmptyClassChild b;
+	print(sizeof(a)); // 1
+    print(sizeof(b)); // 4    (并没有加父类的1)
+```
+
+## 什么是RAII
+
+> RAII（**R**esource **A**cquisition **I**s **I**nitialization）是由c++之父[Bjarne Stroustrup](https://zhida.zhihu.com/search?content_id=6054031&content_type=Article&match_order=1&q=Bjarne+Stroustrup&zhida_source=entity)提出的，中文翻译为资源获取即初始化，他说：使用局部对象来管理资源的技术称为资源获取即初始化；这里的资源主要是指操作系统中有限的东西如内存、网络套接字等等，局部对象是指存储在栈的对象，它的生命周期是由操作系统来管理的，无需人工介入；
+>
+> 资源的使用一般经历三个步骤a.获取资源 b.使用资源 c.销毁资源，但是资源的销毁往往是程序员经常忘记的一个环节，所以程序界就想如何在程序员中让资源自动销毁呢？c++之父给出了解决问题的方案：RAII，它充分的利用了C++语言局部对象自动销毁的特性来控制资源的生命周期。给一个简单的例子来看下局部对象的自动销毁的特性
+>
+> 已经习惯了用类管理资源，这种方式就叫RAII么？  TODO
+
+
+
+## 智能指针
+
+
+
+### enable_shared_from_this
+
+> 使用场景 ：**只有this指针时，如何安全得到shared_ptr**
+>
+> ```c++
+> class Widget{
+> public:
+>   void process();
+>   ...  
+> private:
+>   vector<shared_ptr<Widget>> vec_;
+> }
+> 
+> void Widget::process(){
+>   ... // 做一些处理
+>   vec_.emplace_back(this); // 这里会隐式转换this指针（Widget*类型）为shared_ptr<Widget>类型
+> }
+> ```
+>
+> 上述场景问题就是，emplace_back时会为this指针创建一个智能指针，如果外部代码还有一个共享指针指向这个对象，那这个对象就有两个共享指针，他们的生命周期独立，可能会导致两次析构，代码崩溃
+>
+> 解决思路就是让Widget继承: public std::enable_shared_from_this<Widget>，这个类中维护一个weakPtr
+>
+> 如果需要this表达的shared_ptr，可以调用shared_from_this()来获得
+>
+> ```c++
+>     _NODISCARD shared_ptr<_Ty> shared_from_this() {
+>         return shared_ptr<_Ty>(_Wptr);
+>     }
+> ```
+>
+> shared_from_this使用前提是当前对象已经被shared_ptr管理
+
+
+
+## 类相关
+
+
+
+
+
+## 虚函数
+
+### 菱形继承
+
+当读取Base0中的int a时会报错，也就是说编译器不知道你是要Base1上的a还是base2上的a，（本身不会报错，每个继承链都会保存一个a，但是访问时会冲突，必须指明使用域）
+
+```text
+main.cpp(26): error C2385: 对“a”的访问不明确
+main.cpp(26): note: 可能是“a”(位于基“A”中)
+main.cpp(26): note: 也可能是“a”(位于基“A”中)
+main.cpp(27): error C2385: 对“a”的访问不明确
+main.cpp(27): note: 可能是“a”(位于基“A”中)
+main.cpp(27): note: 也可能是“a”(位于基“A”中)
+```
+
+![img](v2-7b1fb0fab19a7f28f558408e44dd16f1_1440w.jpg)
+
+### 虚函数的实现原理
+
+> 在 C++ 中，虚函数的实现原理基于两个关键概念：**虚函数表和虚函数指针**。
+>
+> **虚函数表**：每个包含虚函数的类都会生成一个虚函数表（Virtual Table），其中存储着该类中所有虚函数的地址。虚函数表是一个由指针构成的数组，每个指针指向一个虚函数的实现代码。
+>
+> **虚函数指针**：在对象的内存布局中，编译器会添加一个额外的指针，称为虚函数指针或虚表指针（Virtual Table Pointer，简称 VTable 指针）。这个指针指向该对象对应的虚函数表，从而让程序能够动态地调用正确的虚函数。
+
+从下图可以看到A对象的虚函数表中记录的它自己的V1实现，而不是父类的V1实现，所以不会调用到父类的v1
+
+![img](v2-62366fbef35d312cd5f222bf3cca170f_1440w.jpg)
+
+![img](v2-0e113e3b9c5e6997959da9939ec6eaac_1440w.jpg)
+
+理解起来很容易，每个存在虚函数的类都会生成一张虚函数表，表内的函数地址会指向正确的函数，所以不会发生调用子类方法，反而调用成了父类方法的情况
+
+![img](v2-c44949a47f5989484276af0ae41eec8b_1440w.jpg)
+
+### 多态下的析构问题（什么情况下析构函数需要写  Virtual）
+
+> 父类指针指向子类对象时，delete只会触发父类的析构
+>
+> 实测下裸指针有这个问题，智能指针没有这个问题
+
+```c++
+class Animal {
+public:
+	virtual void makeSound() {
+		print("The animal makes a sound.\n");
+	}
+    ~Animal() {
+        print("Animal析构");
+    }
+};
+
+class Cat : public Animal {
+public:
+	void makeSound() {
+		print("Meow!\n");
+	}
+    int * a = new int(10);
+    ~Cat() {
+       	delete a;
+        print("Cat析构");
+    }
+	
+};
+
+
+int main(){
+    Animal * animal = new Cat();
+    animal->makeSound();
+
+    delete animal;
+}
+
+// 打印：
+//Meow!
+
+//Animal析构   说明用的父类指针只调用了父类的析构，子类没有析构，这时候就会泄漏 Cat中的a
+```
+
+```c++
+解决办法就是给父类的析构函数加上virtual
+class Animal {
+public:
+    virtual void makeSound() {
+        print("The animal makes a sound.\n");
+    }
+    virtual ~Animal() {
+        print("Animal析构");
+    }
+};
+
+```
+
+
+
+### 静态绑定和动态绑定
+
+> 编译期就可以确定函数的地址，就是静态绑定
+
+```c++
+class Shape {
+public:
+    void draw() { cout << "Drawing a shape." << endl; }
+};
+
+class Circle : public Shape {
+public:
+    void draw() { cout << "Drawing a circle." << endl; }
+};
+
+int main() {
+    Shape* shapeObj = new Circle();
+    shapeObj->draw(); // 编译时期确定方法调用，输出 "Drawing a shape."
+}
+```
+
+
+
+## STL
+
+> Standard Template Library，
+>
+> STL 的重要特点包括：
+>
+> - **数据结构与算法的分离**：通过迭代器将算法与容器解耦。
+> - **非面向对象设计**：不依赖于继承和多态，而是通过模板和迭代器实现通用性。
+> - **高性能**：模板在编译时实例化，避免了运行时多态的开销，通用设计减少重复代码。
+> - **泛型编程**：基于模板实现，支持任意符合要求的类型（如支持拷贝、比较操作的类型）。
+
+### STL的主要组件
+
+> C++ STL 大体分为六大部件：容器 Container、算法 Algorithm、迭代器 Iterator、仿函数 Functor、适配器 Adaptor、空间配置器 Allocator
+
+解耦具体的数据具体和访问方式
+
+![img](v2-23f2db11304c9a7fc94f307ba193df34_1440w.jpg)
+
+### STL的容器
+
+（1）序列式容器 Sequence Containers
+
+STL 中的序列式容器是一类**按照元素插入顺序存储**的容器，它们维护了元素的插入顺序，但**不保证元素的排序**。有如下几种：vector、deque、list、forward_list、array 等。
+
+- vector 是支持**尾部**高效插入删除的**动态单端数组**，内存空间连续，支持快速随机访问。
+- deque 是支持**首尾**高效插入删除的**双端队列**，内存空间不连续，支持快速随机访问。
+- list 是支持**任意位置**高效插入删除的**双向循环链表**，内存空间不连续，不支持随机访问。
+- forward_list 是支持**头部**高效插入删除的**单向链表**，内存空间不连续，只支持单向访问。
+
+（2）关联式容器 Associated Containers
+
+关联式容器通过键值（key-value pairs）来存储元素，能够提供对数据的快速访问，主要分 set 集合和 map 映射这两大类，均是以**红黑树 RB-Tree** 为底层架构，自动默认为**从小到大排序**。容器类自动申请和释放内存，**无需 new/delete 操作**，容器在插入和删除元素时会自动调整其内部结构。
+
+- set是**有序键的集合**，其中的元素是唯一的，类型是键值类型，即只有键没有值。
+- multiset 则允许重复元素，可以**包含多个相同的关键字**，适合需要存储重复元素的集合。
+- map 是**有序键值对的映射**，每个键是唯一的，元素类型是键值对类型。
+- multimap 则允许键重复，可以允许**一个键对应多个值**，适合需要存储重复键的场景。
+
+### Vector的emplace_back 和 push_back
+
+> push_back:  传入的参数就是一个已经存在的对象，或者临时创建的右值，会先触发构造函数，然后又触发拷贝构造或移动构造
+>
+> emplace_back: 可以直接传入以构建的对象，但是还可以传入构建需要的参数，这样vector可以原地创建对象，不需要拷贝或移动
+>
+> **一句话：push_back只接受已存在的对象，然后把他拷贝/移动到Vector， emplace_back接收参数，它来进行构造**
+>
+> **感觉网上说push_back是先创建再拷贝是不对的，创建是程序员自己控制的**
+>
+> **总体来说，如果一个对象已经存在了，我要把他传入数组，那用哪个都无所谓，如果要传入一个当前不存在的对象，那使用emplace_back更合适**
+
+```c++
+// emplace_back 
+template <class... _Valty>
+_CONSTEXPR20 _CONTAINER_EMPLACE_RETURN emplace_back(_Valty&&... _Val) {
+    // insert by perfectly forwarding into element at end, provide strong guarantee
+    _Ty& _Result = _Emplace_one_at_back(_STD forward<_Valty>(_Val)...);
+#if _HAS_CXX17
+    return _Result;
+#else // ^^^ _HAS_CXX17 / !_HAS_CXX17 vvv
+    (void) _Result;
+#endif // ^^^ !_HAS_CXX17 ^^^
+}
+
+// pushback
+_CONSTEXPR20 void push_back(const _Ty& _Val) { // insert element at end, provide strong guarantee
+    _Emplace_one_at_back(_Val);
+}
+
+_CONSTEXPR20 void push_back(_Ty&& _Val) {
+    // insert by moving into element at end, provide strong guarantee
+    _Emplace_one_at_back(_STD move(_Val));
+}
+```
+
+## allocator源码解读
+
+> SGI-STL V3.3
+
+![image-20260121160723374](image-20260121160723374.png)
+
+
+
+# C++ 11的新特性
+
+### auto自动推导与const
+
+```c++
+// 普通
+const int a = 10;
+auto b = a;
+b = 20;  // 说明b推导类型为int，而不是const int，说明普通的顶层const会忽略
+const auto b1 = a;  // 如果需要推断出来const，需要手动加const
+
+// 引用
+auto c = &a;
+// c = 2;  // 不能修改，对常量取地址是一个底层const，会被推断出来
+```
+
+### decltype
+
+> `decltype` 推导时**不会忽略任何 const 限定（包括顶层 const）**，这也是和 `auto` 最关键的差异之一
+>
+> 用于希望从表达式中推断出要定义的变量类型，但是不希望用这个表达式来初始化，可以自定义初始化
+
+```c++
+const int a = 10;
+decltype(a) b = 10;   // b也是const int
+```
+
+### NULL和nullptr
+
+NULL是一种宏定义
+
+```c++
+// 在CPP中 NULL就是整数0
+#ifndef NULL
+    #ifdef __cplusplus
+        #define NULL 0  // 这里启动CPP
+    #else
+        #define NULL ((void *)0) // 这里启动C
+    #endif
+#endif
+```
+
+nullptr是一个关键字
+
+### 智能指针
+
+> 智能指针是一个类，用于存储指向动态分配对象的指针，负责自动释放动态分配的对象，防止内存泄露、
+
+```c++
+void SmartPointerFunc() { 
+	std::unique_ptr<Person> p1 = std::make_unique<Person>(10, "haha");
+    // std::unique_ptr<Person> p2 = p1;  // unique_ptr类删除了拷贝构造
+    std::unique_ptr<Person> p2 = std::move(p1); // 移动构造
+	print(p1.get());
+	print(p2.get());
+    
+    
+    // 引用计数
+    std::shared_ptr<Person> p3 = std::make_shared<Person>(10, "shaderd_haha");
+	print(p3.use_count());  // 1
+    std::shared_ptr<Person> p4 = p3;
+	print(p3.use_count()); // 2
+	print(p4.use_count()); // 2
+    
+    // weakptr
+    std::weak_ptr<Person> p5 = p3;
+    print(p5.use_count()); // 还是2  weak指针不影响计数
+    
+}
+
+//Person构造
+//0000000000000000
+//0000027CF1E92310
+//Person析构
+```
+
+> 因为shared_ptr是基于引用计数的，所以肯定会有循环引用的情况，用双链表来解释，两个结点互相连接，释放其中一个时，需要先释放另外一个，互相牵制导致死锁
+
+# C++的多线程
+
+## 互斥锁和条件变量
+
+互斥锁获取失败会进入等待队列，当占有线程解锁后会被唤醒，  互斥锁用于控制两个线程的互斥
+
+当一个线程进入锁后发现一些条件不满足，可以进行wait休眠，此时会释放锁，其他线程进入后修改内部数据，此时这个条件满足了，就可与notify来通知休眠的线程，唤醒后原线程立即持有锁，然后进行继续运行，所以条件变量是用于线程间的操作同步
 
 # C++ string底层
 

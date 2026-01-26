@@ -24,6 +24,22 @@ title = 'UE客户端学习'
 
 可以用来个Mesh描边
 
+# 委托
+
+观察者模式
+
+一个Subject维护一个观察者的List，当Subject的事件触发时，遍历list，调用每个观察者自己的回调函数
+
+![image-20260110221831932](image-20260110221831932.png)
+
+UE的委托就是这里收集List的Subject
+
+UPrimitiveComponent本身带了很多委托
+
+![image-20260110222425285](image-20260110222425285.png)
+
+
+
 ## GAS系统
 
 1. PlayerState
