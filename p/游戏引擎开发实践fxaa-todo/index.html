@@ -3,18 +3,18 @@
     <head><meta charset='utf-8'>
 <meta name='viewport' content='width=device-width, initial-scale=1'>
 <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
-  <meta name="referrer" content="no-referrer-when-downgrade"><meta name='description' content=" 讲了 GUI架构、Asset的序列化和反序列化、Redo undo实现、反射等技术\n反射 为什么需要反射 我定义一个定向光组件，刚开始有方向和强度，我想在GUI实时修改，就需要在imgui添加两个按钮来调整，但是定向光的属性越来越多，我并不希望每次都要修改imgui界面来修改，这种就可以让imgui拿到定向光的反射来自动生成\n">
-<title>Games104：引擎工具链</title>
+  <meta name="referrer" content="no-referrer-when-downgrade"><meta name='description' content="边缘检测 计算当前处理的像素点和周围像素点的亮度对比值，FXAA 通过确定水平和垂直方向上像素点的亮度差，来计算对比值。当对比度值较大时，我们认为需要进行抗锯齿处理。\n">
+<title>游戏引擎开发实践（FXAA   TODO）</title>
 
-<link rel='canonical' href='https://sdpyy1.github.io/p/games104%E5%BC%95%E6%93%8E%E5%B7%A5%E5%85%B7%E9%93%BE/'>
+<link rel='canonical' href='https://sdpyy1.github.io/p/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E5%BC%80%E5%8F%91%E5%AE%9E%E8%B7%B5fxaa-todo/'>
 
-<link rel="stylesheet" href="/scss/style.min.6a692fd055deae459f2a9767f57f3855ba80cafd5041317f24f7360f6ca47cdf.css"><meta property='og:title' content="Games104：引擎工具链">
-<meta property='og:description' content=" 讲了 GUI架构、Asset的序列化和反序列化、Redo undo实现、反射等技术\n反射 为什么需要反射 我定义一个定向光组件，刚开始有方向和强度，我想在GUI实时修改，就需要在imgui添加两个按钮来调整，但是定向光的属性越来越多，我并不希望每次都要修改imgui界面来修改，这种就可以让imgui拿到定向光的反射来自动生成\n">
-<meta property='og:url' content='https://sdpyy1.github.io/p/games104%E5%BC%95%E6%93%8E%E5%B7%A5%E5%85%B7%E9%93%BE/'>
+<link rel="stylesheet" href="/scss/style.min.6a692fd055deae459f2a9767f57f3855ba80cafd5041317f24f7360f6ca47cdf.css"><meta property='og:title' content="游戏引擎开发实践（FXAA   TODO）">
+<meta property='og:description' content="边缘检测 计算当前处理的像素点和周围像素点的亮度对比值，FXAA 通过确定水平和垂直方向上像素点的亮度差，来计算对比值。当对比度值较大时，我们认为需要进行抗锯齿处理。\n">
+<meta property='og:url' content='https://sdpyy1.github.io/p/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E5%BC%80%E5%8F%91%E5%AE%9E%E8%B7%B5fxaa-todo/'>
 <meta property='og:site_name' content='wanfeng'>
-<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='课程笔记' /><meta property='article:tag' content='Games104' /><meta property='article:published_time' content='2025-10-29T14:42:31&#43;08:00'/><meta property='article:modified_time' content='2025-10-29T14:42:31&#43;08:00'/>
-<meta name="twitter:title" content="Games104：引擎工具链">
-<meta name="twitter:description" content=" 讲了 GUI架构、Asset的序列化和反序列化、Redo undo实现、反射等技术\n反射 为什么需要反射 我定义一个定向光组件，刚开始有方向和强度，我想在GUI实时修改，就需要在imgui添加两个按钮来调整，但是定向光的属性越来越多，我并不希望每次都要修改imgui界面来修改，这种就可以让imgui拿到定向光的反射来自动生成\n">
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:published_time' content='2026-01-25T16:21:06&#43;08:00'/><meta property='article:modified_time' content='2026-01-25T16:21:06&#43;08:00'/>
+<meta name="twitter:title" content="游戏引擎开发实践（FXAA   TODO）">
+<meta name="twitter:description" content="边缘检测 计算当前处理的像素点和周围像素点的亮度对比值，FXAA 通过确定水平和垂直方向上像素点的亮度差，来计算对比值。当对比度值较大时，我们认为需要进行抗锯齿处理。\n">
     <link rel="shortcut icon" href="/favicon.ico" />
 
     </head>
@@ -286,10 +286,13 @@
         <div class="widget--toc">
             <nav id="TableOfContents">
   <ol>
-    <li><a href="#反射">反射</a>
+    <li><a href="#边缘检测">边缘检测</a>
       <ol>
-        <li><a href="#为什么需要反射">为什么需要反射</a></li>
-        <li><a href="#c实现">C++实现</a></li>
+        <li><a href="#基于亮度的混合系数计算">基于亮度的混合系数计算</a>
+          <ol>
+            <li><a href="#计算混合方向与混合">计算混合方向与混合</a></li>
+          </ol>
+        </li>
       </ol>
     </li>
   </ol>
@@ -308,61 +311,10 @@
 
     <div class="article-details">
     
-    <header class="article-category">
-        
-        
-             
-            
-            
-            
-            <div class="category-hierarchy">
-                
-                    
-                    
-                    
-                        
-                    
-                     
-                    
-                    
-                    
-                    <a href="/categories/course/" 
-                       >
-                        Course
-                    </a>
-                    
-                    
-                    
-                        <span class="category-separator">/</span>
-                    
-                
-                    
-                    
-                    
-                        
-                    
-                        
-                    
-                     
-                    
-                    
-                    
-                    <a href="/categories/course/games104/" 
-                       >
-                        Games104
-                    </a>
-                    
-                    
-                    
-                
-            </div>
-        
-    </header>
-    
 
     <div class="article-title-wrapper">
         <h2 class="article-title">
-            <a href="/p/games104%E5%BC%95%E6%93%8E%E5%B7%A5%E5%85%B7%E9%93%BE/">Games104：引擎工具链</a>
+            <a href="/p/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E5%BC%80%E5%8F%91%E5%AE%9E%E8%B7%B5fxaa-todo/">游戏引擎开发实践（FXAA   TODO）</a>
         </h2>
     
         
@@ -384,7 +336,7 @@
   <path d="M3 11h16" />
   <path d="M18 16.496v1.504l1 1" />
 </svg>
-                <time class="article-time--published">Oct 29, 2025</time>
+                <time class="article-time--published">Jan 25, 2026</time>
             </div>
         
 
@@ -399,7 +351,7 @@
 
 
                 <time class="article-time--reading">
-                    阅读时长: 1 分钟
+                    阅读时长: 2 分钟
                 </time>
             </div>
         
@@ -445,39 +397,147 @@
     <section class="article-content">
     
     
-    <blockquote>
-<p>讲了 GUI架构、Asset的序列化和反序列化、Redo undo实现、反射等技术</p>
+    <h1 id="边缘检测">边缘检测
+</h1><blockquote>
+<p>计算当前处理的像素点和周围像素点的亮度对比值，FXAA 通过确定水平和垂直方向上像素点的亮度差，来计算对比值。当对比度值较大时，我们认为需要进行抗锯齿处理。</p>
 </blockquote>
-<h1 id="反射">反射
-</h1><p><img src="/%e6%88%aa%e5%b1%8f2025-10-29-15.18.45.png"
+<p>实现比较容易，计算上下左右中间五个像素，求亮度，之后取最大值和最小值，如果差距过小，就当作不是边界，直接返回原数据</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="c1">//////////////////////////////////////////// 1. 求亮度差 ////////////////////////////////////////////
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="n">vec2</span> <span class="n">texCoords</span> <span class="o">=</span> <span class="p">(</span><span class="n">vec2</span><span class="p">(</span><span class="n">invocID</span><span class="p">)</span> <span class="o">+</span> <span class="mf">0.5f</span><span class="p">)</span> <span class="o">/</span> <span class="n">vec2</span><span class="p">(</span><span class="n">textureSize</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="kt">float</span> <span class="n">up</span> <span class="o">=</span> <span class="n">RGBtoLuminance</span><span class="p">(</span><span class="n">texture</span><span class="p">(</span><span class="n">sampler2D</span><span class="p">(</span><span class="n">historyTexture</span><span class="p">,</span> <span class="n">SAMPLER</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">texCoords</span> <span class="o">+</span> <span class="n">stepUV</span> <span class="o">*</span> <span class="n">Kernel_Map</span><span class="p">[</span><span class="mi">1</span><span class="p">]).</span><span class="n">xyz</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="kt">float</span> <span class="n">down</span> <span class="o">=</span> <span class="n">RGBtoLuminance</span><span class="p">(</span><span class="n">texture</span><span class="p">(</span><span class="n">sampler2D</span><span class="p">(</span><span class="n">historyTexture</span><span class="p">,</span> <span class="n">SAMPLER</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">texCoords</span> <span class="o">+</span> <span class="n">stepUV</span> <span class="o">*</span> <span class="n">Kernel_Map</span><span class="p">[</span><span class="mi">7</span><span class="p">]).</span><span class="n">xyz</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="kt">float</span> <span class="n">left</span> <span class="o">=</span> <span class="n">RGBtoLuminance</span><span class="p">(</span><span class="n">texture</span><span class="p">(</span><span class="n">sampler2D</span><span class="p">(</span><span class="n">historyTexture</span><span class="p">,</span> <span class="n">SAMPLER</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">texCoords</span> <span class="o">+</span> <span class="n">stepUV</span> <span class="o">*</span> <span class="n">Kernel_Map</span><span class="p">[</span><span class="mi">3</span><span class="p">]).</span><span class="n">xyz</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="kt">float</span> <span class="n">right</span> <span class="o">=</span> <span class="n">RGBtoLuminance</span><span class="p">(</span><span class="n">texture</span><span class="p">(</span><span class="n">sampler2D</span><span class="p">(</span><span class="n">historyTexture</span><span class="p">,</span> <span class="n">SAMPLER</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">texCoords</span> <span class="o">+</span> <span class="n">stepUV</span> <span class="o">*</span> <span class="n">Kernel_Map</span><span class="p">[</span><span class="mi">5</span><span class="p">]).</span><span class="n">xyz</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="kt">float</span> <span class="n">center</span> <span class="o">=</span> <span class="n">RGBtoLuminance</span><span class="p">(</span><span class="n">texture</span><span class="p">(</span><span class="n">sampler2D</span><span class="p">(</span><span class="n">historyTexture</span><span class="p">,</span> <span class="n">SAMPLER</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">texCoords</span><span class="p">).</span><span class="n">xyz</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">float</span> <span class="n">maxLum</span> <span class="o">=</span> <span class="n">max</span><span class="p">(</span><span class="n">center</span><span class="p">,</span> <span class="n">max</span><span class="p">(</span><span class="n">max</span><span class="p">(</span><span class="n">up</span><span class="p">,</span> <span class="n">down</span><span class="p">),</span> <span class="n">max</span><span class="p">(</span><span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">)));</span>
+</span></span><span class="line"><span class="cl"><span class="kt">float</span> <span class="n">minLum</span> <span class="o">=</span> <span class="n">min</span><span class="p">(</span><span class="n">center</span><span class="p">,</span> <span class="n">min</span><span class="p">(</span><span class="n">min</span><span class="p">(</span><span class="n">up</span><span class="p">,</span> <span class="n">down</span><span class="p">),</span> <span class="n">min</span><span class="p">(</span><span class="n">left</span><span class="p">,</span> <span class="n">right</span><span class="p">)));</span>
+</span></span><span class="line"><span class="cl"><span class="kt">float</span> <span class="n">Contrast</span> <span class="o">=</span>  <span class="n">maxLum</span> <span class="o">-</span> <span class="n">minLum</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="k">if</span><span class="p">(</span><span class="n">Contrast</span> <span class="o">&lt;</span> <span class="n">max</span><span class="p">(</span><span class="n">EDGE_THRESHOLD_MIN</span><span class="p">,</span> <span class="n">maxLum</span> <span class="o">*</span> <span class="n">EDGE_THRESHOLD_MAX</span><span class="p">))</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">vec4</span> <span class="n">outcolor</span> <span class="o">=</span> <span class="n">texture</span><span class="p">(</span><span class="n">sampler2D</span><span class="p">(</span><span class="n">historyTexture</span><span class="p">,</span> <span class="n">SAMPLER</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">texCoords</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>    
+</span></span><span class="line"><span class="cl"><span class="n">imageStore</span><span class="p">(</span><span class="n">out_texture</span><span class="p">,</span> <span class="n">invocID</span><span class="p">,</span> <span class="n">vec4</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">));</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>看看效果，可以看到大部分点都认为是不需要进行处理的地方</p>
+<p><img src="/image-20260125230544796.png"
 	
 	
 	
 	loading="lazy"
 	
-		alt="截屏2025-10-29 15.18.45"
+		alt="image-20260125230544796"
 	
 	
 ></p>
-<h2 id="为什么需要反射">为什么需要反射
-</h2><p>我定义一个定向光组件，刚开始有方向和强度，我想在GUI实时修改，就需要在imgui添加两个按钮来调整，但是定向光的属性越来越多，我并不希望每次都要修改imgui界面来修改，这种就可以让imgui拿到定向光的反射来自动生成</p>
-<h2 id="c实现">C++实现
-</h2><p>Piccolo 借助 Clang AST，相当于直接复用了编译器的语法分析，通过在需要反射的类和属性上做标记，让clang AST分析后就会带上这个标记，从而知道了这些信息。 再下一步就是生成对应的反射类（就是自动生成的一些cpp文件，这些文件就包含了GetSet方法来设置原本被反射的类的信息</p>
-<p>这节内容主要是反射了解一下</p>
-
+<h2 id="基于亮度的混合系数计算">基于亮度的混合系数计算
+</h2><blockquote>
+<p>一方面考虑亮度差，另一方面考虑距离（对角线上的像素距离中心像素远一些）</p>
+</blockquote>
+<p><img src="/image-20260125231320673.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20260125231320673"
+	
+	
+></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="c1">//////////////////////////////////////////// 2. 计算基于亮度的混合系数计算 ////////////////////////////////////////////
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl"><span class="kt">float</span> <span class="n">Filter</span> <span class="o">=</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="p">(</span><span class="n">N</span> <span class="o">+</span> <span class="n">E</span> <span class="o">+</span> <span class="n">S</span> <span class="o">+</span> <span class="n">W</span><span class="p">)</span> <span class="o">+</span> <span class="n">NE</span> <span class="o">+</span> <span class="n">NW</span> <span class="o">+</span> <span class="n">SE</span> <span class="o">+</span> <span class="n">SW</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">Filter</span> <span class="o">=</span> <span class="n">Filter</span> <span class="o">/</span> <span class="mf">12.0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">Filter</span> <span class="o">=</span> <span class="n">abs</span><span class="p">(</span><span class="n">Filter</span> <span class="o">-</span> <span class="n">M</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="n">Filter</span> <span class="o">=</span> <span class="n">saturate</span><span class="p">(</span><span class="n">Filter</span> <span class="o">/</span> <span class="n">Contrast</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="kt">float</span> <span class="n">PixelBlend</span> <span class="o">=</span> <span class="n">smoothstep</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">Filter</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="n">PixelBlend</span> <span class="o">=</span> <span class="n">PixelBlend</span> <span class="o">*</span> <span class="n">PixelBlend</span><span class="p">;</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h3 id="计算混合方向与混合">计算混合方向与混合
+</h3><blockquote>
+<p>锯齿的方向不一定一样，通过亮度差异来计算锯齿方向</p>
+</blockquote>
+<p><img src="/v2-355db30e96f383134fb2fb9babf16cc0_1440w.jpg"
+	
+	
+	
+	loading="lazy"
+	
+		alt="img"
+	
+	
+></p>
+<p>计算完偏移方向后，最终采样点就往锯齿方向偏移，偏移量就是上一步获得的权重</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl">    <span class="c1">//////////////////////////////////////////// 3. 计算锯齿方向并混合 ////////////////////////////////////////////
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="kt">float</span> <span class="n">Vertical</span> <span class="o">=</span> <span class="n">abs</span><span class="p">(</span><span class="n">N</span> <span class="o">+</span> <span class="n">S</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">M</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span><span class="o">+</span> <span class="n">abs</span><span class="p">(</span><span class="n">NE</span> <span class="o">+</span> <span class="n">SE</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">E</span><span class="p">)</span> <span class="o">+</span> <span class="n">abs</span><span class="p">(</span><span class="n">NW</span> <span class="o">+</span> <span class="n">SW</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">W</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">float</span> <span class="n">Horizontal</span> <span class="o">=</span> <span class="n">abs</span><span class="p">(</span><span class="n">E</span> <span class="o">+</span> <span class="n">W</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">M</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">abs</span><span class="p">(</span><span class="n">NE</span> <span class="o">+</span> <span class="n">NW</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">N</span><span class="p">)</span> <span class="o">+</span> <span class="n">abs</span><span class="p">(</span><span class="n">SE</span> <span class="o">+</span> <span class="n">SW</span> <span class="o">-</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">S</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">bool</span> <span class="n">IsHorizontal</span> <span class="o">=</span> <span class="n">Vertical</span> <span class="o">&gt;</span> <span class="n">Horizontal</span><span class="p">;</span>  <span class="c1">// 垂直方向上亮度变化大，说明锯齿是水平的
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="n">vec2</span> <span class="n">PixelStep</span> <span class="o">=</span> <span class="n">IsHorizontal</span> <span class="o">?</span> <span class="n">vec2</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">stepUV</span><span class="p">.</span><span class="n">y</span><span class="p">)</span> <span class="o">:</span> <span class="n">vec2</span><span class="p">(</span><span class="n">stepUV</span><span class="p">.</span><span class="n">x</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">float</span> <span class="n">Positive</span> <span class="o">=</span> <span class="n">abs</span><span class="p">((</span><span class="n">IsHorizontal</span> <span class="o">?</span> <span class="nl">N</span> <span class="p">:</span> <span class="n">E</span><span class="p">)</span> <span class="o">-</span> <span class="n">M</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="kt">float</span> <span class="n">Negative</span> <span class="o">=</span> <span class="n">abs</span><span class="p">((</span><span class="n">IsHorizontal</span> <span class="o">?</span> <span class="nl">S</span> <span class="p">:</span> <span class="n">W</span><span class="p">)</span> <span class="o">-</span> <span class="n">M</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span><span class="p">(</span><span class="n">Positive</span> <span class="o">&lt;</span> <span class="n">Negative</span><span class="p">)</span> <span class="n">PixelStep</span> <span class="o">=</span> <span class="o">-</span><span class="n">PixelStep</span><span class="p">;</span>   <span class="c1">// PixelStep往亮度大方向移动
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl">    <span class="n">vec4</span> <span class="n">outcolor</span> <span class="o">=</span> <span class="n">texture</span><span class="p">(</span><span class="n">sampler2D</span><span class="p">(</span><span class="n">historyTexture</span><span class="p">,</span> <span class="n">SAMPLER</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">texCoords</span> <span class="o">+</span> <span class="n">PixelStep</span> <span class="o">*</span> <span class="n">PixelBlend</span><span class="p">);</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div>
 </section>
 
 
     <footer class="article-footer">
     
-    <section class="article-tags">
-        
-            <a href="/tags/%E8%AF%BE%E7%A8%8B%E7%AC%94%E8%AE%B0/">课程笔记</a>
-        
-            <a href="/tags/games104/">Games104</a>
-        
-    </section>
-
 
     
     <section class="article-copyright">
@@ -526,348 +586,6 @@
     
 
     
-
-<aside class="related-content--wrapper">
-    <h2 class="section-title">相关文章</h2>
-    <div class="related-content">
-        <div class="flex article-list--tile">
-            
-                
-<article class="article-card has-image">
-    <a href="/p/games104%E7%89%A9%E7%90%86%E5%BC%95%E6%93%8E%E7%9A%84%E5%9F%BA%E7%A1%80%E7%90%86%E8%AE%BA/">
-        
-        <div class="article-image-card">
-            
-                <img src="/%e6%88%aa%e5%b1%8f2025-11-04-11.15.42.png" loading="lazy" data-key="" data-hash="/截屏2025-11-04-11.15.42.png"/>
-            
-
-            
-            <div class="article-overlay">
-                <h2 class="article-title">Games104：物理引擎的基础理论</h2>
-            </div>
-        </div>
-        
-    </a>
-
-    <style>
-     
-    .article-card {
-        background: rgba(255, 255, 255, 0.25);
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
-        border-radius: 16px;
-        overflow: hidden;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.12);
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-        margin: 10px;
-        display: flex;
-        flex-direction: column;
-    }
-
-    .article-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
-    }
-
-    .article-card a {
-        display: flex;
-        flex-direction: column;
-        text-decoration: none;
-        color: inherit;
-        height: 100%;
-    }
-
-     
-    .article-image-card {
-        position: relative;
-        width: 100%;
-        aspect-ratio: 16 / 9;
-        overflow: hidden;
-    }
-    .article-image-card img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        transition: transform 0.5s ease;
-    }
-    .article-image-card:hover img {
-        transform: scale(1.05);
-    }
-
-     
-    .article-overlay {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        background: rgba(0,0,0,0.3);  
-        padding: 10px;
-        box-sizing: border-box;
-        text-align: center;
-    }
-    .article-overlay .article-title {
-        font-size: 1.5rem;
-        font-weight: 700;
-        color: #fff;
-        margin: 0;
-        line-height: 1.3;
-    }
-
-     
-    .article-card.no-image .article-details {
-        flex: 1;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        text-align: center;
-        padding: 15px;
-    }
-    .article-card.no-image .article-title {
-        font-size: 1.5rem;
-        font-weight: 700;
-        color: #222;
-        margin: 0;
-        line-height: 1.3;
-    }
-
-     
-    .articles-list {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-        gap: 20px;
-    }
-    </style>
-</article>
-            
-                
-<article class="article-card has-image">
-    <a href="/p/games104%E9%AB%98%E7%BA%A7%E5%8A%A8%E7%94%BB%E6%8A%80%E6%9C%AF%E5%8A%A8%E7%94%BB%E6%A0%91ik%E5%92%8C%E8%A1%A8%E6%83%85%E5%8A%A8%E7%94%BB/">
-        
-        <div class="article-image-card">
-            
-                <img src="/%e6%88%aa%e5%b1%8f2025-10-20-15.21.05.png" loading="lazy" data-key="" data-hash="/截屏2025-10-20-15.21.05.png"/>
-            
-
-            
-            <div class="article-overlay">
-                <h2 class="article-title">Games104：高级动画技术：动画树、IK和表情动画</h2>
-            </div>
-        </div>
-        
-    </a>
-
-    <style>
-     
-    .article-card {
-        background: rgba(255, 255, 255, 0.25);
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
-        border-radius: 16px;
-        overflow: hidden;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.12);
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-        margin: 10px;
-        display: flex;
-        flex-direction: column;
-    }
-
-    .article-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
-    }
-
-    .article-card a {
-        display: flex;
-        flex-direction: column;
-        text-decoration: none;
-        color: inherit;
-        height: 100%;
-    }
-
-     
-    .article-image-card {
-        position: relative;
-        width: 100%;
-        aspect-ratio: 16 / 9;
-        overflow: hidden;
-    }
-    .article-image-card img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        transition: transform 0.5s ease;
-    }
-    .article-image-card:hover img {
-        transform: scale(1.05);
-    }
-
-     
-    .article-overlay {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        background: rgba(0,0,0,0.3);  
-        padding: 10px;
-        box-sizing: border-box;
-        text-align: center;
-    }
-    .article-overlay .article-title {
-        font-size: 1.5rem;
-        font-weight: 700;
-        color: #fff;
-        margin: 0;
-        line-height: 1.3;
-    }
-
-     
-    .article-card.no-image .article-details {
-        flex: 1;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        text-align: center;
-        padding: 15px;
-    }
-    .article-card.no-image .article-title {
-        font-size: 1.5rem;
-        font-weight: 700;
-        color: #222;
-        margin: 0;
-        line-height: 1.3;
-    }
-
-     
-    .articles-list {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-        gap: 20px;
-    }
-    </style>
-</article>
-            
-                
-<article class="article-card has-image">
-    <a href="/p/games104%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E7%9A%84%E5%8A%A8%E7%94%BB%E6%8A%80%E6%9C%AF%E5%9F%BA%E7%A1%80/">
-        
-        <div class="article-image-card">
-            
-                <img src="/%e6%88%aa%e5%b1%8f2025-10-20-15.21.05.png" loading="lazy" data-key="" data-hash="/截屏2025-10-20-15.21.05.png"/>
-            
-
-            
-            <div class="article-overlay">
-                <h2 class="article-title">Games104：游戏引擎的动画技术基础</h2>
-            </div>
-        </div>
-        
-    </a>
-
-    <style>
-     
-    .article-card {
-        background: rgba(255, 255, 255, 0.25);
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
-        border-radius: 16px;
-        overflow: hidden;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.12);
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-        margin: 10px;
-        display: flex;
-        flex-direction: column;
-    }
-
-    .article-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
-    }
-
-    .article-card a {
-        display: flex;
-        flex-direction: column;
-        text-decoration: none;
-        color: inherit;
-        height: 100%;
-    }
-
-     
-    .article-image-card {
-        position: relative;
-        width: 100%;
-        aspect-ratio: 16 / 9;
-        overflow: hidden;
-    }
-    .article-image-card img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        transition: transform 0.5s ease;
-    }
-    .article-image-card:hover img {
-        transform: scale(1.05);
-    }
-
-     
-    .article-overlay {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        background: rgba(0,0,0,0.3);  
-        padding: 10px;
-        box-sizing: border-box;
-        text-align: center;
-    }
-    .article-overlay .article-title {
-        font-size: 1.5rem;
-        font-weight: 700;
-        color: #fff;
-        margin: 0;
-        line-height: 1.3;
-    }
-
-     
-    .article-card.no-image .article-details {
-        flex: 1;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        text-align: center;
-        padding: 15px;
-    }
-    .article-card.no-image .article-title {
-        font-size: 1.5rem;
-        font-weight: 700;
-        color: #222;
-        margin: 0;
-        line-height: 1.3;
-    }
-
-     
-    .articles-list {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-        gap: 20px;
-    }
-    </style>
-</article>
-            
-        </div>
-    </div>
-</aside>
 
      
     
