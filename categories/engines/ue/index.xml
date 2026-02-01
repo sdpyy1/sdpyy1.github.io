@@ -623,6 +623,8 @@
 &lt;/div&gt;&lt;h1 id=&#34;渲染流程&#34;&gt;渲染流程
 &lt;/h1&gt;&lt;blockquote&gt;
 &lt;p&gt;上一节拿捏了Proxy的创建，现在渲染器就是要收集Proxy，然后布拉布拉变成RHICommandList😄&lt;/p&gt;
+&lt;p&gt;大致可以总结为：模型数据准备 → Scene 收集 → 可见性剔除 → DrawCall 收集 → Pass 提交 → RHI 转换 → GPU 执行&lt;/p&gt;
+&lt;p&gt;Mesh数据—→FMeshBatch—→MeshDrawCommand——&amp;gt;Pass submit → RHI translate → GPU&lt;/p&gt;
 &lt;/blockquote&gt;
 &lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/image-20251213143859653.png&#34;
 	
@@ -2682,7 +2684,7 @@
 &lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
 &lt;/div&gt;
-&lt;/div&gt;&lt;p&gt;后续RHICommandList-&amp;gt;具体API，这个我的仓库已经写了一版，这里就不解析了&lt;/p&gt;
+&lt;/div&gt;&lt;p&gt;后续RHICommandList-&amp;gt;具体API，这个我的仓库已经写了一版，&lt;strong&gt;这里就不解析了&lt;/strong&gt;&lt;/p&gt;
 </description>
         </item>
         <item>

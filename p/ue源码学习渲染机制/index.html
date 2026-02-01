@@ -403,7 +403,7 @@
 
 
                 <time class="article-time--reading">
-                    阅读时长: 20 分钟
+                    阅读时长: 21 分钟
                 </time>
             </div>
         
@@ -1059,6 +1059,8 @@
 </div><h1 id="渲染流程">渲染流程
 </h1><blockquote>
 <p>上一节拿捏了Proxy的创建，现在渲染器就是要收集Proxy，然后布拉布拉变成RHICommandList😄</p>
+<p>大致可以总结为：模型数据准备 → Scene 收集 → 可见性剔除 → DrawCall 收集 → Pass 提交 → RHI 转换 → GPU 执行</p>
+<p>Mesh数据—→FMeshBatch—→MeshDrawCommand——&gt;Pass submit → RHI translate → GPU</p>
 </blockquote>
 <p><img src="/image-20251213143859653.png"
 	
@@ -3118,7 +3120,7 @@
 </span></span><span class="line"><span class="cl"><span class="p">);</span>
 </span></span></code></pre></td></tr></table>
 </div>
-</div><p>后续RHICommandList-&gt;具体API，这个我的仓库已经写了一版，这里就不解析了</p>
+</div><p>后续RHICommandList-&gt;具体API，这个我的仓库已经写了一版，<strong>这里就不解析了</strong></p>
 
 </section>
 
@@ -3513,7 +3515,7 @@
       <span>✍️ 总字数: 
         
         
-        238.72K
+        238.81K
       </span>
     </section>
 
