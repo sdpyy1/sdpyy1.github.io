@@ -338,6 +338,10 @@ void FScene::UpdateLightInternal(FLightSceneProxy* LightSceneProxy, UpdatePayloa
 # 渲染流程
 
 > 上一节拿捏了Proxy的创建，现在渲染器就是要收集Proxy，然后布拉布拉变成RHICommandList😄
+>
+> 大致可以总结为：模型数据准备 → Scene 收集 → 可见性剔除 → DrawCall 收集 → Pass 提交 → RHI 转换 → GPU 执行
+>
+> Mesh数据—→FMeshBatch—→MeshDrawCommand——>Pass submit → RHI translate → GPU
 
 ![image-20251213143859653](image-20251213143859653.png)
 
@@ -1423,4 +1427,4 @@ RHICmdList.DrawIndexedPrimitive(
 );
 ```
 
-后续RHICommandList->具体API，这个我的仓库已经写了一版，这里就不解析了
+后续RHICommandList->具体API，这个我的仓库已经写了一版，**这里就不解析了**

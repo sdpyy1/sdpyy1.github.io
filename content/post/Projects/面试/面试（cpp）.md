@@ -800,19 +800,17 @@ int main() {
 
 STL 中的序列式容器是一类**按照元素插入顺序存储**的容器，它们维护了元素的插入顺序，但**不保证元素的排序**。有如下几种：vector、deque、list、forward_list、array 等。
 
-- vector 是支持**尾部**高效插入删除的**动态单端数组**，内存空间连续，支持快速随机访问。
-- deque 是支持**首尾**高效插入删除的**双端队列**，内存空间不连续，支持快速随机访问。
-- list 是支持**任意位置**高效插入删除的**双向循环链表**，内存空间不连续，不支持随机访问。
-- forward_list 是支持**头部**高效插入删除的**单向链表**，内存空间不连续，只支持单向访问。
+![image-20260130182127015](image-20260130182127015.png)
+
+![img](sequencecontainer.png)
 
 （2）关联式容器 Associated Containers
 
 关联式容器通过键值（key-value pairs）来存储元素，能够提供对数据的快速访问，主要分 set 集合和 map 映射这两大类，均是以**红黑树 RB-Tree** 为底层架构，自动默认为**从小到大排序**。容器类自动申请和释放内存，**无需 new/delete 操作**，容器在插入和删除元素时会自动调整其内部结构。
 
-- set是**有序键的集合**，其中的元素是唯一的，类型是键值类型，即只有键没有值。
-- multiset 则允许重复元素，可以**包含多个相同的关键字**，适合需要存储重复元素的集合。
-- map 是**有序键值对的映射**，每个键是唯一的，元素类型是键值对类型。
-- multimap 则允许键重复，可以允许**一个键对应多个值**，适合需要存储重复键的场景。
+![image-20260130182137008](image-20260130182137008.png)
+
+![img](associativecontainer.png)
 
 ### Vector的emplace_back 和 push_back
 
@@ -850,11 +848,72 @@ _CONSTEXPR20 void push_back(_Ty&& _Val) {
 }
 ```
 
-## allocator源码解读
+### STL的构造器
+
+> 下面的代码能看出来，构造器就是在当前内存上直接placement new来构造对象
+
+```c++
+// 将初值 __value 设定到指针所指的空间上。
+template <class _T1, class _T2>
+inline void _Construct(_T1* __p, const _T2& __value) {
+  new ((void*) __p) _T1(__value);   // placement new，调用 _T1::_T1(__value);
+}
+template <class _Tp>
+inline void _Destroy(_Tp* __pointer) {
+  __pointer->~_Tp();
+}
+```
+
+### allocator解读
 
 > SGI-STL V3.3
 
 ![image-20260121160723374](image-20260121160723374.png)
+
+> 考虑到小型区块可能造成内存碎片问题，SGI 采用两级配置器，第一级配置器直接使用 malloc() 和 free() 实现；第二级配置器使用 memory pool 内存池管理
+
+为什么会有外部碎片，释放小块的不连续内存后，没合并
+
+![image-20260130174655564](image-20260130174655564.png)
+
+第二级配置器的架构
+
+![image-20260130175548373](image-20260130175548373.png)
+
+```c++
+static void* allocate(size_t __n)
+  {
+    void* __ret = 0;
+
+    // 如果需求区块大于 128 bytes，就转调用第一级配置
+    if (__n > (size_t) _MAX_BYTES) {
+      __ret = malloc_alloc::allocate(__n);
+    }
+    else {
+      // 根据申请空间的大小寻找相应的空闲链表（16个空闲链表中的一个）
+      _Obj* __STL_VOLATILE* __my_free_list
+          = _S_free_list + _S_freelist_index(__n);
+      // Acquire the lock here with a constructor call.
+      // This ensures that it is released in exit or during stack
+      // unwinding.
+#     ifndef _NOTHREADS
+      /*REFERENCED*/
+      _Lock __lock_instance;
+#     endif
+      _Obj* __RESTRICT __result = *__my_free_list;
+      // 空闲链表没有可用数据块，就将区块大小先调整至 8 倍数边界，然后调用 _S_refill() 重新填充
+      if (__result == 0)
+        __ret = _S_refill(_S_round_up(__n));
+      else {
+        // 如果空闲链表中有空闲数据块，则取出一个，并把空闲链表的指针指向下一个数据块  
+        *__my_free_list = __result -> _M_free_list_link;
+        __ret = __result;
+      }
+    }
+
+    return __ret;
+  };
+```
 
 
 
@@ -1077,6 +1136,91 @@ class basic_string { // null-terminated transparent array of elements(这个注�
 # C++ 编译全流程
 
 ![img](v2-eebd0f3fe5dab36fcfe73b3a85e25eb3_1440w.jpg)
+
+## 预处理
+
+```c++
+// 只进行预处理的命令
+g++ -E main.cpp -o main.i  
+```
+
+预处理阶段即使代码是错的也能通过
+
+![image-20260128234007812](image-20260128234007812.png)
+
+![image-20260128235839366](image-20260128235839366.png)
+
+## 编译
+
+把预处理的文件编译为.s文件
+
+```c++
+g++ -S main.cpp -o main.s
+```
+
+到这就变成汇编语言了，**注意这里生成的汇编很多地方都是占位符  比如` call _ZNSolsEi`, 在链接阶段才会写入虚拟地址**
+
+![image-20260129000629019](image-20260129000629019.png)
+
+## 汇编
+
+变成机器指令
+
+```c++
+g++ -c  main.s -o main.o
+```
+
+## 链接
+
+最终变成可执行文件
+
+```c++
+g++ .\main.o -o main
+```
+
+
+
+## 静态库和动态库
+
+### 静态库
+
+静态库制作
+
+```c++
+g++ -c .\lib\staticLib.cpp -o staticLib.o  // 生成最终的机器指令
+ar rcs staticLib.a .\staticLib.o  // 用这个机器指令生成一个 .a的静态库
+```
+
+静态库使用
+
+-L是指定目录 -l是指定静态库名称, 比如下边这个就是链接  lib/staticLib.a
+
+```c++
+g++ -o outWithLib main.cpp -Llib -l:staticLib.a
+```
+
+静态库的问题：
+
+1. 每次链接都要把静态库代码塞入进程中，如果有多个进程使用了这个静态库，那都会创建一份静态库代码内存
+2. 修改静态库需要重写编译main程序
+
+好处是：编译后 程序就可以换个地方运行了（不需要静态库了）
+
+
+
+## 动态库
+
+制作 .so 动态库
+
+```c++
+g++ -c -fPIC .\lib\staticLib.cpp
+g++ -shared -o libshare.so .\staticLib.o
+    
+// 链接动态库，和静态库方法一致
+g++ -o outWithLib .\main.cpp -Llib -l:libshare.so 
+```
+
+因为是动态库，所以需要在运行程序时能找到它，需要把动态库放到能找到的位置
 
 # 从汇编理解C++
 
