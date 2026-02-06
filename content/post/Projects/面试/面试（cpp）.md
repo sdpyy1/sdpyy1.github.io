@@ -2,13 +2,75 @@
 date = '2025-12-26T16:52:18+08:00'
 draft = true
 title = '面试（cpp）'
+
 +++
 
 # TODO
 
-1. 智能指针详细学习
+1. 智能指针代码学习
+1. 设计模式：单例模式、委托
+1. 关联性容器、红黑树
 
 # 基础
+
+## 万能引用T&&和完美转发std::froward
+
+> 使用场景：一个模板函数，接收一个参数，但是这个参数需要根据传入的是左值还是右值，调用不同的重载函数,但是不管左值还是右值进入这个模板函数后，都会变成左值
+
+1. 当模板函数参数为T&&时，表示这个参数是万能引用，传递左值和右值都可以
+
+```c++
+// 注意这种函数是没法传入右值的，因为一个引用没法绑定临时的右值
+void funcInner(int& x) {
+    cout << "左值" << endl;
+} // 错的
+
+int & ref = 1;  // 这种绑定就是错的，所以上边的函数也没办法通过编译
+
+
+
+void funcInner(int& x) {
+    cout << "左值" << endl;
+}
+
+void funcInner(int&& x) {
+    cout << "右值" << endl;
+}
+// 在模板函数中，T&& 就表示万能引用，可以传递左和右
+template<class T>
+void func(T&& x) {
+	funcInner(x);   // 第二步就是要改这里为完美转发
+}
+```
+
+2. 当进入func这个模板函数后，x无论是左还是右都变成了左值，因为他是参数，所以无论我外
+
+```c++
+// 不论左值右值传入func,最终打印都变成左值了
+func(1);
+func(a); 
+```
+
+3. 用完美转发来解决这个问题
+
+```c++
+void funcInner(int& x) {
+    cout << "左值" << endl;
+}
+
+void funcInner(int&& x) {
+    cout << "右值" << endl;
+}
+template<class T>
+void func(T&& x) {
+	funcInner(std::forward<T>(x));
+}
+
+func1(1);   // 打印左值
+func1(a);	// 打印右值
+```
+
+
 
 ## 内存对齐
 
@@ -651,11 +713,61 @@ class EmptyClassChild:public EmptyClass {
 
 
 
-## 类相关
+# 类相关
+
+## 构造函数相关
+
+### 各种构造函数和=重载
+
+> 基础语法
+
+```c++
+{	// 各种构造方法
+	Base b1;					// 无参构造
+	const Base b2;				// 无参构造
+	Base b3(10);				// 有参构造  
+	Base b4(b1);				// 拷贝构造（如果没有非const版本构造函数，则会走const拷贝构造）
+	Base b5 = Base();			// c17之前，需要先无参构造，然后再拷贝构造 | c17优化成了单独一次调用无参构造函数
+	Base b6 = b1;				// 拷贝构造
+	Base b7 = b2;				// const 拷贝构造
+	Base b8 = std::move(b1);	// 移动构造
+	Base b9 = std::move(b2);	// 移动构造(一般移动时不能设置const，因为要转移内部成员)
 
 
+	// 使用赋值还是构造，区别是当前对象是否已经存在
+	b3 = b1;					// =重载
+	b1 = b2;					// const = 重载
+	b1 = std::move(b1);			// 移动 = 重载
+	return 0;
+}
+```
 
+> 函数返回
 
+```c++
+Base CreateBase() {
+	Base b(10);
+	b.num= 100;
+	return b;   // 返回这个栈帧的对象是合法的，返回后会执行拷贝，在高版本中直接优化为单次构造
+}
+
+// 这个操作会被优化为一次构造函数操作，而不需要移动构造(CreateBase相当于一个右值)
+Base a = CreateBase();
+```
+
+### 拷贝构造函数的参数可以不加引用吗？
+
+```c++
+// 没加&的这种写法是错的，他会导致无限递归
+// 因为值传递Base参数本身也是一次拷贝构造流程，所以会导致无限递归
+Base(Base b) :num(b.num) {
+    cout << "拷贝构造函数" << endl;
+}
+```
+
+### A(){} 和 A() = default 
+
+> 在编译器视角下，一个是用户自定义的构造函数，一个是原厂配置，后边这个可以接收更好的优化
 
 ## 虚函数
 
@@ -691,6 +803,10 @@ main.cpp(27): note: 也可能是“a”(位于基“A”中)
 理解起来很容易，每个存在虚函数的类都会生成一张虚函数表，表内的函数地址会指向正确的函数，所以不会发生调用子类方法，反而调用成了父类方法的情况
 
 ![img](v2-c44949a47f5989484276af0ae41eec8b_1440w.jpg)
+
+> 虚函数表除了函数指针外，还有一个RTTI信息，也是一个指针指向常量区，内容为改类表示的类型，也就是为了配合虚函数表来实现多态
+
+![img](v2-987aa3c593751c05e7985322fe30534c_1440w-1770211427963-1.jpg)
 
 ### 多态下的析构问题（什么情况下析构函数需要写  Virtual）
 
@@ -775,7 +891,7 @@ int main() {
 
 
 
-## STL
+# STL
 
 > Standard Template Library，
 >
@@ -786,7 +902,7 @@ int main() {
 > - **高性能**：模板在编译时实例化，避免了运行时多态的开销，通用设计减少重复代码。
 > - **泛型编程**：基于模板实现，支持任意符合要求的类型（如支持拷贝、比较操作的类型）。
 
-### STL的主要组件
+## STL的主要组件
 
 > C++ STL 大体分为六大部件：容器 Container、算法 Algorithm、迭代器 Iterator、仿函数 Functor、适配器 Adaptor、空间配置器 Allocator
 
@@ -794,9 +910,9 @@ int main() {
 
 ![img](v2-23f2db11304c9a7fc94f307ba193df34_1440w.jpg)
 
-### STL的容器
+## STL的容器
 
-（1）序列式容器 Sequence Containers
+### 序列式容器
 
 STL 中的序列式容器是一类**按照元素插入顺序存储**的容器，它们维护了元素的插入顺序，但**不保证元素的排序**。有如下几种：vector、deque、list、forward_list、array 等。
 
@@ -804,13 +920,135 @@ STL 中的序列式容器是一类**按照元素插入顺序存储**的容器，
 
 ![img](sequencecontainer.png)
 
-（2）关联式容器 Associated Containers
+#### Vector
 
-关联式容器通过键值（key-value pairs）来存储元素，能够提供对数据的快速访问，主要分 set 集合和 map 映射这两大类，均是以**红黑树 RB-Tree** 为底层架构，自动默认为**从小到大排序**。容器类自动申请和释放内存，**无需 new/delete 操作**，容器在插入和删除元素时会自动调整其内部结构。
+> 内部主要维护了三个指针，注意finish指向的下一个插入位置
+>
+> `_M_finish == _M_end_of_storage`就是初发扩容的时机
+
+```c++
+_Tp* _M_start;  // 表示目前使用空间的头
+_Tp* _M_finish; // 表示目前使用空间的尾
+_Tp* _M_end_of_storage; // 表示目前可用空间的尾
+```
+
+
+
+![image-20260203214355098](image-20260203214355098.png)
+
+初始化: 就是在设置这些指针,也能看出来，如果不指定大小n，那创建的vector就只是三个指针而已，并且都是空指针
+
+```c++
+_Vector_base(const _Alloc&)
+    : _M_start(0), _M_finish(0), _M_end_of_storage(0) {}
+
+
+_Vector_base(size_t __n, const _Alloc&)
+: _M_start(0), _M_finish(0), _M_end_of_storage(0) 
+{
+_M_start = _M_allocate(__n);
+_M_finish = _M_start;
+_M_end_of_storage = _M_start + __n;
+}
+```
+
+push_back，能看出第一次调用时会触发申请内存，如果容量充足就会直接在Finish位置处构造对象
+
+```c++
+void push_back(const _Tp& __x) {
+    if (_M_finish != _M_end_of_storage) { // 有备用空间
+      construct(_M_finish, __x);    // 全局函数，将 __x 设定到 _M_finish 指针所指的空间上
+      ++_M_finish;         // 调整
+    }
+    else
+      _M_insert_aux(end(), __x);  // 无备用空间，从新分配再插入
+  }
+```
+
+新分配内存的逻辑
+
+```c++
+template <class _Tp, class _Alloc>
+void 
+vector<_Tp, _Alloc>::_M_insert_aux(iterator __position, const _Tp& __x)
+{
+  if (_M_finish != _M_end_of_storage) {
+    construct(_M_finish, *(_M_finish - 1));
+    ++_M_finish;
+    _Tp __x_copy = __x;
+    copy_backward(__position, _M_finish - 2, _M_finish - 1);
+    *__position = __x_copy;
+  }
+  else {// 没有备用空间
+    const size_type __old_size = size();
+    const size_type __len = __old_size != 0 ? 2 * __old_size : 1;   // 这里看出是两倍扩容
+      
+  // 下面就是申请新空间，移动数据，更新指针
+    iterator __new_start = _M_allocate(__len);
+    iterator __new_finish = __new_start;
+    __STL_TRY {
+      __new_finish = uninitialized_copy(_M_start, __position, __new_start);
+      construct(__new_finish, __x);
+      ++__new_finish;
+      __new_finish = uninitialized_copy(__position, _M_finish, __new_finish);
+    }
+    __STL_UNWIND((destroy(__new_start,__new_finish), 
+                  _M_deallocate(__new_start,__len)));
+    destroy(begin(), end());
+    _M_deallocate(_M_start, _M_end_of_storage - _M_start);
+    _M_start = __new_start;
+    _M_finish = __new_finish;
+    _M_end_of_storage = __new_start + __len;
+  }
+}
+```
+
+#### List
+
+> 双向循环链表
+
+![img](list.png)
+
+初始化时，会创建一个node，这里也能看出来，每次push一个节点时，才会去调用器申请新的空间
+
+```c++
+_List_node<_Tp>* _M_get_node() { return _Alloc_type::allocate(1); } // 配置一个节点并传回
+
+_List_base(const allocator_type&) {
+    _M_node = _M_get_node();
+    _M_node->_M_next = _M_node;
+    _M_node->_M_prev = _M_node;
+}
+```
+
+#### deque
+
+> 双向队列，具体实现只知道是map的一个数组，每个map表示的是一个缓冲区，来构建一个逻辑上连续的队列，具体实现还没看
+
+![img](https://github.com/steveLauwh/SGI-STL/raw/master/The%20Annotated%20STL%20Sources%20V3.3/Other/deque.PNG)
+
+> `deque` 的存储空间不是一块完整的连续内存，而是由多个**固定大小的连续数组（缓冲区 buffer）** 拼接而成；缓冲区之间在物理内存上不连续，但逻辑上是连续的
+>
+> `deque` 内部维护一个**指针数组（称为 map）**，这个数组的每个元素都是一个指针，指向上述的某个缓冲区；
+>
+> map 是一块连续的内存，它的作用是 “索引” 所有缓冲区，让 `deque` 对外表现出 “逻辑连续” 的特性；
+
+![img](deque DS.png)
+
+### 关联式容器
+
+> - 标准的 STL 关联式容器分为 set(集合) 和 map(映射表) 两大类。衍生的还有 multiset(多键集合) 和 multimap(多键映射表)。这些容器的底层机制都是 RB-tree红黑树原理 完成。
+> - 散列表 hash table(Hash Table 原理)，以 hash table 为底层机制而完成的 hash_set、hash_map、hash_multiset、hash_multimap。
 
 ![image-20260130182137008](image-20260130182137008.png)
 
 ![img](associativecontainer.png)
+
+#### 红黑树
+
+
+
+
 
 ### Vector的emplace_back 和 push_back
 
@@ -997,11 +1235,255 @@ void SmartPointerFunc() {
 
 # C++的多线程
 
-## 互斥锁和条件变量
+![img](v2-76e5e48c9c1d60f9868452cfc9ce7d85_1440w.jpg)
 
-互斥锁获取失败会进入等待队列，当占有线程解锁后会被唤醒，  互斥锁用于控制两个线程的互斥
+## std::thread
 
-当一个线程进入锁后发现一些条件不满足，可以进行wait休眠，此时会释放锁，其他线程进入后修改内部数据，此时这个条件满足了，就可与notify来通知休眠的线程，唤醒后原线程立即持有锁，然后进行继续运行，所以条件变量是用于线程间的操作同步
+> 线程对象构造即启动
+
+```c++
+// 线程的构造函数
+template <class _Fn, class... _Args, enable_if_t<!is_same_v<_Remove_cvref_t<_Fn>, thread>, int> = 0>
+_NODISCARD_CTOR_THREAD explicit thread(_Fn&& _Fx, _Args&&... _Ax) {
+    _Start(_STD forward<_Fn>(_Fx), _STD forward<_Args>(_Ax)...);
+}
+
+// 具体的启动函数
+template <class _Fn, class... _Args>
+void _Start(_Fn&& _Fx, _Args&&... _Ax) {
+    using _Tuple                 = tuple<decay_t<_Fn>, decay_t<_Args>...>;
+    auto _Decay_copied           = _STD make_unique<_Tuple>(_STD forward<_Fn>(_Fx), _STD forward<_Args>(_Ax)...);
+    constexpr auto _Invoker_proc = _Get_invoke<_Tuple>(make_index_sequence<1 + sizeof...(_Args)>{});
+
+    _Thr._Hnd =
+        reinterpret_cast<void*>(_CSTD _beginthreadex(nullptr, 0, _Invoker_proc, _Decay_copied.get(), 0, &_Thr._Id));
+
+    if (_Thr._Hnd) { // ownership transferred to the thread
+        (void) _Decay_copied.release();
+    } else { // failed to start thread
+        _Thr._Id = 0;
+        _Throw_Cpp_error(_RESOURCE_UNAVAILABLE_TRY_AGAIN);
+    }
+}
+```
+
+## 线程构造与std::Ref
+
+> 因为创建线程传递参数时，会发生参数类型退化，需要注意
+
+```c++
+// 线程执行的函数
+void func(int& x) {
+	cout << x++ << endl;
+}
+
+// 线程构造
+int a = 1;
+std::thread t(func, a);   // 这行报错，因为把临时变量绑定到了int&（引用不能绑定右值）
+t.join();
+```
+
+> 究其原因可以看线程构造时的Start函数,主要问题是`decay_t`
+
+```c++
+using _Tuple                 = tuple<decay_t<_Fn>, decay_t<_Args>...>;
+auto _Decay_copied           = _STD make_unique<_Tuple>(_STD forward<_Fn>(_Fx), _STD forward<_Args>(_Ax)...);
+```
+
+`decay_t`让类型衰变了，变成了临时变量，所以没法后续把他绑定到引用参数上
+
+> 总之一句话:线程创建时会让传入的函数参数衰变，所以最终作用在线程函数上的参数类型不一定与初始传入的参数类型一致
+
+解决办法也很简单
+
+```c++
+void func(int& x) {
+	cout << x++ << endl;
+}
+
+int main() {
+	int a = 1;
+	std::thread t(func, std::ref(a));   // 包装a 让衰变发生在包装器上，而不是a本身
+    t.join();
+
+	return 0;
+}
+```
+
+## Join和Detach
+
+> 创建线程后，join表示等待该线程。Detach表示脱离
+>
+> 如果不设置线程的状态，那创建的线程对象脱离作用域调用析构时就会报错
+>
+> ```c++
+> // 如这个函数执行完成后就会报错，因为std::thread对象会调用析构，如果没有执行join或者Detach就会报错
+> void createThread() {
+> 	std::thread t(Func);
+> }
+> ```
+>
+> joinable用看看当前线程是否可以调用join或detach
+
+## 多线程资源竞争问题
+
+>  线程A读取int，还未把修改结果写入，此时线程B进来读取int，还是旧数据,如下面这段程序，最终结果有概率不是50000
+
+```c++
+void func(int& x) {
+	for (int i = 0; i < 10000; i++) {
+		x++;
+	}
+}
+
+int main() {
+	int a = 0;
+	std::thread t1(func, std::ref(a));
+	std::thread t2(func, std::ref(a));
+	std::thread t3(func, std::ref(a));
+	std::thread t4(func, std::ref(a));
+	std::thread t5(func, std::ref(a));
+    t1.join();
+    t2.join();
+    t3.join();
+    t4.join();
+    t5.join();
+	cout << a;
+	return 0;
+}
+```
+
+原因就是x++不是原子操作
+
+![image-20260205213519918](image-20260205213519918.png)
+
+## 使用mutex构建一个死锁的情况
+
+> 需要两个mutex，A 持有1，等待2，  B持有2等待1  就死锁了
+
+下面就很容易发生死锁
+
+ ```
+ void funcA() {
+ 	mt1.lock();
+ 	mt2.lock();
+ 	mt1.unlock();
+ 	mt2.unlock();
+ }
+ 
+ void funcB() {
+ 	mt2.lock();
+ 	mt1.lock();
+ 	mt2.unlock();
+ 	mt1.unlock();
+ }
+ 
+ int main() {
+ 	
+ 	for (int i = 0; i < 100000; i++) {
+ 		cout << i << endl;;
+ 		std::thread t1 = std::thread(funcA);
+ 		std::thread t2 = std::thread(funcB);
+ 		t1.join();
+ 		t2.join();
+ 	}
+ 	return 0;
+ }
+ ```
+
+> 总结一句话，两个线程互相需要对方已经持有的锁，都在等待对方释放
+
+## lock_guard和unique_lock
+
+> `std::lock_guard` 是基于**RAII 机制**（资源获取即初始化）的锁封装，它的解锁时机由**作用域**决定
+
+```c++
+void func(int& x) {
+    for (int i = 0; i < 10000; i++) {
+        std::lock_guard<std::mutex> lock(mt); // 作用域：单次循环
+        x++;	
+    } // 每次循环到这，lock析构→解锁
+}
+```
+
+他的源码也很简单,并且把拷贝和赋值都删除了
+
+```c++
+_EXPORT_STD template <class _Mutex>
+class _NODISCARD_LOCK lock_guard { // class with destructor that unlocks a mutex
+public:
+    using mutex_type = _Mutex;
+
+    explicit lock_guard(_Mutex& _Mtx) : _MyMutex(_Mtx) { // construct and lock
+        _MyMutex.lock();
+    }
+
+    lock_guard(_Mutex& _Mtx, adopt_lock_t) noexcept // strengthened
+        : _MyMutex(_Mtx) {} // construct but don't lock
+
+    ~lock_guard() noexcept {
+        _MyMutex.unlock();
+    }
+
+    lock_guard(const lock_guard&)            = delete;
+    lock_guard& operator=(const lock_guard&) = delete;
+
+private:
+    _Mutex& _MyMutex;
+};
+```
+
+unique_lock也是类似的工具，不过提供了延迟加锁，设置等待时间等功能
+
+
+
+
+
+
+
+## 条件变量
+
+> 当一个线程进入锁后发现一些条件不满足，可以进行wait休眠，此时会释放锁，其他线程进入后修改内部数据，此时这个条件满足了，就可与notify来通知休眠的线程，唤醒后原线程立即持有锁，然后进行继续运行，所以条件变量是用于线程间的操作同步
+>
+> 用下面这个生产者消费者的例子就能看出条件变量的用法
+>
+> 每当消费者获取锁，首先判断queue中有没有对象，如果没有就wait，等待生产者的notify
+
+```c++
+void Producer() {
+	for (int i = 0; i < 10; i++) {
+		{
+			std::unique_lock<std::mutex> lock(mt);
+			q.push(i);
+			cout << "生产" << i << endl;
+			cv.notify_one();
+		}
+		std::this_thread::sleep_for(std::chrono::microseconds(100));
+	}
+}
+
+void comsumer() {
+	while (true) {
+		std::unique_lock<std::mutex> lock(mt);
+		cv.wait(lock, []() { return !q.empty(); });
+		int num = q.front();
+		cout << "消费" << num << endl;
+		q.pop();
+	}
+}
+ 
+int main() {
+	std::thread t1(Producer);
+	std::thread t2(comsumer);
+	t1.join();
+	t2.join();
+	return 0;
+}
+```
+
+## 异步并发
+
+
 
 # C++ string底层
 
