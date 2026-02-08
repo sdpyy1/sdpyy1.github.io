@@ -13,6 +13,22 @@ title = '面试（cpp）'
 
 # 基础
 
+## RAII
+
+> Resource Acquistion Is Initialzation
+>
+>  资源获取即初始化
+>
+> 目的就是把手动管理的堆内存绑定到自动管理的栈内存上，把危险的工作委托给可靠的栈上对象
+
+智能指针就是RAII的例子，用栈上创建的智能指针对象来管理堆内存，栈上的智能指针会在函数结束后析构，此时就会来判断是否需要析构堆上的对象
+
+下图的代码是一个错误的智能指针用法，指针指针new出来的，放在堆山。离开作用域后并不会析构，这种错误原因就是没有按照RAII的理念来设计
+
+![image-20260208121322822](image-20260208121322822.png)
+
+
+
 ## 万能引用T&&和完美转发std::froward
 
 > 使用场景：一个模板函数，接收一个参数，但是这个参数需要根据传入的是左值还是右值，调用不同的重载函数,但是不管左值还是右值进入这个模板函数后，都会变成左值
@@ -1046,7 +1062,7 @@ _List_base(const allocator_type&) {
 
 #### 红黑树
 
-
+> 
 
 
 
@@ -1199,7 +1215,7 @@ NULL是一种宏定义
 
 nullptr是一个关键字
 
-### 智能指针
+## 智能指针
 
 > 智能指针是一个类，用于存储指向动态分配对象的指针，负责自动释放动态分配的对象，防止内存泄露、
 
@@ -1232,6 +1248,123 @@ void SmartPointerFunc() {
 ```
 
 > 因为shared_ptr是基于引用计数的，所以肯定会有循环引用的情况，用双链表来解释，两个结点互相连接，释放其中一个时，需要先释放另外一个，互相牵制导致死锁
+
+### unique_ptr的唯一性是如何体现的
+
+```c++
+// 也就是这个栈上的智能指针对象无法执行拷贝构造、也无法执行=重新赋值
+unique_ptr(const unique_ptr&)            = delete;
+unique_ptr& operator=(const unique_ptr&) = delete;
+
+// 如果想转移必须用右值
+_CONSTEXPR23 unique_ptr(unique_ptr&& _Right) noexcept
+    : _Mypair(_One_then_variadic_args_t{}, _STD forward<_Dx>(_Right.get_deleter()), _Right.release()) {}
+```
+
+### shared_ptr如何增加引用计数、销毁对象
+
+```c++
+// 从一个智能指针复制到另外一个时，  即调用拷贝函数来复制指针时
+template <class _Ty2>
+void _Copy_construct_from(const shared_ptr<_Ty2>& _Other) noexcept {
+    // implement shared_ptr's (converting) copy ctor
+    _Other._Incref();
+
+    _Ptr = _Other._Ptr;
+    _Rep = _Other._Rep;
+}
+
+// 引用计数，其实是智能指针内部一个成员_Rep来管理的
+void _Incref() const noexcept {
+    if (_Rep) {
+        _Rep->_Incref();
+    }
+}
+
+// 这是一个类型为_Ref_count_base的指针
+_Ref_count_base* _Rep{nullptr};
+// 就是这个类
+class __declspec(novtable) _Ref_count_base { // common code for reference counting
+    _Atomic_counter_t _Uses  = 1;
+    _Atomic_counter_t _Weaks = 1;
+} 
+    
+// 具体的Inc
+void _Incref() noexcept { // increment use count
+    _MT_INCR(_Uses);
+}
+
+void _Incwref() noexcept { // increment weak reference count
+    _MT_INCR(_Weaks);
+}
+
+// 最底层来执行这个原子操作的方法
+#define _MT_INCR(x) _INTRIN_RELAXED(_InterlockedIncrement)(reinterpret_cast<volatile long*>(&x))
+	
+
+
+// _Rep 实在make_shared时 new出来的，所以引用计数管理器是在堆上的
+_NODISCARD_SMART_PTR_ALLOC shared_ptr<_Ty> make_shared(_Types&&... _Args) { // make a shared_ptr to non-array object
+    const auto _Rx = new _Ref_count_obj2<_Ty>(_STD forward<_Types>(_Args)...);
+    shared_ptr<_Ty> _Ret;
+    _Ret._Set_ptr_rep_and_enable_shared(_STD addressof(_Rx->_Storage._Value), _Rx);
+    return _Ret;
+}
+```
+
+> 引用计数器的销毁，如果计数器=0，就会销毁管理的对象，如果弱引用计数器=0，就会销毁控制块本身
+
+```c++
+void _Decref() noexcept { // decrement use count
+    if (_MT_DECR(_Uses) == 0) {
+        _Destroy();
+        _Decwref();   // 注意：只有弱引用计数器=0时，这个控制块才会被销毁
+    }
+}
+
+void _Decwref() noexcept { // decrement weak reference count
+    if (_MT_DECR(_Weaks) == 0) {
+        _Delete_this();
+    }
+}
+```
+
+### 循环引用问题
+
+> 下面代码中AB两个对象的销毁函数都不会被调用
+
+```c++
+class Base {
+public:
+	Base() {
+		cout << "构造" << endl;
+	}
+
+	~Base() {
+		cout << "销毁" << endl;
+	}
+
+	std::shared_ptr<Base> pater;
+};
+
+int main() {
+	std::shared_ptr<Base> A = make_shared<Base>();
+	std::shared_ptr<Base> B = make_shared<Base>();
+
+	A->pater = B;
+	B->pater = A;
+
+	cout << "done" << endl;
+}
+```
+
+> 理解一下：
+>
+> 当退出智能指针作用域时，只会让引用计数-1，不会销毁对象，此时对象里还有别的对象的指针，上述代码场景中，AB这两个智能指针销毁后，引用计数器都还是1，所以这两个对象永远无法销毁
+>
+> 另一个理解是：退出作用域后，外部已经无法控制两个对象了，但是两个对象还互相持有对方的引用，所以这两个对象都无法被销毁
+
+
 
 # C++的多线程
 
@@ -1481,9 +1614,72 @@ int main() {
 }
 ```
 
-## 异步并发
+## 异步并发 async future promise
 
+> 基于上边那些底层组件封装的 “高层工具”，目的是让你更方便地实现异步编程，不用手动处理线程管理、同步等待等繁琐细节。
+>
+> 相当于一个异步编排工具包
 
+```c++
+// 启动一个异步任务foo，future用来接收返回值int
+std::future<int> futrue_result = std::async(std::launch::async, foo); 
+
+// 第一个参数表示执行策略
+_EXPORT_STD enum class launch { // names for launch options passed to async
+    async    = 0x1,	// 立刻创建新线程执行函数
+    deferred = 0x2	// 不创建新线程，同步执行，当调用future.get()时才会执行
+};
+```
+
+> promise用于接收异步函数的数据，如果不用promise，就只能通过返回值、全局变量等方式，promise相当于提供了异步变量存储的功能
+>
+> **一句话理解：在一个线程中产生一个值，在另外一个线程中获取这个值的工具**
+>
+> 使用方法就是把promise当作参数传递给异步函数，异步函数内部`set_value`来设置它，这样主线程可以在合适的时机去get它，而不是阻塞等待异步函数执行完
+
+```c++
+int foo(std::promise<int> prom) {
+	for (int i = 0; i < 500; i++) {
+		cout << "Thread ID: " << this_thread::get_id() << " - Iteration: " << i << endl;
+	}
+	prom.set_value(100);
+	return 1;
+}
+
+int main() {
+	std::promise<int> prom;
+	auto fut = prom.get_future();
+	std::thread t(foo, std::move(prom));
+	for(int i = 0;i<1000;i++){
+		cout << "主线程同时进行其他任务" << endl;
+	}
+	cout << "获取异步结果" << fut.get();
+	t.join();
+}
+```
+
+## 原子操作
+
+> 有些多线程问题是因为一个资源操作不是原子操作而导致的线程冲突问题，比如num++，他需要读取到CPU寄存器、寄存器++、写回内存，如果期间时间片到了，就出问题了
+>
+> 用atomic来封装对象，可以保证操作的原子性，不会被打断
+
+```c++
+void foo(std::atomic_int&res) {
+	for (int i = 0; i < 50000; i++) {
+		res++;
+	}
+}
+
+int main() {
+	std::atomic<int> num;
+	std::thread t1(foo, std::ref(num));
+	std::thread t2(foo, std::ref(num));
+	t1.join();
+	t2.join();
+	cout << num;
+}
+```
 
 # C++ string底层
 
