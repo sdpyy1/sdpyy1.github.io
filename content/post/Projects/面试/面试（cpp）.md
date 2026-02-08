@@ -1049,7 +1049,7 @@ _List_base(const allocator_type&) {
 >
 > map 是一块连续的内存，它的作用是 “索引” 所有缓冲区，让 `deque` 对外表现出 “逻辑连续” 的特性；
 
-![img](deque DS.png)
+![img](deque-DS.png)
 
 ### 关联式容器
 
