@@ -731,7 +731,7 @@ class EmptyClassChild:public EmptyClass {
 
 # 类相关
 
-## 构造函数相关
+## 构造函数
 
 ### 各种构造函数和=重载
 
@@ -785,11 +785,24 @@ Base(Base b) :num(b.num) {
 
 > 在编译器视角下，一个是用户自定义的构造函数，一个是原厂配置，后边这个可以接收更好的优化
 
+### 一个类默认会生成哪些函数
+
+```c++
+默认构造
+默认拷贝构造 Empty(const Empty &tmp)
+默认析构
+默认赋值 Empty& operator=(const Empty &rhs); //赋值运算符
+取地址运算符 Empty* operator&(); //取址运算符
+取地址运算符const const Empty* operator&() const; //取址运算符(const版本)
+```
+
+
+
 ## 虚函数
 
 ### 菱形继承
 
-当读取Base0中的int a时会报错，也就是说编译器不知道你是要Base1上的a还是base2上的a，（本身不会报错，每个继承链都会保存一个a，但是访问时会冲突，必须指明使用域）
+当读取Base0中的int a时会报错，也就是说编译器不知道你是要Base1上的a还是base2上的a，（本身不会报错，每个继承链都会保存一个a，但是访问时会冲突，必须指明使用域），也就是孙类中对爷类的成员继承产生歧义
 
 ```text
 main.cpp(26): error C2385: 对“a”的访问不明确
@@ -801,6 +814,141 @@ main.cpp(27): note: 也可能是“a”(位于基“A”中)
 ```
 
 ![img](v2-7b1fb0fab19a7f28f558408e44dd16f1_1440w.jpg)
+
+> 下面这个案例表明，Drived类中存在两个独立的变量a，并且Base类的构造函数会被执行两次
+
+```c++
+#include <thread>
+#include <iostream>
+#include <mutex>
+#include <condition_variable>
+#include <queue>
+#include <future>
+#include <map>
+#include <typeinfo>
+#include <cstdint>
+
+using namespace std;
+class Base {
+public:
+	Base() {
+		cout << "构造" << endl;
+	}
+	virtual void func1() {
+		cout << "virtual func1" << endl;
+	}
+	virtual void func2() {
+		cout << "virtual func2" << endl;
+	}
+	~Base() {
+		cout << "销毁" << endl;
+	}
+
+	int a = 0;
+};
+
+class BaseA : public Base {
+public:
+	virtual void func1() {
+		cout << "BaseA func1" << endl;
+	}
+	virtual void func2() {
+		cout << "BaseA func2" << endl;
+	}
+
+};
+
+class BaseB : public Base {
+public:
+	virtual void func1() {
+		cout << "BaseB func1" << endl;
+	}
+	virtual void func2() {
+		cout << "BaseB func2" << endl;
+	}
+};
+
+class Drived : public BaseA, public BaseB {
+	
+};
+int main() {
+	Drived d;
+	d.BaseA::func1();
+	// 这个案例表明，Drived类中存在两个独立的变量a
+	cout << d.BaseA::a << endl;
+	cout << d.BaseB::a << endl;
+
+	d.BaseA::a++;
+    
+	cout << d.BaseA::a << endl;
+	cout << d.BaseB::a << endl;
+
+	return 0;
+}
+```
+
+如果想让Drived中只有一份变量a，就需要使用**虚继承**，使用方法就是在父类继承爷类时改为vitual public
+
+```cpp
+虚继承下，父类 的构造函数不再直接初始化 爷类（爷类 的初始化由最终派生类负责）
+    
+程序运行时，只有最后的派生类执行对基类的构造函数调用，而忽略其他派生类对虚基类的构造函数调用。从而避免对基类数据成员重复初始化。因此，虚基类只会构造一次。
+```
+
+```c++
+class BaseA : virtual public Base { // 虚继承
+public:
+	virtual void func1() {
+		cout << "BaseA func1" << endl;
+	}
+	virtual void func2() {
+		cout << "BaseA func2" << endl;
+	}
+
+};
+
+class BaseB : virtual public Base {   // 虚继承
+public:
+	virtual void func1() {
+		cout << "BaseB func1" << endl;
+	}
+	virtual void func2() {
+		cout << "BaseB func2" << endl;
+	}
+};
+```
+
+### 菱形继承下的虚函数表问题
+
+> 爷类有虚函数，两个父类继承虚函数，子类没有继承虚函数情况下，子类有几个虚函数表
+>
+> 分普通继承和虚继承两种情况
+
+```c++
+
+// 场景1：虚继承
+class Base { virtual void f() {} };
+class A : virtual public Base {};
+class B : virtual public Base {};
+class Derived1 : public A, public B {};
+
+// 场景2：普通继承
+class C : public Base {};
+class D : public Base {};
+class Derived2 : public C, public D {};
+
+int main() {
+    // 虚继承：1个vptr + 虚继承的额外开销（不同编译器略有差异，核心是vptr数量）
+    cout << sizeof(Derived1) << endl; // GCC下输出16（核心是1个vptr）
+    // 普通继承：2个vptr（8*2=16）
+    cout << sizeof(Derived2) << endl; // GCC下输出16（2个vptr）
+    return 0;
+}
+```
+
+//TODO：学习虚继承的底层实现，与虚函数表的关系
+
+
 
 ### 虚函数的实现原理
 
@@ -880,6 +1028,13 @@ public:
     }
 };
 
+```
+
+### 虚函数表的生成时机和生成位置
+
+```c++
+虚函数表（vtable）在编译 + 链接阶段完成构建，最终存储在内存的常量区（.rodata），运行时只读；
+vtable 的核心内容是该类所有虚函数的最终执行地址（还包含 RTTI 相关的前导字段）；
 ```
 
 
@@ -1062,7 +1217,159 @@ _List_base(const allocator_type&) {
 
 #### 红黑树
 
-> 
+> 对比搜索二叉树、平衡二叉树、红黑树
+>
+> 参考：https://www.bilibili.com/video/BV1JfaQz2EXw?spm_id_from=333.788.player.switch&vd_source=9df9034e2f1978b1018f5b387ec3eacd
+
+1. 二叉排序树在处理顺序序列后，会退化为链表，导致查询复杂度变为O（n）
+2. 平衡二叉树：通过旋转来保持树的平衡
+3. 红黑树结点到叶结点的最长路径不会超过最短路径的2倍
+
+红黑树的结点多了一个属性：颜色（分为红色和黑色），还添加了访问父结点的指针，AVL是依靠左右子树高度差来平衡，红黑树则是通过颜色
+
+```c++
+struct Rb_tree_node
+{
+    bool color;
+    struct Rb_tree_node *parent;
+    struct Rb_tree_node *left;
+    struct Rb_tree_node *right;
+}
+```
+
+**红黑树的定义：**（根叶黑、不红红、黑路同）
+
+1. 结点不是红色就是黑色
+2. 根结点一定是黑色
+3. 叶结点一定是黑色（空结点）
+4. 不允许存在两个相邻的红色结点
+5. 从任意结点到达任意叶子结点上黑色结点的数量相同
+
+如下图从根节点到任何叶子结点都是只经过一个黑色结点
+
+![image-20260208215051445](image-20260208215051445.png)
+
+两个树的差别：
+
+1. AVL树（高度相差1）比红黑树（高度相差2）平衡要求更严格
+2. 红黑树的优点是插入删除更高效，在动态数据上红黑树更优
+
+![image-20260208215427645](image-20260208215427645.png)
+
+##### AVL树的插入
+
+观察从爷结点到插入结点是哪种关系，然后进行结点旋转
+
+![image-20260208215811724](image-20260208215811724.png)
+
+LL：父节点代替爷结点，爷结点作为父节点的右结点
+
+![image-20260208215950848](image-20260208215950848.png)
+
+RR：同LL，但是是左旋
+
+![image-20260208220044483](image-20260208220044483.png)
+
+LR：先在子结点和父结点之间进行一次旋转就变成了LL情况，再按照LL规则旋转即可
+
+![image-20260208220218939](image-20260208220218939.png)
+
+RL:同理
+
+![image-20260208220302403](image-20260208220302403.png)
+
+##### 红黑树的插入
+
+![image-20260208220619581](image-20260208220619581.png)
+
+1. 首先先找到插入的位置
+2. 如果是根结点直接变黑色
+3. 不是根节点则默认染成红色（只会影响不红红这一条性质，不会影响别的，所以先染成红色，再判断可不可行）
+4. 如果违反了不红红的性质，就看它父结点的兄弟结点的颜色
+5. 如果叔结点（父结点的兄弟结点）是黑色，就进行旋转加染色（旋转和AVL一致），比如父亲结点和爷结点旋转后，交换他俩的颜色
+6. 如果叔结点是红色的，把父结点、爷结点、叔结点颜色取反。然后把爷爷结点当作新插入的结点来进行一次上边的流程图
+
+就这么多流程，主要总结为上边的流程图，理解即可（从这张图也能理解为什么效率高，因为不一定需要旋转）
+
+##### AVL树的删除
+
+如果是第三种情况，就先找要删除结点的直接后继（右子树的最左侧），直接用直接后继替换他，然后删除直接后继（此时删除直接后继这个结点就转化成了前两种情况）
+
+![image-20260208222059706](image-20260208222059706.png)
+
+##### 红黑树的删除
+
+规则一大堆
+
+![image-20260208222443094](image-20260208222443094.png)
+
+#### Set
+
+> 元素有序、元素不能重复，唯一
+>
+> set 的底层机制为 红黑树(RB-tree)
+
+```c++
+template <class _Key, class _Compare, class _Alloc>
+class set {
+public:
+  // typedefs:
+
+  typedef _Key     key_type;
+  typedef _Key     value_type;
+  typedef _Compare key_compare;
+  typedef _Compare value_compare;
+private:
+  typedef _Rb_tree<key_type, value_type, _Identity<value_type>, key_compare, _Alloc> _Rep_type;  // set 的底层实现为 RB-tree
+  _Rep_type _M_t;  // 内部定义了一颗红黑树
+   
+    
+    // 从等号赋值重载就能看出来 底层就是单纯一颗红黑树，没有别的啥
+    set<_Key,_Compare,_Alloc>& operator=(const set<_Key, _Compare, _Alloc>& __x) // 赋值给容器 
+  { 
+    _M_t = __x._M_t; 
+    return *this;
+  }
+
+```
+
+插入操作
+
+```c++
+// insert/erase 插入操作
+pair<iterator,bool> insert(const value_type& __x) { 
+    pair<typename _Rep_type::iterator, bool> __p = _M_t.insert_unique(__x); 
+    return pair<iterator, bool>(__p.first, __p.second);
+}
+```
+
+#### Map
+
+> 与Set同理，底层是一颗红黑树，通过Key进行搜索，存储的数据为pair<key,value>
+
+```c++
+// map 类 <Key, Value>，默认采用递增排序
+template <class _Key, class _Tp, class _Compare, class _Alloc>
+class map {
+public:
+// typedefs:
+
+  typedef _Key                  key_type; // 键值类型
+  typedef _Tp                   data_type; // 实值类型
+  typedef _Tp                   mapped_type;
+  typedef pair<const _Key, _Tp> value_type;  // 元素类型(键值/实值)
+  typedef _Compare              key_compare; // 键值比较函数
+private:
+  typedef _Rb_tree<key_type, value_type, _Select1st<value_type>, key_compare, _Alloc> _Rep_type; // map 的底层机制 RB-tree ,这里能看出存储的是pair，而不是单单value 
+```
+
+#### HashTable相关
+
+unordered_set、unordered_map  底层都是hashtable
+
+c++的hashTable负载因子是1、也是开链法解决hash冲突、大于8后也会转为红黑树（好像有的编译器是转为AVL树）
+
+STL这些内容就先看到这里~
 
 
 
@@ -1169,7 +1476,84 @@ static void* allocate(size_t __n)
   };
 ```
 
+## STL的算法
 
+### std::sort
+
+> STL中的sort结合了快排、堆排、插入排序
+>
+> 1. 快速排序，并且是左半边循环处理，右半边递归处理
+> 2. 如果递归深度达到数组长度的log2 * 2级别 就转为堆排序
+> 3. 如果数组长度小于16，转为插入排序
+
+![image-20260213142053360](image-20260213142053360.png)
+
+1. 快排采用mid of three来选基准：从待排序数组的**第一个元素、中间元素、最后一个元素**中，选出这三个数的**中位数**作为基准（pivot）。
+
+```c++
+template <class _RandomAccessIter>
+inline void sort(_RandomAccessIter __first, _RandomAccessIter __last) {
+  __STL_REQUIRES(_RandomAccessIter, _Mutable_RandomAccessIterator);
+  __STL_REQUIRES(typename iterator_traits<_RandomAccessIter>::value_type,
+                 _LessThanComparable);
+  if (__first != __last) {
+    // 1. 第三个参数lg用于表示递归深度，如果深度过深，快排效率就会变差 O(nlogn)->O(n2)，转为堆排序
+    __introsort_loop(__first, __last,__VALUE_TYPE(__first),__lg(__last - __first) * 2);
+    // 2. 插入排序
+    __final_insertion_sort(__first, __last);
+  }
+}
+```
+
+```c++
+const int __stl_threshold = 16;
+template <class _RandomAccessIter, class _Tp, class _Size>
+void __introsort_loop(_RandomAccessIter __first,
+                      _RandomAccessIter __last, _Tp*,
+                      _Size __depth_limit)
+{
+  while (__last - __first > __stl_threshold) {   // 如果区间长度大于16则继续进行快排，如果小于16，则直接返回，等待后续的插入排序
+    if (__depth_limit == 0) {    // 在递归调用过程中会不断--，到达0时转为堆排序，避免退化为O(N2)
+      partial_sort(__first, __last, __last); // 堆排序
+      return;
+    }
+    --__depth_limit; // 递归深度统计
+      
+      // 这里进行选择基准和一次排序操作  
+    _RandomAccessIter __cut = __unguarded_partition(__first, __last,_Tp(__median(*__first,*(__first + (__last - __first)/2),*(__last - 1))));  
+      
+    // 注意：只递归右边半区
+    __introsort_loop(__cut, __last, (_Tp*) 0, __depth_limit);
+      
+    // 直接把左半边在当前函数中执行，防止过多的递归函数产生，减少生成栈帧的操作提高效率
+    __last = __cut;
+  }
+}
+```
+
+```c++
+template <class _RandomAccessIter, class _Tp>
+_RandomAccessIter __unguarded_partition(_RandomAccessIter __first, 
+                                        _RandomAccessIter __last, 
+                                        _Tp __pivot) 
+{
+  while (true) {
+    while (*__first < __pivot)   // 找左边比基准大的数
+      ++__first;
+    --__last; // 先把__last左移一位，因为区间是左闭右开 [first, last)
+    while (__pivot < *__last)  // 找右边比基准小的数
+      --__last;
+    if (!(__first < __last))
+      return __first;   // 返回分区的边界
+    iter_swap(__first, __last);
+    ++__first;
+  }
+}    
+```
+
+2. 插入排序
+
+就是插入排序的流程，因为只有长度小于16的才会进入这里
 
 # C++ 11的新特性
 
