@@ -13,6 +13,10 @@ title = '面试（cpp）'
 
 # 基础
 
+## 内联函数
+
+## lambda表达式原理
+
 ## RAII
 
 > Resource Acquistion Is Initialzation
@@ -125,6 +129,12 @@ std::cout << alignof(structC) << std::endl;  // 输出对齐方式
 > 而new创建内存后还会调用构造函数进行构造，delete也会进行析构
 >
 > 所以new是malloc的封装版，为了CPP构造和删除类实例时自动执行构造和析构函数
+
+## new的对象用free的情况
+
+// TODO
+
+
 
 ## 指针常量和常量指针
 
@@ -796,7 +806,13 @@ Base(Base b) :num(b.num) {
 取地址运算符const const Empty* operator&() const; //取址运算符(const版本)
 ```
 
+### 在构造函数和析构函数中调用虚函数
 
+// TODO
+
+### 构造函数能是虚函数么
+
+### delete this
 
 ## 虚函数
 
@@ -1362,6 +1378,8 @@ public:
 private:
   typedef _Rb_tree<key_type, value_type, _Select1st<value_type>, key_compare, _Alloc> _Rep_type; // map 的底层机制 RB-tree ,这里能看出存储的是pair，而不是单单value 
 ```
+
+##### map的迭代器删除的问题
 
 #### HashTable相关
 
