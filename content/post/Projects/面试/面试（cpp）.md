@@ -15,7 +15,156 @@ title = '面试（cpp）'
 
 ## 内联函数
 
+// TODO：这个东西的优缺点目前理解不深，比如指令缓存到底会受到何种影响，但是也没找见什么解释的好的资料，可能等复习基础课后再思考
+
+> 就是直接把函数在调用位置展开，具体是否会展开取决于编译器认不认为展开是否合适
+>
+> 消除函数调用的开销（如栈帧创建 / 销毁、参数传递、返回值处理等），提升程序执行效率。
+>
+> 类内直接定义的成员函数，默认就是内联的
+>
+> 与宏定义作用一致，但是更安全
+>
+> 比较难理解的一个内联函数缺点是：展开内联后导致热点代码变长，局部性降低，CPU的指令缓存命中率下降
+
+不适合使用内联函数的场景：
+
+1. 复杂的函数实现，比如包含循环（for/while）、多层分支（if-else 嵌套）、switch-case、大量计算逻辑(在内部有循环时编译器可能做 **循环展开 (loop unrolling)**)
+2. 被大量调用的函数，会显著增加内存用量，因为本来统一调Call xxx，都换成了具体的代码逻辑
+
+````c++
+inline int add(int a, int b) { return a + b; }
+
+int main() {
+    int total = 0;
+    // 千万次调用 → 内联后代码膨胀严重
+    for (int i = 0; i < 10000000; i++) {
+        total += add(i, i+1); 
+    }
+    return 0;
+}
+````
+
+3. 虚函数，在多态场景下，调用函数需要在运行时才确定，所以没法在编译期就进行展开
+4. 函数需要频繁修改，每次修改所有涉及到的Cpp文件都得重新编译，而普通函数只需要重新链接一次
+5. 函数中递归了，因为会无限展开自己，所以递归函数inline会失效
+
+inline还可以解决重复定义的问题，如下
+
+```c++
+// fun.h
+#ifndef FUN
+#define FUN
+
+int add(int x, int y) {
+    return x + y;
+}
+
+#endif
+
+// test1.cpp
+#include "fun.h"
+
+int test1() {
+    return add(1, 2);
+}
+
+// test2.cpp
+#include "fun.h"
+
+int test2() {
+    return add(123, 456);
+}
+
+//  最终会生成两份add函数导致符号重复
+```
+
+
+
+
+
 ## lambda表达式原理
+
+> Lambda 表达式是 C++ 中的一种语法糖，它本质上会被编译器转化为一个匿名类（closure class）。这个类要重载 operator() 方法.把捕获的变量存到结构体的成员变量中
+
+![截屏2026-02-19 23.59.45](截屏2026-02-19 23.59.45.png)
+
+1. 未设置捕获的情况
+
+```c++
+ auto add = [](int a, int b) { 
+      return a + b; 
+  };
+  add(1, 2);
+
+
+// 本质生成了一个匿名类，重载了()
+class __lambda_13_16
+  {
+    public: 
+    inline /*constexpr */ int operator()(int a, int b) const   // 这里的const也就说明了lambda不能修改传入的参数，所以定义lambda时需要加mutable
+    {
+      return a + b;
+    }
+    
+    using retType_13_16 = int (*)(int, int);
+    inline constexpr operator retType_13_16 () const noexcept
+    {
+      return __invoke;
+    };
+    
+    private: 
+    static inline /*constexpr */ int __invoke(int a, int b)
+    {
+      return __lambda_13_16{}.operator()(a, b);
+    }
+    
+    
+  };
+  
+  __lambda_13_16 add2 = __lambda_13_16{};
+  add2.operator()(1, 2);
+```
+
+2. 设置&捕获的情况
+
+```c++
+int a = 1, b = 2;
+auto add = [&]() {
+    return a + b;
+};
+add();
+
+int a = 1;
+int b = 2;
+
+class __lambda_9_15
+{
+  public: 
+  inline /*constexpr */ int operator()() const
+  {
+    return a + b;
+  }
+
+  // 由于引用捕获了a、b，编译器生成的匿名类内部定义了对这两个变量的引用成员，构造函数参数类型也是引用类型。
+  // 如果是=捕获，就是拿每个变量的拷贝
+  private: 
+  int & a;
+  int & b;
+
+  public:
+  __lambda_9_15(int & _a, int & _b)
+  : a{_a}
+  , b{_b}
+  {}
+
+};
+
+__lambda_9_15 add = __lambda_9_15{a, b};
+add.operator()();
+```
+
+Lambda的陷阱：如果通过引用捕获局部变量
 
 ## RAII
 
@@ -132,7 +281,7 @@ std::cout << alignof(structC) << std::endl;  // 输出对齐方式
 
 ## new的对象用free的情况
 
-// TODO
+> free这块区域删除了，但是如果内部还有一些指向资源的指针，就会导致内存泄漏
 
 
 
