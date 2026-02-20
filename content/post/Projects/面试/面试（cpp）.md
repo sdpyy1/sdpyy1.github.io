@@ -7,9 +7,8 @@ title = '面试（cpp）'
 
 # TODO
 
-1. 智能指针代码学习
-1. 设计模式：单例模式、委托
-1. 关联性容器、红黑树
+1. 单例模式
+1. virtual继承的底层原理
 
 # 基础
 
@@ -107,6 +106,10 @@ class __lambda_13_16
       return a + b;
     }
     
+    
+    // 当没有捕获时，lambda可以转化为函数指针，因为他是无状态的
+    // operator retType_13_16 () 就是类型转换为函数指针时，实际赋值的是__invoke这个函数的地址
+    // 这里的语法就是类型转换运算符重载，也就是把__lambda_13_16 这个类型转为int (*)(int, int)这个类型时，走的逻辑（之前都不知道这个）
     using retType_13_16 = int (*)(int, int);
     inline constexpr operator retType_13_16 () const noexcept
     {
@@ -114,12 +117,11 @@ class __lambda_13_16
     };
     
     private: 
+    // 具体转为函数指针时，指向的对象
     static inline /*constexpr */ int __invoke(int a, int b)
     {
       return __lambda_13_16{}.operator()(a, b);
     }
-    
-    
   };
   
   __lambda_13_16 add2 = __lambda_13_16{};
@@ -165,6 +167,23 @@ add.operator()();
 ```
 
 Lambda的陷阱：如果通过引用捕获局部变量
+
+### 为什么没有捕获的lambda能转为函数指针，有捕获就不行
+
+> 函数指针本身只是指向代码地址，是无状态的
+>
+> 当没有捕获时，生成的匿名类中会提供转为函数指针的逻辑，但是有捕获时，就不会生成相应的代码（所以从语法上就不支持）
+>
+> 另外从底层上来讲，如果有捕获，函数调用就必须依赖this指针，但是函数指针是没法存储对象地址的（也就是this指针）
+>
+> ```c++
+> // 解决方法是使用std::function
+> int y = 5;
+> auto f2 = [y](int x){ return x + y; };
+> std::function<int(int)> func = f2;   // 本质就是一层包装器，直接把lambda实例存储起来了，所以存储了lambda实例中的状态
+> ```
+
+
 
 ## RAII
 
@@ -785,7 +804,44 @@ main:
 
 ## 模板类为什么一般都是放在.h文件
 
-> TODO:先理清楚编译流程再说
+构建一个场景
+
+```c++
+// a.h
+template<typename T>
+class SomeClass {
+public:
+	T GetValue();
+	T value;
+};
+
+// a.cpp
+template<typename T>
+inline T SomeClass<T>::GetValue()
+{
+	return value;
+}
+
+// main.cpp
+int main(){
+    SomeClass<int> someClass;
+	someClass.value = 10;
+	someClass.GetValue();
+}
+```
+
+把模板函数写在cpp文件后，运行main后报错,也就是说未找到这个函数的实现
+
+```c++
+1>main.obj : error LNK2019: 无法解析的外部符号 "public: int __cdecl SomeClass<int>::GetValue(void)" (?GetValue@?$SomeClass@H@@QEAAHXZ)，函数 main 中引用了该符号
+1>D:\AAA_GameEngine_Dev\Hazel\..\bin\Debug-windows-x86_64\Hazel\Hazel.exe : fatal error LNK1120: 1 个无法解析的外部命令
+```
+
+> 编译器需要知道模板的全部代码，才能生成实例，没法推迟到链接阶段再进行(模板实例化必须在 **使用它的编译单元里完成**)
+>
+> 对应main.cpp来说，他在实例化模板时看不到模板的完整定义，所以报错了
+
+
 
 ## 模板的使用
 
@@ -845,13 +901,11 @@ class EmptyClassChild:public EmptyClass {
 >
 > 资源的使用一般经历三个步骤a.获取资源 b.使用资源 c.销毁资源，但是资源的销毁往往是程序员经常忘记的一个环节，所以程序界就想如何在程序员中让资源自动销毁呢？c++之父给出了解决问题的方案：RAII，它充分的利用了C++语言局部对象自动销毁的特性来控制资源的生命周期。给一个简单的例子来看下局部对象的自动销毁的特性
 >
-> 已经习惯了用类管理资源，这种方式就叫RAII么？  TODO
+> 已经习惯了用类管理资源，这种方式就叫RAII么？ 是的，本质是用栈上对象的生命周期去管理堆上的对象生命周期
 
 
 
 ## 智能指针
-
-
 
 ### enable_shared_from_this
 
@@ -957,11 +1011,163 @@ Base(Base b) :num(b.num) {
 
 ### 在构造函数和析构函数中调用虚函数
 
-// TODO
+> 总体理解就是，在构造或者析构中执行虚函数，会失去多态性，因为在继承体系中执行这两个特殊的函数时，虚表指针不一定指向你当前要创建的对象的类型，也可能是其父类的类型
+
+情况1： 派生类构造时调用虚函数
+
+```c++
+class base {
+public:
+	base() {
+		print("base构造");
+	}
+	virtual void f1() {
+		print("base::f1");
+	}
+	virtual void f2() {
+		print("base::f2");
+
+	}
+};
+
+class sub : public base {
+public:
+	sub() {
+		print("sub构造");
+		f1();
+		f2();
+	}
+	virtual void f1() {
+		print("sub::f1");
+
+	}
+};
+```
+
+在这个案例下，运行是没问题的
+
+![image-20260220143754984](image-20260220143754984.png)
+
+情况2：构造父类对象时调用虚函数
+
+```c++
+class base {
+public:
+	base() {
+		print("base构造");
+		f1();
+		f2();
+	}
+	virtual void f1() {
+		print("base::f1");
+	}
+	virtual void f2() {
+		print("base::f2");
+
+	}
+};
+
+class sub : public base {
+public:
+	sub() {
+		print("sub构造");
+
+	}
+	virtual void f1() {
+		print("sub::f1");
+
+	}
+};
+```
+
+此时就出现问题了，因为构造父类时，派生类还没有构造，所以虚函数只会执行父类的虚函数逻辑
+
+![image-20260220143951126](image-20260220143951126.png)
+
+总结：构造函数中调用虚函数是合法的，但是并不会按照当前创建的类型去执行虚函数，很有可能执行的是父类的虚函数，导致执行错误
+
+面试可以提一下，如果硬要用，只允许继承的最后一个类使用，可以给当前派生类添加final关键字，表示不会再进一步继承了
+
+析构函数也是同理，在父类析构中写入虚函数后，父类析构时只会执行它自己的逻辑，不会执行子类的逻辑
 
 ### 构造函数能是虚函数么
 
+> 不可以，编译都无法通过
+>
+> 从逻辑上讲，构造函数调用时机是，先分配一块内存，然后调用构造函数构造对象，如果构造函数都是virtual，那在这块新分配内存上找虚函数指针是没有的，逻辑上都讲不通
+
+![image-20260220143417288](image-20260220143417288.png)
+
 ### delete this
+
+首先这个语法是合理的
+
+```c++
+class sub : public base {
+public:
+	sub() {
+		print("sub构造");
+
+	}
+	virtual void f1() {
+		print("ready delete this");
+		delete this;
+         print("ready delete this Done");
+	}
+
+	~sub() {
+		print("sub析构");
+	}
+};
+
+void LearnClass::LearnEntryPoit()
+{
+	sub* s = new sub();
+	s->f1();  // 就会调用析构->并释放内存，和调用 delete s  一致
+}
+```
+
+```c++
+base构造
+sub构造
+ready delete this
+sub析构
+base析构
+delete this Done   // 这说明 使用delete this时还支持 delete后进行额外的操作
+```
+
+但是注意点就是delete this之后，再涉及到对应this的操作就会出问题，但是这种错误编辑器以及编译器都是无法感知的
+
+另外在继承体系中使用delete this是危险的，比如子类对象执行父类函数时，如果父类函数中有delete this，那子类的析构就不会被执行了！
+
+```c++
+class base {
+public:
+	base() {
+		print("base构造");
+	}
+	virtual void f2() {
+		print("base::f2");
+		delete this;   // 只会执行父类的析构
+	}
+
+	~base() {
+		print("base析构");
+	}
+};
+
+class sub : public base {
+public:
+	sub() {
+		print("sub构造");
+
+	}
+	~sub() {
+		print("sub析构");
+
+	}
+};
+```
 
 ## 虚函数
 
