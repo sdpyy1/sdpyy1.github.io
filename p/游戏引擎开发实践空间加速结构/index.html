@@ -1,0 +1,1669 @@
+<!DOCTYPE html>
+<html lang="zh-cn" dir="ltr">
+    <head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'>
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+  <meta name="referrer" content="no-referrer-when-downgrade"><meta name='description' content="基础理论 均匀网格划分 把整个场景 AABB 均匀划分成 Nx × Ny × Nz 的三维网格，每个 cell 里存放与其相交的 primitive（如三角形）列表\n但是实际场景中Mesh很容易是按簇分布的，此时如果击中左上角这个cell，会导致大量的相交计算\n">
+<title>游戏引擎开发实践（空间加速结构）</title>
+
+<link rel='canonical' href='https://sdpyy1.github.io/p/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E5%BC%80%E5%8F%91%E5%AE%9E%E8%B7%B5%E7%A9%BA%E9%97%B4%E5%8A%A0%E9%80%9F%E7%BB%93%E6%9E%84/'>
+
+<link rel="stylesheet" href="/scss/style.min.6a692fd055deae459f2a9767f57f3855ba80cafd5041317f24f7360f6ca47cdf.css"><meta property='og:title' content="游戏引擎开发实践（空间加速结构）">
+<meta property='og:description' content="基础理论 均匀网格划分 把整个场景 AABB 均匀划分成 Nx × Ny × Nz 的三维网格，每个 cell 里存放与其相交的 primitive（如三角形）列表\n但是实际场景中Mesh很容易是按簇分布的，此时如果击中左上角这个cell，会导致大量的相交计算\n">
+<meta property='og:url' content='https://sdpyy1.github.io/p/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E5%BC%80%E5%8F%91%E5%AE%9E%E8%B7%B5%E7%A9%BA%E9%97%B4%E5%8A%A0%E9%80%9F%E7%BB%93%E6%9E%84/'>
+<meta property='og:site_name' content='wanfeng'>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:published_time' content='2026-02-20T20:02:28&#43;08:00'/><meta property='article:modified_time' content='2026-02-20T20:02:28&#43;08:00'/><meta property='og:image' content='https://sdpyy1.github.io/image-20260220203337299.png' />
+<meta name="twitter:title" content="游戏引擎开发实践（空间加速结构）">
+<meta name="twitter:description" content="基础理论 均匀网格划分 把整个场景 AABB 均匀划分成 Nx × Ny × Nz 的三维网格，每个 cell 里存放与其相交的 primitive（如三角形）列表\n但是实际场景中Mesh很容易是按簇分布的，此时如果击中左上角这个cell，会导致大量的相交计算\n"><meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content='https://sdpyy1.github.io/image-20260220203337299.png' />
+    <link rel="shortcut icon" href="/favicon.ico" />
+
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="切换菜单">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        
+            
+            <figure class="site-avatar">
+                <a href="/">
+                
+                    
+                    
+                    
+                        
+                        <img src="/img/avatar_hu_f59158f730715054.png" width="300"
+                            height="300" class="site-logo" loading="lazy" alt="Avatar">
+                    
+                
+                </a>
+                
+                    <span class="emoji">🧐</span>
+                
+            </figure>
+            
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="/">wanfeng</a></h1>
+            <h2 class="site-description">Blog</h2>
+        </div>
+    </header><ol class="menu-social">
+            
+                <li>
+                    <a 
+                        href='https://space.bilibili.com/287473737'
+                        target="_blank"
+                        title="Bilibili"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-brand-bilibili"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 10a4 4 0 0 1 4 -4h10a4 4 0 0 1 4 4v6a4 4 0 0 1 -4 4h-10a4 4 0 0 1 -4 -4v-6z" /><path d="M8 3l2 3" /><path d="M16 3l-2 3" /><path d="M9 13v-2" /><path d="M15 11v2" /></svg>
+                        
+                    </a>
+                </li>
+            
+                <li>
+                    <a 
+                        href='https://github.com/sdpyy1'
+                        target="_blank"
+                        title="GitHub"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
+</svg>
+
+
+
+                        
+                    </a>
+                </li>
+            
+        </ol><ol class="menu" id="main-menu">
+        
+        
+        
+        <li >
+            <a href='/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>Home</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/about/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>About</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>Archives</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/search/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>Search</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/links/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5" />
+  <path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5" />
+</svg>
+
+
+
+                
+                <span>Links</span>
+            </a>
+        </li>
+        
+        <li class="menu-bottom-section">
+            <ol class="menu">
+                    
+                        <li id="i18n-switch">  
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-language" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M4 5h7" />
+  <path d="M9 3v2c0 4.418 -2.239 8 -5 8" />
+  <path d="M5 9c-.003 2.144 2.952 3.908 6.7 4" />
+  <path d="M12 20l4 -9l4 9" />
+  <path d="M19.1 18h-6.2" />
+</svg>
+
+
+
+                            <select name="language" title="language" onchange="window.location.href = this.selectedOptions[0].value">
+                                
+                                    <option value="https://sdpyy1.github.io/en/" >English</option>
+                                
+                                    <option value="https://sdpyy1.github.io/" selected>中文</option>
+                                
+                            </select>
+                        </li>
+                    
+                
+
+                
+                    <li id="dark-mode-toggle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <span>暗色模式</span>
+                    </li>
+                
+            </ol>
+        </li>
+    </ol>
+</aside>
+
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">目录</h2>
+        
+        <div class="widget--toc">
+            <nav id="TableOfContents">
+  <ol>
+    <li><a href="#基础理论">基础理论</a>
+      <ol>
+        <li><a href="#均匀网格划分">均匀网格划分</a></li>
+        <li><a href="#四叉树八叉树">四叉树/八叉树</a>
+          <ol>
+            <li><a href="#松散八叉树">松散八叉树</a></li>
+            <li><a href="#线性八叉树">线性八叉树</a>
+              <ol>
+                <li><a href="#morton-code">Morton Code</a></li>
+              </ol>
+            </li>
+          </ol>
+        </li>
+        <li><a href="#bsp树">BSP树</a></li>
+        <li><a href="#k-d-tree">K-d Tree</a></li>
+        <li><a href="#bvh">BVH</a></li>
+        <li><a href="#bvh的sah表面积启发式的结点划分方法">BVH的SAH（表面积启发式的结点划分方法）</a></li>
+      </ol>
+    </li>
+    <li><a href="#八叉树实践">八叉树实践</a></li>
+    <li><a href="#bvh--sah实践todo">BVH + SAH实践(TODO)</a>
+      <ol>
+        <li><a href="#cpu自顶向下">CPU（自顶向下）</a></li>
+        <li><a href="#gpu自底向上线性bvh">GPU(自底向上，线性BVH)</a></li>
+      </ol>
+    </li>
+  </ol>
+</nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+            <main class="main full-width">
+    <article class="has-image main-article">
+    <header class="article-header">
+        <div class="article-image">
+            <a href="/p/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E5%BC%80%E5%8F%91%E5%AE%9E%E8%B7%B5%E7%A9%BA%E9%97%B4%E5%8A%A0%E9%80%9F%E7%BB%93%E6%9E%84/">
+                
+                    <img src="/image-20260220203337299.png" loading="lazy" alt="Featured image of post 游戏引擎开发实践（空间加速结构）" />
+                
+            </a>
+        </div>
+    
+
+    <div class="article-details">
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="/p/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E5%BC%80%E5%8F%91%E5%AE%9E%E8%B7%B5%E7%A9%BA%E9%97%B4%E5%8A%A0%E9%80%9F%E7%BB%93%E6%9E%84/">游戏引擎开发实践（空间加速结构）</a>
+        </h2>
+    
+        
+    </div>
+
+    
+    
+    
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published">Feb 20, 2026</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-time--reading">
+                    阅读时长: 8 分钟
+                </time>
+            </div>
+        
+
+        
+            
+    </footer>
+    
+    
+</div>
+<style>
+    .category-hierarchy {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;  
+        margin-right: 12px;  
+        margin-bottom: 8px;  
+    }
+    
+    .category-separator {
+        color: #999;
+        user-select: none;
+        font-size: 1em;  
+    }
+    
+    .article-category a {
+        text-decoration: none;
+        padding: 6px 12px;  
+        border-radius: 6px;  
+        font-size: 0.95em;  
+        transition: all 0.2s ease;
+        line-height: 1.5;  
+    }
+    
+    .article-category a:hover {
+        opacity: 0.9;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 6px rgba(0,0,0,0.1);  
+    }
+</style>
+</header>
+
+    <section class="article-content">
+    
+    
+    <h1 id="基础理论">基础理论
+</h1><h2 id="均匀网格划分">均匀网格划分
+</h2><p>把整个场景 AABB 均匀划分成 <code>Nx × Ny × Nz</code> 的三维网格，每个 cell 里存放与其相交的 primitive（如三角形）列表</p>
+<p><img src="/image-20260220201611359.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20260220201611359"
+	
+	
+></p>
+<p>但是实际场景中Mesh很容易是按簇分布的，此时如果击中左上角这个cell，会导致大量的相交计算</p>
+<p><img src="/image-20260220201812614.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20260220201812614"
+	
+	
+></p>
+<p>最容易的解决办法是提高grid的分辨率</p>
+<p><img src="/image-20260220201901372.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20260220201901372"
+	
+	
+></p>
+<h2 id="四叉树八叉树">四叉树/八叉树
+</h2><blockquote>
+<p>这种方法是从顶向下划分，Root表示整个场景，先切4刀，检查每个区域是否Mesh数量小于阈值了，如果不小于，继续划分</p>
+<p>如下图中区域1就需要继续划分，而234就不需要了</p>
+</blockquote>
+<p><img src="/image-20260220202236945.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20260220202236945"
+	
+	
+></p>
+<p>区域1中Mesh还是很多，继续划分</p>
+<p><img src="/image-20260220202435529.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20260220202435529"
+	
+	
+></p>
+<p>继续划分新的区域1</p>
+<p><img src="/image-20260220202509648.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20260220202509648"
+	
+	
+></p>
+<p>上述流程假定一个情况：每个三角形都能刚好划分到不同的区域，但实际上一个三角形可能分布在不同的区域内，所以每个涉及的区域都需要存储这个三角形，如下图</p>
+<p><img src="/image-20260220202717111.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20260220202717111"
+	
+	
+></p>
+<h3 id="松散八叉树">松散八叉树
+</h3><p>扩大子节点的范围，这样可以保证这个结点是完全包含五角星</p>
+<p>假设一条射线从上到下进行击中判断，正好落在左上角和右上角两个结点的中心偏右一点，那左图（如果只在左边存储五角星）只有右边结点会加入检测队列，导致五角星漏掉了，那五角星就会被误判，右边就能正常把左边结点加入判断流程</p>
+<p><img src="/6c6b665435ab3202ffad992c22284561_720w.webp"
+	
+	
+	
+	loading="lazy"
+	
+		alt="img"
+	
+	
+></p>
+<h3 id="线性八叉树">线性八叉树
+</h3><p><img src="/v2-0a841e936cb135c5085ec729790dbaed_720w.webp"
+	
+	
+	
+	loading="lazy"
+	
+		alt="img"
+	
+	
+></p>
+<p><img src="/v2-5b4a7a3e7b323a951eb175a1e349fcc2_720w.webp"
+	
+	
+	
+	loading="lazy"
+	
+		alt="img"
+	
+	
+></p>
+<p>TODO:具体使用流程还不太清除</p>
+<h4 id="morton-code">Morton Code
+</h4><blockquote>
+<p>将多维数据映射到一维，同时保留数据点的局部性</p>
+<p>空间中相近的坐标，编码后的数值也相近</p>
+</blockquote>
+<p><img src="/v2-9f3c85bdbbc9cf1cc62d7e8de80a174b_1440w.jpg"
+	
+	
+	
+	loading="lazy"
+	
+		alt="img"
+	
+	
+></p>
+<blockquote>
+<p>下图展示计算一个XYZ坐标的莫顿编码</p>
+</blockquote>
+<p><img src="/v2-5b9155f532a74ab8f87ae327cd34435e_1440w.jpg"
+	
+	
+	
+	loading="lazy"
+	
+		alt="img"
+	
+	
+></p>
+<p>如果把空间中XYZ从0-10都编码并排序后连起来会发现，一维编码表示的空间坐标，在3D空间中有了局部连续性</p>
+<p><img src="/v2-acc08e5d99d86940f9f23bc989aca24f_1440w.jpg"
+	
+	
+	
+	loading="lazy"
+	
+		alt="img"
+	
+	
+></p>
+<h2 id="bsp树">BSP树
+</h2><blockquote>
+<p>递归的用一个超平面去划分场景为两半，划分可以是任意的</p>
+</blockquote>
+<p><img src="/image-20260220203015962.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20260220203015962"
+	
+	
+></p>
+<p>继续对AB两个区域进行划分</p>
+<p><img src="/image-20260220203052069.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20260220203052069"
+	
+	
+></p>
+<p>与四叉树类似，当一个区域内的Mesh数量小于阈值后停止分割</p>
+<p><img src="/image-20260220203153046.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20260220203153046"
+	
+	
+></p>
+<h2 id="k-d-tree">K-d Tree
+</h2><blockquote>
+<p>是BSP树的一种特殊形式，横平竖直地进行分割，而不是随意分割</p>
+</blockquote>
+<p><img src="/image-20260220203337299.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20260220203337299"
+	
+	
+></p>
+<h2 id="bvh">BVH
+</h2><blockquote>
+<p>上述方法都是自顶向下对空间进行划分，看Mesh落在哪个区域，而BVH是从底向上，合并多个Mesh为一个结点，直到合并场景中所有结点</p>
+<p><strong>一个关键区别是：BVH运行划分重叠，所以mesh可以安心得只落在一个结点</strong>，不会出现一个Mesh落在两个子空间，需要额外处理的情况</p>
+<p>构建BVH的关键在于，如果划分左右区间使得左右两个结点的AABB重叠最小</p>
+<p>BVH在GPU是bottomUp来构建的</p>
+</blockquote>
+<p><img src="/v2-654b8964bab83a8614b216865b782fc2_1440w.jpg"
+	
+	
+	
+	loading="lazy"
+	
+		alt="img"
+	
+	
+></p>
+<p><strong>这里注意：以前理解的 BVH构建是自底向上是不全面的，分CPU和GPU两种情况，如下图文字所示</strong></p>
+<p><img src="/image-20260220204855591.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20260220204855591"
+	
+	
+></p>
+<p>下面是TopDown的流程，Root表示所有三角形组成的AABB，每次都把大的AABB分成两个小的AABB，每个AABB表示一部分三角形组成的AABB</p>
+<p><img src="/%e6%88%aa%e5%b1%8f2026-02-21-12.38.45.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="截屏2026-02-21 12.38.45"
+	
+	
+></p>
+<p>TopDown流程的问题是，怎么去划分呢？</p>
+<p>可以选择沿着一条坐标轴进行，或者某个方向</p>
+<p>划分可以使用空间的中心或者Mesh的中心</p>
+<p><img src="/image-20260221151955944.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20260221151955944"
+	
+	
+></p>
+<p>按照空间来划分流程如下，首先选择最长轴，找到终点，分析每个Mesh的中心在这个中点的左侧还是右侧，从而划分两个部分，计算两部分的AABB，这样就划分好了</p>
+<p><img src="/image-20260221152226463.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20260221152226463"
+	
+	
+></p>
+<p>如何与BVH进行求交运算呢，用一个递归代码就能完成</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="n">HitInfo</span> <span class="nf">TraverseBVH</span><span class="p">(</span><span class="n">Node</span><span class="o">*</span> <span class="n">node</span><span class="p">,</span> <span class="n">Ray</span> <span class="n">ray</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">IntersectAABB</span><span class="p">(</span><span class="n">ray</span><span class="p">,</span> <span class="n">node</span><span class="o">-&gt;</span><span class="n">aabb</span><span class="p">))</span> <span class="k">return</span> <span class="n">HitInfo</span><span class="o">::</span><span class="n">miss</span><span class="p">();</span>  <span class="c1">// 剪枝
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="n">node</span><span class="o">-&gt;</span><span class="n">isLeaf</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="n">IntersectTriangles</span><span class="p">(</span><span class="n">ray</span><span class="p">,</span> <span class="n">node</span><span class="o">-&gt;</span><span class="n">triangles</span><span class="p">);</span> <span class="c1">// 真正的遍历求交
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">HitInfo</span> <span class="n">hitLeft</span> <span class="o">=</span> <span class="n">TraverseBVH</span><span class="p">(</span><span class="n">node</span><span class="o">-&gt;</span><span class="n">left</span><span class="p">,</span> <span class="n">ray</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="n">HitInfo</span> <span class="n">hitRight</span> <span class="o">=</span> <span class="n">TraverseBVH</span><span class="p">(</span><span class="n">node</span><span class="o">-&gt;</span><span class="n">right</span><span class="p">,</span> <span class="n">ray</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="n">hitLeft</span><span class="p">.</span><span class="n">hitDistance</span> <span class="o">&lt;</span> <span class="n">hitRight</span><span class="p">.</span><span class="n">hitDistance</span> <span class="o">?</span> <span class="nl">hitLeft</span> <span class="p">:</span> <span class="n">hitRight</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>从下图可以理解坐标中点划分并不是一种很好的方式（左图），AABB重叠了，右图是比较好的方式</p>
+<p><img src="/v2-06d172194c529c3e64c36e72241f4875_1440w.jpg"
+	
+	
+	
+	loading="lazy"
+	
+		alt="img"
+	
+	
+></p>
+<h2 id="bvh的sah表面积启发式的结点划分方法">BVH的SAH（表面积启发式的结点划分方法）
+</h2><blockquote>
+<p>定义数学模型：</p>
+<ol>
+<li>对一个Mesh求交的代价为t(x)，那一批Mesh不分区情况下的总代价为：<img src="/image-20260222131841560.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20260222131841560"
+	
+	
+></li>
+<li>如果将Mesh分为两区，光线击中某个区域的概率为p(x),此时的代价为（ttrav是表示遍历树状结构的代价）：<img src="/image-20260222131936958.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20260222131936958"
+	
+	
+></li>
+<li>结合BVH来看，AB分别表示划分后两个AABB的表面积，C是父结点的表面积，ab表示划分后各个区域的Mesh数量<img src="/image-20260222132021797.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20260222132021797"
+	
+	
+></li>
+</ol>
+<p><strong>从理论上理解：SAH目的是减少求交次数，首先Mesh越多，求交次数就越多，那Mesh所在的区域被击中的概率越大，进入区域去遍历这些Mesh的概率就越大，AABB的表面积越大，选择当前区域的概率越大，所以这两个因素相乘就是代价</strong></p>
+</blockquote>
+<h1 id="八叉树实践">八叉树实践
+</h1><blockquote>
+<p>总体上就是递归构建，基本思路不难，估计难得是适配实际情况</p>
+</blockquote>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">  1
+</span><span class="lnt">  2
+</span><span class="lnt">  3
+</span><span class="lnt">  4
+</span><span class="lnt">  5
+</span><span class="lnt">  6
+</span><span class="lnt">  7
+</span><span class="lnt">  8
+</span><span class="lnt">  9
+</span><span class="lnt"> 10
+</span><span class="lnt"> 11
+</span><span class="lnt"> 12
+</span><span class="lnt"> 13
+</span><span class="lnt"> 14
+</span><span class="lnt"> 15
+</span><span class="lnt"> 16
+</span><span class="lnt"> 17
+</span><span class="lnt"> 18
+</span><span class="lnt"> 19
+</span><span class="lnt"> 20
+</span><span class="lnt"> 21
+</span><span class="lnt"> 22
+</span><span class="lnt"> 23
+</span><span class="lnt"> 24
+</span><span class="lnt"> 25
+</span><span class="lnt"> 26
+</span><span class="lnt"> 27
+</span><span class="lnt"> 28
+</span><span class="lnt"> 29
+</span><span class="lnt"> 30
+</span><span class="lnt"> 31
+</span><span class="lnt"> 32
+</span><span class="lnt"> 33
+</span><span class="lnt"> 34
+</span><span class="lnt"> 35
+</span><span class="lnt"> 36
+</span><span class="lnt"> 37
+</span><span class="lnt"> 38
+</span><span class="lnt"> 39
+</span><span class="lnt"> 40
+</span><span class="lnt"> 41
+</span><span class="lnt"> 42
+</span><span class="lnt"> 43
+</span><span class="lnt"> 44
+</span><span class="lnt"> 45
+</span><span class="lnt"> 46
+</span><span class="lnt"> 47
+</span><span class="lnt"> 48
+</span><span class="lnt"> 49
+</span><span class="lnt"> 50
+</span><span class="lnt"> 51
+</span><span class="lnt"> 52
+</span><span class="lnt"> 53
+</span><span class="lnt"> 54
+</span><span class="lnt"> 55
+</span><span class="lnt"> 56
+</span><span class="lnt"> 57
+</span><span class="lnt"> 58
+</span><span class="lnt"> 59
+</span><span class="lnt"> 60
+</span><span class="lnt"> 61
+</span><span class="lnt"> 62
+</span><span class="lnt"> 63
+</span><span class="lnt"> 64
+</span><span class="lnt"> 65
+</span><span class="lnt"> 66
+</span><span class="lnt"> 67
+</span><span class="lnt"> 68
+</span><span class="lnt"> 69
+</span><span class="lnt"> 70
+</span><span class="lnt"> 71
+</span><span class="lnt"> 72
+</span><span class="lnt"> 73
+</span><span class="lnt"> 74
+</span><span class="lnt"> 75
+</span><span class="lnt"> 76
+</span><span class="lnt"> 77
+</span><span class="lnt"> 78
+</span><span class="lnt"> 79
+</span><span class="lnt"> 80
+</span><span class="lnt"> 81
+</span><span class="lnt"> 82
+</span><span class="lnt"> 83
+</span><span class="lnt"> 84
+</span><span class="lnt"> 85
+</span><span class="lnt"> 86
+</span><span class="lnt"> 87
+</span><span class="lnt"> 88
+</span><span class="lnt"> 89
+</span><span class="lnt"> 90
+</span><span class="lnt"> 91
+</span><span class="lnt"> 92
+</span><span class="lnt"> 93
+</span><span class="lnt"> 94
+</span><span class="lnt"> 95
+</span><span class="lnt"> 96
+</span><span class="lnt"> 97
+</span><span class="lnt"> 98
+</span><span class="lnt"> 99
+</span><span class="lnt">100
+</span><span class="lnt">101
+</span><span class="lnt">102
+</span><span class="lnt">103
+</span><span class="lnt">104
+</span><span class="lnt">105
+</span><span class="lnt">106
+</span><span class="lnt">107
+</span><span class="lnt">108
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="cp">#pragma once
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&#34;collision.h&#34;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span><span class="cm">/*
+</span></span></span><span class="line"><span class="cl"><span class="cm">	八叉树(目前这个代码跑不了，只是伪代码)：
+</span></span></span><span class="line"><span class="cl"><span class="cm">	构建: 把所有物体分配给Root，如果Root的物体数量大于MAX_LEAF_OBJECT_COUNT，就创建它的8个孩子，并且把所有物体按照位置分配给孩子（如果没法精确分配给某个孩子，就还是存在Root上），再遍历8个孩子，如果某个孩子物体数量大于MAX_LEAF_OBJECT_COUNT，继续递归构建
+</span></span></span><span class="line"><span class="cl"><span class="cm">	添加：判断物体是否包含在Root，包含的话，就判断8个孩子是否完美包含它，如果包含，就递归给孩子去添加，如果都不包含。就存储在当前Root
+</span></span></span><span class="line"><span class="cl"><span class="cm">	更新物体位置：判断是否还在同一个结点，如果不在就删除后重写插入，或者有一些论文去查询邻近结点
+</span></span></span><span class="line"><span class="cl"><span class="cm">
+</span></span></span><span class="line"><span class="cl"><span class="cm">	松散八叉树：
+</span></span></span><span class="line"><span class="cl"><span class="cm">
+</span></span></span><span class="line"><span class="cl"><span class="cm">
+</span></span></span><span class="line"><span class="cl"><span class="cm">	八叉树的用途：（加速遍历Mesh的判断，如果对某个结点的判断失败了，那这个结点以下的Mesh的判断可以完全跳过）
+</span></span></span><span class="line"><span class="cl"><span class="cm">	视锥裁剪：用视锥体和Root进行相交判断，如果AABB完全在视锥外，直接剔除Root（剪枝），如果视锥完全包含当前AABB，直接添加当前Root下所有Mesh，如果只是相交，递归检查8个孩子，递归到孩子结点，如果还相交，就添加到可见物体数组
+</span></span></span><span class="line"><span class="cl"><span class="cm">*/</span>
+</span></span><span class="line"><span class="cl"><span class="k">namespace</span> <span class="n">GameEngine</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="cp">#define MAX_LEAF_OBJECT_COUNT 4
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl">	<span class="k">template</span><span class="o">&lt;</span><span class="k">class</span> <span class="nc">T</span><span class="o">&gt;</span>
+</span></span><span class="line"><span class="cl">	<span class="k">class</span> <span class="nc">OctreeNode</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="k">public</span><span class="o">:</span>
+</span></span><span class="line"><span class="cl">		<span class="n">OctreeNode</span><span class="p">(</span><span class="n">BoundingBox</span><span class="o">&amp;</span> <span class="n">Box</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="n">AABB</span> <span class="o">=</span> <span class="n">Box</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">		<span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="n">Objects</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">		<span class="n">BoundingBox</span> <span class="n">AABB</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">		<span class="n">std</span><span class="o">::</span><span class="n">array</span><span class="o">&lt;</span><span class="n">OctreeNode</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;*</span><span class="p">,</span> <span class="mi">8</span><span class="o">&gt;</span> <span class="n">children</span><span class="p">{</span><span class="k">nullptr</span><span class="p">};</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">		<span class="kt">bool</span> <span class="nf">IsStrictContain</span><span class="p">(</span><span class="n">T</span><span class="o">&amp;</span> <span class="n">Object</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="k">return</span> <span class="n">AABB</span><span class="p">.</span><span class="n">IsContains</span><span class="p">(</span><span class="n">Object</span><span class="p">.</span><span class="n">box</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="p">};</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="k">template</span><span class="o">&lt;</span><span class="k">class</span> <span class="nc">T</span><span class="o">&gt;</span>
+</span></span><span class="line"><span class="cl">	<span class="k">class</span> <span class="nc">Octree</span>
+</span></span><span class="line"><span class="cl">	<span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="k">public</span><span class="o">:</span>
+</span></span><span class="line"><span class="cl">		<span class="n">Octree</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;&amp;</span> <span class="n">Objects</span><span class="p">,</span> <span class="n">BoundingBox</span><span class="o">&amp;</span> <span class="n">Box</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="n">Root</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">make_shared</span><span class="o">&lt;</span><span class="n">OctreeNode</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;&gt;</span><span class="p">(</span><span class="n">Box</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">			<span class="n">CreateChildNode</span><span class="p">(</span><span class="n">Root</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">			<span class="n">GenOctree</span><span class="p">(</span><span class="n">Root</span><span class="p">,</span> <span class="n">Objects</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">		<span class="kt">void</span> <span class="nf">CreateChildNode</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="n">OctreeNode</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;&gt;</span> <span class="n">Root</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="c1">// TODO: 八个子空间生成，规划每个子空间的范围
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>			<span class="c1">// Root-&gt;children[0] = new OctreeNode({ xxxx});
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">		<span class="kt">void</span> <span class="nf">GenOctree</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="n">OctreeNode</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;&gt;</span> <span class="n">Root</span><span class="p">,</span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="o">&amp;</span><span class="n">Objects</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="c1">// 1. 每个物体划分到当前Root的8个子空间或Root空间中
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>			<span class="k">for</span> <span class="p">(</span><span class="n">T</span><span class="o">&amp;</span> <span class="nl">obj</span> <span class="p">:</span> <span class="n">Objects</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">				<span class="kt">bool</span> <span class="n">isPushed</span> <span class="o">=</span> <span class="nb">false</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">				<span class="k">for</span> <span class="p">(</span><span class="n">OctreeNode</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;*</span> <span class="nl">CurSpace</span> <span class="p">:</span> <span class="n">Root</span><span class="o">-&gt;</span><span class="n">children</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">					<span class="k">if</span><span class="p">(</span><span class="n">CurSpace</span><span class="o">-&gt;</span><span class="n">AABB</span><span class="p">.</span><span class="n">IsContains</span><span class="p">(</span><span class="n">obj</span><span class="p">.</span><span class="n">aabb</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">					<span class="p">{</span>
+</span></span><span class="line"><span class="cl">						<span class="n">CurSpace</span><span class="o">-&gt;</span><span class="n">Objects</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">obj</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">						<span class="n">isPushed</span> <span class="o">=</span> <span class="nb">true</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">					<span class="p">}</span>
+</span></span><span class="line"><span class="cl">				<span class="p">}</span>
+</span></span><span class="line"><span class="cl">				<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">isPushed</span><span class="p">)</span>	<span class="c1">// 没有一个子空间能够完全包住物体，放在父空间中
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>				<span class="p">{</span>
+</span></span><span class="line"><span class="cl">					<span class="n">Root</span><span class="o">-&gt;</span><span class="n">Objects</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">obj</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">				<span class="p">}</span>
+</span></span><span class="line"><span class="cl">				<span class="n">isPushed</span> <span class="o">=</span> <span class="nb">false</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">			<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">			<span class="c1">// 2. 判断子空间是否需要继续划分
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>			<span class="k">for</span> <span class="p">(</span><span class="n">OctreeNode</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;*</span> <span class="nl">CurSpace</span> <span class="p">:</span> <span class="n">Root</span><span class="o">-&gt;</span><span class="n">children</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">			<span class="p">{</span>
+</span></span><span class="line"><span class="cl">				<span class="k">if</span> <span class="p">(</span><span class="n">CurSpace</span><span class="o">-&gt;</span><span class="n">Objects</span><span class="p">.</span><span class="n">size</span><span class="p">()</span> <span class="o">&gt;</span> <span class="n">MAX_LEAF_OBJECT_COUNT</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">				<span class="p">{</span>
+</span></span><span class="line"><span class="cl">					<span class="n">CreateChildNode</span><span class="p">(</span><span class="n">CurSpace</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">					<span class="n">GenOctree</span><span class="p">(</span><span class="n">CurSpace</span><span class="p">,</span><span class="n">CurSpace</span><span class="o">-&gt;</span><span class="n">Objects</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">					<span class="n">CurSpace</span><span class="o">-&gt;</span><span class="n">Objects</span><span class="p">.</span><span class="n">clear</span><span class="p">();</span> <span class="c1">// TODO:如果有物体存在Root上，这行代码就把他删了。。。。
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>				<span class="p">}</span>
+</span></span><span class="line"><span class="cl">			<span class="p">}</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">		
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">		<span class="kt">void</span> <span class="nf">AddObject</span><span class="p">(</span><span class="n">T</span><span class="o">&amp;</span> <span class="n">Object</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="n">AddObjectInner</span><span class="p">(</span><span class="n">Object</span><span class="p">,</span> <span class="n">Root</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">		<span class="kt">bool</span> <span class="nf">AddObjectInner</span><span class="p">(</span><span class="n">T</span><span class="o">&amp;</span> <span class="n">Object</span><span class="p">,</span> <span class="n">std</span><span class="o">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="n">OctreeNode</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;&gt;</span> <span class="n">Root</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">Root</span><span class="p">)</span> <span class="k">return</span> <span class="nb">false</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">			<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">Root</span><span class="o">-&gt;</span><span class="n">AABB</span><span class="p">.</span><span class="n">IsContains</span><span class="p">(</span><span class="n">Object</span><span class="p">.</span><span class="n">aabb</span><span class="p">))</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">				<span class="k">return</span> <span class="nb">false</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">			<span class="p">}</span>
+</span></span><span class="line"><span class="cl">			<span class="kt">bool</span> <span class="n">isHandled</span> <span class="o">=</span> <span class="nb">false</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">			<span class="k">for</span> <span class="p">(</span><span class="n">OctreeNode</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;*</span> <span class="nl">CurSpace</span> <span class="p">:</span> <span class="n">Root</span><span class="o">-&gt;</span><span class="n">children</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">				<span class="k">if</span> <span class="p">(</span><span class="n">CurSpace</span> <span class="o">&amp;&amp;</span> <span class="n">CurSpace</span><span class="o">-&gt;</span><span class="n">AABB</span><span class="p">.</span><span class="n">IsContains</span><span class="p">(</span><span class="n">obj</span><span class="p">.</span><span class="n">aabb</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">				<span class="p">{</span>
+</span></span><span class="line"><span class="cl">					<span class="c1">// 说明子结点插入失败,交给当前结点处理
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>					<span class="n">isHandled</span> <span class="o">=</span> <span class="n">AddObjectInner</span><span class="p">(</span><span class="n">object</span><span class="p">,</span> <span class="n">CurSpace</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">				<span class="p">}</span>
+</span></span><span class="line"><span class="cl">			<span class="p">}</span>
+</span></span><span class="line"><span class="cl">			<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">isHandled</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">				<span class="n">Root</span><span class="o">-&gt;</span><span class="n">Objects</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">object</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">			<span class="p">}</span>
+</span></span><span class="line"><span class="cl">			<span class="k">return</span> <span class="nb">true</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="k">private</span><span class="o">:</span>
+</span></span><span class="line"><span class="cl">		<span class="n">std</span><span class="o">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="n">OctreeNode</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;&gt;</span> <span class="n">Root</span> <span class="o">=</span> <span class="k">nullptr</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="p">};</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h1 id="bvh--sah实践todo">BVH + SAH实践(TODO)
+</h1><h2 id="cpu自顶向下">CPU（自顶向下）
+</h2><blockquote>
+<p>CPU上构建BVH主要是TopDown的，SAH用来划分区间</p>
+</blockquote>
+<p>为了减少SAH的计算量，在最长轴上均匀分成若干桶，来减少计算,最终划分只会出现在桶内</p>
+<p><img src="/v2-ec7203046a234db31d321031dfe0baa8_1440w.jpg"
+	
+	
+	
+	loading="lazy"
+	
+		alt="img"
+	
+	
+></p>
+<p><img src="/image-20260222143138524.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20260222143138524"
+	
+	
+></p>
+<p>另外插入新结点时插入到哪个叶子结点也是根据SAH，如下图插入L的Cost = 新增的11结点的表面积 +  沿路向上的父结点表面积变化的和</p>
+<p><img src="/v2-b36f7412f37695de8ab26a73e6bcf494_1440w.jpg"
+	
+	
+	
+	loading="lazy"
+	
+		alt="img"
+	
+	
+></p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
+</span><span class="lnt">56
+</span><span class="lnt">57
+</span><span class="lnt">58
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="cp">#pragma once
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&#34;collision.h&#34;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span><span class="cm">/*
+</span></span></span><span class="line"><span class="cl"><span class="cm">	BVH:（TODO：目前是伪代码，SAH未完成）
+</span></span></span><span class="line"><span class="cl"><span class="cm">	构建方式： 计算所有Mesh的AABB在哪个轴上最宽，在这个轴上对Mesh进行排序,根据某种划分算法把Mesh数组分成两部分，分别递归构建子树，直到叶子结点
+</span></span></span><span class="line"><span class="cl"><span class="cm">	添加Mesh：首先插入一定发生在叶子结点，依据SAH，判断依哪一个节点的插入会有“最小表面积”的变化，具体计算公式看Blog
+</span></span></span><span class="line"><span class="cl"><span class="cm">*/</span>
+</span></span><span class="line"><span class="cl"><span class="k">namespace</span> <span class="n">GameEngine</span> 
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span> <span class="n">T</span><span class="o">&gt;</span>
+</span></span><span class="line"><span class="cl">	<span class="k">class</span> <span class="nc">BVHNode</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="k">public</span><span class="o">:</span>
+</span></span><span class="line"><span class="cl">		<span class="n">BVHNode</span><span class="o">*</span> <span class="n">left</span> <span class="o">=</span> <span class="k">nullptr</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">		<span class="n">BVHNode</span><span class="o">*</span> <span class="n">right</span> <span class="o">=</span> <span class="k">nullptr</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">		<span class="n">BVHNode</span><span class="o">*</span> <span class="n">parent</span> <span class="o">=</span> <span class="k">nullptr</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">		<span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span> <span class="n">objects</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">		<span class="n">BoundingBox</span> <span class="n">AABB</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="p">};</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span> <span class="n">T</span><span class="o">&gt;</span>
+</span></span><span class="line"><span class="cl">	<span class="k">class</span> <span class="nc">BVH</span>
+</span></span><span class="line"><span class="cl">	<span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="k">public</span><span class="o">:</span>
+</span></span><span class="line"><span class="cl">		<span class="n">BVHNode</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;*</span> <span class="n">BuildBVHInner</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;&amp;</span><span class="n">objects</span><span class="p">,</span> <span class="n">BVHNode</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;*</span> <span class="n">Root</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="c1">// 1. 计算Root的AABB
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>			<span class="k">for</span> <span class="p">(</span><span class="k">auto</span><span class="o">&amp;</span> <span class="nl">object</span> <span class="p">:</span> <span class="n">objects</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">				<span class="n">Root</span><span class="o">-&gt;</span><span class="n">AABB</span><span class="p">.</span><span class="n">Merge</span><span class="p">(</span><span class="n">object</span><span class="p">.</span><span class="n">aabb</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">			<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">			<span class="c1">// 创建Root
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>			<span class="k">if</span><span class="p">(</span><span class="o">!</span><span class="n">Root</span><span class="p">)</span> <span class="n">Root</span> <span class="o">=</span> <span class="k">new</span> <span class="n">BVHNode</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">			<span class="k">if</span> <span class="p">(</span><span class="n">objects</span><span class="p">.</span><span class="n">size</span><span class="p">()</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">                <span class="n">Root</span><span class="o">-&gt;</span><span class="n">objects</span> <span class="o">=</span> <span class="n">objects</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">                <span class="k">return</span> <span class="n">Root</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">			<span class="p">}</span>
+</span></span><span class="line"><span class="cl">			<span class="c1">// 2. 利用SAH算法，对Root进行划分
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>			<span class="kt">int</span> <span class="n">lefeMaxIndex</span> <span class="o">=</span> <span class="n">SAHSplit</span><span class="p">(</span><span class="n">Root</span><span class="p">,</span> <span class="n">objects</span><span class="p">,</span><span class="kt">int</span> <span class="n">left</span><span class="p">,</span> <span class="kt">int</span> <span class="n">right</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">			<span class="c1">// 3. 递归构建左右子树
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>			<span class="n">BVHNode</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;*</span> <span class="n">left</span> <span class="o">=</span> <span class="n">BuildBVHInner</span><span class="p">(</span><span class="n">objects</span><span class="p">.</span><span class="n">begin</span><span class="p">()</span> <span class="o">+</span> <span class="n">left</span><span class="p">,</span> <span class="n">objects</span><span class="p">.</span><span class="n">begin</span><span class="p">()</span> <span class="o">+</span> <span class="n">lefeMaxIndex</span><span class="p">,</span> <span class="n">Root</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">            <span class="n">BVHNode</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;*</span> <span class="n">right</span> <span class="o">=</span> <span class="n">BuildBVHInner</span><span class="p">(</span><span class="n">objects</span><span class="p">.</span><span class="n">begin</span><span class="p">()</span> <span class="o">+</span> <span class="n">left</span> <span class="o">+</span> <span class="n">lefeMaxIndex</span><span class="p">,</span> <span class="n">objects</span><span class="p">.</span><span class="n">begin</span><span class="p">()</span> <span class="o">+</span> <span class="n">right</span><span class="p">,</span> <span class="n">Root</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">			<span class="n">Root</span><span class="o">-&gt;</span><span class="n">left</span> <span class="o">=</span> <span class="n">left</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">            <span class="n">Root</span><span class="o">-&gt;</span><span class="n">right</span> <span class="o">=</span> <span class="n">right</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">            <span class="n">left</span><span class="o">-&gt;</span><span class="n">parent</span> <span class="o">=</span> <span class="n">right</span><span class="o">-&gt;</span><span class="n">parent</span> <span class="o">=</span> <span class="n">Root</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">            <span class="k">return</span> <span class="n">Root</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">		<span class="c1">// SAH算法，返回划分后left的最大Index
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>		<span class="kt">int</span> <span class="nf">SAHSplit</span><span class="p">(</span><span class="n">BVHNode</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;*</span> <span class="n">node</span><span class="p">,</span> <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;&amp;</span> <span class="n">objects</span><span class="p">,</span> <span class="kt">int</span> <span class="n">left</span><span class="p">,</span> <span class="kt">int</span> <span class="n">right</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">		<span class="n">BVHNode</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;*</span> <span class="n">Root</span> <span class="o">=</span> <span class="k">nullptr</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="p">};</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><h2 id="gpu自底向上线性bvh">GPU(自底向上，线性BVH)
+</h2><p>以二维坐标和三维坐标为例，对于每一个点计算其对应的莫顿码，然后利用莫顿码对其进行排序，再将排序后的点按照顺序连接起来就会得到如下图所示的Z形曲线z-order curve</p>
+<p><img src="/v2-207b41386f325c8ad85075b9aab616e4_1440w.jpg"
+	
+	
+	
+	loading="lazy"
+	
+		alt="img"
+	
+	
+></p>
+<p>构建莫顿码就是把多维数组成的坐标的每个维度交错排布</p>
+<p><img src="/image-20260222150035803.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20260222150035803"
+	
+	
+></p>
+<p>比如二维平面上[0-3]范围内的点，全部编码为莫顿编码后，排序连线如下</p>
+<p><img src="/v2-6c17b073931773ce796a5f6913fcd81c_1440w.jpg"
+	
+	
+	
+	loading="lazy"
+	
+		alt="img"
+	
+	
+></p>
+<p>主要观察一点，用最高位0或1就可以把区域划分为上下两部分！</p>
+<p><img src="/v2-ce75321dc5fd7529d6801af851962b38_1440w.jpg"
+	
+	
+	
+	loading="lazy"
+	
+		alt="img"
+	
+	
+></p>
+<p>只看第二位，又可以左右划分，这样就划分 成了四个区域</p>
+<p><img src="/v2-ec0245e83efb9984193d6d3028f0b7e1_1440w.jpg"
+	
+	
+	
+	loading="lazy"
+	
+		alt="img"
+	
+	
+></p>
+<p>所以莫顿编码 第一位为1，第二位为0的区域一定在左上角！</p>
+<p><img src="/v2-f1aa611749fdc3adf7a0e720d6ced869_1440w.jpg"
+	
+	
+	
+	loading="lazy"
+	
+		alt="img"
+	
+	
+></p>
+<p>对于三角形图元，编码它的方式为 xyzmin表示整个场景的最小点，lwh是场景的宽度</p>
+<p><img src="/image-20260222152312130.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20260222152312130"
+	
+	
+></p>
+<p>按这种方式计算后P就代表这个三角形在AABB盒中的位置，接下来对P进行莫顿编码</p>
+<p><img src="/image-20260222152700576.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20260222152700576"
+	
+	
+></p>
+<p>构建BVH时，按照上边方法生成所有图元的编码，然后进行基数排序</p>
+<p>这里基数排序回忆一下</p>
+<p><img src="/image-20260222153236406.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20260222153236406"
+	
+	
+></p>
+<p>排序完成后，再按照最长公共前缀来进行切分</p>
+<p>切分就是按照当前位是0还是1（其实不是看一位，而是最长公共前缀，比如前几个都是00），同样是0的说明在空间上是接近的</p>
+<p><img src="/v2-cb449e625a79a50e185c2a6bedcd1ae0_1440w.jpg"
+	
+	
+	
+	loading="lazy"
+	
+		alt="img"
+	
+	
+></p>
+<p>这种方式仍然是自顶向下的，下面介绍从底向上的GPU的构建办法</p>
+<p>首先第一点：一个二叉树，叶子结点有N个时，非叶子结点一定有N-1个</p>
+<p><img src="/v2-089914ad893f88fb64ee6ca9ef74a039_1440w.jpg"
+	
+	
+	
+	loading="lazy"
+	
+		alt="img"
+	
+	
+></p>
+
+</section>
+
+
+    <footer class="article-footer">
+    
+
+    
+    <section class="article-copyright">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
+</svg>
+
+
+
+        <span>Licensed under CC BY-NC-SA 4.0</span>
+    </section>
+    </footer>
+
+
+    
+        <link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css"integrity="sha384-n8MVd4RsNIU0tAv4ct0nTaAbDJwPJzDEaqSD1odI&#43;WdtXRGWt2kTvGFasHpSy3SV"crossorigin="anonymous"
+            ><script 
+                src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"integrity="sha384-XjKyOOlGwcjNTAIQHIpgOno0Hl1YQqzUOEleOLALmuqehneUG&#43;vnGctmUb0ZY0l8"crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"integrity="sha384-&#43;VBxd3r6XgURycqtZ117nYw44OOcIax56Z4dCRWbxyPt0Koah1uHoK0o4&#43;/RRE05"crossorigin="anonymous"
+                defer
+                >
+            </script><script>
+    window.addEventListener("DOMContentLoaded", () => {
+	const mainArticleElement = document.querySelector(".main-article");
+        renderMathInElement(mainArticleElement, {
+            delimiters: [
+                { left: "$$", right: "$$", display: true },
+                { left: "$", right: "$", display: false },
+                { left: "\\(", right: "\\)", display: false },
+                { left: "\\[", right: "\\]", display: true }
+            ],
+            ignoredClasses: ["gist"]
+        });})
+</script>
+
+    
+</article>
+
+    
+
+    
+
+     
+    
+        
+    <script
+    src="https://giscus.app/client.js"
+    data-repo="sdpyy1/sdpyy1.github.io"
+    data-repo-id="R_kgDOQEycpQ"
+    data-category="Announcements"
+    data-category-id="DIC_kwDOQEycpc4Cwz7v"
+    data-mapping="pathname"
+    data-strict="0"
+    data-reactions-enabled="1"
+    data-emit-metadata="0"
+    data-input-position="top"
+    data-theme="light"
+    data-lang="en"
+    data-loading=""
+    crossorigin="anonymous"
+    async
+></script>
+<script>
+    function setGiscusTheme(theme) {
+        let giscus = document.querySelector("iframe.giscus-frame");
+        if (giscus) {
+            giscus.contentWindow.postMessage(
+                {
+                    giscus: {
+                        setConfig: {
+                            theme: theme,
+                        },
+                    },
+                },
+                "https://giscus.app"
+            );
+        }
+    }
+
+    (function () {
+        addEventListener("message", (e) => {
+            if (event.origin !== "https://giscus.app") return;
+            handler();
+        });
+        window.addEventListener("onColorSchemeChange", handler);
+
+        function handler() {
+            if (document.documentElement.dataset.scheme === "light") {
+                setGiscusTheme('light');
+            } else {
+                setGiscusTheme('light');
+            }
+        }
+    })();
+</script>
+
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+            2020 - 
+        
+        2026 爱喝东方树叶
+    </section>
+    <section style="display: flex; gap: 30px; align-items: center;">
+      
+      
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+      <span>📚 文章数: 71</span>
+      <span>✍️ 总字数: 
+        
+        
+        242.38K
+      </span>
+    </section>
+
+    <section class="powerby">
+    
+    <div class="busuanzi-footer">
+        <span id="busuanzi_container_site_pv">
+          本站总访问量<span id="busuanzi_value_site_pv"></span>次
+        </span>
+        <span id="busuanzi_container_site_uv">
+          本站访客数<span id="busuanzi_value_site_uv"></span>人次
+        </span>
+      </div></section>
+
+</footer>
+
+
+    
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    
+    <div class="pswp__bg"></div>
+
+    
+    <div class="pswp__scroll-wrap">
+
+        
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                
+                
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                        <div class="pswp__preloader__cut">
+                            <div class="pswp__preloader__donut"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div>
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js"integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo="crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js"integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU="crossorigin="anonymous"
+                defer
+                >
+            </script><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css"crossorigin="anonymous"
+            ><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css"crossorigin="anonymous"
+            >
+
+            </main>
+        </div>
+        <script 
+                src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js"integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z&#43;KMkF24hUW8WePSA9HM="crossorigin="anonymous"
+                
+                >
+            </script><script type="text/javascript" src="/ts/main.1e9a3bafd846ced4c345d084b355fb8c7bae75701c338f8a1f8a82c780137826.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>
