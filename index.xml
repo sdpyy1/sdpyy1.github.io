@@ -878,7 +878,32 @@
         <pubDate>Sun, 25 Jan 2026 16:21:06 +0800</pubDate>
         
         <guid>https://sdpyy1.github.io/p/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E5%BC%80%E5%8F%91%E5%AE%9E%E8%B7%B5fxaa-todo/</guid>
-        <description>&lt;h1 id=&#34;边缘检测&#34;&gt;边缘检测
+        <description>&lt;blockquote&gt;
+&lt;p&gt;FXAA（&lt;strong&gt;fast approximate antialiasing&lt;/strong&gt;） 的思路是检测图像的边界，只在边界处进行滤波，达到抗锯齿的效果，确实锯齿效果就是发生在边界&lt;/p&gt;
+&lt;p&gt;这种思路被称为形变抗锯齿，SMAA也是这个类型&lt;/p&gt;
+&lt;p&gt;FXAA只需要一个Pass，是一种快速抗锯齿&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/v2-8f2778c2af4c2811a6017ea04e935ca4_1440w.jpg&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;img&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;FXAA 的流程：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;边缘检测：比较当前像素上下左右四个方向上的亮度差，过大才进行抗锯齿操作&lt;/li&gt;
+&lt;li&gt;确定混合系数：计算当前像素与周围一圈像素的平均亮度（考虑距离，斜角距离更大）与当前像素亮度的差作为依据来确定混合系数&lt;/li&gt;
+&lt;li&gt;确定锯齿方向，判断垂直和水平四个方向上的变化，取最大变化的方向&lt;/li&gt;
+&lt;li&gt;在锯齿方向上进行左右搜素直到锯齿边界，离得越近的边界贡献应该越大&lt;/li&gt;
+&lt;li&gt;用上边的混合系数和第四步的边界距离来指导最终的混合系数，得到采样时的偏移量（在采样时偏移像素中心，就相当于混合其他像素了～）&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/blockquote&gt;
+&lt;h1 id=&#34;边缘检测&#34;&gt;边缘检测
 &lt;/h1&gt;&lt;blockquote&gt;
 &lt;p&gt;计算当前处理的像素点和周围像素点的亮度对比值，FXAA 通过确定水平和垂直方向上像素点的亮度差，来计算对比值。当对比度值较大时，我们认为需要进行抗锯齿处理。&lt;/p&gt;
 &lt;/blockquote&gt;
@@ -932,8 +957,8 @@
 	
 	
 &gt;&lt;/p&gt;
-&lt;h2 id=&#34;基于亮度的混合系数计算&#34;&gt;基于亮度的混合系数计算
-&lt;/h2&gt;&lt;blockquote&gt;
+&lt;h1 id=&#34;基于亮度的混合系数计算&#34;&gt;基于亮度的混合系数计算
+&lt;/h1&gt;&lt;blockquote&gt;
 &lt;p&gt;一方面考虑亮度差，另一方面考虑距离（对角线上的像素距离中心像素远一些）&lt;/p&gt;
 &lt;/blockquote&gt;
 &lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/image-20260125231320673.png&#34;
@@ -972,8 +997,8 @@
 &lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;&lt;span class=&#34;n&#34;&gt;PixelBlend&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;PixelBlend&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;PixelBlend&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
 &lt;/div&gt;
-&lt;/div&gt;&lt;h3 id=&#34;计算混合方向与混合&#34;&gt;计算混合方向与混合
-&lt;/h3&gt;&lt;blockquote&gt;
+&lt;/div&gt;&lt;h1 id=&#34;计算混合方向与混合&#34;&gt;计算混合方向与混合
+&lt;/h1&gt;&lt;blockquote&gt;
 &lt;p&gt;锯齿的方向不一定一样，通过亮度差异来计算锯齿方向&lt;/p&gt;
 &lt;/blockquote&gt;
 &lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/v2-355db30e96f383134fb2fb9babf16cc0_1440w.jpg&#34;
@@ -1013,7 +1038,47 @@
 &lt;/span&gt;&lt;/span&gt;&lt;span class=&#34;line&#34;&gt;&lt;span class=&#34;cl&#34;&gt;    &lt;span class=&#34;n&#34;&gt;vec4&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;outcolor&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;=&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;texture&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;sampler2D&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;historyTexture&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;SAMPLER&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;[&lt;/span&gt;&lt;span class=&#34;mi&#34;&gt;0&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;]),&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;texCoords&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;+&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;PixelStep&lt;/span&gt; &lt;span class=&#34;o&#34;&gt;*&lt;/span&gt; &lt;span class=&#34;n&#34;&gt;PixelBlend&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;);&lt;/span&gt;
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
 &lt;/div&gt;
-&lt;/div&gt;</description>
+&lt;/div&gt;&lt;h1 id=&#34;更准确的混合系数&#34;&gt;更准确的混合系数
+&lt;/h1&gt;&lt;p&gt;上述简化的方法是有问题的：&lt;/p&gt;
+&lt;p&gt;如下图1是要进行抗锯齿的图片&lt;/p&gt;
+&lt;p&gt;图2是上述方法的结果，在边界上很多像素结果都是一致的，因为在9宫格范围内他们的表现一致，但实际上考虑到这个锯齿是斜向的，所以越靠右的像素（第二排应该越靠近黑色去采样，而不是白色）&lt;/p&gt;
+&lt;p&gt;图三效果就好了&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/v2-6ffe4495f582563eefaa259d24f71fdd_1440w.jpg&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;img&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;计算混合时，在锯齿方向上左右采样，直到找到锯齿的边界&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/v2-4dc7640396bedc54e79e27d608060c5d_1440w.jpg&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;img&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;看左右两边到达锯齿边界的距离远近，像素的混合系数应该更趋向于离得更近的锯齿边界的颜色&lt;/p&gt;
+&lt;p&gt;锯齿的边界其实可以理解为上下像素差距不大的地方，如上图的左右边界， 他们要么是全红了，要么是全白了，&lt;/p&gt;
+&lt;p&gt;所以离全红更近，就偏向红，否则偏向白色&lt;/p&gt;
+&lt;p&gt;如下图点离右侧锯齿边界更近，那它应该更黑一点（假设三角形内部是黑色）&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/image-20260227145711316.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;image-20260227145711316&#34;
+	
+	
+&gt;&lt;/p&gt;
+</description>
         </item>
         <item>
         <title>游戏引擎开发实践（基础架构）</title>
