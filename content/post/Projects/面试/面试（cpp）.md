@@ -10,6 +10,7 @@ title = '面试（cpp）'
 1. 单例模式
 1. virtual继承的底层原理
 1. 无锁的同步方式（无锁队列）
+1. 瞅一眼STL的sort中的快排的流程
 
 # 基础
 
@@ -265,6 +266,8 @@ func1(a);	// 打印右值
 
 > 未特殊说明时，按结构体中size最大的成员对齐（若有double成员，按8字节对齐。）
 >
+>  并且最终struct的大小也得是对齐长度的整数倍
+>
 > 字节对齐目的是让访问一些大字节类型时可以按照它的字节的整数倍地址访问，比如一个double放在后边，那他前边的类型就会被填充为8的整数倍
 
 ```c++
@@ -302,8 +305,6 @@ std::cout << alignof(structC) << std::endl;  // 输出对齐方式
 ## new的对象用free的情况
 
 > free这块区域删除了，但是如果内部还有一些指向资源的指针，就会导致内存泄漏
-
-
 
 ## 指针常量和常量指针
 
@@ -1567,6 +1568,16 @@ vector<_Tp, _Alloc>::_M_insert_aux(iterator __position, const _Tp& __x)
 
 用指针指向 vector 元素应该注意什么:扩容后原指针指向变成了野指针
 
+##### vector erase问题
+
+> 在遍历迭代器过程中删除一个元素，后面的元素会向前移动一位，迭代器逻辑上已经错位了，所以会出现问题，倒不是说不能运行，会漏掉一个元素（因为下一个元素会放在当前删除的位置，迭代器++后指向了下下个元素）
+
+##### Resize和Reserve
+
+Resize操作的是end指针
+
+Reserve操作的是capa	city指针
+
 #### List
 
 > 双向循环链表
@@ -1933,7 +1944,7 @@ _RandomAccessIter __unguarded_partition(_RandomAccessIter __first,
                                         _Tp __pivot) 
 {
   while (true) {
-    while (*__first < __pivot)   // 找左边比基准大的数
+    while (*__first < __pivot)   // 找左边	比基准大的数
       ++__first;
     --__last; // 先把__last左移一位，因为区间是左闭右开 [first, last)
     while (__pivot < *__last)  // 找右边比基准小的数
