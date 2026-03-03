@@ -7,11 +7,6 @@ title = '面试（cpp）'
 
 # TODO
 
-1. 单例模式
-1. virtual继承的底层原理
-1. 无锁的同步方式（无锁队列）
-1. 瞅一眼STL的sort中的快排的流程
-
 # 基础
 
 ## 内联函数
@@ -1279,7 +1274,7 @@ int main() {
 }
 ```
 
-如果想让Drived中只有一份变量a，就需要使用**虚继承**，使用方法就是在父类继承爷类时改为vitual public
+如果想让Drived中只有一份变量a，解决这个问题，C++ 引入**虚继承**（`class B : virtual public A`）
 
 ```cpp
 虚继承下，父类 的构造函数不再直接初始化 爷类（爷类 的初始化由最终派生类负责）
@@ -1288,33 +1283,32 @@ int main() {
 ```
 
 ```c++
-class BaseA : virtual public Base { // 虚继承
+class A {
 public:
-	virtual void func1() {
-		cout << "BaseA func1" << endl;
-	}
-	virtual void func2() {
-		cout << "BaseA func2" << endl;
-	}
+	int val = 1;
+
+};
+class B:virtual public A {  // 虚继承
+};
+class C :virtual public A { // 虚继承
+};
+
+class D :public B, C {
 
 };
 
-class BaseB : virtual public Base {   // 虚继承
-public:
-	virtual void func1() {
-		cout << "BaseB func1" << endl;
-	}
-	virtual void func2() {
-		cout << "BaseB func2" << endl;
-	}
-};
+
+print(d.val); // 此时直接访问就不会出问题了
+
 ```
 
-### 菱形继承下的虚函数表问题
+### 菱形继承下的虚继承问题
 
 > 爷类有虚函数，两个父类继承虚函数，子类没有继承虚函数情况下，子类有几个虚函数表
 >
 > 分普通继承和虚继承两种情况
+>
+> 注意之前忘了 多个继承是会有多个虚函数表的
 
 ```c++
 
@@ -1338,7 +1332,48 @@ int main() {
 }
 ```
 
-//TODO：学习虚继承的底层实现，与虚函数表的关系
+```c++
+class A{
+public: 
+    int m_a;
+};
+class B:virtual public A{
+public:
+    int m_b;
+}
+class C:virtual public A{
+public:
+    int m_c;
+}
+class D: public B,public C{
+public:
+    int m_d;    
+}
+```
+
+上述虚继承代码创建D对象后的内存布局为
+
+```c++
+B::vbptr，
+
+B::m_b,
+
+C::vbptr,
+
+C::m_c，
+
+m_d，
+
+m_a   // 问题在这里，最上层父类的m_a跑到了最下边
+    // 而在一般继承中，基类变量排列在派生类变量之前
+```
+
+**当B和C虚继承时，都会生成一张虚基类表，用于记录他们和A之间的关系**，每个含有虚基类的派生类都有一个虚基类指针
+虚基类表的信息如下，在D对象的虚基类表中，有A成员的偏移
+
+> 直观理解虚基类表就是说虚继承下基类的成员变量会放在内存布局的最后，然后用虚基类表（BC继承下来两个虚基类表）记录偏移量，也就是说继承下来的BC不再包含A的变量，而是在D内存最后放一份，在两个虚基类表中存储偏移量
+
+![image-20260301130238402](image-20260301130238402.png)
 
 
 
@@ -1938,6 +1973,7 @@ void __introsort_loop(_RandomAccessIter __first,
 ```
 
 ```c++
+// 注意这个代码最终并不是把中枢放在中间，而是保证了一侧肯定全部小于中枢
 template <class _RandomAccessIter, class _Tp>
 _RandomAccessIter __unguarded_partition(_RandomAccessIter __first, 
                                         _RandomAccessIter __last, 
@@ -2471,6 +2507,271 @@ int main() {
 }
 ```
 
+> 保证atomic类的线程安全是需要两个技术：
+>
+> 1. CAS：保证变量修改操作本身是原子性的
+> 2. 内存屏障：保证多个修改操作的顺序不会被打乱，或者被单个CPU核心缓存，导致别的线程拿到的是旧数据
+>
+> 解释内存屏障可以举例子：比如数组写入操作，我必须保证我先写入数据，再移动尾指针，而不能先移动尾指针，再写入数据（指令被重排了），被重排后导致别的线程读取信息读取到的是错误信息
+
+## 无锁队列
+
+> 传统mutex在遇到已经被lock时，会挂起线程，等待unlock来唤醒，这里边涉及内核态的切换，比较费时，所以使用无锁技术来保证线程同步
+
+### 单消费者单生产者模型
+
+> 使用RingBuffer，生产者只修改Tail，消费者只修改head，所以不涉及多线程修改同一个变量的情况，但涉及到变量会被对方线程读取的情况，这种情况下的同步只需要考虑内存可见性+指令重排
+>
+> 生产者和消费者的检查操作加读屏障，写操作加写屏障，就可与保证同步性
+
+```c++
+作者：xiaokang
+链接：https://www.zhihu.com/question/413674812/answer/1992345025196089394
+来源：知乎
+著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。
+
+template<typename T, size_t Size>
+class SPSCQueue {
+private:
+    struct alignas(64) AlignedIndex {
+        std::atomic<size_t> value{0};
+    };
+    
+    // 使用缓存行对齐避免伪共享（False Sharing）
+    AlignedIndex head_;  // 消费者读取位置
+    AlignedIndex tail_;  // 生产者写入位置
+    
+    std::array<T, Size> buffer_;
+    
+    static constexpr size_t capacity_ = Size;
+
+public:
+    SPSCQueue() = default;
+    
+    // 禁止拷贝和移动
+    SPSCQueue(const SPSCQueue&) = delete;
+    SPSCQueue& operator=(const SPSCQueue&) = delete;
+    
+    // 入队操作（生产者调用）
+    bool push(const T& item) {
+        const size_t current_tail = tail_.value.load(std::memory_order_relaxed);
+        const size_t next_tail = (current_tail + 1) % capacity_;
+        
+        // 检查队列是否已满
+        if (next_tail == head_.value.load(std::memory_order_acquire)) {    // 读屏障，保证==判断一定拿到的是最新数据
+            return false;  // 队列满
+        }
+        
+        // 写入数据
+        buffer_[current_tail] = item;
+        
+        // 更新tail，使用release保证数据可见性
+        tail_.value.store(next_tail, std::memory_order_release);  // 写屏障，保证先写入数据到queue，再修改指针
+        return true;
+    }
+    
+    // 出队操作（消费者调用）
+    bool pop(T& item) {
+        const size_t current_head = head_.value.load(std::memory_order_relaxed);
+        
+        // 检查队列是否为空
+        if (current_head == tail_.value.load(std::memory_order_acquire)) {
+            return false;  // 队列空
+        }
+        
+        // 读取数据
+        item = buffer_[current_head];
+        
+        // 更新head，使用release保证对生产者可见
+        const size_t next_head = (current_head + 1) % capacity_;
+        head_.value.store(next_head, std::memory_order_release);
+        return true;
+    }
+    
+    // 检查是否为空
+    bool empty() const {
+        return head_.value.load(std::memory_order_acquire) == 
+               tail_.value.load(std::memory_order_acquire);
+    }
+    
+    // 获取当前元素数量（近似值）
+    size_t size() const {
+        const size_t head = head_.value.load(std::memory_order_acquire);
+        const size_t tail = tail_.value.load(std::memory_order_acquire);
+        return (tail + capacity_ - head) % capacity_;
+    }
+};
+```
+
+### 多生产者多消费者
+
+> 多个线程去竞争资源的情况下，只用上述方法就不行了，因为Head或者tail会被多个线程竞争访问，atomic能保证它的移动顺序执行，但是如果两个线程都判断head可以++，都去++了，就出错了
+
+#### Michael-Scott队列
+
+> 先通过 CAS 抢占尾节点的 next 指针，每次自旋都刷新最新的tail数据（因为此时可能已经有别的线程挂上了node，修改了tail），再 CAS 更新尾指针，更新失败也无所谓，因为其他线程也会帮忙更新的
+>
+> 算了，目前阶段也理不太清除，它本质就是用CAS操作进行自旋，每次while都会用原子读取+内存屏障保证是最新的数据（为了表达：哦tail已经被别人修改过了，我需要去后边继续更新），而不是缓存数据
+
+```c++
+template<typename T>
+class MPMCQueue {
+private:
+    struct Node {
+        std::shared_ptr<T> data;
+        std::atomic<Node*> next;
+        
+        Node() : next(nullptr) {}
+    };
+    
+    std::atomic<Node*> head_;
+    std::atomic<Node*> tail_;
+    
+public:
+    MPMCQueue() {
+        // 创建哨兵节点
+        Node* dummy = new Node();
+        head_.store(dummy, std::memory_order_relaxed);
+        tail_.store(dummy, std::memory_order_relaxed);
+    }
+    
+    ~MPMCQueue() {
+        while (Node* old_head = head_.load(std::memory_order_relaxed)) {
+            head_.store(old_head->next, std::memory_order_relaxed);
+            delete old_head;
+        }
+    }
+    
+    void push(const T& value) {
+        // 1. 创建数据结点
+        auto new_data = std::make_shared<T>(value);
+        Node* new_node = new Node();
+        new_node->data = new_data;
+        new_node->next.store(nullptr, std::memory_order_relaxed);
+        
+        // 2. 尝试将新节点加入队列尾部
+        while (true) {
+            Node* old_tail = tail_.load(std::memory_order_acquire);
+            Node* old_next = old_tail->next.load(std::memory_order_acquire);
+            
+            // 检查tail是否还是原来的tail
+            if (old_tail == tail_.load(std::memory_order_acquire)) {
+                if (old_next == nullptr) {
+                    // 尝试链接新节点
+                    if (old_tail->next.compare_exchange_weak(
+                            old_next, new_node,
+                            std::memory_order_release,
+                            std::memory_order_acquire)) {
+                        // 成功，尝试移动tail
+                        tail_.compare_exchange_weak(
+                            old_tail, new_node,
+                            std::memory_order_release,
+                            std::memory_order_acquire);
+                        return;
+                    }
+                } else {
+                    // 帮助其他线程完成tail的更新
+                    tail_.compare_exchange_weak(
+                        old_tail, old_next,
+                        std::memory_order_release,
+                        std::memory_order_acquire);
+                }
+            }
+        }
+    }
+    
+    bool pop(T& result) {
+        while (true) {
+            Node* old_head = head_.load(std::memory_order_acquire);
+            Node* old_tail = tail_.load(std::memory_order_acquire);
+            Node* old_next = old_head->next.load(std::memory_order_acquire);
+            
+            // 检查head是否还是原来的head
+            if (old_head == head_.load(std::memory_order_acquire)) {
+                if (old_head == old_tail) {
+                    if (old_next == nullptr) {
+                        return false;  // 队列为空
+                    }
+                    // tail落后，帮助移动
+                    tail_.compare_exchange_weak(
+                        old_tail, old_next,
+                        std::memory_order_release,
+                        std::memory_order_acquire);
+                } else {
+                    // 读取数据
+                    if (old_next->data) {
+                        result = *(old_next->data);
+                    }
+                    
+                    // 尝试移动head
+                    if (head_.compare_exchange_weak(
+                            old_head, old_next,
+                            std::memory_order_release,
+                            std::memory_order_acquire)) {
+                        delete old_head;  // 安全删除旧节点
+                        return true;
+                    }
+                }
+            }
+        }
+    }
+};
+```
+
+
+
+
+
+
+
+
+
+
+
+## 内存屏障
+
+> 写屏障：你必须先把你的修改提交到云端，再通知同事继续写（屏障前的写操作必须先完成，才能做当前写操作）**不让前边的写操作跑到这条语句之后**
+>
+> ```c++
+> buffer[0] = 10; // 屏障前的写操作（写数据）
+> // 写屏障（release） 保证前边的写操作写上了，才会执行这个写操作
+> tail.store(1, memory_order_release); // 屏障后的写操作（更新指针）
+> ```
+>
+> 
+>
+> 读屏障：你必须先刷新云端数据到本地，再打开文件（我必须保证我要读取的变量是最新数据，才会执行后续的读取操作）**不让后续的读操作跑到这条语句之前**
+>
+> ```c++
+> // 读屏障（acquire）
+> if (tail.load(memory_order_acquire) == 1) { // 屏障前的读操作（读指针）
+>     int val = buffer[0]; // 屏障后的读操作（读数据）
+> }
+> ```
+>
+> 
+>
+> 内存屏障 = **阻止指令重排序** + **强制缓存同步**
+
+在C++中读写屏障用来配合atomic类
+
+atomic类操作时，可以指定内存屏障
+
+![image-20260301143023566](image-20260301143023566.png)
+
+```c++
+enum memory_order {
+    memory_order_relaxed,
+    memory_order_consume,
+    memory_order_acquire,
+    memory_order_release,
+    memory_order_acq_rel,
+    memory_order_seq_cst
+};
+```
+
+
+
 # C++ string底层
 
 > 首先他是一个模板，底层由模板类`basic_string`来实现
@@ -2810,5 +3111,81 @@ main:
         mov     eax, 0
         pop     rbp
         ret
+```
+
+# 设计模式
+
+## 单例模式
+
+1. 饿汉式（程序启动时就创建）
+
+```c++
+class Singleton {
+public:
+	static Singleton* Get() {
+		return instance;
+	}
+	int data = 10;
+
+private:
+	Singleton() = default;
+	~Singleton() = default;
+	Singleton(const Singleton& other) = delete;
+	Singleton(Singleton&& other) = delete;
+	void operator =(const Singleton&) = delete;
+	static Singleton *instance;
+};
+Singleton* Singleton::instance = new Singleton();    // 程序启动时就会创建这个单例，所以饿汉
+```
+
+2. 懒汉式（第一次使用时才创建）
+
+```c++
+class Singleton {
+public:
+    // 多线程环境下需要加锁 + 双重校验
+	static Singleton* Get() {
+		if (!instance) {
+			std::lock_guard<std::mutex> lock(mtx);  // 如果两个线程都跑到这里，都会等待上锁后进行new，所以加锁后也需要再次判断nullptr
+			if (!instance) {
+				instance = new Singleton();
+			}
+		}
+		return instance;
+	}
+	int data = 10;
+
+private:
+	Singleton() = default;
+	~Singleton() = default;
+	Singleton(const Singleton& other) = delete;
+	Singleton(Singleton&& other) = delete;
+	void operator =(const Singleton&) = delete;
+	static Singleton *instance;
+	static std::mutex mtx;
+};
+
+Singleton* Singleton::instance = nullptr;
+std::mutex Singleton::mtx;
+```
+
+3. C++11的局部静态变量单例（C++保证局部变量初始化是线程安全的）
+
+```c++
+class Singleton {
+public:
+	static Singleton& Get() {
+		static Singleton instance;   // 局部的static只会初始化一次，并且cpp保证它是线程安全的
+		return instance;
+	}
+	int data = 10;
+
+private:
+	Singleton() = default;
+	~Singleton() = default;
+	Singleton(const Singleton& other) = delete;
+	Singleton(Singleton&& other) = delete;
+	void operator =(const Singleton&) = delete;
+};
 ```
 
