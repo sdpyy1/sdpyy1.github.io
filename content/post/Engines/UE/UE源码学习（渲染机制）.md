@@ -1066,7 +1066,7 @@ public:
     ...
     // 生成动态和静态网格绘制指令(通过MeshPassProcessor将FMeshBatch转换成MeshDrawCommand).
     GenerateDynamicMeshDrawCommands(
-	*Context.View,
+	Context.View,
 	Context.ShadingPath,
 	Context.PassType,
 	Context.MeshPassProcessor,
