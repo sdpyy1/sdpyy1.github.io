@@ -1,0 +1,2120 @@
+<!DOCTYPE html>
+<html lang="zh-cn" dir="ltr">
+    <head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'>
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+  <meta name="referrer" content="no-referrer-when-downgrade"><meta name='description' content="降噪算法 高斯滤波器 很简单就是拿一个高斯滤波核遍历一遍像素\n高斯公式回顾一下\n双边滤波 这张图是高斯滤波的结果，它任何地方都会被均等的糊掉\n下面是双边滤波器的公式 (i,j)(k,l)两个点的之间的权重计算，前半部分就是高斯分布，后半部分（也是一个高斯分布，颜色越相近，越接近最高点 ）表示：如果两个点颜色差距越大，权重越小\n">
+<title>游戏引擎开发实践（降噪算法 SVGF）</title>
+
+<link rel='canonical' href='https://sdpyy1.github.io/p/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E5%BC%80%E5%8F%91%E5%AE%9E%E8%B7%B5%E9%99%8D%E5%99%AA%E7%AE%97%E6%B3%95-svgf/'>
+
+<link rel="stylesheet" href="/scss/style.min.6a692fd055deae459f2a9767f57f3855ba80cafd5041317f24f7360f6ca47cdf.css"><meta property='og:title' content="游戏引擎开发实践（降噪算法 SVGF）">
+<meta property='og:description' content="降噪算法 高斯滤波器 很简单就是拿一个高斯滤波核遍历一遍像素\n高斯公式回顾一下\n双边滤波 这张图是高斯滤波的结果，它任何地方都会被均等的糊掉\n下面是双边滤波器的公式 (i,j)(k,l)两个点的之间的权重计算，前半部分就是高斯分布，后半部分（也是一个高斯分布，颜色越相近，越接近最高点 ）表示：如果两个点颜色差距越大，权重越小\n">
+<meta property='og:url' content='https://sdpyy1.github.io/p/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E5%BC%80%E5%8F%91%E5%AE%9E%E8%B7%B5%E9%99%8D%E5%99%AA%E7%AE%97%E6%B3%95-svgf/'>
+<meta property='og:site_name' content='wanfeng'>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='光线追踪' /><meta property='article:published_time' content='2025-12-26T15:26:32&#43;08:00'/><meta property='article:modified_time' content='2025-12-26T15:26:32&#43;08:00'/>
+<meta name="twitter:title" content="游戏引擎开发实践（降噪算法 SVGF）">
+<meta name="twitter:description" content="降噪算法 高斯滤波器 很简单就是拿一个高斯滤波核遍历一遍像素\n高斯公式回顾一下\n双边滤波 这张图是高斯滤波的结果，它任何地方都会被均等的糊掉\n下面是双边滤波器的公式 (i,j)(k,l)两个点的之间的权重计算，前半部分就是高斯分布，后半部分（也是一个高斯分布，颜色越相近，越接近最高点 ）表示：如果两个点颜色差距越大，权重越小\n">
+    <link rel="shortcut icon" href="/favicon.ico" />
+
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="切换菜单">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        
+            
+            <figure class="site-avatar">
+                <a href="/">
+                
+                    
+                    
+                    
+                        
+                        <img src="/img/avatar_hu_f59158f730715054.png" width="300"
+                            height="300" class="site-logo" loading="lazy" alt="Avatar">
+                    
+                
+                </a>
+                
+                    <span class="emoji">🧐</span>
+                
+            </figure>
+            
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="/">wanfeng</a></h1>
+            <h2 class="site-description">Blog</h2>
+        </div>
+    </header><ol class="menu-social">
+            
+                <li>
+                    <a 
+                        href='https://space.bilibili.com/287473737'
+                        target="_blank"
+                        title="Bilibili"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-brand-bilibili"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 10a4 4 0 0 1 4 -4h10a4 4 0 0 1 4 4v6a4 4 0 0 1 -4 4h-10a4 4 0 0 1 -4 -4v-6z" /><path d="M8 3l2 3" /><path d="M16 3l-2 3" /><path d="M9 13v-2" /><path d="M15 11v2" /></svg>
+                        
+                    </a>
+                </li>
+            
+                <li>
+                    <a 
+                        href='https://github.com/sdpyy1'
+                        target="_blank"
+                        title="GitHub"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
+</svg>
+
+
+
+                        
+                    </a>
+                </li>
+            
+        </ol><ol class="menu" id="main-menu">
+        
+        
+        
+        <li >
+            <a href='/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>Home</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/about/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>About</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>Archives</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/search/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>Search</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/links/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5" />
+  <path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5" />
+</svg>
+
+
+
+                
+                <span>Links</span>
+            </a>
+        </li>
+        
+        <li class="menu-bottom-section">
+            <ol class="menu">
+                    
+                        <li id="i18n-switch">  
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-language" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M4 5h7" />
+  <path d="M9 3v2c0 4.418 -2.239 8 -5 8" />
+  <path d="M5 9c-.003 2.144 2.952 3.908 6.7 4" />
+  <path d="M12 20l4 -9l4 9" />
+  <path d="M19.1 18h-6.2" />
+</svg>
+
+
+
+                            <select name="language" title="language" onchange="window.location.href = this.selectedOptions[0].value">
+                                
+                                    <option value="https://sdpyy1.github.io/en/" >English</option>
+                                
+                                    <option value="https://sdpyy1.github.io/" selected>中文</option>
+                                
+                            </select>
+                        </li>
+                    
+                
+
+                
+                    <li id="dark-mode-toggle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <span>暗色模式</span>
+                    </li>
+                
+            </ol>
+        </li>
+    </ol>
+</aside>
+
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">目录</h2>
+        
+        <div class="widget--toc">
+            <nav id="TableOfContents">
+  <ol>
+    <li><a href="#降噪算法">降噪算法</a>
+      <ol>
+        <li><a href="#高斯滤波器">高斯滤波器</a></li>
+        <li><a href="#双边滤波">双边滤波</a></li>
+        <li><a href="#联合双边滤波">联合双边滤波</a></li>
+        <li><a href="#大滤波器优化">大滤波器优化</a>
+          <ol>
+            <li><a href="#拆分2个pass">拆分2个Pass</a></li>
+            <li><a href="#小波变换卷积空洞卷积-à-trous-wavelet">小波变换卷积\空洞卷积 À-Trous wavelet</a></li>
+          </ol>
+        </li>
+        <li><a href="#处理过亮像素">处理过亮像素</a></li>
+        <li><a href="#svgf-spatiotemporal-variance-guided-filter时空方差引导滤波">SVGF （Spatiotemporal Variance-Guided Filter）时空方差引导滤波</a></li>
+        <li><a href="#rae">RAE</a></li>
+      </ol>
+    </li>
+    <li><a href="#svgf实践">SVGF实践</a>
+      <ol>
+        <li><a href="#demodulate-albedo">Demodulate Albedo</a></li>
+        <li><a href="#reconstruction-filter">Reconstruction Filter</a></li>
+      </ol>
+    </li>
+  </ol>
+</nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+            <main class="main full-width">
+    <article class="main-article">
+    <header class="article-header">
+
+    <div class="article-details">
+    
+    <header class="article-category">
+        
+        
+             
+            
+            
+            
+            <div class="category-hierarchy">
+                
+                    
+                    
+                    
+                        
+                    
+                     
+                    
+                    
+                    
+                    <a href="/categories/projects/" 
+                       >
+                        Projects
+                    </a>
+                    
+                    
+                    
+                        <span class="category-separator">/</span>
+                    
+                
+                    
+                    
+                    
+                        
+                    
+                        
+                    
+                     
+                    
+                    
+                    
+                    <a href="/categories/projects/gameengine/" 
+                       >
+                        GameEngine
+                    </a>
+                    
+                    
+                    
+                
+            </div>
+        
+    </header>
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="/p/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E5%BC%80%E5%8F%91%E5%AE%9E%E8%B7%B5%E9%99%8D%E5%99%AA%E7%AE%97%E6%B3%95-svgf/">游戏引擎开发实践（降噪算法 SVGF）</a>
+        </h2>
+    
+        
+    </div>
+
+    
+    
+    
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published">Dec 26, 2025</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-time--reading">
+                    阅读时长: 6 分钟
+                </time>
+            </div>
+        
+
+        
+            
+    </footer>
+    
+    
+</div>
+<style>
+    .category-hierarchy {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;  
+        margin-right: 12px;  
+        margin-bottom: 8px;  
+    }
+    
+    .category-separator {
+        color: #999;
+        user-select: none;
+        font-size: 1em;  
+    }
+    
+    .article-category a {
+        text-decoration: none;
+        padding: 6px 12px;  
+        border-radius: 6px;  
+        font-size: 0.95em;  
+        transition: all 0.2s ease;
+        line-height: 1.5;  
+    }
+    
+    .article-category a:hover {
+        opacity: 0.9;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 6px rgba(0,0,0,0.1);  
+    }
+</style>
+</header>
+
+    <section class="article-content">
+    
+    
+    <h1 id="降噪算法">降噪算法
+</h1><h2 id="高斯滤波器">高斯滤波器
+</h2><p>很简单就是拿一个高斯滤波核遍历一遍像素</p>
+<p><img src="/image-20251226210237582.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251226210237582"
+	
+	
+></p>
+<p>高斯公式回顾一下</p>
+<p><img src="/image-20251226212326240.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251226212326240"
+	
+	
+></p>
+<h2 id="双边滤波">双边滤波
+</h2><p>这张图是高斯滤波的结果，它任何地方都会被均等的糊掉</p>
+<p><img src="/image-20251226211129946.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251226211129946"
+	
+	
+></p>
+<p>下面是双边滤波器的公式 (i,j)(k,l)两个点的之间的权重计算，前半部分就是高斯分布，后半部分（也是一个高斯分布，颜色越相近，越接近最高点 ）表示：如果两个点颜色差距越大，权重越小</p>
+<p>这个式子可以拆成两个指数函数的乘积，第二项如果颜色一致就=1，颜色不一致程度越大，越小，这样就达到了根据颜色差异调整权重的能力</p>
+<p><img src="/image-20251226211622393.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251226211622393"
+	
+	
+></p>
+<p>这个算法的问题是分不清是边界还是噪声</p>
+<h2 id="联合双边滤波">联合双边滤波
+</h2><p>高斯滤波的标准：距离</p>
+<p>双边滤波的标准：距离+颜色差异</p>
+<p>联合双边滤波思想就是用更多的指标，比如GBuffer那些信息</p>
+<p>比如量化深度差异，法线差异来指导权重，这里并没有说具体公式</p>
+<p><img src="/image-20251226224151567.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251226224151567"
+	
+	
+></p>
+<h2 id="大滤波器优化">大滤波器优化
+</h2><blockquote>
+<p>如果滤波核很大，如何进行优化</p>
+</blockquote>
+<h3 id="拆分2个pass">拆分2个Pass
+</h3><blockquote>
+<p>水平一遍，竖直一遍，经典</p>
+<p>再配合groupshared，减少ComputeShader的采样次数</p>
+</blockquote>
+<p><img src="/image-20251227122248765.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251227122248765"
+	
+	
+></p>
+<p>原理上来讲二维高斯就可以拆成两个一维高斯的乘积，卷积写成二重积分后，对于高斯滤波核来说可以拆成内部x积分完成后，再y积分</p>
+<p><img src="/image-20251227122516063.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251227122516063"
+	
+	
+></p>
+<p>但是复杂的滤波核不适用</p>
+<h3 id="小波变换卷积空洞卷积-à-trous-wavelet">小波变换卷积\空洞卷积 <a class="link" href="https://link.zhihu.com/?target=https%3A//jo.dreggn.org/home/2010_atrous.pdf"  target="_blank" rel="noopener"
+    >À-Trous wavelet</a>
+</h3><blockquote>
+<p>思路也是多个Pass进行卷积，比如5x5的核，每次都是5x5但是采样点的间距变了，变成$2^i$</p>
+<p>复杂度从<strong>n2</strong>变成 卷积核的平方 * 卷积次数</p>
+</blockquote>
+<p><img src="/image-20251227124039269.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251227124039269"
+	
+	
+></p>
+<h2 id="处理过亮像素">处理过亮像素
+</h2><blockquote>
+<p>噪声中很亮的点如果做滤波，会变成一片亮</p>
+</blockquote>
+<p>亮点探测:</p>
+<p><img src="/image-20251227125333867.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251227125333867"
+	
+	
+></p>
+<p>处理亮点</p>
+<p><img src="/image-20251227125345255.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251227125345255"
+	
+	
+></p>
+<h2 id="svgf-spatiotemporal-variance-guided-filter时空方差引导滤波">SVGF （Spatiotemporal Variance-Guided Filter）时空方差引导滤波
+</h2><blockquote>
+<p>SVGF就是融合了上边介绍的这些技术点，从时间和空间上都进行了滤波</p>
+</blockquote>
+<p>3个因素引导的联合双边滤波</p>
+<ol>
+<li>深度</li>
+</ol>
+<p>它的深度指数衰减不仅仅是考虑空间深度，还会考虑法线投影上的深度大小（分母），这样建模是为了表达虽然空间上深度差异较大，但是xxxx(TODO:其实没懂为什么这样)</p>
+<p><img src="/image-20251227131903431.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251227131903431"
+	
+	
+></p>
+<ol start="2">
+<li>法线</li>
+</ol>
+<p>两个法线的点乘来控制，并用指数控制衰减速度</p>
+<p>另外一点不要用法线贴图的数据，直接用模型原始法线</p>
+<p><img src="/image-20251227132316899.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251227132316899"
+	
+	
+></p>
+<ol start="3">
+<li>Luminance</li>
+</ol>
+<blockquote>
+<p>颜色差异会被噪声干扰，比如一个点在阴影里，但是因为噪声，它变得特别亮，解决办法就是利用方差来指导，方差信息会先计算一次空间上的方差，再时域累积，再空间滤波</p>
+</blockquote>
+<p><img src="/image-20251227133110629.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251227133110629"
+	
+	
+></p>
+<p>SVGF解决不掉的问题是，场景没有变化也就是MotionVector没有数据，但是阴影一直在移动，这时候的阴影就会有噪声</p>
+<p><img src="/image-20251227133445658.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251227133445658"
+	
+	
+>再后来出现了A-SVGF,处理场景突变的延迟问题</p>
+<h2 id="rae">RAE
+</h2><blockquote>
+<p>利用神经网络来滤波，目前没兴趣</p>
+</blockquote>
+<h1 id="svgf实践">SVGF实践
+</h1><blockquote>
+<p>参考文刀秋二大佬的https://zhuanlan.zhihu.com/p/28288053，与https://zhuanlan.zhihu.com/p/699706592</p>
+</blockquote>
+<p><img src="/image-20251227153807337.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251227153807337"
+	
+	
+></p>
+<h2 id="demodulate-albedo">Demodulate Albedo
+</h2><p>第一步要存储SPP=1的情况下，直接光照和间接光照的结果，并且在存储时要/albedo来保存，过滤过后再乘回来，文刀秋二的解释是（纹理的细节并不会因为Filter的强度过于大而丢失掉）目前不太理解，先做出来再说。 另外这样做的前提应该是当前场景是Diffuse的</p>
+<p>这张（右侧）表示直接光照/albedo</p>
+<p><img src="/image-20251227153912899.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251227153912899"
+	
+	
+></p>
+<p>这张（右侧）表示间接光照/albedo</p>
+<p><img src="/image-20251227153951133.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251227153951133"
+	
+	
+></p>
+<h2 id="reconstruction-filter">Reconstruction Filter
+</h2><p><img src="/v2-ba3d24718919cb7dbb18910b639fbc51_r.jpg"
+	
+	
+	
+	loading="lazy"
+	
+		alt="img"
+	
+	
+></p>
+<p>先实现空洞滤波</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-glsl" data-lang="glsl"><span class="line"><span class="cl"><span class="cp">#version 450 core</span>
+</span></span><span class="line"><span class="cl"><span class="cp">#include &#34;../common/common.glsl&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="cp">#include &#34;../common/math.glsl&#34;</span>
+</span></span><span class="line"><span class="cl"><span class="cp">#ifdef COMPUTE_SHADER</span>
+</span></span><span class="line"><span class="cl"><span class="n">layout</span><span class="p">(</span><span class="n">set</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">binding</span> <span class="o">=</span> <span class="mo">0</span><span class="p">,</span> <span class="n">rgba32f</span><span class="p">)</span> <span class="k">uniform</span> <span class="n">image2D</span> <span class="n">OUT_COLOR</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">layout</span><span class="p">(</span><span class="n">set</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">binding</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">rgba32f</span><span class="p">)</span> <span class="k">uniform</span> <span class="n">image2D</span> <span class="n">IN_COLOR</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">layout</span><span class="p">(</span><span class="n">set</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span><span class="n">binding</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span> <span class="n">rgba32f</span><span class="p">)</span> <span class="k">uniform</span> <span class="n">image2D</span> <span class="n">velocityTexture</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="n">layout</span><span class="p">(</span><span class="n">push_constant</span><span class="p">)</span> <span class="k">uniform</span> <span class="n">Uniforms</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">int</span> <span class="n">curPassIndex</span><span class="p">;</span> <span class="c1">// 当前 Atrous pass 索引</span>
+</span></span><span class="line"><span class="cl"><span class="p">};</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">layout</span><span class="p">(</span><span class="n">local_size_x</span> <span class="o">=</span> <span class="mi">16</span><span class="p">,</span> <span class="n">local_size_y</span> <span class="o">=</span> <span class="mi">16</span><span class="p">,</span> <span class="n">local_size_z</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="k">in</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">void</span> <span class="n">main</span><span class="p">(){</span>
+</span></span><span class="line"><span class="cl">    <span class="k">ivec2</span> <span class="n">invocID</span> <span class="o">=</span> <span class="k">ivec2</span><span class="p">(</span><span class="n">gl_GlobalInvocationID</span><span class="p">.</span><span class="n">xy</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="k">ivec2</span> <span class="n">imgSize</span> <span class="o">=</span> <span class="k">ivec2</span><span class="p">(</span><span class="n">imageSize</span><span class="p">(</span><span class="n">OUT_COLOR</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="n">invocID</span><span class="p">.</span><span class="n">x</span> <span class="o">&gt;=</span> <span class="n">imgSize</span><span class="p">.</span><span class="n">x</span> <span class="o">||</span> <span class="n">invocID</span><span class="p">.</span><span class="n">y</span> <span class="o">&gt;=</span> <span class="n">imgSize</span><span class="p">.</span><span class="n">y</span><span class="p">)</span> 
+</span></span><span class="line"><span class="cl">        <span class="k">return</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">vec3</span> <span class="n">colorSum</span> <span class="o">=</span> <span class="k">vec3</span><span class="p">(</span><span class="mf">0.0</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="k">float</span> <span class="n">weightSum</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// 5x5 Atrous 核心 做了空洞滤波，相当于64*64的卷积核</span>
+</span></span><span class="line"><span class="cl">    <span class="k">int</span> <span class="n">curStep</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">curPassIndex</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="p">(</span><span class="k">int</span> <span class="n">dy</span> <span class="o">=</span> <span class="o">-</span><span class="mi">2</span><span class="p">;</span> <span class="n">dy</span> <span class="o">&lt;=</span> <span class="mi">2</span><span class="p">;</span> <span class="o">++</span><span class="n">dy</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">for</span> <span class="p">(</span><span class="k">int</span> <span class="n">dx</span> <span class="o">=</span> <span class="o">-</span><span class="mi">2</span><span class="p">;</span> <span class="n">dx</span> <span class="o">&lt;=</span> <span class="mi">2</span><span class="p">;</span> <span class="o">++</span><span class="n">dx</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="k">ivec2</span> <span class="n">samplePos</span> <span class="o">=</span> <span class="n">invocID</span> <span class="o">+</span> <span class="k">ivec2</span><span class="p">(</span><span class="n">dx</span><span class="p">,</span> <span class="n">dy</span><span class="p">)</span> <span class="o">*</span> <span class="n">curStep</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">            <span class="c1">// 边界检查</span>
+</span></span><span class="line"><span class="cl">            <span class="n">samplePos</span> <span class="o">=</span> <span class="n">clamp</span><span class="p">(</span><span class="n">samplePos</span><span class="p">,</span> <span class="k">ivec2</span><span class="p">(</span><span class="mo">0</span><span class="p">),</span> <span class="n">imgSize</span> <span class="o">-</span> <span class="mi">1</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">            <span class="k">vec3</span> <span class="n">sampleColor</span> <span class="o">=</span> <span class="n">imageLoad</span><span class="p">(</span><span class="n">IN_COLOR</span><span class="p">,</span> <span class="n">samplePos</span><span class="p">).</span><span class="n">xyz</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">            <span class="c1">// Atrous 权重，这里先用 1.0，之后可以换成高斯或 bilateral 权重</span>
+</span></span><span class="line"><span class="cl">            <span class="k">float</span> <span class="n">weight</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">            <span class="n">colorSum</span> <span class="o">+=</span> <span class="n">sampleColor</span> <span class="o">*</span> <span class="n">weight</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">            <span class="n">weightSum</span> <span class="o">+=</span> <span class="n">weight</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">vec3</span> <span class="n">result</span> <span class="o">=</span> <span class="n">colorSum</span> <span class="o">/</span> <span class="n">weightSum</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">imageStore</span><span class="p">(</span><span class="n">OUT_COLOR</span><span class="p">,</span> <span class="n">invocID</span><span class="p">,</span> <span class="k">vec4</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="cp">#endif</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">  1
+</span><span class="lnt">  2
+</span><span class="lnt">  3
+</span><span class="lnt">  4
+</span><span class="lnt">  5
+</span><span class="lnt">  6
+</span><span class="lnt">  7
+</span><span class="lnt">  8
+</span><span class="lnt">  9
+</span><span class="lnt"> 10
+</span><span class="lnt"> 11
+</span><span class="lnt"> 12
+</span><span class="lnt"> 13
+</span><span class="lnt"> 14
+</span><span class="lnt"> 15
+</span><span class="lnt"> 16
+</span><span class="lnt"> 17
+</span><span class="lnt"> 18
+</span><span class="lnt"> 19
+</span><span class="lnt"> 20
+</span><span class="lnt"> 21
+</span><span class="lnt"> 22
+</span><span class="lnt"> 23
+</span><span class="lnt"> 24
+</span><span class="lnt"> 25
+</span><span class="lnt"> 26
+</span><span class="lnt"> 27
+</span><span class="lnt"> 28
+</span><span class="lnt"> 29
+</span><span class="lnt"> 30
+</span><span class="lnt"> 31
+</span><span class="lnt"> 32
+</span><span class="lnt"> 33
+</span><span class="lnt"> 34
+</span><span class="lnt"> 35
+</span><span class="lnt"> 36
+</span><span class="lnt"> 37
+</span><span class="lnt"> 38
+</span><span class="lnt"> 39
+</span><span class="lnt"> 40
+</span><span class="lnt"> 41
+</span><span class="lnt"> 42
+</span><span class="lnt"> 43
+</span><span class="lnt"> 44
+</span><span class="lnt"> 45
+</span><span class="lnt"> 46
+</span><span class="lnt"> 47
+</span><span class="lnt"> 48
+</span><span class="lnt"> 49
+</span><span class="lnt"> 50
+</span><span class="lnt"> 51
+</span><span class="lnt"> 52
+</span><span class="lnt"> 53
+</span><span class="lnt"> 54
+</span><span class="lnt"> 55
+</span><span class="lnt"> 56
+</span><span class="lnt"> 57
+</span><span class="lnt"> 58
+</span><span class="lnt"> 59
+</span><span class="lnt"> 60
+</span><span class="lnt"> 61
+</span><span class="lnt"> 62
+</span><span class="lnt"> 63
+</span><span class="lnt"> 64
+</span><span class="lnt"> 65
+</span><span class="lnt"> 66
+</span><span class="lnt"> 67
+</span><span class="lnt"> 68
+</span><span class="lnt"> 69
+</span><span class="lnt"> 70
+</span><span class="lnt"> 71
+</span><span class="lnt"> 72
+</span><span class="lnt"> 73
+</span><span class="lnt"> 74
+</span><span class="lnt"> 75
+</span><span class="lnt"> 76
+</span><span class="lnt"> 77
+</span><span class="lnt"> 78
+</span><span class="lnt"> 79
+</span><span class="lnt"> 80
+</span><span class="lnt"> 81
+</span><span class="lnt"> 82
+</span><span class="lnt"> 83
+</span><span class="lnt"> 84
+</span><span class="lnt"> 85
+</span><span class="lnt"> 86
+</span><span class="lnt"> 87
+</span><span class="lnt"> 88
+</span><span class="lnt"> 89
+</span><span class="lnt"> 90
+</span><span class="lnt"> 91
+</span><span class="lnt"> 92
+</span><span class="lnt"> 93
+</span><span class="lnt"> 94
+</span><span class="lnt"> 95
+</span><span class="lnt"> 96
+</span><span class="lnt"> 97
+</span><span class="lnt"> 98
+</span><span class="lnt"> 99
+</span><span class="lnt">100
+</span><span class="lnt">101
+</span><span class="lnt">102
+</span><span class="lnt">103
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&#34;hzpch.h&#34;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&#34;SVGFPass.h&#34;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&#34;Hazel/Core/Application.h&#34;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&#34;Hazel/Scene/SceneManager.h&#34;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&#34;Hazel/Renderer/RenderResource/RenderResourceManager.h&#34;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&#34;Hazel/Renderer/RenderResource/PipelineCache.h&#34;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp">#include</span> <span class="cpf">&lt;Hazel/Renderer/RenderResource/Shader.h&gt;</span><span class="cp">
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span><span class="k">namespace</span> <span class="n">GameEngine</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="kt">void</span> <span class="n">SVGFPass</span><span class="o">::</span><span class="n">Init</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">	<span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="n">m_Shader</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">make_shared</span><span class="o">&lt;</span><span class="n">Shader</span><span class="o">&gt;</span><span class="p">(</span><span class="s">&#34;postprocess/SVGF&#34;</span><span class="p">,</span> <span class="n">SHADER_FREQUENCY_COMPUTE</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">GetRHIShader</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">		<span class="n">RHIRootSignatureInfo</span> <span class="n">info</span> <span class="o">=</span> <span class="p">{};</span>
+</span></span><span class="line"><span class="cl">		<span class="n">info</span><span class="p">.</span><span class="n">AddEntryFromReflect</span><span class="p">(</span><span class="n">m_Shader</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">		<span class="n">info</span><span class="p">.</span><span class="n">AddEntry</span><span class="p">(</span><span class="n">RENDER_RESOURCEMANAGER</span><span class="o">-&gt;</span><span class="n">GetGlobalResourcePreFrameRootSignature</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">GetInfo</span><span class="p">())</span>
+</span></span><span class="line"><span class="cl">			<span class="p">.</span><span class="n">AddPushConstant</span><span class="p">({</span><span class="mi">4</span><span class="p">,</span><span class="n">SHADER_FREQUENCY_COMPUTE</span> <span class="p">});</span>
+</span></span><span class="line"><span class="cl">		<span class="n">m_RootSignature</span> <span class="o">=</span> <span class="n">APP_DYNAMICRHI</span><span class="o">-&gt;</span><span class="n">CreateRootSignature</span><span class="p">(</span><span class="n">info</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">		<span class="n">RHIComputePipelineInfo</span> <span class="n">pipelineInfo</span> <span class="o">=</span> <span class="p">{};</span>
+</span></span><span class="line"><span class="cl">		<span class="n">pipelineInfo</span><span class="p">.</span><span class="n">computeShader</span> <span class="o">=</span> <span class="n">m_Shader</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">		<span class="n">pipelineInfo</span><span class="p">.</span><span class="n">rootSignature</span> <span class="o">=</span> <span class="n">m_RootSignature</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">		<span class="n">m_Pipeline</span> <span class="o">=</span> <span class="n">APP_DYNAMICRHI</span><span class="o">-&gt;</span><span class="n">CreateComputePipeline</span><span class="p">(</span><span class="n">pipelineInfo</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="kt">void</span> <span class="n">SVGFPass</span><span class="o">::</span><span class="n">Build</span><span class="p">(</span><span class="n">RDGBuilder</span><span class="o">&amp;</span> <span class="n">builder</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="k">auto</span><span class="o">&amp;</span> <span class="p">[</span><span class="n">w</span><span class="p">,</span> <span class="n">h</span><span class="p">]</span> <span class="o">=</span> <span class="n">APP_WINDOWSIZE</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">		<span class="n">RDGTextureHandle</span> <span class="n">pathTracingDirectRes</span> <span class="o">=</span> <span class="n">builder</span><span class="p">.</span><span class="n">GetTexture</span><span class="p">(</span><span class="s">&#34;PathTracingdirectRes&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">		<span class="k">if</span> <span class="p">(</span><span class="n">pathTracingDirectRes</span><span class="p">.</span><span class="n">ID</span><span class="p">()</span> <span class="o">==</span> <span class="n">UINT32_MAX</span><span class="p">)</span> <span class="p">{</span> <span class="k">return</span><span class="p">;</span> <span class="p">}</span>
+</span></span><span class="line"><span class="cl">		<span class="n">RDGTextureHandle</span> <span class="n">pathTracingIndirectRes</span> <span class="o">=</span> <span class="n">builder</span><span class="p">.</span><span class="n">GetTexture</span><span class="p">(</span><span class="s">&#34;PathTracingIndirectRes&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">		<span class="n">RDGTextureHandle</span> <span class="n">velocity</span> <span class="o">=</span> <span class="n">builder</span><span class="p">.</span><span class="n">GetTexture</span><span class="p">(</span><span class="s">&#34;GBufferVelocity&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">		<span class="n">RDGBufferHandle</span> <span class="n">exposureData</span> <span class="o">=</span> <span class="n">builder</span><span class="p">.</span><span class="n">GetBuffer</span><span class="p">(</span><span class="s">&#34;ExposureData&#34;</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">		<span class="n">RDGTextureHandle</span> <span class="n">directFilterRes</span> <span class="o">=</span> <span class="n">builder</span><span class="p">.</span><span class="n">CreateTexture</span><span class="p">(</span><span class="s">&#34;PathTracing_SVGF_directFilterRes&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">			<span class="p">.</span><span class="n">Exetent</span><span class="p">({</span> <span class="n">w</span><span class="p">,</span> <span class="n">h</span> <span class="p">,</span><span class="mi">1</span> <span class="p">})</span>
+</span></span><span class="line"><span class="cl">			<span class="p">.</span><span class="n">Format</span><span class="p">(</span><span class="n">FORMAT_R32G32B32A32_SFLOAT</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">			<span class="p">.</span><span class="n">AllowRenderTarget</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">			<span class="p">.</span><span class="n">AllowReadWrite</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">			<span class="p">.</span><span class="n">Finish</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">		<span class="n">RDGTextureHandle</span> <span class="n">forPinpongTexture</span> <span class="o">=</span> <span class="n">builder</span><span class="p">.</span><span class="n">CreateTexture</span><span class="p">(</span><span class="s">&#34;PathTracing_SVGF_forPinpongTexture&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">			<span class="p">.</span><span class="n">Exetent</span><span class="p">({</span> <span class="n">w</span><span class="p">,</span> <span class="n">h</span> <span class="p">,</span><span class="mi">1</span> <span class="p">})</span>
+</span></span><span class="line"><span class="cl">			<span class="p">.</span><span class="n">Format</span><span class="p">(</span><span class="n">FORMAT_R32G32B32A32_SFLOAT</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">			<span class="p">.</span><span class="n">AllowRenderTarget</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">			<span class="p">.</span><span class="n">AllowReadWrite</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">			<span class="p">.</span><span class="n">Finish</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">		<span class="n">RDGTextureHandle</span> <span class="n">inDirectFilterRes</span> <span class="o">=</span> <span class="n">builder</span><span class="p">.</span><span class="n">CreateTexture</span><span class="p">(</span><span class="s">&#34;PathTracing_SVGF_inDirectFilterRes&#34;</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">			<span class="p">.</span><span class="n">Exetent</span><span class="p">({</span> <span class="n">w</span><span class="p">,</span> <span class="n">h</span> <span class="p">,</span><span class="mi">1</span> <span class="p">})</span>
+</span></span><span class="line"><span class="cl">			<span class="p">.</span><span class="n">Format</span><span class="p">(</span><span class="n">FORMAT_R32G32B32A32_SFLOAT</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">			<span class="p">.</span><span class="n">AllowRenderTarget</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">			<span class="p">.</span><span class="n">AllowReadWrite</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl">			<span class="p">.</span><span class="n">Finish</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">		<span class="c1">// 直接光
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>		<span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">5</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="n">builder</span><span class="p">.</span><span class="n">CreateComputePass</span><span class="p">(</span><span class="n">GetName</span><span class="p">()</span> <span class="o">+</span> <span class="s">&#34;_DirectRes&#34;</span> <span class="o">+</span> <span class="n">std</span><span class="o">::</span><span class="n">to_string</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">				<span class="p">.</span><span class="n">RootSignature</span><span class="p">(</span><span class="n">m_RootSignature</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">				<span class="p">.</span><span class="n">PassIndex</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">				<span class="p">.</span><span class="n">ReadWrite</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span> <span class="o">?</span> <span class="nl">directFilterRes</span> <span class="p">:</span> <span class="n">i</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">1</span> <span class="o">?</span> <span class="nl">forPinpongTexture</span> <span class="p">:</span> <span class="n">directFilterRes</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">				<span class="p">.</span><span class="n">ReadWrite</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span> <span class="o">?</span> <span class="nl">pathTracingDirectRes</span> <span class="p">:</span> <span class="n">i</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">1</span> <span class="o">?</span> <span class="nl">directFilterRes</span> <span class="p">:</span> <span class="n">forPinpongTexture</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">				<span class="p">.</span><span class="n">ReadWrite</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">velocity</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">				<span class="p">.</span><span class="n">Execute</span><span class="p">([</span><span class="o">&amp;</span><span class="p">](</span><span class="n">RDGPassContext</span> <span class="n">context</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">				<span class="k">auto</span><span class="o">&amp;</span> <span class="p">[</span><span class="n">w</span><span class="p">,</span> <span class="n">h</span><span class="p">]</span> <span class="o">=</span> <span class="n">APP_WINDOWSIZE</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">				<span class="n">RHICommandListRef</span> <span class="n">command</span> <span class="o">=</span> <span class="n">context</span><span class="p">.</span><span class="n">command</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">				<span class="n">command</span><span class="o">-&gt;</span><span class="n">SetComputePipeline</span><span class="p">(</span><span class="n">m_Pipeline</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">				<span class="n">command</span><span class="o">-&gt;</span><span class="n">BindDescriptorSet</span><span class="p">(</span><span class="n">context</span><span class="p">.</span><span class="n">descriptors</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="mi">1</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">				<span class="kt">uint32_t</span> <span class="n">curIndex</span> <span class="o">=</span> <span class="n">context</span><span class="p">.</span><span class="n">passIndex</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">				<span class="n">command</span><span class="o">-&gt;</span><span class="n">PushConstants</span><span class="p">(</span><span class="o">&amp;</span><span class="n">curIndex</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="kt">uint32_t</span><span class="p">),</span> <span class="n">SHADER_FREQUENCY_COMPUTE</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">				<span class="n">command</span><span class="o">-&gt;</span><span class="n">BindDescriptorSet</span><span class="p">(</span><span class="n">RENDER_RESOURCEMANAGER</span><span class="o">-&gt;</span><span class="n">GetGlobalResourcePerFrameDescriptorSet</span><span class="p">(),</span> <span class="mi">0</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">				<span class="n">command</span><span class="o">-&gt;</span><span class="n">Dispatch</span><span class="p">((</span><span class="n">w</span> <span class="o">+</span> <span class="mi">15</span><span class="p">)</span> <span class="o">/</span> <span class="mi">16</span><span class="p">,</span> <span class="p">(</span><span class="n">h</span> <span class="o">+</span> <span class="mi">15</span><span class="p">)</span> <span class="o">/</span> <span class="mi">16</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">					<span class="p">})</span>
+</span></span><span class="line"><span class="cl">				<span class="p">.</span><span class="n">Finish</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">		<span class="c1">// 间接光
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>		<span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">5</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="n">builder</span><span class="p">.</span><span class="n">CreateComputePass</span><span class="p">(</span><span class="n">GetName</span><span class="p">()</span> <span class="o">+</span> <span class="s">&#34;_DirectRes&#34;</span> <span class="o">+</span> <span class="n">std</span><span class="o">::</span><span class="n">to_string</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">				<span class="p">.</span><span class="n">RootSignature</span><span class="p">(</span><span class="n">m_RootSignature</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">				<span class="p">.</span><span class="n">PassIndex</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">				<span class="p">.</span><span class="n">ReadWrite</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span> <span class="o">?</span> <span class="nl">inDirectFilterRes</span> <span class="p">:</span> <span class="n">i</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">1</span> <span class="o">?</span> <span class="nl">forPinpongTexture</span> <span class="p">:</span> <span class="n">inDirectFilterRes</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">				<span class="p">.</span><span class="n">ReadWrite</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span> <span class="o">?</span> <span class="nl">pathTracingIndirectRes</span> <span class="p">:</span> <span class="n">i</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">1</span> <span class="o">?</span> <span class="nl">inDirectFilterRes</span> <span class="p">:</span> <span class="n">forPinpongTexture</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">				<span class="p">.</span><span class="n">ReadWrite</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">velocity</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">				<span class="p">.</span><span class="n">Execute</span><span class="p">([</span><span class="o">&amp;</span><span class="p">](</span><span class="n">RDGPassContext</span> <span class="n">context</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">				<span class="k">auto</span><span class="o">&amp;</span> <span class="p">[</span><span class="n">w</span><span class="p">,</span> <span class="n">h</span><span class="p">]</span> <span class="o">=</span> <span class="n">APP_WINDOWSIZE</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">				<span class="n">RHICommandListRef</span> <span class="n">command</span> <span class="o">=</span> <span class="n">context</span><span class="p">.</span><span class="n">command</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">				<span class="n">command</span><span class="o">-&gt;</span><span class="n">SetComputePipeline</span><span class="p">(</span><span class="n">m_Pipeline</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">				<span class="n">command</span><span class="o">-&gt;</span><span class="n">BindDescriptorSet</span><span class="p">(</span><span class="n">context</span><span class="p">.</span><span class="n">descriptors</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="mi">1</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">				<span class="kt">uint32_t</span> <span class="n">curIndex</span> <span class="o">=</span> <span class="n">context</span><span class="p">.</span><span class="n">passIndex</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">				<span class="n">command</span><span class="o">-&gt;</span><span class="n">PushConstants</span><span class="p">(</span><span class="o">&amp;</span><span class="n">curIndex</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="kt">uint32_t</span><span class="p">),</span> <span class="n">SHADER_FREQUENCY_COMPUTE</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">				<span class="n">command</span><span class="o">-&gt;</span><span class="n">BindDescriptorSet</span><span class="p">(</span><span class="n">RENDER_RESOURCEMANAGER</span><span class="o">-&gt;</span><span class="n">GetGlobalResourcePerFrameDescriptorSet</span><span class="p">(),</span> <span class="mi">0</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">				<span class="n">command</span><span class="o">-&gt;</span><span class="n">Dispatch</span><span class="p">((</span><span class="n">w</span> <span class="o">+</span> <span class="mi">15</span><span class="p">)</span> <span class="o">/</span> <span class="mi">16</span><span class="p">,</span> <span class="p">(</span><span class="n">h</span> <span class="o">+</span> <span class="mi">15</span><span class="p">)</span> <span class="o">/</span> <span class="mi">16</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">					<span class="p">})</span>
+</span></span><span class="line"><span class="cl">				<span class="p">.</span><span class="n">Finish</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>直接光模糊后结果</p>
+<p><img src="/image-20251227175435193.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251227175435193"
+	
+	
+></p>
+<p>间接光会有闪烁的情况</p>
+<p><img src="/image-20251227175443426.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251227175443426"
+	
+	
+></p>
+<p>滤波公式，每次滤波时都是一个联合双边滤波</p>
+<p><img src="/v2-6acbc34c2aeb7a6c67482c6eac2beb50_1440w.jpg"
+	
+	
+	
+	loading="lazy"
+	
+		alt="img"
+	
+	
+></p>
+<p>具体的联合双边滤波有三部分组成</p>
+<p><img src="/v2-6d1f16d9ad5e8e19e84332faec2b9876_1440w.jpg"
+	
+	
+	
+	loading="lazy"
+	
+		alt="img"
+	
+	
+></p>
+<p>先加入法线贡献</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-glsl" data-lang="glsl"><span class="line"><span class="cl"><span class="c1">// 5x5 Atrous 核心 做了空洞滤波，相当于64*64的卷积核</span>
+</span></span><span class="line"><span class="cl"><span class="n">uint</span> <span class="n">curStep</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">curPassIndex</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="k">for</span> <span class="p">(</span><span class="k">int</span> <span class="n">dy</span> <span class="o">=</span> <span class="o">-</span><span class="mi">2</span><span class="p">;</span> <span class="n">dy</span> <span class="o">&lt;=</span> <span class="mi">2</span><span class="p">;</span> <span class="o">++</span><span class="n">dy</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">for</span> <span class="p">(</span><span class="k">int</span> <span class="n">dx</span> <span class="o">=</span> <span class="o">-</span><span class="mi">2</span><span class="p">;</span> <span class="n">dx</span> <span class="o">&lt;=</span> <span class="mi">2</span><span class="p">;</span> <span class="o">++</span><span class="n">dx</span><span class="p">)</span> <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">ivec2</span> <span class="n">samplePos</span> <span class="o">=</span> <span class="n">invocID</span> <span class="o">+</span> <span class="k">ivec2</span><span class="p">(</span><span class="n">dx</span><span class="p">,</span> <span class="n">dy</span><span class="p">)</span> <span class="o">*</span> <span class="k">int</span><span class="p">(</span><span class="n">curStep</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="c1">// 边界检查</span>
+</span></span><span class="line"><span class="cl">        <span class="n">samplePos</span> <span class="o">=</span> <span class="n">clamp</span><span class="p">(</span><span class="n">samplePos</span><span class="p">,</span> <span class="k">ivec2</span><span class="p">(</span><span class="mo">0</span><span class="p">),</span> <span class="n">imgSize</span> <span class="o">-</span> <span class="mi">1</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="k">vec3</span> <span class="n">sampleColor</span> <span class="o">=</span> <span class="n">imageLoad</span><span class="p">(</span><span class="n">IN_COLOR</span><span class="p">,</span> <span class="n">samplePos</span><span class="p">).</span><span class="n">xyz</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// 高斯</span>
+</span></span><span class="line"><span class="cl">        <span class="k">float</span> <span class="n">gaussWeight</span> <span class="o">=</span> <span class="n">gaussKernel5x5</span><span class="p">[</span><span class="n">dx</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">+</span> <span class="p">(</span><span class="n">dy</span> <span class="o">+</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="mi">5</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// 法线</span>
+</span></span><span class="line"><span class="cl">        <span class="k">vec3</span> <span class="n">sampleNormal</span> <span class="o">=</span> <span class="n">imageLoad</span><span class="p">(</span><span class="n">NORMAL</span><span class="p">,</span> <span class="n">samplePos</span><span class="p">).</span><span class="n">xyz</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="k">float</span> <span class="n">normalWeight</span> <span class="o">=</span> <span class="n">pow</span><span class="p">(</span><span class="n">max</span><span class="p">(</span><span class="n">dot</span><span class="p">(</span><span class="n">normal</span><span class="p">,</span> <span class="n">sampleNormal</span><span class="p">),</span> <span class="mf">0.0</span><span class="p">),</span> <span class="mf">128.0</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="k">float</span> <span class="n">weight</span> <span class="o">=</span> <span class="n">gaussWeight</span><span class="o">*</span><span class="n">normalWeight</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="n">colorSum</span> <span class="o">+=</span> <span class="n">sampleColor</span> <span class="o">*</span> <span class="n">weight</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="n">weightSum</span> <span class="o">+=</span> <span class="n">weight</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>明显还是有问题的，因为小正方形上面和地面法线都朝上，所以贡献偏大了，阴影跑到了正方形上边</p>
+<p><img src="/image-20251227203629144.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251227203629144"
+	
+	
+></p>
+<p><img src="/image-20251227203940229.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20251227203940229"
+	
+	
+></p>
+<p>需要引入颜色差异来解决这个问题，毕竟阴影里的颜色和阴影外的最大区别就是颜色，很容易区分，另外还需要注意颜色差异是噪声造成的还是场景造成的（方差越大，越不应该作为权重评判的指标）</p>
+<p><img src="/v2-c19c75f889c380cf9ab8a626239458c2_1440w.jpg"
+	
+	
+	
+	loading="lazy"
+	
+		alt="img"
+	
+	
+></p>
+<p>分子表示亮度差，差异越大权重越小，但差异过大也可能是噪声导致的，<strong>所以差异大并不一定表示颜色边界</strong></p>
+<p>所以引入方差来表示颜色的变化，方差越大，权重越大。就是越不考虑颜色差异的影响</p>
+<p>这里的方差是指时间维度的方差，这样的话就得用MotionVector来找上一帧的位置，也就可以理解为如果一个像素位置颜色一直在变化，那它就很有可能只是噪声，就不应该用颜色差异来知道滤波，所以这一项权重就会变大</p>
+<p>先根据一阶矩和二阶矩计算出方差</p>
+<p><img src="/v2-13b13bb7036971e0d3090afab39ae3ae_1440w.jpg"
+	
+	
+	
+	loading="lazy"
+	
+		alt="img"
+	
+	
+></p>
+<p>时间上的方差结果只用于第一次滤波，后续4次滤波用一个公式来更新方差值</p>
+<p><img src="/v2-db0340d01f9a0c245e2445c047a2f4f1_1440w.jpg"
+	
+	
+	
+	loading="lazy"
+	
+		alt="img"
+	
+	
+></p>
+
+</section>
+
+
+    <footer class="article-footer">
+    
+    <section class="article-tags">
+        
+            <a href="/tags/%E5%85%89%E7%BA%BF%E8%BF%BD%E8%B8%AA/">光线追踪</a>
+        
+    </section>
+
+
+    
+    <section class="article-copyright">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
+</svg>
+
+
+
+        <span>Licensed under CC BY-NC-SA 4.0</span>
+    </section>
+    </footer>
+
+
+    
+        <link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css"integrity="sha384-n8MVd4RsNIU0tAv4ct0nTaAbDJwPJzDEaqSD1odI&#43;WdtXRGWt2kTvGFasHpSy3SV"crossorigin="anonymous"
+            ><script 
+                src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"integrity="sha384-XjKyOOlGwcjNTAIQHIpgOno0Hl1YQqzUOEleOLALmuqehneUG&#43;vnGctmUb0ZY0l8"crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"integrity="sha384-&#43;VBxd3r6XgURycqtZ117nYw44OOcIax56Z4dCRWbxyPt0Koah1uHoK0o4&#43;/RRE05"crossorigin="anonymous"
+                defer
+                >
+            </script><script>
+    window.addEventListener("DOMContentLoaded", () => {
+	const mainArticleElement = document.querySelector(".main-article");
+        renderMathInElement(mainArticleElement, {
+            delimiters: [
+                { left: "$$", right: "$$", display: true },
+                { left: "$", right: "$", display: false },
+                { left: "\\(", right: "\\)", display: false },
+                { left: "\\[", right: "\\]", display: true }
+            ],
+            ignoredClasses: ["gist"]
+        });})
+</script>
+
+    
+</article>
+
+    
+
+    
+
+<aside class="related-content--wrapper">
+    <h2 class="section-title">相关文章</h2>
+    <div class="related-content">
+        <div class="flex article-list--tile">
+            
+                
+<article class="article-card has-image">
+    <a href="/p/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E5%BC%80%E5%8F%91%E5%AE%9E%E8%B7%B5ddgi/">
+        
+        <div class="article-image-card">
+            
+                <img src="/image-20251211235847350.png" loading="lazy" data-key="" data-hash="/image-20251211235847350.png"/>
+            
+
+            
+            <div class="article-overlay">
+                <h2 class="article-title">游戏引擎开发实践（DDGI）</h2>
+            </div>
+        </div>
+        
+    </a>
+
+    <style>
+     
+    .article-card {
+        background: rgba(255, 255, 255, 0.25);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        margin: 10px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .article-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    }
+
+    .article-card a {
+        display: flex;
+        flex-direction: column;
+        text-decoration: none;
+        color: inherit;
+        height: 100%;
+    }
+
+     
+    .article-image-card {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        overflow: hidden;
+    }
+    .article-image-card img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+    .article-image-card:hover img {
+        transform: scale(1.05);
+    }
+
+     
+    .article-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: rgba(0,0,0,0.3);  
+        padding: 10px;
+        box-sizing: border-box;
+        text-align: center;
+    }
+    .article-overlay .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #fff;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .article-card.no-image .article-details {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 15px;
+    }
+    .article-card.no-image .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #222;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .articles-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 20px;
+    }
+    </style>
+</article>
+            
+                
+<article class="article-card has-image">
+    <a href="/p/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E5%BC%80%E5%8F%91%E5%AE%9E%E8%B7%B5%E6%8A%97%E9%94%AF%E9%BD%BF-taa/">
+        
+        <div class="article-image-card">
+            
+                <img src="/image-20251207191240613.png" loading="lazy" data-key="" data-hash="/image-20251207191240613.png"/>
+            
+
+            
+            <div class="article-overlay">
+                <h2 class="article-title">游戏引擎开发实践（抗锯齿 TAA）</h2>
+            </div>
+        </div>
+        
+    </a>
+
+    <style>
+     
+    .article-card {
+        background: rgba(255, 255, 255, 0.25);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        margin: 10px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .article-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    }
+
+    .article-card a {
+        display: flex;
+        flex-direction: column;
+        text-decoration: none;
+        color: inherit;
+        height: 100%;
+    }
+
+     
+    .article-image-card {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        overflow: hidden;
+    }
+    .article-image-card img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+    .article-image-card:hover img {
+        transform: scale(1.05);
+    }
+
+     
+    .article-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: rgba(0,0,0,0.3);  
+        padding: 10px;
+        box-sizing: border-box;
+        text-align: center;
+    }
+    .article-overlay .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #fff;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .article-card.no-image .article-details {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 15px;
+    }
+    .article-card.no-image .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #222;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .articles-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 20px;
+    }
+    </style>
+</article>
+            
+                
+<article class="article-card no-image">
+    <a href="/p/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E5%BC%80%E5%8F%91%E5%AE%9E%E8%B7%B5%E9%AB%98%E8%B4%A8%E9%87%8Fbloom/">
+        
+        
+        <div class="article-details">
+            <h2 class="article-title">游戏引擎开发实践（高质量Bloom）</h2>
+        </div>
+        
+    </a>
+
+    <style>
+     
+    .article-card {
+        background: rgba(255, 255, 255, 0.25);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        margin: 10px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .article-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    }
+
+    .article-card a {
+        display: flex;
+        flex-direction: column;
+        text-decoration: none;
+        color: inherit;
+        height: 100%;
+    }
+
+     
+    .article-image-card {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        overflow: hidden;
+    }
+    .article-image-card img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+    .article-image-card:hover img {
+        transform: scale(1.05);
+    }
+
+     
+    .article-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: rgba(0,0,0,0.3);  
+        padding: 10px;
+        box-sizing: border-box;
+        text-align: center;
+    }
+    .article-overlay .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #fff;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .article-card.no-image .article-details {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 15px;
+    }
+    .article-card.no-image .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #222;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .articles-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 20px;
+    }
+    </style>
+</article>
+            
+                
+<article class="article-card no-image">
+    <a href="/p/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E5%BC%80%E5%8F%91%E5%AE%9E%E8%B7%B5%E5%A4%A7%E6%B0%94%E6%B8%B2%E6%9F%93/">
+        
+        
+        <div class="article-details">
+            <h2 class="article-title">游戏引擎开发实践（大气渲染）</h2>
+        </div>
+        
+    </a>
+
+    <style>
+     
+    .article-card {
+        background: rgba(255, 255, 255, 0.25);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        margin: 10px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .article-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    }
+
+    .article-card a {
+        display: flex;
+        flex-direction: column;
+        text-decoration: none;
+        color: inherit;
+        height: 100%;
+    }
+
+     
+    .article-image-card {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        overflow: hidden;
+    }
+    .article-image-card img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+    .article-image-card:hover img {
+        transform: scale(1.05);
+    }
+
+     
+    .article-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: rgba(0,0,0,0.3);  
+        padding: 10px;
+        box-sizing: border-box;
+        text-align: center;
+    }
+    .article-overlay .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #fff;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .article-card.no-image .article-details {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 15px;
+    }
+    .article-card.no-image .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #222;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .articles-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 20px;
+    }
+    </style>
+</article>
+            
+                
+<article class="article-card no-image">
+    <a href="/p/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E5%BC%80%E5%8F%91%E5%AE%9E%E8%B7%B5vulkan%E6%9E%B6%E6%9E%84%E7%AF%87image/">
+        
+        
+        <div class="article-details">
+            <h2 class="article-title">游戏引擎开发实践（Vulkan架构篇：Image）</h2>
+        </div>
+        
+    </a>
+
+    <style>
+     
+    .article-card {
+        background: rgba(255, 255, 255, 0.25);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        margin: 10px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .article-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    }
+
+    .article-card a {
+        display: flex;
+        flex-direction: column;
+        text-decoration: none;
+        color: inherit;
+        height: 100%;
+    }
+
+     
+    .article-image-card {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        overflow: hidden;
+    }
+    .article-image-card img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+    .article-image-card:hover img {
+        transform: scale(1.05);
+    }
+
+     
+    .article-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: rgba(0,0,0,0.3);  
+        padding: 10px;
+        box-sizing: border-box;
+        text-align: center;
+    }
+    .article-overlay .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #fff;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .article-card.no-image .article-details {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 15px;
+    }
+    .article-card.no-image .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #222;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .articles-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 20px;
+    }
+    </style>
+</article>
+            
+        </div>
+    </div>
+</aside>
+
+     
+    
+        
+    <script
+    src="https://giscus.app/client.js"
+    data-repo="sdpyy1/sdpyy1.github.io"
+    data-repo-id="R_kgDOQEycpQ"
+    data-category="Announcements"
+    data-category-id="DIC_kwDOQEycpc4Cwz7v"
+    data-mapping="pathname"
+    data-strict="0"
+    data-reactions-enabled="1"
+    data-emit-metadata="0"
+    data-input-position="top"
+    data-theme="light"
+    data-lang="en"
+    data-loading=""
+    crossorigin="anonymous"
+    async
+></script>
+<script>
+    function setGiscusTheme(theme) {
+        let giscus = document.querySelector("iframe.giscus-frame");
+        if (giscus) {
+            giscus.contentWindow.postMessage(
+                {
+                    giscus: {
+                        setConfig: {
+                            theme: theme,
+                        },
+                    },
+                },
+                "https://giscus.app"
+            );
+        }
+    }
+
+    (function () {
+        addEventListener("message", (e) => {
+            if (event.origin !== "https://giscus.app") return;
+            handler();
+        });
+        window.addEventListener("onColorSchemeChange", handler);
+
+        function handler() {
+            if (document.documentElement.dataset.scheme === "light") {
+                setGiscusTheme('light');
+            } else {
+                setGiscusTheme('light');
+            }
+        }
+    })();
+</script>
+
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+            2020 - 
+        
+        2026 爱喝东方树叶
+    </section>
+    <section style="display: flex; gap: 30px; align-items: center;">
+      
+      
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+      <span>📚 文章数: 72</span>
+      <span>✍️ 总字数: 
+        
+        
+        245.52K
+      </span>
+    </section>
+
+    <section class="powerby">
+    
+    <div class="busuanzi-footer">
+        <span id="busuanzi_container_site_pv">
+          本站总访问量<span id="busuanzi_value_site_pv"></span>次
+        </span>
+        <span id="busuanzi_container_site_uv">
+          本站访客数<span id="busuanzi_value_site_uv"></span>人次
+        </span>
+      </div></section>
+
+</footer>
+
+
+    
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    
+    <div class="pswp__bg"></div>
+
+    
+    <div class="pswp__scroll-wrap">
+
+        
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                
+                
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                        <div class="pswp__preloader__cut">
+                            <div class="pswp__preloader__donut"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div>
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js"integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo="crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js"integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU="crossorigin="anonymous"
+                defer
+                >
+            </script><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css"crossorigin="anonymous"
+            ><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css"crossorigin="anonymous"
+            >
+
+            </main>
+        </div>
+        <script 
+                src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js"integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z&#43;KMkF24hUW8WePSA9HM="crossorigin="anonymous"
+                
+                >
+            </script><script type="text/javascript" src="/ts/main.1e9a3bafd846ced4c345d084b355fb8c7bae75701c338f8a1f8a82c780137826.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>
