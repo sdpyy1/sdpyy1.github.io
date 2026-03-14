@@ -1611,7 +1611,7 @@ vector<_Tp, _Alloc>::_M_insert_aux(iterator __position, const _Tp& __x)
 
 Resize操作的是end指针
 
-Reserve操作的是capa	city指针
+Reserve操作的是capacity指针
 
 #### List
 
