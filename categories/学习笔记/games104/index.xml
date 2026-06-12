@@ -1,0 +1,1111 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+    <channel>
+        <title>GAMES104 on wanfeng</title>
+        <link>https://sdpyy1.github.io/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/games104/</link>
+        <description>Recent content in GAMES104 on wanfeng</description>
+        <generator>Hugo -- gohugo.io</generator>
+        <language>zh-cn</language>
+        <copyright>爱喝东方树叶</copyright>
+        <lastBuildDate>Tue, 04 Nov 2025 11:04:19 +0800</lastBuildDate><atom:link href="https://sdpyy1.github.io/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/games104/index.xml" rel="self" type="application/rss+xml" /><item>
+        <title>Games104：物理引擎的基础理论</title>
+        <link>https://sdpyy1.github.io/p/games104%E7%89%A9%E7%90%86%E5%BC%95%E6%93%8E%E7%9A%84%E5%9F%BA%E7%A1%80%E7%90%86%E8%AE%BA/</link>
+        <pubDate>Tue, 04 Nov 2025 11:04:19 +0800</pubDate>
+        
+        <guid>https://sdpyy1.github.io/p/games104%E7%89%A9%E7%90%86%E5%BC%95%E6%93%8E%E7%9A%84%E5%9F%BA%E7%A1%80%E7%90%86%E8%AE%BA/</guid>
+        <description>&lt;img src="https://sdpyy1.github.io/%E6%88%AA%E5%B1%8F2025-11-04-11.15.42.png" alt="Featured image of post Games104：物理引擎的基础理论" /&gt;&lt;blockquote&gt;
+&lt;p&gt;主要讲了欧拉积分、碰撞检测方法、碰撞结算方法
+物理世界的对象:&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;ol&gt;
+&lt;li&gt;Static&lt;/li&gt;
+&lt;li&gt;Dynamic&lt;/li&gt;
+&lt;li&gt;Trigger(参与GamePlay但是与物理世界无关)&lt;/li&gt;
+&lt;li&gt;Kinematic（动力学Actor）&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-11-04-11.09.08.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-11-04 11.09.08&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;h1 id=&#34;actor-shapes&#34;&gt;Actor Shapes
+&lt;/h1&gt;&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-11-04-11.11.53.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-11-04 11.11.53&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-11-04-11.15.42.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-11-04 11.15.42&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;h1 id=&#34;欧拉积分&#34;&gt;欧拉积分
+&lt;/h1&gt;&lt;p&gt;黎曼积分定义为：
+&lt;/p&gt;
+$$
+\int_a^b f(t) \, dt = \lim_{n\to\infty} \sum_{i=0}^{n-1} f(t_i^*) \, \Delta t
+$$&lt;p&gt;
+其中：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;区间 $[a,b]$ 被划分为很多小区间；&lt;/li&gt;
+&lt;li&gt;每个小区间长度为 $\Delta t = \frac{b-a}{n}$；&lt;/li&gt;
+&lt;li&gt;$f(t_i^*)$ 是函数在区间上的一个采样值；&lt;/li&gt;
+&lt;li&gt;积分就是“采样 × 宽度”的极限&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;显式欧拉法 = 左端点采样（Left Riemann Sum）&lt;/strong&gt;
+&lt;strong&gt;隐式欧拉法 = 右端点采样（Right Riemann Sum）&lt;/strong&gt;&lt;/p&gt;
+&lt;h2 id=&#34;显式欧拉积分&#34;&gt;显式欧拉积分
+&lt;/h2&gt;&lt;p&gt;用当前状态的参数来近似 $\Delta T$ ，比如$t_0时速度为5，那就假设$$\Delta T$内都是5来模拟积分。  显式欧拉法 = 用左端点采样的黎曼积分近似。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-11-04-11.29.09.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-11-04 11.29.09&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;这样求积分的问题是：力不守恒，用因为时间段内力不是恒定的。 如下图所示，如果总是以某一点的力的方向来求解，那物体总是朝着切线方向位移，来不及改变力的方向（因为在$\Delta T$时间内力是恒定的）&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-11-04-11.40.01.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-11-04 11.30.18&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-11-04-11.42.33.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-11-04 11.42.33&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;h2 id=&#34;隐式欧拉方法&#34;&gt;隐式欧拉方法
+&lt;/h2&gt;&lt;p&gt;用未来的状态来计算$\Delta T$时间内的数据 。隐式欧拉法 = 用右侧端点采样的黎曼积分近似。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-11-04-11.43.00.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-11-04 11.43.00&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;显然能量衰减了，我在$\Delta T$时间内又不是一直这么小&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-11-04-11.44.31.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-11-04 11.44.31&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;h2 id=&#34;半隐式欧拉法&#34;&gt;半隐式欧拉法
+&lt;/h2&gt;&lt;p&gt;有点像Hack&amp;hellip;..&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-11-04-11.48.52.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-11-04 11.48.52&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;这种方法数学上很稳定 $\Delta T$取0.05就能很好模拟圆周运动了&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-11-04-11.49.32.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-11-04 11.49.32&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-11-04-11.49.23.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-11-04 11.49.23&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;h1 id=&#34;刚体运动学&#34;&gt;刚体运动学
+&lt;/h1&gt;&lt;blockquote&gt;
+&lt;p&gt;这块课程很杂，应该需要用到什么学什么，这里先听课&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-11-04-11.57.07.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-11-04 11.57.07&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;h1 id=&#34;碰撞检测&#34;&gt;碰撞检测
+&lt;/h1&gt;&lt;p&gt;一般分两步：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;AABB检测&lt;/li&gt;
+&lt;li&gt;计算碰撞点&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-11-04-12.06.19.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-11-04 12.06.19&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;h2 id=&#34;broad-phase&#34;&gt;Broad Phase
+&lt;/h2&gt;&lt;p&gt;BVH检测&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-11-04-12.09.12.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-11-04 12.09.12&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;排序检测&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-11-04-12.09.19.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-11-04 12.09.19&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;h2 id=&#34;narrow-phase&#34;&gt;Narrow Phase
+&lt;/h2&gt;&lt;p&gt;用球的半径来检测&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-11-04-12.12.58.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-11-04 12.12.58&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-11-04-12.13.36.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-11-04 12.13.36&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;h3 id=&#34;闵可夫斯基和minkowski-sum&#34;&gt;闵可夫斯基和（Minkowski Sum）
+&lt;/h3&gt;&lt;p&gt;两个点集内全部互相加&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-11-04-12.16.07.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-11-04 12.16.07&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;红色三角形表示Minkowski Sum的结果&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-11-04-12.18.12.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-11-04 12.17.12&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-11-04-12.18.34.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-11-04 12.18.34&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;再定义减法&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-11-04-12.20.18.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-11-04 12.20.18&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;最妙的来了，如果红色图像包了原点，那就碰撞了&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-11-04-12.20.35.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-11-04 12.20.35&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;如何判断这个多边形过原点呢？&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-11-04-12.22.52.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-11-04 12.22.52&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;h3 id=&#34;分离轴原理sat&#34;&gt;分离轴原理(SAT)
+&lt;/h3&gt;&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-11-04-12.24.33.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-11-04 12.24.33&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-11-04-12.26.21.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-11-04 12.26.21&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;h1 id=&#34;碰撞处理&#34;&gt;碰撞处理
+&lt;/h1&gt;&lt;p&gt;处理碰撞后分离&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-11-04-12.28.30.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-11-04 12.28.30&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;h2 id=&#34;hack&#34;&gt;Hack
+&lt;/h2&gt;&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-11-04-12.29.01.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-11-04 12.29.01&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;h2 id=&#34;约束求解&#34;&gt;约束求解
+&lt;/h2&gt;&lt;blockquote&gt;
+&lt;p&gt;需要再看&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-11-04-12.31.35.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-11-04 12.31.35&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-11-04-12.32.14.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-11-04 12.32.14&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;h1 id=&#34;scene-query&#34;&gt;Scene Query
+&lt;/h1&gt;&lt;blockquote&gt;
+&lt;p&gt;查询碰撞点、查询Sweep、查询Overlap&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;raycast查询碰撞点：比如子弹&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-11-04-12.37.50.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-11-04 12.37.50&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;Sweep&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-11-04-12.38.00.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-11-04 12.38.00&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;Overlap：比如爆炸范围overlap了那些Actor&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-11-04-12.38.45.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-11-04 12.38.45&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;h1 id=&#34;优化&#34;&gt;优化
+&lt;/h1&gt;&lt;p&gt;模拟优化&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-11-04-12.41.05.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-11-04 12.41.05&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;CCD：连续碰撞检测，离散检测可能会穿过薄面&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-11-04-12.42.22.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-11-04 12.42.22&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;确定性模拟：不同的机器计算结果应该一致，比如显卡、移动端等差别&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-11-04-12.45.00.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-11-04 12.45.00&#34;
+	
+	
+&gt;&lt;/p&gt;
+</description>
+        </item>
+        <item>
+        <title>Games104：引擎工具链</title>
+        <link>https://sdpyy1.github.io/p/games104%E5%BC%95%E6%93%8E%E5%B7%A5%E5%85%B7%E9%93%BE/</link>
+        <pubDate>Wed, 29 Oct 2025 14:42:31 +0800</pubDate>
+        
+        <guid>https://sdpyy1.github.io/p/games104%E5%BC%95%E6%93%8E%E5%B7%A5%E5%85%B7%E9%93%BE/</guid>
+        <description>&lt;blockquote&gt;
+&lt;p&gt;讲了 GUI架构、Asset的序列化和反序列化、Redo undo实现、反射等技术&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h1 id=&#34;反射&#34;&gt;反射
+&lt;/h1&gt;&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-10-29-15.18.45.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-10-29 15.18.45&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;h2 id=&#34;为什么需要反射&#34;&gt;为什么需要反射
+&lt;/h2&gt;&lt;p&gt;我定义一个定向光组件，刚开始有方向和强度，我想在GUI实时修改，就需要在imgui添加两个按钮来调整，但是定向光的属性越来越多，我并不希望每次都要修改imgui界面来修改，这种就可以让imgui拿到定向光的反射来自动生成&lt;/p&gt;
+&lt;h2 id=&#34;c实现&#34;&gt;C++实现
+&lt;/h2&gt;&lt;p&gt;Piccolo 借助 Clang AST，相当于直接复用了编译器的语法分析，通过在需要反射的类和属性上做标记，让clang AST分析后就会带上这个标记，从而知道了这些信息。 再下一步就是生成对应的反射类（就是自动生成的一些cpp文件，这些文件就包含了GetSet方法来设置原本被反射的类的信息&lt;/p&gt;
+&lt;p&gt;这节内容主要是反射了解一下&lt;/p&gt;
+</description>
+        </item>
+        <item>
+        <title>Games104：高级动画技术：动画树、IK和表情动画</title>
+        <link>https://sdpyy1.github.io/p/games104%E9%AB%98%E7%BA%A7%E5%8A%A8%E7%94%BB%E6%8A%80%E6%9C%AF%E5%8A%A8%E7%94%BB%E6%A0%91ik%E5%92%8C%E8%A1%A8%E6%83%85%E5%8A%A8%E7%94%BB/</link>
+        <pubDate>Sat, 25 Oct 2025 15:45:35 +0800</pubDate>
+        
+        <guid>https://sdpyy1.github.io/p/games104%E9%AB%98%E7%BA%A7%E5%8A%A8%E7%94%BB%E6%8A%80%E6%9C%AF%E5%8A%A8%E7%94%BB%E6%A0%91ik%E5%92%8C%E8%A1%A8%E6%83%85%E5%8A%A8%E7%94%BB/</guid>
+        <description>&lt;img src="https://sdpyy1.github.io/%E6%88%AA%E5%B1%8F2025-10-20-15.21.05.png" alt="Featured image of post Games104：高级动画技术：动画树、IK和表情动画" /&gt;&lt;blockquote&gt;
+&lt;p&gt;这节主要讲了动画在实践时需要的一些技术&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;h1 id=&#34;动画混合&#34;&gt;动画混合
+&lt;/h1&gt;&lt;p&gt;在一个Clip内部，使用KeyFrame之间进行插值&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-10-25-15.47.17.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-10-25 15.47.17&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;Clip之间进行插值，就涉及到如何设置两个Clip的权重，这里静态到走路可以用速度进行插值&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-10-25-15.48.58.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-10-25 15.48.58&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;Clip之间插值取哪一的KeyFrame进行插值呢？&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-10-25-15.53.47.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-10-25 15.53.47&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;h1 id=&#34;混合空间&#34;&gt;混合空间
+&lt;/h1&gt;&lt;h2 id=&#34;1d2d混合空间&#34;&gt;1D/2D混合空间
+&lt;/h2&gt;&lt;p&gt;一维混合就是类似从走到跑的混合，只需要一个速度变量就可以进行权重插值&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-10-25-15.56.04.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-10-25 15.56.04&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;二维混合空间就需要x,y两个参数来确定很多的动画的插值&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-10-25-16.03.49.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-10-25 16.03.49&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;Delaunay Triangulation（德劳内三角剖分）：解决众多动画中那些动画参与插值（并不是所有动画都需要参与）&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;二维插值的问题&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;假设你有 2D Blend Space，点 &lt;code&gt;(x, y)&lt;/code&gt; 表示某个动作（如走、跑、斜向走）。&lt;/li&gt;
+&lt;li&gt;当角色的当前参数 &lt;code&gt;(px, py)&lt;/code&gt; 落在这些点之间时，需要根据它周围的动画点计算混合权重。&lt;/li&gt;
+&lt;li&gt;问题是：怎么快速找到 &lt;code&gt;(px, py)&lt;/code&gt; 所在的区域，并确定参与混合的动画点？&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;strong&gt;三角剖分的思路&lt;/strong&gt;&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;把二维平面上的所有动画点用三角形连起来（Delaunay Triangulation），满足：
+&lt;ul&gt;
+&lt;li&gt;没有点在任意三角形的外接圆内（Delaunay性质）。&lt;/li&gt;
+&lt;li&gt;三角形形状尽量接近等边三角形，避免“瘦长三角形”，这样插值更稳定。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;这样每个三角形的顶点就是 &lt;strong&gt;参与插值的动画点&lt;/strong&gt;。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h2 id=&#34;skeleton-masked-blending&#34;&gt;Skeleton Masked Blending
+&lt;/h2&gt;&lt;p&gt;用来解决两个动画分别作用于不同的骨骼的情况（一个动画控制上半身，一个动画控制下半身）&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-10-25-16.07.00.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-10-25 16.07.00&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;h2 id=&#34;additive-blending&#34;&gt;Additive Blending
+&lt;/h2&gt;&lt;p&gt;Blending做完后还可以再加一个修饰&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-10-25-16.09.21.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-10-25 16.09.21&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;h1 id=&#34;动作状态机asm&#34;&gt;动作状态机（ASM）
+&lt;/h1&gt;&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-10-25-16.12.59.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-10-25 16.12.59&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-10-25-16.14.59.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-10-25 16.14.59&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;h1 id=&#34;动画混合树&#34;&gt;动画混合树
+&lt;/h1&gt;&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-10-25-16.25.08.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-10-25 16.25.08&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;h1 id=&#34;ik&#34;&gt;IK
+&lt;/h1&gt;&lt;p&gt;这块东西在Games105详细记录过了&lt;/p&gt;
+&lt;h1 id=&#34;面部动画&#34;&gt;面部动画
+&lt;/h1&gt;&lt;p&gt;就是用很多的表情单元进行混合&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-10-27-13.48.12.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-10-27 13.48.12&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-10-27-13.50.24.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-10-27 13.50.24&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;直接混合也不行&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-10-27-13.50.42.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-10-27 13.50.42&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;真实存AU存的是一个表情相对于正常面部的便宜&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-10-27-13.51.26.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-10-27 13.51.26&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-10-27-13.52.53.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-10-27 13.52.53&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;h1 id=&#34;动画重定向&#34;&gt;动画重定向
+&lt;/h1&gt;&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-10-27-13.55.59.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-10-27 13.55.59&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-10-27-13.56.41.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-10-27 13.56.41&#34;
+	
+	
+&gt;&lt;/p&gt;
+</description>
+        </item>
+        <item>
+        <title>Games104：游戏引擎的动画技术基础</title>
+        <link>https://sdpyy1.github.io/p/games104%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E7%9A%84%E5%8A%A8%E7%94%BB%E6%8A%80%E6%9C%AF%E5%9F%BA%E7%A1%80/</link>
+        <pubDate>Mon, 20 Oct 2025 15:00:44 +0800</pubDate>
+        
+        <guid>https://sdpyy1.github.io/p/games104%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E7%9A%84%E5%8A%A8%E7%94%BB%E6%8A%80%E6%9C%AF%E5%9F%BA%E7%A1%80/</guid>
+        <description>&lt;img src="https://sdpyy1.github.io/%E6%88%AA%E5%B1%8F2025-10-20-15.21.05.png" alt="Featured image of post Games104：游戏引擎的动画技术基础" /&gt;&lt;h1 id=&#34;蒙皮动画&#34;&gt;蒙皮动画
+&lt;/h1&gt;&lt;p&gt;这里讲的就是科普了一下&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-10-20-15.05.52.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-10-20 15.05.52&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;坐标系&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-10-20-15.09.11.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-10-20 15.09.11&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;实际存储的数据是关节数据&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-10-20-15.16.00.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-10-20 15.16.00&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;Root关节一般存在脚底，为了方便计算移速、跳跃高度。髋关节是第一个子关节&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-10-20-15.17.54.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-10-20 15.17.54&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;T-pose和A-pose：&lt;/p&gt;
+&lt;p&gt;A-pose 下，肩关节旋转角度为 0°，肘部微弯 15°，手掌自然朝向大腿关节，旋转轴处于中性位置，绑定师可以更精确地绘制顶点权重，控制手臂摆动和肌肉变形，提高工作效率和质量。T-pose 中，肩部会受到挤压，当手臂放下时，可能会出现肌肉穿模等问题。A-pose 则能避免这种情况，其腋下、胯部等容易穿帮的区域自然展开，为后续的动画制作提供了更好的基础，减少了调整和修正的工作量。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-10-20-15.21.05.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-10-20 15.21.05&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;h1 id=&#34;3d空间的旋转&#34;&gt;3D空间的旋转
+&lt;/h1&gt;&lt;p&gt;&lt;strong&gt;这块东西在Games105数学原理博客部分已总结&lt;/strong&gt;&lt;/p&gt;
+&lt;h2 id=&#34;欧拉角&#34;&gt;欧拉角
+&lt;/h2&gt;&lt;p&gt;分别沿着三个轴旋转，旋转矩阵可以合并成一个&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-10-20-15.25.36.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-10-20 15.25.36&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;缺点：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;顺序依赖&lt;/li&gt;
+&lt;li&gt;万向锁，直接用公式也能解释，把y轴旋转带入后，整个旋转公式只剩下x轴旋转部分了，z轴的都没了&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-10-20-15.30.46.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-10-20 15.30.46&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;欧拉角的插值有问题&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-10-20-15.32.44.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-10-20 15.32.44&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;h2 id=&#34;四元数&#34;&gt;四元数
+&lt;/h2&gt;&lt;p&gt;在二维平面上可以用复数代表旋转。另外旋转的叠加可以直接通过Product运算算出&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-10-20-15.35.39.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-10-20 15.35.39&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;拓展到3D旋转&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-10-20-15.37.18.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-10-20 15.37.18&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;h3 id=&#34;欧拉角转四元数&#34;&gt;欧拉角转四元数
+&lt;/h3&gt;&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-10-20-15.41.55.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-10-20 15.40.44&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;h3 id=&#34;用四元数旋转一个顶点&#34;&gt;用四元数旋转一个顶点
+&lt;/h3&gt;&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-10-20-15.41.55.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-10-20 15.41.55&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;总结后：直接表达成旋转矩阵如下&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-10-20-15.46.58.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-10-20 15.46.58&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;h3 id=&#34;用四元数表达从u旋转到v&#34;&gt;用四元数表达从U旋转到V
+&lt;/h3&gt;&lt;p&gt;可以通过下面的公式计算出对应的旋转四元数是多少&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-10-20-15.49.08.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-10-20 15.49.08&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;h3 id=&#34;四元数表达给定轴的旋转&#34;&gt;四元数表达给定轴的旋转
+&lt;/h3&gt;&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-10-20-15.50.10.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-10-20 15.50.10&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;h1 id=&#34;蒙皮动画-1&#34;&gt;蒙皮动画
+&lt;/h1&gt;&lt;h2 id=&#34;骨骼信息&#34;&gt;骨骼信息
+&lt;/h2&gt;&lt;p&gt;旋转，大部分都是以旋转为主&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-10-21-14.26.58.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-10-21 14.26.58&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;平移&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-10-21-14.27.31.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-10-21 14.27.31&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;平移还是有用的，比如站立和蹲下是时Root和髋关节就发生了平移&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-10-21-14.28.10.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-10-21 14.28.10&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-10-21-14.28.42.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-10-21 14.28.42&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;放缩&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-10-21-14.29.24.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-10-21 14.29.24&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;所以Joint Pose就是，其中旋转矩阵可以通过四元数转化而来（注意这个变换不需要透视除法）&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-10-21-14.33.36.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-10-21 14.33.36&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;另外骨骼信息存储的都在局部坐标系，也就是说骨骼信息存储的实际是它相对于父骨骼的变换信息，而不是相对于整个模型。&lt;/p&gt;
+&lt;p&gt;如果使用局部坐标系：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;只需更新父骨骼的变换，就能自动影响子骨骼。&lt;/li&gt;
+&lt;li&gt;方便做&lt;strong&gt;层级动画&lt;/strong&gt;，比如抬手动作只需要改手臂局部变换，身体会自动跟随。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;如果存储在模型坐标系：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;每个骨骼的世界变换必须单独存储或重复计算。&lt;/li&gt;
+&lt;li&gt;当父骨骼旋转时，需要手动更新所有子骨骼的世界位置，&lt;strong&gt;计算复杂且容易出错&lt;/strong&gt;。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;动画混合（比如走路 + 挥手）通常对&lt;strong&gt;局部骨骼变换&lt;/strong&gt;进行插值或加权，而不是对世界位置插值：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;局部空间插值保持层次一致性，不会出现骨骼分离或错位。&lt;/li&gt;
+&lt;li&gt;世界空间插值容易导致骨骼错位或姿势破坏，因为子骨骼的位置依赖父骨骼。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-10-21-14.37.41.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-10-21 14.37.41&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;h2 id=&#34;蒙皮矩阵&#34;&gt;蒙皮矩阵
+&lt;/h2&gt;&lt;p&gt;现在已经理解了骨骼信息如何存储，下面介绍骨骼信息如何作用到顶点上&lt;/p&gt;
+&lt;p&gt;下图说明即使骨骼移动，顶点与骨骼的相对位置并不会变化&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-10-21-14.51.20.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-10-21 14.51.20&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;Bind Pose：默认姿态用于绑定骨骼和顶点&lt;/p&gt;
+&lt;p&gt;下面三个参数分别是某个顶点：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;绑定姿态下的模型空间位置&lt;/li&gt;
+&lt;li&gt;绑定姿态下的局部空间位置&lt;/li&gt;
+&lt;li&gt;绑定姿态下的骨骼在模型空间的位置&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;顶点相对于骨骼的位置在任何时候都不会变，并且等于骨骼在模型空间位置的逆矩阵 x 顶点在模型空间中的位置&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-10-21-14.52.37.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-10-21 14.52.37&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;顶点的位置 = BindPose下顶点位置先转到骨骼的局部坐标系再跟着骨骼运动后的位置&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-10-21-14.58.41.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-10-21 14.58.41&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;在存储骨骼信息时，需要存储Inverse BindPose Matrix，它是把变换矩阵一路从父节点传递下来，得到当前骨骼的模型坐标系下的变换信息，然后求逆。&lt;/p&gt;
+&lt;p&gt;Inverse BindPose Matrix的作用是把一个在模型坐标系下的顶点坐标（bindpose下的）转移到这根骨骼上，所以不管任何时候，转移后得到的结果都应该是一样的&lt;/p&gt;
+&lt;p&gt;把顶点信息（bindpose下）转移到骨骼后，再乘以现在的骨骼变换矩阵，就得到了顶点的现在的位置（实际位置），这样也就得到了一帧动画下这个顶点的位置&lt;/p&gt;
+&lt;h2 id=&#34;蒙皮变换&#34;&gt;蒙皮变换
+&lt;/h2&gt;&lt;p&gt;总结下：在骨骼蒙皮动画中，每个顶点在 &lt;strong&gt;Bind Pose（绑定姿态）&lt;/strong&gt; 下的模型空间位置，通过 &lt;strong&gt;Skinning Matrix&lt;/strong&gt;（即 $M_i \cdot B_i^{-1}$ 的加权和）进行变换后，就得到了该顶点在当前动画帧下的最终渲染位置。
+&lt;/p&gt;
+$$
+v_\text{final} = \sum_i w_i \, (M_i \cdot B_i^{-1}) \, v_\text{bind}
+$$&lt;ul&gt;
+&lt;li&gt;$v_\text{bind}$ —— 顶点在绑定姿态下的模型空间坐标&lt;/li&gt;
+&lt;li&gt;$B_i^{-1}$ —— 骨骼绑定姿态的逆矩阵（Inverse Bind Pose）&lt;/li&gt;
+&lt;li&gt;$M_i$ —— 当前帧骨骼的变换矩阵&lt;/li&gt;
+&lt;li&gt;$w_i$ —— 顶点对骨骼的权重&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;另外再乘上Model变换矩阵，就转移到世界坐标系，所以传递给GPU的变换信息应该是下面这个整体的变换公式&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-10-21-15.16.04.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-10-21 15.16.04&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;多个骨骼影响的加权平均应该放在模型坐标系&lt;/strong&gt;&lt;/p&gt;
+&lt;h1 id=&#34;动画的插值&#34;&gt;动画的插值
+&lt;/h1&gt;&lt;p&gt;Games105（2）已经详细记录&lt;/p&gt;
+&lt;p&gt;四元数的NLearp插值的角速度不同&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-10-21-15.27.46.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-10-21 15.27.46&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;解决上述问题的办法&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-10-21-15.28.07.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-10-21 15.28.07&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;h1 id=&#34;动画的runtime-pipeline&#34;&gt;动画的Runtime Pipeline
+&lt;/h1&gt;&lt;ol&gt;
+&lt;li&gt;计算运行时间&lt;/li&gt;
+&lt;li&gt;计算插值&lt;/li&gt;
+&lt;li&gt;计算骨骼信息&lt;/li&gt;
+&lt;li&gt;计算蒙皮矩阵&lt;/li&gt;
+&lt;li&gt;更新顶点信息&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-10-21-15.29.42.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-10-21 15.29.42&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;h1 id=&#34;动画压缩&#34;&gt;动画压缩
+&lt;/h1&gt;&lt;p&gt;5S的动画数据要求2GB存储空间&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-10-21-15.31.58.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-10-21 15.31.58&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;骨骼信息大量变化的都是旋转&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-10-21-15.35.11.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-10-21 15.35.11&#34;
+	
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://sdpyy1.github.io/%e6%88%aa%e5%b1%8f2025-10-21-15.40.49.png&#34;
+	
+	
+	
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;截屏2025-10-21 15.40.49&#34;
+	
+	
+&gt;&lt;/p&gt;
+</description>
+        </item>
+        
+    </channel>
+</rss>

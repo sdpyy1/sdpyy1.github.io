@@ -7,140 +7,172 @@
         <generator>Hugo -- gohugo.io</generator>
         <language>zh-cn</language>
         <copyright>爱喝东方树叶</copyright>
-        <lastBuildDate>Fri, 26 Dec 2025 15:26:32 +0800</lastBuildDate><atom:link href="https://sdpyy1.github.io/categories/index.xml" rel="self" type="application/rss+xml" /><item>
-        <title>GameEngine</title>
-        <link>https://sdpyy1.github.io/categories/projects/gameengine/</link>
-        <pubDate>Fri, 26 Dec 2025 15:26:32 +0800</pubDate>
-        
-        <guid>https://sdpyy1.github.io/categories/projects/gameengine/</guid>
-        <description></description>
-        </item>
-        <item>
+        <lastBuildDate>Fri, 20 Feb 2026 20:02:28 +0800</lastBuildDate><atom:link href="https://sdpyy1.github.io/categories/index.xml" rel="self" type="application/rss+xml" /><item>
         <title>Projects</title>
         <link>https://sdpyy1.github.io/categories/projects/</link>
-        <pubDate>Fri, 26 Dec 2025 15:26:32 +0800</pubDate>
+        <pubDate>Fri, 20 Feb 2026 20:02:28 +0800</pubDate>
         
         <guid>https://sdpyy1.github.io/categories/projects/</guid>
         <description></description>
         </item>
         <item>
-        <title>Engines</title>
-        <link>https://sdpyy1.github.io/categories/engines/</link>
-        <pubDate>Sat, 13 Dec 2025 12:29:39 +0800</pubDate>
+        <title>游戏引擎</title>
+        <link>https://sdpyy1.github.io/categories/projects/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E/</link>
+        <pubDate>Fri, 20 Feb 2026 20:02:28 +0800</pubDate>
         
-        <guid>https://sdpyy1.github.io/categories/engines/</guid>
+        <guid>https://sdpyy1.github.io/categories/projects/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E/</guid>
         <description></description>
         </item>
         <item>
-        <title>UE</title>
-        <link>https://sdpyy1.github.io/categories/engines/ue/</link>
-        <pubDate>Sat, 13 Dec 2025 12:29:39 +0800</pubDate>
+        <title>PBRT</title>
+        <link>https://sdpyy1.github.io/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/pbrt/</link>
+        <pubDate>Thu, 25 Dec 2025 14:10:44 +0800</pubDate>
         
-        <guid>https://sdpyy1.github.io/categories/engines/ue/</guid>
+        <guid>https://sdpyy1.github.io/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/pbrt/</guid>
         <description></description>
         </item>
         <item>
-        <title>Rendering</title>
-        <link>https://sdpyy1.github.io/categories/rendering/</link>
-        <pubDate>Fri, 21 Nov 2025 13:33:36 +0800</pubDate>
+        <title>学习笔记</title>
+        <link>https://sdpyy1.github.io/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/</link>
+        <pubDate>Thu, 25 Dec 2025 14:10:44 +0800</pubDate>
         
-        <guid>https://sdpyy1.github.io/categories/rendering/</guid>
+        <guid>https://sdpyy1.github.io/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/</guid>
+        <description></description>
+        </item>
+        <item>
+        <title>虚幻引擎</title>
+        <link>https://sdpyy1.github.io/categories/%E8%99%9A%E5%B9%BB%E5%BC%95%E6%93%8E/</link>
+        <pubDate>Sat, 13 Dec 2025 12:29:39 +0800</pubDate>
+        
+        <guid>https://sdpyy1.github.io/categories/%E8%99%9A%E5%B9%BB%E5%BC%95%E6%93%8E/</guid>
         <description></description>
         </item>
         <item>
         <title>Vulkan</title>
-        <link>https://sdpyy1.github.io/categories/rendering/vulkan/</link>
+        <link>https://sdpyy1.github.io/categories/%E5%9B%BE%E5%BD%A2api/vulkan/</link>
         <pubDate>Fri, 21 Nov 2025 13:33:36 +0800</pubDate>
         
-        <guid>https://sdpyy1.github.io/categories/rendering/vulkan/</guid>
+        <guid>https://sdpyy1.github.io/categories/%E5%9B%BE%E5%BD%A2api/vulkan/</guid>
         <description></description>
         </item>
         <item>
-        <title>Courses</title>
-        <link>https://sdpyy1.github.io/categories/course/</link>
+        <title>图形API</title>
+        <link>https://sdpyy1.github.io/categories/%E5%9B%BE%E5%BD%A2api/</link>
+        <pubDate>Fri, 21 Nov 2025 13:33:36 +0800</pubDate>
+        
+        <guid>https://sdpyy1.github.io/categories/%E5%9B%BE%E5%BD%A2api/</guid>
+        <description></description>
+        </item>
+        <item>
+        <title>Ray Tracing 系列</title>
+        <link>https://sdpyy1.github.io/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/raytracing%E7%B3%BB%E5%88%97/</link>
+        <pubDate>Sat, 15 Nov 2025 12:22:52 +0800</pubDate>
+        
+        <guid>https://sdpyy1.github.io/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/raytracing%E7%B3%BB%E5%88%97/</guid>
+        <description></description>
+        </item>
+        <item>
+        <title>其他</title>
+        <link>https://sdpyy1.github.io/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/%E5%85%B6%E4%BB%96/</link>
+        <pubDate>Tue, 11 Nov 2025 13:43:46 +0800</pubDate>
+        
+        <guid>https://sdpyy1.github.io/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/%E5%85%B6%E4%BB%96/</guid>
+        <description></description>
+        </item>
+        <item>
+        <title>GAMES104</title>
+        <link>https://sdpyy1.github.io/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/games104/</link>
         <pubDate>Tue, 04 Nov 2025 11:04:19 +0800</pubDate>
         
-        <guid>https://sdpyy1.github.io/categories/course/</guid>
-        <description></description>
-        </item>
-        <item>
-        <title>Games104</title>
-        <link>https://sdpyy1.github.io/categories/course/games104/</link>
-        <pubDate>Tue, 04 Nov 2025 11:04:19 +0800</pubDate>
-        
-        <guid>https://sdpyy1.github.io/categories/course/games104/</guid>
-        <description></description>
-        </item>
-        <item>
-        <title>Books</title>
-        <link>https://sdpyy1.github.io/categories/books/</link>
-        <pubDate>Wed, 29 Oct 2025 13:51:52 +0800</pubDate>
-        
-        <guid>https://sdpyy1.github.io/categories/books/</guid>
+        <guid>https://sdpyy1.github.io/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/games104/</guid>
         <description></description>
         </item>
         <item>
         <title>Real-Time Rendering 4th</title>
-        <link>https://sdpyy1.github.io/categories/books/real-time-rendering-4th/</link>
+        <link>https://sdpyy1.github.io/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/rtr4th/</link>
         <pubDate>Wed, 29 Oct 2025 13:51:52 +0800</pubDate>
         
-        <guid>https://sdpyy1.github.io/categories/books/real-time-rendering-4th/</guid>
+        <guid>https://sdpyy1.github.io/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/rtr4th/</guid>
         <description></description>
         </item>
         <item>
-        <title>Games105</title>
-        <link>https://sdpyy1.github.io/categories/course/games105/</link>
+        <title>GAMES105</title>
+        <link>https://sdpyy1.github.io/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/games105/</link>
         <pubDate>Sun, 19 Oct 2025 14:25:28 +0800</pubDate>
         
-        <guid>https://sdpyy1.github.io/categories/course/games105/</guid>
+        <guid>https://sdpyy1.github.io/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/games105/</guid>
         <description></description>
         </item>
         <item>
-        <title>OpenGLRender</title>
-        <link>https://sdpyy1.github.io/categories/projects/openglrender/</link>
+        <title>OpenGL渲染器</title>
+        <link>https://sdpyy1.github.io/categories/projects/opengl%E6%B8%B2%E6%9F%93%E5%99%A8/</link>
         <pubDate>Sun, 19 Oct 2025 14:20:40 +0800</pubDate>
         
-        <guid>https://sdpyy1.github.io/categories/projects/openglrender/</guid>
+        <guid>https://sdpyy1.github.io/categories/projects/opengl%E6%B8%B2%E6%9F%93%E5%99%A8/</guid>
         <description></description>
         </item>
         <item>
-        <title>Assignment</title>
-        <link>https://sdpyy1.github.io/categories/assignment/</link>
+        <title>GAMES202</title>
+        <link>https://sdpyy1.github.io/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/games202/</link>
         <pubDate>Sun, 19 Oct 2025 14:05:15 +0800</pubDate>
         
-        <guid>https://sdpyy1.github.io/categories/assignment/</guid>
-        <description></description>
-        </item>
-        <item>
-        <title>Games202</title>
-        <link>https://sdpyy1.github.io/categories/course/games202/</link>
-        <pubDate>Sun, 19 Oct 2025 14:05:15 +0800</pubDate>
-        
-        <guid>https://sdpyy1.github.io/categories/course/games202/</guid>
+        <guid>https://sdpyy1.github.io/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/games202/</guid>
         <description></description>
         </item>
         <item>
         <title>OpenGL</title>
-        <link>https://sdpyy1.github.io/categories/rendering/opengl/</link>
+        <link>https://sdpyy1.github.io/categories/%E5%9B%BE%E5%BD%A2api/opengl/</link>
         <pubDate>Sun, 19 Oct 2025 13:53:52 +0800</pubDate>
         
-        <guid>https://sdpyy1.github.io/categories/rendering/opengl/</guid>
+        <guid>https://sdpyy1.github.io/categories/%E5%9B%BE%E5%BD%A2api/opengl/</guid>
         <description></description>
         </item>
         <item>
-        <title>TinyRender</title>
-        <link>https://sdpyy1.github.io/categories/projects/tinyrender/</link>
+        <title>CPU渲染器</title>
+        <link>https://sdpyy1.github.io/categories/projects/cpu%E6%B8%B2%E6%9F%93%E5%99%A8/</link>
         <pubDate>Sun, 19 Oct 2025 13:42:48 +0800</pubDate>
         
-        <guid>https://sdpyy1.github.io/categories/projects/tinyrender/</guid>
+        <guid>https://sdpyy1.github.io/categories/projects/cpu%E6%B8%B2%E6%9F%93%E5%99%A8/</guid>
         <description></description>
         </item>
         <item>
-        <title>Games101</title>
-        <link>https://sdpyy1.github.io/categories/course/games101/</link>
+        <title>GAMES101</title>
+        <link>https://sdpyy1.github.io/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/games101/</link>
         <pubDate>Sun, 19 Oct 2025 13:32:46 +0800</pubDate>
         
-        <guid>https://sdpyy1.github.io/categories/course/games101/</guid>
+        <guid>https://sdpyy1.github.io/categories/%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0/games101/</guid>
+        <description></description>
+        </item>
+        <item>
+        <title>DX11</title>
+        <link>https://sdpyy1.github.io/categories/%E5%9B%BE%E5%BD%A2api/dx11/</link>
+        <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+        
+        <guid>https://sdpyy1.github.io/categories/%E5%9B%BE%E5%BD%A2api/dx11/</guid>
+        <description></description>
+        </item>
+        <item>
+        <title>DX12</title>
+        <link>https://sdpyy1.github.io/categories/%E5%9B%BE%E5%BD%A2api/dx12/</link>
+        <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+        
+        <guid>https://sdpyy1.github.io/categories/%E5%9B%BE%E5%BD%A2api/dx12/</guid>
+        <description></description>
+        </item>
+        <item>
+        <title>Metal</title>
+        <link>https://sdpyy1.github.io/categories/%E5%9B%BE%E5%BD%A2api/metal/</link>
+        <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+        
+        <guid>https://sdpyy1.github.io/categories/%E5%9B%BE%E5%BD%A2api/metal/</guid>
+        <description></description>
+        </item>
+        <item>
+        <title>面试</title>
+        <link>https://sdpyy1.github.io/categories/%E9%9D%A2%E8%AF%95/</link>
+        <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+        
+        <guid>https://sdpyy1.github.io/categories/%E9%9D%A2%E8%AF%95/</guid>
         <description></description>
         </item>
         
