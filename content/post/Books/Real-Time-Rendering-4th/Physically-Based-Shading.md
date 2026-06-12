@@ -1,11 +1,9 @@
-+++
-date = '2025-10-20T11:41:15+08:00'
++++date = '2025-10-20T11:41:15+08:00'
 draft = false
 title = 'Physically Based Shading (1) 光与颜色' 
-categories = ["Books/Real-Time Rendering 4th"]
+categories = ["学习笔记/RTR4th"]
 tags = ["看书笔记","实时渲染","Real-Time Rendering 4th"]
 image = '202306132029525.png'
-
 +++
 
 # Light and Color 光与颜色

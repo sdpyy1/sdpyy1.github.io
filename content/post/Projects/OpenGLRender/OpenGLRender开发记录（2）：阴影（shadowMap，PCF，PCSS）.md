@@ -1,8 +1,7 @@
-+++
-date = '2025-10-19T14:19:37+08:00'
++++date = '2025-10-19T14:19:37+08:00'
 draft = false
 title = 'OpenGLRender开发记录（2）：阴影（shadowMap，PCF，PCSS）'
-categories = ["Projects/OpenGLRender"]
+categories = ["Projects/OpenGL渲染器"]
 tags = ["渲染器开发","OpenGLRender","OpenGL"]
 image = '976b5ef841fd4cda9621c4812dd3dba4.png'
 +++

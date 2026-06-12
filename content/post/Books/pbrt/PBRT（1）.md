@@ -1,7 +1,7 @@
-+++
-date = '2025-12-21T20:09:22+08:00'
++++date = '2025-12-21T20:09:22+08:00'
 draft = true
 title = 'PBRT（1）'
+categories = ["学习笔记/PBRT"]
 +++
 
 # PBRT入门

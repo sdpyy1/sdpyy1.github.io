@@ -1,9 +1,8 @@
-+++
-date = '2025-12-07T20:36:06+08:00'
++++date = '2025-12-07T20:36:06+08:00'
 draft = false
 title = '游戏引擎开发实践（DDGI）'
 tags = ['全局光照','光线追踪']
-categories = ["Projects/GameEngine"]
+categories = ["Projects/游戏引擎"]
 image = 'image-20251211235847350.png'
 +++
 

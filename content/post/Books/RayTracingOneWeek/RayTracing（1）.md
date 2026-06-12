@@ -1,9 +1,9 @@
-+++
-date = '2025-11-12T13:26:10+08:00'
++++date = '2025-11-12T13:26:10+08:00'
 draft = false
 title = 'RayTracingOneWeek'
 tags = ["RayTracing"]
 image = 'image-20251114165052053.png'
+categories = ["学习笔记/RayTracing系列"]
 +++
 
 # Ray-Sphere Intersection

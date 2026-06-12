@@ -1,8 +1,7 @@
-+++
-date = '2026-01-25T16:21:06+08:00'
++++date = '2026-01-25T16:21:06+08:00'
 draft = false
 title = '游戏引擎开发实践（FXAA   TODO）'
-
+categories = ["Projects/游戏引擎"]
 +++
 
 > FXAA（**fast approximate antialiasing**） 的思路是检测图像的边界，只在边界处进行滤波，达到抗锯齿的效果，确实锯齿效果就是发生在边界

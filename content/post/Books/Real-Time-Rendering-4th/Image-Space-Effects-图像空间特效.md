@@ -1,8 +1,7 @@
-+++
-date = '2025-10-28T11:59:27+08:00'
++++date = '2025-10-28T11:59:27+08:00'
 draft = false
 title = 'Image Space Effects 图像空间特效'
-categories = ["Books/Real-Time Rendering 4th"]
+categories = ["学习笔记/RTR4th"]
 tags = ["看书笔记","实时渲染","Real-Time Rendering 4th"]
 image= '202307131302667.png'
 +++

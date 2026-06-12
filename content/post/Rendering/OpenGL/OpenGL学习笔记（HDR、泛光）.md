@@ -1,8 +1,7 @@
-+++
-date = '2025-10-19T13:52:28+08:00'
++++date = '2025-10-19T13:52:28+08:00'
 draft = false
 title = 'OpenGL学习笔记（HDR、泛光）'
-categories = ["Rendering/OpenGL"]
+categories = ["图形API/OpenGL"]
 tags = ["API学习","OpenGL"]
 image = '3f35480e680a4948bb8b80386c384e22.png'
 +++

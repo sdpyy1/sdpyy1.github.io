@@ -1,8 +1,7 @@
-+++
-date = '2025-10-29T14:42:31+08:00'
++++date = '2025-10-29T14:42:31+08:00'
 draft = false
 title = 'Games104：引擎工具链'
-categories = ["Course/Games104"]
+categories = ["学习笔记/GAMES104"]
 tags = ["课程笔记","Games104"]
 +++
 

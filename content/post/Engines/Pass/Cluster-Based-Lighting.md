@@ -1,9 +1,8 @@
-+++
-date = '2025-11-24T11:14:58+08:00'
++++date = '2025-11-24T11:14:58+08:00'
 draft = false
 title = 'Cluster Based Lighting'
 tags = ['渲染Pass学习']
-
+categories = ["虚幻引擎"]
 +++
 
 # Cluster Based Lighting

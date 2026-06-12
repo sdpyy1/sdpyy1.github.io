@@ -1,8 +1,7 @@
-+++
-date = '2025-10-19T13:42:48+08:00'
++++date = '2025-10-19T13:42:48+08:00'
 draft = false
 title = 'TinyRender开发记录 5-7'
-categories = ["Projects/TinyRender"]
+categories = ["Projects/CPU渲染器"]
 tags = ["渲染器开发","TinyRender"]
 image = '23afe9a8003a44a788f6448c182b6b68.png'
 +++

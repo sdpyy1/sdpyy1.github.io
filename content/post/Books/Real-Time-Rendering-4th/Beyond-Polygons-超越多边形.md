@@ -1,8 +1,7 @@
-+++
-date = '2025-10-29T13:51:52+08:00'
++++date = '2025-10-29T13:51:52+08:00'
 draft = false
 title = 'Beyond Polygons 超越多边形'
-categories = ["Books/Real-Time Rendering 4th"]
+categories = ["学习笔记/RTR4th"]
 tags = ["看书笔记","实时渲染","Real-Time Rendering 4th"]
 image = '202308191853823.png'
 +++

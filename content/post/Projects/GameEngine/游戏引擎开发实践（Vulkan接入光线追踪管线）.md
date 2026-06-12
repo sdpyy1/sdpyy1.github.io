@@ -1,9 +1,8 @@
-+++
-date = '2025-12-02T16:22:18+08:00'
++++date = '2025-12-02T16:22:18+08:00'
 draft = false
 title = '游戏引擎开发实践（Vulkan接入光线追踪光线）'
 tags = ["Vulkan","光线追踪"]
-
+categories = ["Projects/游戏引擎"]
 +++
 
 # Vulkan接入光追管线

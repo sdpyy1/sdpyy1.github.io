@@ -1,11 +1,9 @@
-+++
-date = '2025-10-19T14:13:50+08:00'
++++date = '2025-10-19T14:13:50+08:00'
 draft = false
 title = 'OpenGLRender开发记录（1）：基于图像的光照（IBL）'
-categories = ["Projects/OpenGLRender"]
+categories = ["Projects/OpenGL渲染器"]
 tags = ["渲染器开发","OpenGLRender","OpenGL"]
 image = 'bbcca62cc5b24dc29f8a6396d10b8572.png'
-
 +++
 # 已实现功能
 前边基础架构部分就不专门写了。这里展示一下已有的功能

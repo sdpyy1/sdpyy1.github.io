@@ -1,8 +1,7 @@
-+++
-date = '2025-10-29T12:17:56+08:00'
++++date = '2025-10-29T12:17:56+08:00'
 draft = false
 title = 'ComputerShader学习'
-categories = ["Rendering/Vulkan"]
+categories = ["图形API/Vulkan"]
 tags = ["API学习","Vulkan"]
 +++
 

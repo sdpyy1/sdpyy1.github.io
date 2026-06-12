@@ -1,8 +1,7 @@
-+++
-date = '2025-10-19T13:48:28+08:00'
++++date = '2025-10-19T13:48:28+08:00'
 draft = false
 title = 'OpenGL学习笔记（简介、三角形、着色器、纹理、坐标系统、摄像机）'
-categories = ["Rendering/OpenGL"]
+categories = ["图形API/OpenGL"]
 tags = ["API学习","OpenGL"]
 image = '3779db9d1ff84e66b075f0dd6d1edb90.png'
 +++

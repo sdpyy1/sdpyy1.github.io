@@ -1,8 +1,7 @@
-+++
-date = '2025-10-19T12:49:13+08:00'
++++date = '2025-10-19T12:49:13+08:00'
 draft = false
 title = 'GAMES101 现代计算机图形学入门 Camera Lenses Light Fields Color and Perception'
-categories = ["Course/Games101"]
+categories = ["学习笔记/GAMES101"]
 tags = ["课程笔记","Games101"]
 image = '05414f77c7904ed5851265148aa16f58.png'
 +++

@@ -1,10 +1,8 @@
-+++
-date = '2025-12-13T12:29:39+08:00'
++++date = '2025-12-13T12:29:39+08:00'
 draft = false
 title = 'UE源码学习（渲染机制）'
-categories = ["Engines/UE"]
+categories = ["虚幻引擎"]
 tags = ["UE源码"]
-
 +++
 > 内容参考https://www.cnblogs.com/timlly/p/14588598.html、https://www.cnblogs.com/timlly/p/14327537.html#25-ue%E7%9A%84%E5%A4%9A%E7%BA%BF%E7%A8%8B%E6%B8%B2%E6%9F%93
 

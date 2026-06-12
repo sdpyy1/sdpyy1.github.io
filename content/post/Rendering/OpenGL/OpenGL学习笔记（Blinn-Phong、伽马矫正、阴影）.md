@@ -1,8 +1,7 @@
-+++
-date = '2025-10-19T13:50:26+08:00'
++++date = '2025-10-19T13:50:26+08:00'
 draft = false
 title = 'OpenGL学习笔记（Blinn Phong、伽马矫正、阴影）'
-categories = ["Rendering/OpenGL"]
+categories = ["图形API/OpenGL"]
 tags = ["API学习","OpenGL"]
 image = 'e876017653874542a3d6dcca727f0a04.png'
 +++

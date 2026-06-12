@@ -1,8 +1,7 @@
-+++
-date = '2025-10-19T12:48:02+08:00'
++++date = '2025-10-19T12:48:02+08:00'
 draft = false
 title = 'GAMES101 现代计算机图形学入门 Animation/Simulation'
-categories = ["Course/Games101"]
+categories = ["学习笔记/GAMES101"]
 tags = ["课程笔记","Games101"]
 image = '49ba0bbdd1d24a848de86f532c675a7e.png'
 +++

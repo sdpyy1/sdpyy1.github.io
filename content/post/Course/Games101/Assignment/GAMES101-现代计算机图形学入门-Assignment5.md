@@ -1,8 +1,7 @@
-+++
-date = '2025-10-19T13:24:12+08:00'
++++date = '2025-10-19T13:24:12+08:00'
 draft = false
 title = 'GAMES101 现代计算机图形学入门 Assignment5'
-categories = ["Course/Games101","Assignment"]
+categories = ["学习笔记/GAMES101"]
 tags = ["课程作业","Games101"]
 image = '596150ce910e433694d4bb76ebe253f6.png'
 +++

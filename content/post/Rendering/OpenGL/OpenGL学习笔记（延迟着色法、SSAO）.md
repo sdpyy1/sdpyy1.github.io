@@ -1,8 +1,7 @@
-+++
-date = '2025-10-19T13:53:03+08:00'
++++date = '2025-10-19T13:53:03+08:00'
 draft = false
 title = 'OpenGL学习笔记（延迟着色法、SSAO）'
-categories = ["Rendering/OpenGL"]
+categories = ["图形API/OpenGL"]
 tags = ["API学习","OpenGL"]
 image = '5d72ce7b8a844d10a11dbfa6f72f7733.png'
 +++

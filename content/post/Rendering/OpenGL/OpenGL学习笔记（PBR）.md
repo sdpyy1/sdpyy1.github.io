@@ -1,8 +1,7 @@
-+++
-date = '2025-10-19T13:53:52+08:00'
++++date = '2025-10-19T13:53:52+08:00'
 draft = false
 title = 'OpenGL学习笔记（PBR）'
-categories = ["Rendering/OpenGL"]
+categories = ["图形API/OpenGL"]
 tags = ["API学习","OpenGL"]
 image = 'f9c17e0cf6ff46a7a63a8f8199cf48b0.png'
 +++

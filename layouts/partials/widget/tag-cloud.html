@@ -11,8 +11,8 @@
 
     <div class="tagCloud-tags">
         {{ range $context.Site.Taxonomies.categories.ByCount }}
-            {{- $categoryKey := .Page.File.Path -}}
-            {{- if and (not (in $displayed $categoryKey)) (lt $count $limit) -}}
+            {{- $categoryKey := .Page.Name -}}
+            {{- if and (not (in $displayed $categoryKey)) (lt $count $limit) (ne "" .Page.Title) -}}
                 {{- $displayed = $displayed | append $categoryKey -}}
                 {{- $count = add $count 1 -}}
                 

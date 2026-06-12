@@ -1,8 +1,7 @@
-+++
-date = '2025-10-25T13:59:45+08:00'
++++date = '2025-10-25T13:59:45+08:00'
 draft = false
 title = 'Global Illumination 全局光照'
-categories = ["Books/Real-Time Rendering 4th"]
+categories = ["学习笔记/RTR4th"]
 tags = ["看书笔记","实时渲染","Real-Time Rendering 4th"]
 image = '202307031150341.png'
 +++

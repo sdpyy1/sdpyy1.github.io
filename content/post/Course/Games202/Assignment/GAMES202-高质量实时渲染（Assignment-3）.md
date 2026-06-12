@@ -1,8 +1,7 @@
-+++
-date = '2025-10-19T14:05:15+08:00'
++++date = '2025-10-19T14:05:15+08:00'
 draft = false
 title = 'GAMES202 高质量实时渲染（Assignment 3）'
-categories = ["Course/Games202","Assignment"]
+categories = ["学习笔记/GAMES202"]
 tags = ["课程作业","Games202"]
 image ='8a13212a6c85436f925ee5f06d474564.png'
 +++

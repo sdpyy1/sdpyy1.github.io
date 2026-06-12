@@ -1,8 +1,7 @@
-+++
-date = '2025-10-19T14:20:40+08:00'
++++date = '2025-10-19T14:20:40+08:00'
 draft = false
 title = 'OpenGLRender开发记录（3）：后处理Pass（大气渲染）'
-categories = ["Projects/OpenGLRender"]
+categories = ["Projects/OpenGL渲染器"]
 tags = ["渲染器开发","OpenGLRender","OpenGL"]
 image = '025e7da8dd62453095a4739f7c3d15ed.png'
 +++

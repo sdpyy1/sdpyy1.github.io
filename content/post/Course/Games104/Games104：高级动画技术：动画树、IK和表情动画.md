@@ -1,11 +1,9 @@
-+++
-date = '2025-10-25T15:45:35+08:00'
++++date = '2025-10-25T15:45:35+08:00'
 draft = false
 title = 'Games104：高级动画技术：动画树、IK和表情动画'
-categories = ["Course/Games104"]
+categories = ["学习笔记/GAMES104"]
 tags = ["课程笔记","Games104","计算机动画"]
 image = '截屏2025-10-20-15.21.05.png'
-
 +++
 
 > 这节主要讲了动画在实践时需要的一些技术

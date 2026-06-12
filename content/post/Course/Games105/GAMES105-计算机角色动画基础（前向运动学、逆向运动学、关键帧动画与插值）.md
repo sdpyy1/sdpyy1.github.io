@@ -1,8 +1,7 @@
-+++
-date = '2025-10-19T14:25:28+08:00'
++++date = '2025-10-19T14:25:28+08:00'
 draft = false
 title = 'GAMES105 计算机角色动画基础（前向运动学、逆向运动学、关键帧动画与插值）'
-categories = ["Course/Games105"]
+categories = ["学习笔记/GAMES105"]
 tags = ["课程笔记","Games105"]
 image = '9cd6da17016c4d8bb0a71ba5e8f44d0c.png'
 +++

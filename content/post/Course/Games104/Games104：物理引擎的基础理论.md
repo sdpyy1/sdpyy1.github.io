@@ -1,8 +1,7 @@
-+++
-date = '2025-11-04T11:04:19+08:00'
++++date = '2025-11-04T11:04:19+08:00'
 draft = false
 title = 'Games104：物理引擎的基础理论'
-categories = ["Course/Games104"]
+categories = ["学习笔记/GAMES104"]
 tags = ["课程笔记","Games104"]
 image = '截屏2025-11-04-11.15.42.png'
 +++

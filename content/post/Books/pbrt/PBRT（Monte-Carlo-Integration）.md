@@ -1,7 +1,7 @@
-+++
-date = '2025-12-22T13:17:37+08:00'
++++date = '2025-12-22T13:17:37+08:00'
 draft = false
 title = 'PBRT（Monte Carlo Integration）'
+categories = ["学习笔记/PBRT"]
 +++
 # 蒙特卡洛积分
 > 开头一句话就解释了为什么渲染要用蒙特卡洛积分

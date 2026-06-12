@@ -1,8 +1,7 @@
-+++
-date = '2025-11-02T20:46:56+08:00'
++++date = '2025-11-02T20:46:56+08:00'
 draft = false
 title = '游戏引擎开发实践（Vulkan架构篇：Image）'
-categories = ["Projects/GameEngine"]
+categories = ["Projects/游戏引擎"]
 tags = ["Vulkan","RHI"]
 +++
 

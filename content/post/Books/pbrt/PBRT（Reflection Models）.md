@@ -1,8 +1,8 @@
-+++
-date = '2025-12-25T14:10:44+08:00'
++++date = '2025-12-25T14:10:44+08:00'
 draft = false
 title = 'PBRT（Reflection Models）'
 image = 'image-20260102161357849.png'
+categories = ["学习笔记/PBRT"]
 +++
 
 > 未完结

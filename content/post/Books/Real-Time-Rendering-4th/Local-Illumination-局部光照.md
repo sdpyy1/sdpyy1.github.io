@@ -1,11 +1,9 @@
-+++
-date = '2025-10-22T14:19:43+08:00'
++++date = '2025-10-22T14:19:43+08:00'
 draft = false
 title = 'Local Illumination 局部光照'
-categories = ["Books/Real-Time Rendering 4th"]
+categories = ["学习笔记/RTR4th"]
 tags = ["看书笔记","实时渲染","Real-Time Rendering 4th"]
 image = '202306151248940.png'
-
 +++
 
 > 内容包括：1. 将点光源拓展到面光源，并且介绍了一些在Lambertian表面或Glossy表面的实现方案 2.环境光照针对高光和漫反射的模拟的各种实现方案 3. 引入SH预计算的概念

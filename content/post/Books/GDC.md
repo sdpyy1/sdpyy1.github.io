@@ -1,8 +1,8 @@
-+++
-date = '2025-12-01T14:02:56+08:00'
++++date = '2025-12-01T14:02:56+08:00'
 draft = true
 title = 'GDC'
 tags = ["浏览笔记","GDC"]
+categories = ["学习笔记/其他"]
 +++
 
 # GDC Vault - DDGI(Dynamic Diffuse Global Illumination)
