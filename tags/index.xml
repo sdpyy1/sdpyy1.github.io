@@ -16,6 +16,22 @@
         <description></description>
         </item>
         <item>
+        <title>游戏引擎</title>
+        <link>https://sdpyy1.github.io/tags/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E/</link>
+        <pubDate>Fri, 20 Feb 2026 20:02:28 +0800</pubDate>
+        
+        <guid>https://sdpyy1.github.io/tags/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E/</guid>
+        <description></description>
+        </item>
+        <item>
+        <title>抗锯齿</title>
+        <link>https://sdpyy1.github.io/tags/%E6%8A%97%E9%94%AF%E9%BD%BF/</link>
+        <pubDate>Sun, 25 Jan 2026 16:21:06 +0800</pubDate>
+        
+        <guid>https://sdpyy1.github.io/tags/%E6%8A%97%E9%94%AF%E9%BD%BF/</guid>
+        <description></description>
+        </item>
+        <item>
         <title>光线追踪</title>
         <link>https://sdpyy1.github.io/tags/%E5%85%89%E7%BA%BF%E8%BF%BD%E8%B8%AA/</link>
         <pubDate>Fri, 26 Dec 2025 15:26:32 +0800</pubDate>
@@ -24,19 +40,19 @@
         <description></description>
         </item>
         <item>
+        <title>PBRT</title>
+        <link>https://sdpyy1.github.io/tags/pbrt/</link>
+        <pubDate>Thu, 25 Dec 2025 14:10:44 +0800</pubDate>
+        
+        <guid>https://sdpyy1.github.io/tags/pbrt/</guid>
+        <description></description>
+        </item>
+        <item>
         <title>全局光照</title>
         <link>https://sdpyy1.github.io/tags/%E5%85%A8%E5%B1%80%E5%85%89%E7%85%A7/</link>
         <pubDate>Sun, 07 Dec 2025 20:36:06 +0800</pubDate>
         
         <guid>https://sdpyy1.github.io/tags/%E5%85%A8%E5%B1%80%E5%85%89%E7%85%A7/</guid>
-        <description></description>
-        </item>
-        <item>
-        <title>抗锯齿</title>
-        <link>https://sdpyy1.github.io/tags/%E6%8A%97%E9%94%AF%E9%BD%BF/</link>
-        <pubDate>Thu, 04 Dec 2025 18:58:15 +0800</pubDate>
-        
-        <guid>https://sdpyy1.github.io/tags/%E6%8A%97%E9%94%AF%E9%BD%BF/</guid>
         <description></description>
         </item>
         <item>
@@ -53,30 +69,6 @@
         <pubDate>Mon, 24 Nov 2025 11:14:58 +0800</pubDate>
         
         <guid>https://sdpyy1.github.io/tags/%E6%B8%B2%E6%9F%93pass%E5%AD%A6%E4%B9%A0/</guid>
-        <description></description>
-        </item>
-        <item>
-        <title>API学习</title>
-        <link>https://sdpyy1.github.io/tags/api%E5%AD%A6%E4%B9%A0/</link>
-        <pubDate>Fri, 21 Nov 2025 13:33:36 +0800</pubDate>
-        
-        <guid>https://sdpyy1.github.io/tags/api%E5%AD%A6%E4%B9%A0/</guid>
-        <description></description>
-        </item>
-        <item>
-        <title>RayTracing</title>
-        <link>https://sdpyy1.github.io/tags/raytracing/</link>
-        <pubDate>Sat, 15 Nov 2025 12:22:52 +0800</pubDate>
-        
-        <guid>https://sdpyy1.github.io/tags/raytracing/</guid>
-        <description></description>
-        </item>
-        <item>
-        <title>浏览笔记</title>
-        <link>https://sdpyy1.github.io/tags/%E6%B5%8F%E8%A7%88%E7%AC%94%E8%AE%B0/</link>
-        <pubDate>Tue, 11 Nov 2025 13:43:46 +0800</pubDate>
-        
-        <guid>https://sdpyy1.github.io/tags/%E6%B5%8F%E8%A7%88%E7%AC%94%E8%AE%B0/</guid>
         <description></description>
         </item>
         <item>
@@ -112,14 +104,6 @@
         <description></description>
         </item>
         <item>
-        <title>课程笔记</title>
-        <link>https://sdpyy1.github.io/tags/%E8%AF%BE%E7%A8%8B%E7%AC%94%E8%AE%B0/</link>
-        <pubDate>Tue, 04 Nov 2025 11:04:19 +0800</pubDate>
-        
-        <guid>https://sdpyy1.github.io/tags/%E8%AF%BE%E7%A8%8B%E7%AC%94%E8%AE%B0/</guid>
-        <description></description>
-        </item>
-        <item>
         <title>RHI</title>
         <link>https://sdpyy1.github.io/tags/rhi/</link>
         <pubDate>Sun, 02 Nov 2025 20:46:56 +0800</pubDate>
@@ -128,27 +112,11 @@
         <description></description>
         </item>
         <item>
-        <title>Real-Time Rendering 4th</title>
-        <link>https://sdpyy1.github.io/tags/real-time-rendering-4th/</link>
+        <title>RTR4th</title>
+        <link>https://sdpyy1.github.io/tags/rtr4th/</link>
         <pubDate>Wed, 29 Oct 2025 13:51:52 +0800</pubDate>
         
-        <guid>https://sdpyy1.github.io/tags/real-time-rendering-4th/</guid>
-        <description></description>
-        </item>
-        <item>
-        <title>看书笔记</title>
-        <link>https://sdpyy1.github.io/tags/%E7%9C%8B%E4%B9%A6%E7%AC%94%E8%AE%B0/</link>
-        <pubDate>Wed, 29 Oct 2025 13:51:52 +0800</pubDate>
-        
-        <guid>https://sdpyy1.github.io/tags/%E7%9C%8B%E4%B9%A6%E7%AC%94%E8%AE%B0/</guid>
-        <description></description>
-        </item>
-        <item>
-        <title>实时渲染</title>
-        <link>https://sdpyy1.github.io/tags/%E5%AE%9E%E6%97%B6%E6%B8%B2%E6%9F%93/</link>
-        <pubDate>Wed, 29 Oct 2025 13:51:52 +0800</pubDate>
-        
-        <guid>https://sdpyy1.github.io/tags/%E5%AE%9E%E6%97%B6%E6%B8%B2%E6%9F%93/</guid>
+        <guid>https://sdpyy1.github.io/tags/rtr4th/</guid>
         <description></description>
         </item>
         <item>
@@ -184,11 +152,11 @@
         <description></description>
         </item>
         <item>
-        <title>OpenGLRender</title>
-        <link>https://sdpyy1.github.io/tags/openglrender/</link>
+        <title>OpenGL渲染器</title>
+        <link>https://sdpyy1.github.io/tags/opengl%E6%B8%B2%E6%9F%93%E5%99%A8/</link>
         <pubDate>Sun, 19 Oct 2025 14:20:40 +0800</pubDate>
         
-        <guid>https://sdpyy1.github.io/tags/openglrender/</guid>
+        <guid>https://sdpyy1.github.io/tags/opengl%E6%B8%B2%E6%9F%93%E5%99%A8/</guid>
         <description></description>
         </item>
         <item>
@@ -208,19 +176,11 @@
         <description></description>
         </item>
         <item>
-        <title>课程作业</title>
-        <link>https://sdpyy1.github.io/tags/%E8%AF%BE%E7%A8%8B%E4%BD%9C%E4%B8%9A/</link>
-        <pubDate>Sun, 19 Oct 2025 14:05:15 +0800</pubDate>
-        
-        <guid>https://sdpyy1.github.io/tags/%E8%AF%BE%E7%A8%8B%E4%BD%9C%E4%B8%9A/</guid>
-        <description></description>
-        </item>
-        <item>
-        <title>TinyRender</title>
-        <link>https://sdpyy1.github.io/tags/tinyrender/</link>
+        <title>TinyRenderer</title>
+        <link>https://sdpyy1.github.io/tags/tinyrenderer/</link>
         <pubDate>Sun, 19 Oct 2025 13:42:48 +0800</pubDate>
         
-        <guid>https://sdpyy1.github.io/tags/tinyrender/</guid>
+        <guid>https://sdpyy1.github.io/tags/tinyrenderer/</guid>
         <description></description>
         </item>
         <item>

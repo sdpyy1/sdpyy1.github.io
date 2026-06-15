@@ -12,7 +12,7 @@
 <meta property='og:description' content="渲染过程最终计算的是radiance，到目前为止，我们一直在使用反射方程（reflectance equation）来对其进行计算：\n$$ L_{o}(\\mathbf{p}, \\mathbf{v})=\\int_{\\mathbf{l} \\in \\Omega} f(\\mathbf{l}, \\mathbf{v}) L_{i}(\\mathbf{p}, \\mathbf{l})(\\mathbf{n} \\cdot \\mathbf{l})^{+} d \\mathbf{l} \\tag{11.1} $$其中$L_{o}(\\mathbf{p}, \\mathbf{v})$是表面位置$\\mathbf{p}$在观察方向$\\mathbf{v}$上的出射radiance；$\\Omega$是表面位置$\\mathbf{p}$的上半球范围；$f(\\mathbf{l}, \\mathbf{v})$是观察方向$\\mathbf{v}$和当前光线入射方向$\\mathbf{l}$上的BRDF；$L_{i}(\\mathbf{p}, \\mathbf{l})$是从光线方向$\\mathbf{l}$到达表面位置$\\mathbf{p}$的入射radiance；$(\\mathbf{n} \\cdot \\mathbf{l})^{+}$是光线方向$\\mathbf{l}$和表面法线$\\mathbf{n}$之间的点积，并将负数结果clamp到0，即将来自表面下方的光线过滤掉。\n">
 <meta property='og:url' content='https://sdpyy1.github.io/p/global-illumination-%E5%85%A8%E5%B1%80%E5%85%89%E7%85%A7/'>
 <meta property='og:site_name' content='wanfeng'>
-<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='看书笔记' /><meta property='article:tag' content='实时渲染' /><meta property='article:tag' content='Real-Time Rendering 4th' /><meta property='article:published_time' content='2025-10-25T13:59:45&#43;08:00'/><meta property='article:modified_time' content='2025-10-25T13:59:45&#43;08:00'/><meta property='og:image' content='https://sdpyy1.github.io/202307031150341.png' />
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='RTR4th' /><meta property='article:published_time' content='2025-10-25T13:59:45&#43;08:00'/><meta property='article:modified_time' content='2025-10-25T13:59:45&#43;08:00'/><meta property='og:image' content='https://sdpyy1.github.io/202307031150341.png' />
 <meta name="twitter:title" content="Global Illumination 全局光照">
 <meta name="twitter:description" content="渲染过程最终计算的是radiance，到目前为止，我们一直在使用反射方程（reflectance equation）来对其进行计算：\n$$ L_{o}(\\mathbf{p}, \\mathbf{v})=\\int_{\\mathbf{l} \\in \\Omega} f(\\mathbf{l}, \\mathbf{v}) L_{i}(\\mathbf{p}, \\mathbf{l})(\\mathbf{n} \\cdot \\mathbf{l})^{+} d \\mathbf{l} \\tag{11.1} $$其中$L_{o}(\\mathbf{p}, \\mathbf{v})$是表面位置$\\mathbf{p}$在观察方向$\\mathbf{v}$上的出射radiance；$\\Omega$是表面位置$\\mathbf{p}$的上半球范围；$f(\\mathbf{l}, \\mathbf{v})$是观察方向$\\mathbf{v}$和当前光线入射方向$\\mathbf{l}$上的BRDF；$L_{i}(\\mathbf{p}, \\mathbf{l})$是从光线方向$\\mathbf{l}$到达表面位置$\\mathbf{p}$的入射radiance；$(\\mathbf{n} \\cdot \\mathbf{l})^{+}$是光线方向$\\mathbf{l}$和表面法线$\\mathbf{n}$之间的点积，并将负数结果clamp到0，即将来自表面下方的光线过滤掉。\n"><meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:image" content='https://sdpyy1.github.io/202307031150341.png' />
@@ -1153,11 +1153,7 @@ $$<p>其中$L(\mathbf{p})$是点$\mathbf{p}$的最终radiance；$L_{i}(\mathbf{p
     
     <section class="article-tags">
         
-            <a href="/tags/%E7%9C%8B%E4%B9%A6%E7%AC%94%E8%AE%B0/">看书笔记</a>
-        
-            <a href="/tags/%E5%AE%9E%E6%97%B6%E6%B8%B2%E6%9F%93/">实时渲染</a>
-        
-            <a href="/tags/real-time-rendering-4th/">Real-Time Rendering 4th</a>
+            <a href="/tags/rtr4th/">RTR4th</a>
         
     </section>
 

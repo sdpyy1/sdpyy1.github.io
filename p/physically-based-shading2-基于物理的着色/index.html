@@ -12,7 +12,7 @@
 <meta property='og:description' content="概括 理解了渲染方程设计理由 分清楚了表面反射（镜面反射）和局部次表面反射（漫反射） 知道了常用的BRDF，以及漫反射BRDF项还有很多更好的模型 光的物理学 光的本质 在物理光学中，光被视为一种电磁横波，即由电场和磁场的振荡组成； 电场与磁场： 相互垂直； 都垂直于光的传播方向； 振幅比值恒定； 这种波的传播速度称为相位速度（phase velocity），在真空中就是光速 c ≈ 3×10⁵ km/s。 光的波长决定颜色： 可见光波长范围约为 400–700 nm； 单色光（monochromatic light）：只有一个波长（如理想化的正弦波）； 多色光（polychromatic light）：包含多个波长，是现实中的常见情况； 例如蜘蛛丝约为 1 µm，约等于 2–3 个波长大小。 光的能量与电场强度 光波携带能量； 能量流强度（irradiance, $E$）与电场振幅的平方成正比； 渲染中关注的是时间平均能量流，即平均 irradiance； 因为电场比磁场对物质的影响更大，渲染只关注电场部分。 波的叠加与干涉 光波可以线性叠加； 不同相位的叠加导致不同结果： 相长干涉（constructive interference）： 相位一致 → 叠加强； irradiance 增为 $n^2$ 倍； 相消干涉（destructive interference）： 相位相反 → 互相抵消； irradiance 变为 0； 不相干叠加（incoherent addition）： 相位随机； irradiance 线性叠加为 $nE_1$，即“1+1=2”。 这些现象并不违反能量守恒，因为： 在空间不同位置上会交替出现相长与相消； 总能量守恒。 n个具有相同频率、相同偏振和相同振幅的单色光，它们以三种不同的方式进行叠加。从左到右分别是：相长干涉，相消干涉和不相干叠加。每种情况的下面都展示了对应组合波的振幅和irradiance\n">
 <meta property='og:url' content='https://sdpyy1.github.io/p/physically-based-shading2-%E5%9F%BA%E4%BA%8E%E7%89%A9%E7%90%86%E7%9A%84%E7%9D%80%E8%89%B2/'>
 <meta property='og:site_name' content='wanfeng'>
-<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='看书笔记' /><meta property='article:tag' content='实时渲染' /><meta property='article:tag' content='Real-Time Rendering 4th' /><meta property='article:published_time' content='2025-10-20T13:29:19&#43;08:00'/><meta property='article:modified_time' content='2025-10-20T13:29:19&#43;08:00'/><meta property='og:image' content='https://sdpyy1.github.io/20230611105147.png' />
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='RTR4th' /><meta property='article:published_time' content='2025-10-20T13:29:19&#43;08:00'/><meta property='article:modified_time' content='2025-10-20T13:29:19&#43;08:00'/><meta property='og:image' content='https://sdpyy1.github.io/20230611105147.png' />
 <meta name="twitter:title" content="Physically Based Shading(2) 基于物理的着色">
 <meta name="twitter:description" content="概括 理解了渲染方程设计理由 分清楚了表面反射（镜面反射）和局部次表面反射（漫反射） 知道了常用的BRDF，以及漫反射BRDF项还有很多更好的模型 光的物理学 光的本质 在物理光学中，光被视为一种电磁横波，即由电场和磁场的振荡组成； 电场与磁场： 相互垂直； 都垂直于光的传播方向； 振幅比值恒定； 这种波的传播速度称为相位速度（phase velocity），在真空中就是光速 c ≈ 3×10⁵ km/s。 光的波长决定颜色： 可见光波长范围约为 400–700 nm； 单色光（monochromatic light）：只有一个波长（如理想化的正弦波）； 多色光（polychromatic light）：包含多个波长，是现实中的常见情况； 例如蜘蛛丝约为 1 µm，约等于 2–3 个波长大小。 光的能量与电场强度 光波携带能量； 能量流强度（irradiance, $E$）与电场振幅的平方成正比； 渲染中关注的是时间平均能量流，即平均 irradiance； 因为电场比磁场对物质的影响更大，渲染只关注电场部分。 波的叠加与干涉 光波可以线性叠加； 不同相位的叠加导致不同结果： 相长干涉（constructive interference）： 相位一致 → 叠加强； irradiance 增为 $n^2$ 倍； 相消干涉（destructive interference）： 相位相反 → 互相抵消； irradiance 变为 0； 不相干叠加（incoherent addition）： 相位随机； irradiance 线性叠加为 $nE_1$，即“1+1=2”。 这些现象并不违反能量守恒，因为： 在空间不同位置上会交替出现相长与相消； 总能量守恒。 n个具有相同频率、相同偏振和相同振幅的单色光，它们以三种不同的方式进行叠加。从左到右分别是：相长干涉，相消干涉和不相干叠加。每种情况的下面都展示了对应组合波的振幅和irradiance\n"><meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:image" content='https://sdpyy1.github.io/20230611105147.png' />
@@ -1084,11 +1084,7 @@ $$<p>
     
     <section class="article-tags">
         
-            <a href="/tags/%E7%9C%8B%E4%B9%A6%E7%AC%94%E8%AE%B0/">看书笔记</a>
-        
-            <a href="/tags/%E5%AE%9E%E6%97%B6%E6%B8%B2%E6%9F%93/">实时渲染</a>
-        
-            <a href="/tags/real-time-rendering-4th/">Real-Time Rendering 4th</a>
+            <a href="/tags/rtr4th/">RTR4th</a>
         
     </section>
 

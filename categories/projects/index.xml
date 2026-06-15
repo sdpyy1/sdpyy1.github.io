@@ -873,11 +873,11 @@
 </description>
         </item>
         <item>
-        <title>游戏引擎开发实践（FXAA   TODO）</title>
-        <link>https://sdpyy1.github.io/p/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E5%BC%80%E5%8F%91%E5%AE%9E%E8%B7%B5fxaa-todo/</link>
+        <title>游戏引擎开发实践（FXAA）</title>
+        <link>https://sdpyy1.github.io/p/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E5%BC%80%E5%8F%91%E5%AE%9E%E8%B7%B5fxaa/</link>
         <pubDate>Sun, 25 Jan 2026 16:21:06 +0800</pubDate>
         
-        <guid>https://sdpyy1.github.io/p/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E5%BC%80%E5%8F%91%E5%AE%9E%E8%B7%B5fxaa-todo/</guid>
+        <guid>https://sdpyy1.github.io/p/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E5%BC%80%E5%8F%91%E5%AE%9E%E8%B7%B5fxaa/</guid>
         <description>&lt;blockquote&gt;
 &lt;p&gt;FXAA（&lt;strong&gt;fast approximate antialiasing&lt;/strong&gt;） 的思路是检测图像的边界，只在边界处进行滤波，达到抗锯齿的效果，确实锯齿效果就是发生在边界&lt;/p&gt;
 &lt;p&gt;这种思路被称为形变抗锯齿，SMAA也是这个类型&lt;/p&gt;

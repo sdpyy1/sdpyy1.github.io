@@ -12,7 +12,7 @@
 <meta property='og:description' content="法线贴图 用普通的纹理看起来是平的，通过修改每个像素的法线，得到更好的效果。这种每个fragment使用各自的法线，替代一个面上所有fragment使用同一个法线的技术叫做法线贴图（normal mapping）或凹凸贴图（bump mapping）。应用到砖墙上，效果像这样： 这张法线贴图颜色偏蓝，是因为砖头表面的法线是（0，0，1），缝隙偏绿是因为缝隙的法线为(0,1,0)\n">
 <meta property='og:url' content='https://sdpyy1.github.io/p/opengl%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0%E6%B3%95%E7%BA%BF%E8%B4%B4%E5%9B%BE%E8%A7%86%E5%B7%AE%E8%B4%B4%E5%9B%BE/'>
 <meta property='og:site_name' content='wanfeng'>
-<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='API学习' /><meta property='article:tag' content='OpenGL' /><meta property='article:published_time' content='2025-10-19T13:51:43&#43;08:00'/><meta property='article:modified_time' content='2025-10-19T13:51:43&#43;08:00'/><meta property='og:image' content='https://sdpyy1.github.io/b242fb1f71cf4c9ba9bab2585fce9b47.png' />
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='OpenGL' /><meta property='article:published_time' content='2025-10-19T13:51:43&#43;08:00'/><meta property='article:modified_time' content='2025-10-19T13:51:43&#43;08:00'/><meta property='og:image' content='https://sdpyy1.github.io/b242fb1f71cf4c9ba9bab2585fce9b47.png' />
 <meta name="twitter:title" content="OpenGL学习笔记（法线贴图、视差贴图）">
 <meta name="twitter:description" content="法线贴图 用普通的纹理看起来是平的，通过修改每个像素的法线，得到更好的效果。这种每个fragment使用各自的法线，替代一个面上所有fragment使用同一个法线的技术叫做法线贴图（normal mapping）或凹凸贴图（bump mapping）。应用到砖墙上，效果像这样： 这张法线贴图颜色偏蓝，是因为砖头表面的法线是（0，0，1），缝隙偏绿是因为缝隙的法线为(0,1,0)\n"><meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:image" content='https://sdpyy1.github.io/b242fb1f71cf4c9ba9bab2585fce9b47.png' />
@@ -618,8 +618,6 @@ N是法线方向，T是切线方向，B是副切线方向。
     <footer class="article-footer">
     
     <section class="article-tags">
-        
-            <a href="/tags/api%E5%AD%A6%E4%B9%A0/">API学习</a>
         
             <a href="/tags/opengl/">OpenGL</a>
         

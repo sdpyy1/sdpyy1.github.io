@@ -12,7 +12,7 @@
 <meta property='og:description' content="Blinn-Phong PhongShading不仅对真实光照有很好的近似，而且性能也很高。但是它的镜面反射会在一些情况下出现问题，特别是物体反光度很低时，会导致大片（粗糙的）高光区域。下面这张图展示了当p为1.0时地板会出现的效果： 上图高光区域的边缘有明显的断层，出现这个问题的原因是观察向量和反射向量间的夹角不能大于90度。如果点积的结果为负数，镜面光分量会变为0.0。所以90°的地方明显的断层 下图就是这个角度大于90°的情况 1977年，James F. Blinn在风氏着色模型上加以拓展，引入了Blinn-Phong着色模型。Blinn-Phong模型与风氏模型非常相似，但是它对镜面光模型的处理上有一些不同，让我们能够解决之前提到的问题。Blinn-Phong模型不再依赖于反射向量，而是采用了所谓的半程向量(Halfway Vector)，即光线与视线夹角一半方向上的一个单位向量。当半程向量与法线向量越接近时，镜面光分量就越大。 用光线与实现夹角的半程向量与法线夹角来表示镜面光强度。当视线正好与（现在不需要的）反射向量对齐时，半程向量就会与法线完美契合。所以当观察者视线越接近于原本反射光线的方向时，镜面高光就会越强。现在，不论观察者向哪个方向看，半程向量与表面法线之间的夹角都不会超过90度（除非光源在表面以下）。\n">
 <meta property='og:url' content='https://sdpyy1.github.io/p/opengl%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0blinn-phong%E4%BC%BD%E9%A9%AC%E7%9F%AB%E6%AD%A3%E9%98%B4%E5%BD%B1/'>
 <meta property='og:site_name' content='wanfeng'>
-<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='API学习' /><meta property='article:tag' content='OpenGL' /><meta property='article:published_time' content='2025-10-19T13:50:26&#43;08:00'/><meta property='article:modified_time' content='2025-10-19T13:50:26&#43;08:00'/><meta property='og:image' content='https://sdpyy1.github.io/e876017653874542a3d6dcca727f0a04.png' />
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='OpenGL' /><meta property='article:published_time' content='2025-10-19T13:50:26&#43;08:00'/><meta property='article:modified_time' content='2025-10-19T13:50:26&#43;08:00'/><meta property='og:image' content='https://sdpyy1.github.io/e876017653874542a3d6dcca727f0a04.png' />
 <meta name="twitter:title" content="OpenGL学习笔记（Blinn Phong、伽马矫正、阴影）">
 <meta name="twitter:description" content="Blinn-Phong PhongShading不仅对真实光照有很好的近似，而且性能也很高。但是它的镜面反射会在一些情况下出现问题，特别是物体反光度很低时，会导致大片（粗糙的）高光区域。下面这张图展示了当p为1.0时地板会出现的效果： 上图高光区域的边缘有明显的断层，出现这个问题的原因是观察向量和反射向量间的夹角不能大于90度。如果点积的结果为负数，镜面光分量会变为0.0。所以90°的地方明显的断层 下图就是这个角度大于90°的情况 1977年，James F. Blinn在风氏着色模型上加以拓展，引入了Blinn-Phong着色模型。Blinn-Phong模型与风氏模型非常相似，但是它对镜面光模型的处理上有一些不同，让我们能够解决之前提到的问题。Blinn-Phong模型不再依赖于反射向量，而是采用了所谓的半程向量(Halfway Vector)，即光线与视线夹角一半方向上的一个单位向量。当半程向量与法线向量越接近时，镜面光分量就越大。 用光线与实现夹角的半程向量与法线夹角来表示镜面光强度。当视线正好与（现在不需要的）反射向量对齐时，半程向量就会与法线完美契合。所以当观察者视线越接近于原本反射光线的方向时，镜面高光就会越强。现在，不论观察者向哪个方向看，半程向量与表面法线之间的夹角都不会超过90度（除非光源在表面以下）。\n"><meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:image" content='https://sdpyy1.github.io/e876017653874542a3d6dcca727f0a04.png' />
@@ -1725,8 +1725,6 @@ y=x的电线表示Gamma为1的理想状态，当我们输出一个值为(0.5,0.0
     <footer class="article-footer">
     
     <section class="article-tags">
-        
-            <a href="/tags/api%E5%AD%A6%E4%B9%A0/">API学习</a>
         
             <a href="/tags/opengl/">OpenGL</a>
         

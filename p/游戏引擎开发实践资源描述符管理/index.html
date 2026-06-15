@@ -12,7 +12,7 @@
 <meta property='og:description' content=" 这里涉及的整套结构已经废弃，转为研究更轻薄的RHI层，放弃过度封装！\n资源描述符管理日志 目标：在创建Pass时，设置好Input的绑定资源，渲染时无需再设置\n每个shader每个Set一个资源描述符，读取Shader时自动创建（问题1：一个不一定够） Resize问题 （Resize后图片被销毁）（解决1：在渲染时判断是否被销毁，重新获取） 一个Pass需要多个描述符（绑定图片的不同layer/mip层的VkImageView）（解决1：创建Pass时，提交额外需要的资源描述符数量）（Hazel的解决方案：额外使用的资源描述符集被定义为材质，每次DrawCall切换材质）（Dark的解决方案: pushDescriptorSetKHR渲染时实时创建并推送，这样很方便但是不好整合） 弃坑，整个架构都放弃了\n">
 <meta property='og:url' content='https://sdpyy1.github.io/p/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E5%BC%80%E5%8F%91%E5%AE%9E%E8%B7%B5%E8%B5%84%E6%BA%90%E6%8F%8F%E8%BF%B0%E7%AC%A6%E7%AE%A1%E7%90%86/'>
 <meta property='og:site_name' content='wanfeng'>
-<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:published_time' content='2025-11-10T11:03:46&#43;08:00'/><meta property='article:modified_time' content='2025-11-10T11:03:46&#43;08:00'/>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='游戏引擎' /><meta property='article:published_time' content='2025-11-10T11:03:46&#43;08:00'/><meta property='article:modified_time' content='2025-11-10T11:03:46&#43;08:00'/>
 <meta name="twitter:title" content="游戏引擎开发实践（资源描述符管理）">
 <meta name="twitter:description" content=" 这里涉及的整套结构已经废弃，转为研究更轻薄的RHI层，放弃过度封装！\n资源描述符管理日志 目标：在创建Pass时，设置好Input的绑定资源，渲染时无需再设置\n每个shader每个Set一个资源描述符，读取Shader时自动创建（问题1：一个不一定够） Resize问题 （Resize后图片被销毁）（解决1：在渲染时判断是否被销毁，重新获取） 一个Pass需要多个描述符（绑定图片的不同layer/mip层的VkImageView）（解决1：创建Pass时，提交额外需要的资源描述符数量）（Hazel的解决方案：额外使用的资源描述符集被定义为材质，每次DrawCall切换材质）（Dark的解决方案: pushDescriptorSetKHR渲染时实时创建并推送，这样很方便但是不好整合） 弃坑，整个架构都放弃了\n">
     <link rel="shortcut icon" href="/favicon.ico" />
@@ -459,6 +459,12 @@
 
     <footer class="article-footer">
     
+    <section class="article-tags">
+        
+            <a href="/tags/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E/">游戏引擎</a>
+        
+    </section>
+
 
     
     <section class="article-copyright">
@@ -626,11 +632,11 @@
             
                 
 <article class="article-card no-image">
-    <a href="/p/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E5%BC%80%E5%8F%91%E5%AE%9E%E8%B7%B5fxaa-todo/">
+    <a href="/p/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E5%BC%80%E5%8F%91%E5%AE%9E%E8%B7%B5fxaa/">
         
         
         <div class="article-details">
-            <h2 class="article-title">游戏引擎开发实践（FXAA   TODO）</h2>
+            <h2 class="article-title">游戏引擎开发实践（FXAA）</h2>
         </div>
         
     </a>
@@ -940,12 +946,18 @@
 </article>
             
                 
-<article class="article-card no-image">
-    <a href="/p/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E5%BC%80%E5%8F%91%E5%AE%9E%E8%B7%B5%E9%99%8D%E5%99%AA%E7%AE%97%E6%B3%95-svgf/">
+<article class="article-card has-image">
+    <a href="/p/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8E%E5%BC%80%E5%8F%91%E5%AE%9E%E8%B7%B5gpu-driven/">
         
-        
-        <div class="article-details">
-            <h2 class="article-title">游戏引擎开发实践（降噪算法 SVGF）</h2>
+        <div class="article-image-card">
+            
+                <img src="/image-20251221171023893.png" loading="lazy" data-key="" data-hash="/image-20251221171023893.png"/>
+            
+
+            
+            <div class="article-overlay">
+                <h2 class="article-title">游戏引擎开发实践（GPU Driven）</h2>
+            </div>
         </div>
         
     </a>
