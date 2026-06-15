@@ -3,6 +3,7 @@ draft = false
 title = 'PBRT（Reflection Models）'
 image = 'image-20260102161357849.png'
 categories = ["学习笔记/PBRT"]
+tags = ["PBRT"]
 +++
 
 > 未完结

@@ -2,7 +2,7 @@
 draft = false
 title = 'OpenGLRender开发记录（2）：阴影（shadowMap，PCF，PCSS）'
 categories = ["Projects/OpenGL渲染器"]
-tags = ["渲染器开发","OpenGLRender","OpenGL"]
+tags = ["渲染器开发", "OpenGL渲染器", "OpenGL"]
 image = '976b5ef841fd4cda9621c4812dd3dba4.png'
 +++
 # 已实现功能

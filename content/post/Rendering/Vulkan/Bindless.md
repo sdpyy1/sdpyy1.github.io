@@ -2,7 +2,7 @@
 draft = false
 title = 'Bindless'
 categories = ["图形API/Vulkan"]
-tags = ["API学习","Vulkan"]
+tags = ["Vulkan"]
 +++
 
 > Bindless（Unbounded）无绑定或者无界绑定，是指不通过传统图形 API 的形如 glBindXXX 函数而直接将 Buffer\Texture 的 GPU 虚拟地址存储在 Bindless Buffer 中，在 Shader 中通过索引 Bindless 而直接访问 Texture\Buffer 数据的技术。Bindless 也是现代渲染技术如 GPU Driven Pipeline 不可或缺的基础组成部分

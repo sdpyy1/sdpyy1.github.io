@@ -2,4 +2,5 @@
 draft = true
 title = '游戏引擎开发实践（面试突击 PRTGI + SSGI）'
 categories = ["Projects/游戏引擎"]
+tags = ["游戏引擎", "全局光照"]
 +++

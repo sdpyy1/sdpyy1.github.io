@@ -2,6 +2,7 @@
 draft = true
 title = 'PBRT（1）'
 categories = ["学习笔记/PBRT"]
+tags = ["PBRT"]
 +++
 
 # PBRT入门

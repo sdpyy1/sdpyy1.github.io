@@ -2,7 +2,7 @@
 draft = false
 title = 'GAMES101 现代计算机图形学入门 Transformation & Rasterization'
 categories = ["学习笔记/GAMES101"]
-tags = ["课程笔记","Games101"]
+tags = ["Games101"]
 image = '3d23bd7f8fdc4adfa5ef11d68f2d98fd.png'
 +++
 

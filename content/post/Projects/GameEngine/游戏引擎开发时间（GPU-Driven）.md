@@ -3,6 +3,7 @@ draft = false
 title = '游戏引擎开发实践（GPU Driven）'
 image = 'image-20251221171023893.png'
 categories = ["Projects/游戏引擎"]
+tags = ["游戏引擎"]
 +++
 > 上图展示了Mesh被另外一个摄像机剔除（剩下了AABB盒）、摄像机视锥被灯光影响的分簇结果
 # 间接绘制

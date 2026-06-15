@@ -2,7 +2,7 @@
 draft = false
 title = 'OpenGLRender开发记录（1）：基于图像的光照（IBL）'
 categories = ["Projects/OpenGL渲染器"]
-tags = ["渲染器开发","OpenGLRender","OpenGL"]
+tags = ["渲染器开发", "OpenGL渲染器", "OpenGL"]
 image = 'bbcca62cc5b24dc29f8a6396d10b8572.png'
 +++
 # 已实现功能

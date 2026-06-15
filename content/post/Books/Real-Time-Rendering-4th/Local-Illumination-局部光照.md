@@ -2,7 +2,7 @@
 draft = false
 title = 'Local Illumination 局部光照'
 categories = ["学习笔记/RTR4th"]
-tags = ["看书笔记","实时渲染","Real-Time Rendering 4th"]
+tags = ["RTR4th"]
 image = '202306151248940.png'
 +++
 

@@ -2,7 +2,7 @@
 draft = false
 title = 'Physically Based Shading(2) 基于物理的着色'
 categories = ["学习笔记/RTR4th"]
-tags = ["看书笔记","实时渲染","Real-Time Rendering 4th"]
+tags = ["RTR4th"]
 image = '20230611105147.png'
 +++
 

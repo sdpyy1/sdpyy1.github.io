@@ -2,7 +2,7 @@
 draft = false
 title = 'OpenGL学习笔记（延迟着色法、SSAO）'
 categories = ["图形API/OpenGL"]
-tags = ["API学习","OpenGL"]
+tags = ["OpenGL"]
 image = '5d72ce7b8a844d10a11dbfa6f72f7733.png'
 +++
 # 延迟着色法

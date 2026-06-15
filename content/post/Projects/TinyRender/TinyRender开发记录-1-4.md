@@ -2,7 +2,7 @@
 draft = false
 title = 'TinyRender开发记录 1-4'
 categories = ["Projects/CPU渲染器"]
-tags = ["渲染器开发","TinyRender"]
+tags = ["渲染器开发", "TinyRenderer"]
 image = '015e0f415d1c493db111695862b55bfe.png'
 +++
 # 项目介绍

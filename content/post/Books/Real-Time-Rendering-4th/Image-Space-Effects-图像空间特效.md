@@ -2,7 +2,7 @@
 draft = false
 title = 'Image Space Effects 图像空间特效'
 categories = ["学习笔记/RTR4th"]
-tags = ["看书笔记","实时渲染","Real-Time Rendering 4th"]
+tags = ["RTR4th"]
 image= '202307131302667.png'
 +++
 # 图像处理

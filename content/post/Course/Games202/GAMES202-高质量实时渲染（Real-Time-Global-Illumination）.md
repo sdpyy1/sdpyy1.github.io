@@ -2,7 +2,7 @@
 draft = false
 title = 'GAMES202 高质量实时渲染（Real-Time Global Illumination）'
 categories = ["学习笔记/GAMES202"]
-tags = ["课程笔记","Games202"]
+tags = ["Games202"]
 image = 'aa2c09da489f4288808aa9af1f4fc213.png'
 +++
 ![请添加图片描述](78996c31c1b04f5eae5269c1d6756086.png)

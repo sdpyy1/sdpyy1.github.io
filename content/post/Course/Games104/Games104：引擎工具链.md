@@ -2,7 +2,7 @@
 draft = false
 title = 'Games104：引擎工具链'
 categories = ["学习笔记/GAMES104"]
-tags = ["课程笔记","Games104"]
+tags = ["Games104"]
 +++
 
 > 讲了 GUI架构、Asset的序列化和反序列化、Redo undo实现、反射等技术

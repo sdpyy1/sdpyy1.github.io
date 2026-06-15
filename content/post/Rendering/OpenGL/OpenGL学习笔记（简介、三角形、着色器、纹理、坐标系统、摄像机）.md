@@ -2,7 +2,7 @@
 draft = false
 title = 'OpenGL学习笔记（简介、三角形、着色器、纹理、坐标系统、摄像机）'
 categories = ["图形API/OpenGL"]
-tags = ["API学习","OpenGL"]
+tags = ["OpenGL"]
 image = '3779db9d1ff84e66b075f0dd6d1edb90.png'
 +++
 # 简介

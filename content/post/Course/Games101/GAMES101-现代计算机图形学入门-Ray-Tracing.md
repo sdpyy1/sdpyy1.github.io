@@ -2,7 +2,7 @@
 draft = false
 title = 'GAMES101 现代计算机图形学入门 Ray Tracing'
 categories = ["学习笔记/GAMES101"]
-tags = ["课程笔记","Games101"]
+tags = ["Games101"]
 image = 'a6d366b54c3a45b38beb9e550a1ea53b.png'
 +++
 # Shadow Mapping

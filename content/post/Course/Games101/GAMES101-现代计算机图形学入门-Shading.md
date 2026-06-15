@@ -2,7 +2,7 @@
 draft = false
 title = 'GAMES101 现代计算机图形学入门 Shading'
 categories = ["学习笔记/GAMES101"]
-tags = ["课程笔记","Games101"]
+tags = ["Games101"]
 image = '8794c0d329d24aca97c68998d2945da5.png'
 +++
 # 什么是shading？

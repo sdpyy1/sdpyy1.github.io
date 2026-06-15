@@ -2,7 +2,7 @@
 draft = false
 title = 'OpenGL学习笔记（法线贴图、视差贴图）'
 categories = ["图形API/OpenGL"]
-tags = ["API学习","OpenGL"]
+tags = ["OpenGL"]
 image = 'b242fb1f71cf4c9ba9bab2585fce9b47.png'
 +++
 # 法线贴图

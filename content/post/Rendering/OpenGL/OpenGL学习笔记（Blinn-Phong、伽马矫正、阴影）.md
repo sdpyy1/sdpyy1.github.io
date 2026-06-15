@@ -2,7 +2,7 @@
 draft = false
 title = 'OpenGL学习笔记（Blinn Phong、伽马矫正、阴影）'
 categories = ["图形API/OpenGL"]
-tags = ["API学习","OpenGL"]
+tags = ["OpenGL"]
 image = 'e876017653874542a3d6dcca727f0a04.png'
 +++
 # Blinn-Phong

@@ -1,7 +1,8 @@
 +++date = '2026-01-25T16:21:06+08:00'
 draft = false
-title = '游戏引擎开发实践（FXAA   TODO）'
+title = '游戏引擎开发实践（FXAA）'
 categories = ["Projects/游戏引擎"]
+tags = ["游戏引擎", "抗锯齿"]
 +++
 
 > FXAA（**fast approximate antialiasing**） 的思路是检测图像的边界，只在边界处进行滤波，达到抗锯齿的效果，确实锯齿效果就是发生在边界

@@ -2,7 +2,7 @@
 draft = false
 title = 'OpenGL学习笔记（HDR、泛光）'
 categories = ["图形API/OpenGL"]
-tags = ["API学习","OpenGL"]
+tags = ["OpenGL"]
 image = '3f35480e680a4948bb8b80386c384e22.png'
 +++
 # HDR

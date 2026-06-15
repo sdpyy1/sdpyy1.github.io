@@ -2,7 +2,7 @@
 draft = false
 title = 'GAMES202 GAMES202 高质量实时渲染（Real-Time Ray-Tracing）'
 categories = ["学习笔记/GAMES202"]
-tags = ["课程笔记","Games202"]
+tags = ["Games202"]
 image = '39f6ae2e6aa04864b9165387c73282ae.png'
 +++
 # RTX

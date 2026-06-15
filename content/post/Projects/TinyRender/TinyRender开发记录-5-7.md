@@ -2,7 +2,7 @@
 draft = false
 title = 'TinyRender开发记录 5-7'
 categories = ["Projects/CPU渲染器"]
-tags = ["渲染器开发","TinyRender"]
+tags = ["渲染器开发", "TinyRenderer"]
 image = '23afe9a8003a44a788f6448c182b6b68.png'
 +++
 # Lesson 5:  Gouraud shading

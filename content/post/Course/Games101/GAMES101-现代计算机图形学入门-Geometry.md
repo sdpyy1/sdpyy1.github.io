@@ -2,7 +2,7 @@
 draft = false
 title = 'GAMES101 现代计算机图形学入门 Geometry'
 categories = ["学习笔记/GAMES101"]
-tags = ["课程笔记","Games101"]
+tags = ["Games101"]
 image = '3b0a2bb693ef4b20a6ca0414d87ae566.png'
 +++
 # Implicit and explicit

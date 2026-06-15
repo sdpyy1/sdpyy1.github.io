@@ -2,7 +2,7 @@
 draft = false
 title = 'Games104：游戏引擎的动画技术基础'
 categories = ["学习笔记/GAMES104"]
-tags = ["课程笔记","Games104","计算机动画"]
+tags = ["Games104", "计算机动画"]
 image = '截屏2025-10-20-15.21.05.png'
 +++
 

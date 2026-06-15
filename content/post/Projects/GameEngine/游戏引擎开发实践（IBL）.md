@@ -2,6 +2,7 @@
 draft = true
 title = '游戏引擎开发实践（IBL）'
 categories = ["Projects/游戏引擎"]
+tags = ["游戏引擎", "全局光照"]
 +++
 
 > IBL就是把一个CubeMap都当作光源，但是光照模型需要采样一个方向时要在半球上进行积分，IBL就是考虑如何在已知的CubeMap作为光照时怎么预计算一些流程，简化积分运算

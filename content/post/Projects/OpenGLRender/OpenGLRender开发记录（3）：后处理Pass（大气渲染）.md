@@ -2,7 +2,7 @@
 draft = false
 title = 'OpenGLRender开发记录（3）：后处理Pass（大气渲染）'
 categories = ["Projects/OpenGL渲染器"]
-tags = ["渲染器开发","OpenGLRender","OpenGL"]
+tags = ["渲染器开发", "OpenGL渲染器", "OpenGL"]
 image = '025e7da8dd62453095a4739f7c3d15ed.png'
 +++
 # 大气渲染

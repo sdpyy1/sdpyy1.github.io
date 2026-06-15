@@ -2,7 +2,7 @@
 draft = false
 title = 'OpenGL学习笔记（PBR）'
 categories = ["图形API/OpenGL"]
-tags = ["API学习","OpenGL"]
+tags = ["OpenGL"]
 image = 'f9c17e0cf6ff46a7a63a8f8199cf48b0.png'
 +++
 # 微平面模型

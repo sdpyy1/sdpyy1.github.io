@@ -1,7 +1,7 @@
 +++date = '2025-11-15T12:22:52+08:00'
 draft = false
 title = 'RayTracingTheNextWeek'
-tags = ["RayTracing"]
+tags = ["光线追踪"]
 image = 'image-20251122210353992.png'
 categories = ["学习笔记/RayTracing系列"]
 +++

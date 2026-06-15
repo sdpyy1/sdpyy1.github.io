@@ -2,7 +2,7 @@
 draft = false
 title = 'ComputerShader学习'
 categories = ["图形API/Vulkan"]
-tags = ["API学习","Vulkan"]
+tags = ["Vulkan"]
 +++
 
 # 概念

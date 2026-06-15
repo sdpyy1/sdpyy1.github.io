@@ -2,6 +2,7 @@
 draft = true
 title = 'PBRT（Shapes）'
 categories = ["学习笔记/PBRT"]
+tags = ["PBRT"]
 +++
 
 > TODO:  面试完再看

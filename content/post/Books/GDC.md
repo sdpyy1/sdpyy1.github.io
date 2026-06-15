@@ -1,7 +1,7 @@
 +++date = '2025-12-01T14:02:56+08:00'
 draft = true
 title = 'GDC'
-tags = ["浏览笔记","GDC"]
+tags = ["GDC"]
 categories = ["学习笔记/其他"]
 +++
 

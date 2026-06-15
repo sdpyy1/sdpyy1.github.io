@@ -2,7 +2,7 @@
 draft = false
 title = 'GAMES202 高质量实时渲染（Real-Time Environment Mapping）'
 categories = ["学习笔记/GAMES202"]
-tags = ["课程笔记","Games202"]
+tags = ["Games202"]
 image = '787b8e5bfbd6453bad3b4faab67d12d9.png'
 +++
 # Shading from Environment Lighting

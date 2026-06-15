@@ -2,7 +2,7 @@
 draft = false
 title = 'GAMES202 高质量实时渲染（Assignment 1）'
 categories = ["学习笔记/GAMES202"]
-tags = ["课程作业","Games202"]
+tags = ["Games202"]
 image = '531daca67f0242c6abba44c1e5a88603.png'
 +++
 # Homework1

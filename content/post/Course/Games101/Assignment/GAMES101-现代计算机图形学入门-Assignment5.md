@@ -2,7 +2,7 @@
 draft = false
 title = 'GAMES101 现代计算机图形学入门 Assignment5'
 categories = ["学习笔记/GAMES101"]
-tags = ["课程作业","Games101"]
+tags = ["Games101"]
 image = '596150ce910e433694d4bb76ebe253f6.png'
 +++
 # 作业介绍

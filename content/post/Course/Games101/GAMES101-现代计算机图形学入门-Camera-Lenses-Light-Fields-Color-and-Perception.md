@@ -2,7 +2,7 @@
 draft = false
 title = 'GAMES101 现代计算机图形学入门 Camera Lenses Light Fields Color and Perception'
 categories = ["学习笔记/GAMES101"]
-tags = ["课程笔记","Games101"]
+tags = ["Games101"]
 image = '05414f77c7904ed5851265148aa16f58.png'
 +++
 # Cameras

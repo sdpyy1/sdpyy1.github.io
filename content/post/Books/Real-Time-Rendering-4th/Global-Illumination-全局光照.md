@@ -2,7 +2,7 @@
 draft = false
 title = 'Global Illumination 全局光照'
 categories = ["学习笔记/RTR4th"]
-tags = ["看书笔记","实时渲染","Real-Time Rendering 4th"]
+tags = ["RTR4th"]
 image = '202307031150341.png'
 +++
 

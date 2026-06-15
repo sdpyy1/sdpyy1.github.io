@@ -2,7 +2,7 @@
 draft = false
 title = 'GAMES202 高质量实时渲染（Real Time Shadows）'
 categories = ["学习笔记/GAMES202"]
-tags = ["课程笔记","Games202"]
+tags = ["Games202"]
 image = '7d064c8a32bd4ca48f6dc45c082cf7c4.png'
 +++
 # Shadow Mapping
