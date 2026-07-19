@@ -1,0 +1,1799 @@
+<!DOCTYPE html>
+<html lang="zh-cn" dir="ltr">
+    <head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'>
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+  <meta name="referrer" content="no-referrer-when-downgrade"><meta name='description' content="## 拖入Actor到场景，渲染器记录组件信息 每个继承自UPrimitiveComponent的Component都可以定义自己的Proxy，Proxy用于表示这个组件在渲染器的代表\n">
+<title>UE源码学习（Mesh流转）</title>
+
+<link rel='canonical' href='https://sdpyy1.github.io/p/ue%E6%BA%90%E7%A0%81%E5%AD%A6%E4%B9%A0mesh%E6%B5%81%E8%BD%AC/'>
+
+<link rel="stylesheet" href="/scss/style.min.6a692fd055deae459f2a9767f57f3855ba80cafd5041317f24f7360f6ca47cdf.css"><meta property='og:title' content="UE源码学习（Mesh流转）">
+<meta property='og:description' content="## 拖入Actor到场景，渲染器记录组件信息 每个继承自UPrimitiveComponent的Component都可以定义自己的Proxy，Proxy用于表示这个组件在渲染器的代表\n">
+<meta property='og:url' content='https://sdpyy1.github.io/p/ue%E6%BA%90%E7%A0%81%E5%AD%A6%E4%B9%A0mesh%E6%B5%81%E8%BD%AC/'>
+<meta property='og:site_name' content='wanfeng'>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='UE源码' /><meta property='article:published_time' content='2026-07-19T16:36:45&#43;08:00'/><meta property='article:modified_time' content='2026-07-19T16:36:45&#43;08:00'/>
+<meta name="twitter:title" content="UE源码学习（Mesh流转）">
+<meta name="twitter:description" content="## 拖入Actor到场景，渲染器记录组件信息 每个继承自UPrimitiveComponent的Component都可以定义自己的Proxy，Proxy用于表示这个组件在渲染器的代表\n">
+    <link rel="shortcut icon" href="/favicon.ico" />
+
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="切换菜单">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        
+            
+            <figure class="site-avatar">
+                <a href="/">
+                
+                    
+                    
+                    
+                        
+                        <img src="/img/avatar_hu_f59158f730715054.png" width="300"
+                            height="300" class="site-logo" loading="lazy" alt="Avatar">
+                    
+                
+                </a>
+                
+                    <span class="emoji">🧐</span>
+                
+            </figure>
+            
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="/">wanfeng</a></h1>
+            <h2 class="site-description">Blog</h2>
+        </div>
+    </header><ol class="menu-social">
+            
+                <li>
+                    <a 
+                        href='https://space.bilibili.com/287473737'
+                        target="_blank"
+                        title="Bilibili"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-tabler icons-tabler-outline icon-tabler-brand-bilibili"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 10a4 4 0 0 1 4 -4h10a4 4 0 0 1 4 4v6a4 4 0 0 1 -4 4h-10a4 4 0 0 1 -4 -4v-6z" /><path d="M8 3l2 3" /><path d="M16 3l-2 3" /><path d="M9 13v-2" /><path d="M15 11v2" /></svg>
+                        
+                    </a>
+                </li>
+            
+                <li>
+                    <a 
+                        href='https://github.com/sdpyy1'
+                        target="_blank"
+                        title="GitHub"
+                        rel="me"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
+</svg>
+
+
+
+                        
+                    </a>
+                </li>
+            
+        </ol><ol class="menu" id="main-menu">
+        
+        
+        
+        <li >
+            <a href='/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>Home</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/about/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>About</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/archives/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>Archives</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/search/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>Search</span>
+            </a>
+        </li>
+        
+        
+        <li >
+            <a href='/links/' >
+                
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-link" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M10 14a3.5 3.5 0 0 0 5 0l4 -4a3.5 3.5 0 0 0 -5 -5l-.5 .5" />
+  <path d="M14 10a3.5 3.5 0 0 0 -5 0l-4 4a3.5 3.5 0 0 0 5 5l.5 -.5" />
+</svg>
+
+
+
+                
+                <span>Links</span>
+            </a>
+        </li>
+        
+        <li class="menu-bottom-section">
+            <ol class="menu">
+                    
+                        <li id="i18n-switch">  
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-language" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M4 5h7" />
+  <path d="M9 3v2c0 4.418 -2.239 8 -5 8" />
+  <path d="M5 9c-.003 2.144 2.952 3.908 6.7 4" />
+  <path d="M12 20l4 -9l4 9" />
+  <path d="M19.1 18h-6.2" />
+</svg>
+
+
+
+                            <select name="language" title="language" onchange="window.location.href = this.selectedOptions[0].value">
+                                
+                                    <option value="https://sdpyy1.github.io/en/" >English</option>
+                                
+                                    <option value="https://sdpyy1.github.io/" selected>中文</option>
+                                
+                            </select>
+                        </li>
+                    
+                
+
+                
+                    <li id="dark-mode-toggle">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                        <span>暗色模式</span>
+                    </li>
+                
+            </ol>
+        </li>
+    </ol>
+</aside>
+
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">目录</h2>
+        
+        <div class="widget--toc">
+            <nav id="TableOfContents">
+  <ol>
+    <li><a href="#-拖入actor到场景渲染器记录组件信息">## 拖入Actor到场景，渲染器记录组件信息</a></li>
+    <li><a href="#每帧对primitivesceneinfo进行可见性剔除">每帧对PrimitiveSceneInfo进行可见性剔除</a>
+      <ol>
+        <li><a href="#对需要动态收集的primitiveinfo收集meshbatch">对需要动态收集的PrimitiveInfo，收集MeshBatch</a></li>
+        <li><a href="#每个pass的meshprocessor接收meshbatch对meshbatch生成fmeshdrawcommand">每个Pass的MeshProcessor接收MeshBatch，对MeshBatch生成FMeshDrawCommand</a></li>
+      </ol>
+    </li>
+  </ol>
+</nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+            <main class="main full-width">
+    <article class="main-article">
+    <header class="article-header">
+
+    <div class="article-details">
+    
+    <header class="article-category">
+        
+        
+             
+            
+            
+            
+            <div class="category-hierarchy">
+                
+                    
+                    
+                    
+                        
+                    
+                     
+                    
+                    
+                    
+                    <a href="#" 
+                       >
+                        虚幻引擎
+                    </a>
+                    
+                    
+                    
+                
+            </div>
+        
+    </header>
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="/p/ue%E6%BA%90%E7%A0%81%E5%AD%A6%E4%B9%A0mesh%E6%B5%81%E8%BD%AC/">UE源码学习（Mesh流转）</a>
+        </h2>
+    
+        
+    </div>
+
+    
+    
+    
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published">Jul 19, 2026</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-time--reading">
+                    阅读时长: 3 分钟
+                </time>
+            </div>
+        
+
+        
+            
+    </footer>
+    
+    
+</div>
+<style>
+    .category-hierarchy {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;  
+        margin-right: 12px;  
+        margin-bottom: 8px;  
+    }
+    
+    .category-separator {
+        color: #999;
+        user-select: none;
+        font-size: 1em;  
+    }
+    
+    .article-category a {
+        text-decoration: none;
+        padding: 6px 12px;  
+        border-radius: 6px;  
+        font-size: 0.95em;  
+        transition: all 0.2s ease;
+        line-height: 1.5;  
+    }
+    
+    .article-category a:hover {
+        opacity: 0.9;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 6px rgba(0,0,0,0.1);  
+    }
+</style>
+</header>
+
+    <section class="article-content">
+    
+    
+    <h1 id="-拖入actor到场景渲染器记录组件信息">## 拖入Actor到场景，渲染器记录组件信息
+</h1><p><img src="/image-20260719170556149.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20260719170556149"
+	
+	
+></p>
+<p>每个继承自UPrimitiveComponent的Component都可以定义自己的Proxy，Proxy用于表示这个组件在渲染器的代表</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="cm">/**
+</span></span></span><span class="line"><span class="cl"><span class="cm"> * Creates a proxy to represent the primitive to the scene manager in the rendering thread.
+</span></span></span><span class="line"><span class="cl"><span class="cm"> * @return The proxy object.
+</span></span></span><span class="line"><span class="cl"><span class="cm"> */</span>
+</span></span><span class="line"><span class="cl"><span class="k">virtual</span> <span class="n">FPrimitiveSceneProxy</span><span class="o">*</span> <span class="nf">CreateSceneProxy</span><span class="p">()</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="nb">NULL</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>比如StaticMeshComponent</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">  1
+</span><span class="lnt">  2
+</span><span class="lnt">  3
+</span><span class="lnt">  4
+</span><span class="lnt">  5
+</span><span class="lnt">  6
+</span><span class="lnt">  7
+</span><span class="lnt">  8
+</span><span class="lnt">  9
+</span><span class="lnt"> 10
+</span><span class="lnt"> 11
+</span><span class="lnt"> 12
+</span><span class="lnt"> 13
+</span><span class="lnt"> 14
+</span><span class="lnt"> 15
+</span><span class="lnt"> 16
+</span><span class="lnt"> 17
+</span><span class="lnt"> 18
+</span><span class="lnt"> 19
+</span><span class="lnt"> 20
+</span><span class="lnt"> 21
+</span><span class="lnt"> 22
+</span><span class="lnt"> 23
+</span><span class="lnt"> 24
+</span><span class="lnt"> 25
+</span><span class="lnt"> 26
+</span><span class="lnt"> 27
+</span><span class="lnt"> 28
+</span><span class="lnt"> 29
+</span><span class="lnt"> 30
+</span><span class="lnt"> 31
+</span><span class="lnt"> 32
+</span><span class="lnt"> 33
+</span><span class="lnt"> 34
+</span><span class="lnt"> 35
+</span><span class="lnt"> 36
+</span><span class="lnt"> 37
+</span><span class="lnt"> 38
+</span><span class="lnt"> 39
+</span><span class="lnt"> 40
+</span><span class="lnt"> 41
+</span><span class="lnt"> 42
+</span><span class="lnt"> 43
+</span><span class="lnt"> 44
+</span><span class="lnt"> 45
+</span><span class="lnt"> 46
+</span><span class="lnt"> 47
+</span><span class="lnt"> 48
+</span><span class="lnt"> 49
+</span><span class="lnt"> 50
+</span><span class="lnt"> 51
+</span><span class="lnt"> 52
+</span><span class="lnt"> 53
+</span><span class="lnt"> 54
+</span><span class="lnt"> 55
+</span><span class="lnt"> 56
+</span><span class="lnt"> 57
+</span><span class="lnt"> 58
+</span><span class="lnt"> 59
+</span><span class="lnt"> 60
+</span><span class="lnt"> 61
+</span><span class="lnt"> 62
+</span><span class="lnt"> 63
+</span><span class="lnt"> 64
+</span><span class="lnt"> 65
+</span><span class="lnt"> 66
+</span><span class="lnt"> 67
+</span><span class="lnt"> 68
+</span><span class="lnt"> 69
+</span><span class="lnt"> 70
+</span><span class="lnt"> 71
+</span><span class="lnt"> 72
+</span><span class="lnt"> 73
+</span><span class="lnt"> 74
+</span><span class="lnt"> 75
+</span><span class="lnt"> 76
+</span><span class="lnt"> 77
+</span><span class="lnt"> 78
+</span><span class="lnt"> 79
+</span><span class="lnt"> 80
+</span><span class="lnt"> 81
+</span><span class="lnt"> 82
+</span><span class="lnt"> 83
+</span><span class="lnt"> 84
+</span><span class="lnt"> 85
+</span><span class="lnt"> 86
+</span><span class="lnt"> 87
+</span><span class="lnt"> 88
+</span><span class="lnt"> 89
+</span><span class="lnt"> 90
+</span><span class="lnt"> 91
+</span><span class="lnt"> 92
+</span><span class="lnt"> 93
+</span><span class="lnt"> 94
+</span><span class="lnt"> 95
+</span><span class="lnt"> 96
+</span><span class="lnt"> 97
+</span><span class="lnt"> 98
+</span><span class="lnt"> 99
+</span><span class="lnt">100
+</span><span class="lnt">101
+</span><span class="lnt">102
+</span><span class="lnt">103
+</span><span class="lnt">104
+</span><span class="lnt">105
+</span><span class="lnt">106
+</span><span class="lnt">107
+</span><span class="lnt">108
+</span><span class="lnt">109
+</span><span class="lnt">110
+</span><span class="lnt">111
+</span><span class="lnt">112
+</span><span class="lnt">113
+</span><span class="lnt">114
+</span><span class="lnt">115
+</span><span class="lnt">116
+</span><span class="lnt">117
+</span><span class="lnt">118
+</span><span class="lnt">119
+</span><span class="lnt">120
+</span><span class="lnt">121
+</span><span class="lnt">122
+</span><span class="lnt">123
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="n">FPrimitiveSceneProxy</span><span class="o">*</span> <span class="n">FStaticMeshComponentHelper</span><span class="o">::</span><span class="n">CreateSceneProxy</span><span class="p">(</span><span class="n">T</span><span class="o">&amp;</span> <span class="n">Component</span><span class="p">,</span> <span class="n">FStaticMeshComponentHelper</span><span class="o">::</span><span class="n">ESceneProxyCreationError</span><span class="o">*</span> <span class="n">OutError</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl"><span class="n">UStaticMesh</span><span class="o">*</span> <span class="n">StaticMesh</span> <span class="o">=</span> <span class="n">Component</span><span class="p">.</span><span class="n">GetStaticMesh</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">auto</span> <span class="n">SetError</span> <span class="o">=</span> <span class="p">[</span><span class="n">OutError</span><span class="p">](</span><span class="n">FStaticMeshComponentHelper</span><span class="o">::</span><span class="n">ESceneProxyCreationError</span> <span class="n">InError</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="n">OutError</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="o">*</span><span class="n">OutError</span> <span class="o">=</span> <span class="n">InError</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">};</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">if</span> <span class="nf">constexpr</span> <span class="p">(</span><span class="o">!</span><span class="n">bAssumeRenderDataIsReady</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="n">StaticMesh</span> <span class="o">==</span> <span class="k">nullptr</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">UE_LOG</span><span class="p">(</span><span class="n">LogStaticMesh</span><span class="p">,</span> <span class="n">Verbose</span><span class="p">,</span> <span class="n">TEXT</span><span class="p">(</span><span class="s">&#34;Skipping CreateSceneProxy for StaticMeshComponent %s (StaticMesh is null)&#34;</span><span class="p">),</span> <span class="o">*</span><span class="n">UObjectHelper</span><span class="o">::</span><span class="n">GetFullNameIfAvailable</span><span class="p">(</span><span class="n">Component</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">        <span class="n">SetError</span><span class="p">(</span><span class="n">ESceneProxyCreationError</span><span class="o">::</span><span class="n">InvalidMesh</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="k">nullptr</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// Prevent accessing the RenderData during async compilation. The RenderState will be recreated when compilation finishes.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="k">if</span> <span class="p">(</span><span class="n">StaticMesh</span><span class="o">-&gt;</span><span class="n">IsCompiling</span><span class="p">())</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">UE_LOG</span><span class="p">(</span><span class="n">LogStaticMesh</span><span class="p">,</span> <span class="n">Verbose</span><span class="p">,</span> <span class="n">TEXT</span><span class="p">(</span><span class="s">&#34;Skipping CreateSceneProxy for StaticMeshComponent %s (StaticMesh is not ready)&#34;</span><span class="p">),</span> <span class="o">*</span><span class="n">UObjectHelper</span><span class="o">::</span><span class="n">GetFullNameIfAvailable</span><span class="p">(</span><span class="n">Component</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">        <span class="n">SetError</span><span class="p">(</span><span class="n">ESceneProxyCreationError</span><span class="o">::</span><span class="n">MeshCompiling</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="k">nullptr</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="n">StaticMesh</span><span class="o">-&gt;</span><span class="n">GetRenderData</span><span class="p">()</span> <span class="o">==</span> <span class="k">nullptr</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">UE_LOG</span><span class="p">(</span><span class="n">LogStaticMesh</span><span class="p">,</span> <span class="n">Verbose</span><span class="p">,</span> <span class="n">TEXT</span><span class="p">(</span><span class="s">&#34;Skipping CreateSceneProxy for StaticMeshComponent %s (RenderData is null)&#34;</span><span class="p">),</span> <span class="o">*</span><span class="n">UObjectHelper</span><span class="o">::</span><span class="n">GetFullNameIfAvailable</span><span class="p">(</span><span class="n">Component</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">        <span class="n">SetError</span><span class="p">(</span><span class="n">ESceneProxyCreationError</span><span class="o">::</span><span class="n">InvalidMesh</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="k">nullptr</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">StaticMesh</span><span class="o">-&gt;</span><span class="n">GetRenderData</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">IsInitialized</span><span class="p">())</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="n">UE_LOG</span><span class="p">(</span><span class="n">LogStaticMesh</span><span class="p">,</span> <span class="n">Verbose</span><span class="p">,</span> <span class="n">TEXT</span><span class="p">(</span><span class="s">&#34;Skipping CreateSceneProxy for StaticMeshComponent %s (RenderData is not initialized)&#34;</span><span class="p">),</span> <span class="o">*</span><span class="n">UObjectHelper</span><span class="o">::</span><span class="n">GetFullNameIfAvailable</span><span class="p">(</span><span class="n">Component</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">        <span class="n">SetError</span><span class="p">(</span><span class="n">ESceneProxyCreationError</span><span class="o">::</span><span class="n">InvalidMesh</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="k">nullptr</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="k">else</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">check</span><span class="p">(</span><span class="n">StaticMesh</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">check</span><span class="p">(</span><span class="o">!</span><span class="n">StaticMesh</span><span class="o">-&gt;</span><span class="n">IsCompiling</span><span class="p">());</span>
+</span></span><span class="line"><span class="cl">    <span class="n">check</span><span class="p">(</span><span class="n">StaticMesh</span><span class="o">-&gt;</span><span class="n">GetRenderData</span><span class="p">());</span>
+</span></span><span class="line"><span class="cl">    <span class="n">check</span><span class="p">(</span><span class="n">StaticMesh</span><span class="o">-&gt;</span><span class="n">GetRenderData</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">IsInitialized</span><span class="p">());</span>		
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">EPSOPrecachePriority</span> <span class="n">PSOPrecachePriority</span> <span class="o">=</span> <span class="n">GetStaticMeshComponentBoostPSOPrecachePriority</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl"><span class="k">if</span> <span class="p">(</span><span class="n">Component</span><span class="p">.</span><span class="n">CheckPSOPrecachingAndBoostPriority</span><span class="p">(</span><span class="n">PSOPrecachePriority</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="n">GetPSOPrecacheProxyCreationStrategy</span><span class="p">()</span> <span class="o">==</span> <span class="n">EPSOPrecacheProxyCreationStrategy</span><span class="o">::</span><span class="n">DelayUntilPSOPrecached</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">UE_LOG</span><span class="p">(</span><span class="n">LogStaticMesh</span><span class="p">,</span> <span class="n">Verbose</span><span class="p">,</span> <span class="n">TEXT</span><span class="p">(</span><span class="s">&#34;Skipping CreateSceneProxy for StaticMeshComponent %s (Static mesh component PSOs are still compiling)&#34;</span><span class="p">),</span> <span class="o">*</span><span class="n">UObjectHelper</span><span class="o">::</span><span class="n">GetFullNameIfAvailable</span><span class="p">(</span><span class="n">Component</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">    <span class="n">SetError</span><span class="p">(</span><span class="n">ESceneProxyCreationError</span><span class="o">::</span><span class="n">WaitingPSOs</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="k">nullptr</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">const</span> <span class="kt">bool</span> <span class="n">bIsMaskingAllowed</span> <span class="o">=</span> <span class="n">Nanite</span><span class="o">::</span><span class="n">IsMaskingAllowed</span><span class="p">(</span><span class="n">Component</span><span class="p">.</span><span class="n">GetWorld</span><span class="p">(),</span> <span class="n">Component</span><span class="p">.</span><span class="n">GetForceNaniteForMasked</span><span class="p">());</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="n">Nanite</span><span class="o">::</span><span class="n">FMaterialAudit</span> <span class="n">NaniteMaterials</span><span class="p">{};</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// Is Nanite supported, and is there built Nanite data for this static mesh?
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">const</span> <span class="kt">bool</span> <span class="n">bUseNanite</span> <span class="o">=</span> <span class="n">Component</span><span class="p">.</span><span class="n">ShouldCreateNaniteProxy</span><span class="p">(</span><span class="o">&amp;</span><span class="n">NaniteMaterials</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">if</span> <span class="p">(</span><span class="n">bUseNanite</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="c1">// Nanite is fully supported
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="k">return</span> <span class="n">Component</span><span class="p">.</span><span class="n">CreateStaticMeshSceneProxy</span><span class="p">(</span><span class="n">NaniteMaterials</span><span class="p">,</span> <span class="nb">true</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// If we didn&#39;t get a proxy, but Nanite was enabled on the asset when it was built, evaluate proxy creation
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">if</span> <span class="p">(</span><span class="n">Component</span><span class="p">.</span><span class="n">HasValidNaniteData</span><span class="p">())</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="n">NaniteMaterials</span><span class="p">.</span><span class="n">IsValid</span><span class="p">(</span><span class="n">bIsMaskingAllowed</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="k">const</span> <span class="kt">bool</span> <span class="n">bAllowProxyRender</span> <span class="o">=</span> <span class="n">Nanite</span><span class="o">::</span><span class="n">GetProxyRenderMode</span><span class="p">()</span> <span class="o">==</span> <span class="n">Nanite</span><span class="o">::</span><span class="n">EProxyRenderMode</span><span class="o">::</span><span class="n">Allow</span>
+</span></span><span class="line"><span class="cl"><span class="cp">#if WITH_EDITORONLY_DATA
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>            <span class="c1">// Check for specific case of static mesh editor &#34;proxy toggle&#34;
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>            <span class="o">||</span> <span class="p">(</span><span class="n">Component</span><span class="p">.</span><span class="n">IsDisplayNaniteFallbackMesh</span><span class="p">()</span> <span class="o">&amp;&amp;</span> <span class="n">Nanite</span><span class="o">::</span><span class="n">GetProxyRenderMode</span><span class="p">()</span> <span class="o">==</span> <span class="n">Nanite</span><span class="o">::</span><span class="n">EProxyRenderMode</span><span class="o">::</span><span class="n">AllowForDebugging</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="cp">#endif
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>            <span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">        <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">bAllowProxyRender</span><span class="p">)</span> <span class="c1">// Never render proxies
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>        <span class="p">{</span>
+</span></span><span class="line"><span class="cl">            <span class="c1">// We don&#39;t want to fall back to Nanite proxy rendering, so just make the mesh invisible instead.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>            <span class="k">return</span> <span class="k">nullptr</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">        <span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// Fall back to rendering Nanite proxy meshes with traditional static mesh scene proxies
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl">    <span class="n">FSceneInterface</span><span class="o">*</span> <span class="n">Scene</span> <span class="o">=</span> <span class="n">Component</span><span class="p">.</span><span class="n">GetScene</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="k">const</span> <span class="n">EShaderPlatform</span> <span class="n">ShaderPlatform</span> <span class="o">=</span> <span class="n">Scene</span> <span class="o">?</span> <span class="n">Scene</span><span class="o">-&gt;</span><span class="n">GetShaderPlatform</span><span class="p">()</span> <span class="o">:</span> <span class="n">GMaxRHIShaderPlatform</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="c1">// TODO: handle Nanite representation being overriden using OnGetNaniteResources
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="c1">// for now need to check UStaticMesh::HasValidNaniteData() directly here
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="k">const</span> <span class="kt">bool</span> <span class="n">bFallbackGenerated</span> <span class="o">=</span> <span class="o">!</span><span class="n">StaticMesh</span><span class="o">-&gt;</span><span class="n">HasValidNaniteData</span><span class="p">()</span> <span class="o">||</span> <span class="n">StaticMesh</span><span class="o">-&gt;</span><span class="n">HasNaniteFallbackMesh</span><span class="p">(</span><span class="n">ShaderPlatform</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">bFallbackGenerated</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">    <span class="p">{</span>
+</span></span><span class="line"><span class="cl">        <span class="c1">// TODO: automatically enable fallback on the static mesh asset?
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>
+</span></span><span class="line"><span class="cl">        <span class="n">UE_LOG</span><span class="p">(</span><span class="n">LogStaticMesh</span><span class="p">,</span> <span class="n">Warning</span><span class="p">,</span> <span class="n">TEXT</span><span class="p">(</span><span class="s">&#34;Unable to create a proxy for StaticMeshComponent [%s] because it doesn&#39;t have a fallback mesh.&#34;</span><span class="p">),</span> <span class="o">*</span><span class="n">UObjectHelper</span><span class="o">::</span><span class="n">GetFullNameIfAvailable</span><span class="p">(</span><span class="n">Component</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">        <span class="n">SetError</span><span class="p">(</span><span class="n">ESceneProxyCreationError</span><span class="o">::</span><span class="n">InvalidMesh</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">        <span class="k">return</span> <span class="k">nullptr</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="c1">// Validate the LOD resources here
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="k">const</span> <span class="n">FStaticMeshLODResourcesArray</span><span class="o">&amp;</span> <span class="n">LODResources</span> <span class="o">=</span> <span class="n">StaticMesh</span><span class="o">-&gt;</span><span class="n">GetRenderData</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">LODResources</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="k">const</span> <span class="n">int32</span> <span class="n">SMCurrentMinLOD</span> <span class="o">=</span> <span class="n">StaticMesh</span><span class="o">-&gt;</span><span class="n">GetMinLODIdx</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl"><span class="k">const</span> <span class="n">int32</span> <span class="n">EffectiveMinLOD</span> <span class="o">=</span> <span class="n">Component</span><span class="p">.</span><span class="n">GetOverrideMinLOD</span><span class="p">()</span> <span class="o">?</span> <span class="n">FMath</span><span class="o">::</span><span class="n">Max</span><span class="p">(</span><span class="n">Component</span><span class="p">.</span><span class="n">GetMinLOD</span><span class="p">(),</span> <span class="n">SMCurrentMinLOD</span><span class="p">)</span> <span class="o">:</span> <span class="n">SMCurrentMinLOD</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="k">if</span> <span class="p">(</span><span class="n">LODResources</span><span class="p">.</span><span class="n">Num</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span> <span class="o">||</span> <span class="n">LODResources</span><span class="p">[</span><span class="n">FMath</span><span class="o">::</span><span class="n">Clamp</span><span class="o">&lt;</span><span class="n">int32</span><span class="o">&gt;</span><span class="p">(</span><span class="n">EffectiveMinLOD</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">LODResources</span><span class="p">.</span><span class="n">Num</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)].</span><span class="n">VertexBuffers</span><span class="p">.</span><span class="n">StaticMeshVertexBuffer</span><span class="p">.</span><span class="n">GetNumVertices</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">UE_LOG</span><span class="p">(</span><span class="n">LogStaticMesh</span><span class="p">,</span> <span class="n">Verbose</span><span class="p">,</span> <span class="n">TEXT</span><span class="p">(</span><span class="s">&#34;Skipping CreateSceneProxy for StaticMeshComponent %s (LOD problems)&#34;</span><span class="p">),</span> <span class="o">*</span><span class="n">UObjectHelper</span><span class="o">::</span><span class="n">GetFullNameIfAvailable</span><span class="p">(</span><span class="n">Component</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">    <span class="n">SetError</span><span class="p">(</span><span class="n">ESceneProxyCreationError</span><span class="o">::</span><span class="n">InvalidMesh</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="k">return</span> <span class="k">nullptr</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl"><span class="k">return</span> <span class="n">Component</span><span class="p">.</span><span class="n">CreateStaticMeshSceneProxy</span><span class="p">(</span><span class="n">NaniteMaterials</span><span class="p">,</span> <span class="nb">false</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>创建完的Proxy会包在一个FPrimitiveSceneInfo中</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="c1">// Create the primitive scene info.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="n">FPrimitiveSceneInfo</span><span class="o">*</span> <span class="n">PrimitiveSceneInfo</span> <span class="o">=</span> <span class="k">new</span> <span class="n">FPrimitiveSceneInfo</span><span class="p">(</span><span class="n">Primitive</span><span class="p">,</span> <span class="k">this</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="n">PrimitiveSceneProxy</span><span class="o">-&gt;</span><span class="n">PrimitiveSceneInfo</span> <span class="o">=</span> <span class="n">PrimitiveSceneInfo</span><span class="p">;</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>之后会入队一个命令，用来在渲染线程传入新添加的FPrimitiveSceneInfo到FScene的PrimitiveUpdates</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="kt">void</span> <span class="n">FScene</span><span class="o">::</span><span class="n">AddPrimitiveSceneInfo_RenderThread</span><span class="p">(</span><span class="n">FPrimitiveSceneInfo</span><span class="o">*</span> <span class="n">PrimitiveSceneInfo</span><span class="p">,</span> <span class="k">const</span> <span class="n">TOptional</span><span class="o">&lt;</span><span class="n">FTransform</span><span class="o">&gt;&amp;</span> <span class="n">PreviousTransform</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="c1">// Must always be a novel primitive that is added
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="n">check</span><span class="p">(</span><span class="n">PrimitiveSceneInfo</span><span class="o">-&gt;</span><span class="n">PackedIndex</span> <span class="o">==</span> <span class="n">INDEX_NONE</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="n">PrimitiveUpdates</span><span class="p">.</span><span class="n">EnqueueAdd</span><span class="p">(</span><span class="n">PrimitiveSceneInfo</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="p">(</span><span class="n">PreviousTransform</span><span class="p">.</span><span class="n">IsSet</span><span class="p">())</span>
+</span></span><span class="line"><span class="cl">	<span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="n">PrimitiveUpdates</span><span class="p">.</span><span class="n">Enqueue</span><span class="o">&lt;</span><span class="n">FUpdateOverridePreviousTransformData</span><span class="o">&gt;</span><span class="p">(</span><span class="n">PrimitiveSceneInfo</span><span class="p">,</span> <span class="n">FUpdateOverridePreviousTransformData</span><span class="p">(</span><span class="n">PreviousTransform</span><span class="p">.</span><span class="n">GetValue</span><span class="p">().</span><span class="n">ToMatrixWithScale</span><span class="p">()));</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>在每帧开始时会用FScene::UpdateAllPrimitiveSceneInfos 处理这个update数组，放在真正的FScene::Primitives中</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="kt">void</span> <span class="n">FScene</span><span class="o">::</span><span class="n">UpdateAllPrimitiveSceneInfos</span><span class="p">(</span><span class="n">FRDGBuilder</span><span class="o">&amp;</span> <span class="n">GraphBuilder</span><span class="p">,</span> <span class="n">EUpdateAllPrimitiveSceneInfosAsyncOps</span> <span class="n">AsyncOps</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="n">FUpdateParameters</span> <span class="n">Parameters</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="n">Parameters</span><span class="p">.</span><span class="n">AsyncOps</span> <span class="o">=</span> <span class="n">AsyncOps</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="n">Update</span><span class="p">(</span><span class="n">GraphBuilder</span><span class="p">,</span> <span class="n">Parameters</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="k">for</span> <span class="p">(</span><span class="n">int32</span> <span class="n">AddIndex</span> <span class="o">=</span> <span class="n">StartIndex</span><span class="p">;</span> <span class="n">AddIndex</span> <span class="o">&lt;</span> <span class="n">AddedLocalPrimitiveSceneInfos</span><span class="p">.</span><span class="n">Num</span><span class="p">();</span> <span class="n">AddIndex</span><span class="o">++</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">    <span class="n">FPrimitiveSceneInfo</span><span class="o">*</span> <span class="n">PrimitiveSceneInfo</span> <span class="o">=</span> <span class="n">AddedLocalPrimitiveSceneInfos</span><span class="p">[</span><span class="n">AddIndex</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">    <span class="n">Primitives</span><span class="p">.</span><span class="n">Add</span><span class="p">(</span><span class="n">PrimitiveSceneInfo</span><span class="p">);</span>              <span class="c1">// ← 你要找的
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="k">const</span> <span class="n">FMatrix</span> <span class="n">LocalToWorld</span> <span class="o">=</span> <span class="n">PrimitiveSceneInfo</span><span class="o">-&gt;</span><span class="n">Proxy</span><span class="o">-&gt;</span><span class="n">GetLocalToWorld</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="n">PrimitiveTransforms</span><span class="p">.</span><span class="n">Add</span><span class="p">(</span><span class="n">LocalToWorld</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">PrimitiveSceneProxies</span><span class="p">.</span><span class="n">Add</span><span class="p">(</span><span class="n">PrimitiveSceneInfo</span><span class="o">-&gt;</span><span class="n">Proxy</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">PrimitiveBounds</span><span class="p">.</span><span class="n">AddUninitialized</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="n">PrimitiveFlagsCompact</span><span class="p">.</span><span class="n">AddUninitialized</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">    <span class="p">...</span>
+</span></span><span class="line"><span class="cl">    <span class="k">const</span> <span class="n">int32</span> <span class="n">SourceIndex</span> <span class="o">=</span> <span class="n">PrimitiveSceneProxies</span><span class="p">.</span><span class="n">Num</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">PrimitiveSceneInfo</span><span class="o">-&gt;</span><span class="n">PackedIndex</span> <span class="o">=</span> <span class="n">SourceIndex</span><span class="p">;</span> 
+</span></span><span class="line"><span class="cl">    <span class="n">PersistentPrimitiveIdToIndexMap</span><span class="p">[</span><span class="n">PrimitiveSceneInfo</span><span class="o">-&gt;</span><span class="n">PersistentIndex</span><span class="p">.</span><span class="n">Index</span><span class="p">]</span> <span class="o">=</span> <span class="n">SourceIndex</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>到这里渲染器记录了这个可以被渲染的组件的存在</p>
+<h1 id="每帧对primitivesceneinfo进行可见性剔除">每帧对PrimitiveSceneInfo进行可见性剔除
+</h1><p><img src="/image-20260719172609562.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20260719172609562"
+	
+	
+></p>
+<p>对于每个View，都会组织一个View.PrimitiveVisibilityMap，存储每个PrimitiveInfo的可见性。</p>
+<p><strong><code>PrimitiveVisibilityMap</code> 的下标就是 <code>FScene::Primitives</code> 的下标，两者一一对应</strong></p>
+<h2 id="对需要动态收集的primitiveinfo收集meshbatch">对需要动态收集的PrimitiveInfo，收集MeshBatch
+</h2><p><img src="/image-20260719173356708.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20260719173356708"
+	
+	
+></p>
+<p>此时每个Proxy就可以提供自己需要渲染的MeshBatch</p>
+<h2 id="每个pass的meshprocessor接收meshbatch对meshbatch生成fmeshdrawcommand">每个Pass的MeshProcessor接收MeshBatch，对MeshBatch生成FMeshDrawCommand
+</h2><p>绝大多数情况MeshBatch只有一个Element，所以只会生成一个FMeshDrawCommand</p>
+<p><img src="/image-20260719175333033.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20260719175333033"
+	
+	
+></p>
+<p>同时还会进行排序和合批，  在各个Pass进行中直接Submit整理好的MeshDrawCommand</p>
+<p><img src="/image-20260719175703661.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="image-20260719175703661"
+	
+	
+></p>
+
+</section>
+
+
+    <footer class="article-footer">
+    
+    <section class="article-tags">
+        
+            <a href="/tags/ue%E6%BA%90%E7%A0%81/">UE源码</a>
+        
+    </section>
+
+
+    
+    <section class="article-copyright">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
+</svg>
+
+
+
+        <span>Licensed under CC BY-NC-SA 4.0</span>
+    </section>
+    </footer>
+
+
+    
+        <link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css"integrity="sha384-n8MVd4RsNIU0tAv4ct0nTaAbDJwPJzDEaqSD1odI&#43;WdtXRGWt2kTvGFasHpSy3SV"crossorigin="anonymous"
+            ><script 
+                src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"integrity="sha384-XjKyOOlGwcjNTAIQHIpgOno0Hl1YQqzUOEleOLALmuqehneUG&#43;vnGctmUb0ZY0l8"crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"integrity="sha384-&#43;VBxd3r6XgURycqtZ117nYw44OOcIax56Z4dCRWbxyPt0Koah1uHoK0o4&#43;/RRE05"crossorigin="anonymous"
+                defer
+                >
+            </script><script>
+    window.addEventListener("DOMContentLoaded", () => {
+	const mainArticleElement = document.querySelector(".main-article");
+        renderMathInElement(mainArticleElement, {
+            delimiters: [
+                { left: "$$", right: "$$", display: true },
+                { left: "$", right: "$", display: false },
+                { left: "\\(", right: "\\)", display: false },
+                { left: "\\[", right: "\\]", display: true }
+            ],
+            ignoredClasses: ["gist"]
+        });})
+</script>
+
+    
+</article>
+
+    
+
+    
+
+<aside class="related-content--wrapper">
+    <h2 class="section-title">相关文章</h2>
+    <div class="related-content">
+        <div class="flex article-list--tile">
+            
+                
+<article class="article-card no-image">
+    <a href="/p/ue%E6%BA%90%E7%A0%81%E5%AD%A6%E4%B9%A0niagara-system/">
+        
+        
+        <div class="article-details">
+            <h2 class="article-title">UE源码学习（Niagara System）</h2>
+        </div>
+        
+    </a>
+
+    <style>
+     
+    .article-card {
+        background: rgba(255, 255, 255, 0.25);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        margin: 10px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .article-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    }
+
+    .article-card a {
+        display: flex;
+        flex-direction: column;
+        text-decoration: none;
+        color: inherit;
+        height: 100%;
+    }
+
+     
+    .article-image-card {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        overflow: hidden;
+    }
+    .article-image-card img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+    .article-image-card:hover img {
+        transform: scale(1.05);
+    }
+
+     
+    .article-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: rgba(0,0,0,0.3);  
+        padding: 10px;
+        box-sizing: border-box;
+        text-align: center;
+    }
+    .article-overlay .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #fff;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .article-card.no-image .article-details {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 15px;
+    }
+    .article-card.no-image .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #222;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .articles-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 20px;
+    }
+    </style>
+</article>
+            
+                
+<article class="article-card no-image">
+    <a href="/p/ue%E6%BA%90%E7%A0%81%E5%AD%A6%E4%B9%A0pso%E7%BC%96%E8%AF%91/">
+        
+        
+        <div class="article-details">
+            <h2 class="article-title">UE源码学习（PSO编译）</h2>
+        </div>
+        
+    </a>
+
+    <style>
+     
+    .article-card {
+        background: rgba(255, 255, 255, 0.25);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        margin: 10px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .article-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    }
+
+    .article-card a {
+        display: flex;
+        flex-direction: column;
+        text-decoration: none;
+        color: inherit;
+        height: 100%;
+    }
+
+     
+    .article-image-card {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        overflow: hidden;
+    }
+    .article-image-card img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+    .article-image-card:hover img {
+        transform: scale(1.05);
+    }
+
+     
+    .article-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: rgba(0,0,0,0.3);  
+        padding: 10px;
+        box-sizing: border-box;
+        text-align: center;
+    }
+    .article-overlay .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #fff;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .article-card.no-image .article-details {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 15px;
+    }
+    .article-card.no-image .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #222;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .articles-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 20px;
+    }
+    </style>
+</article>
+            
+                
+<article class="article-card no-image">
+    <a href="/p/ue%E6%BA%90%E7%A0%81%E5%AD%A6%E4%B9%A0%E6%B8%B2%E6%9F%93%E6%9C%BA%E5%88%B6/">
+        
+        
+        <div class="article-details">
+            <h2 class="article-title">UE源码学习（渲染机制）</h2>
+        </div>
+        
+    </a>
+
+    <style>
+     
+    .article-card {
+        background: rgba(255, 255, 255, 0.25);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        margin: 10px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .article-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    }
+
+    .article-card a {
+        display: flex;
+        flex-direction: column;
+        text-decoration: none;
+        color: inherit;
+        height: 100%;
+    }
+
+     
+    .article-image-card {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        overflow: hidden;
+    }
+    .article-image-card img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+    .article-image-card:hover img {
+        transform: scale(1.05);
+    }
+
+     
+    .article-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: rgba(0,0,0,0.3);  
+        padding: 10px;
+        box-sizing: border-box;
+        text-align: center;
+    }
+    .article-overlay .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #fff;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .article-card.no-image .article-details {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 15px;
+    }
+    .article-card.no-image .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #222;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .articles-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 20px;
+    }
+    </style>
+</article>
+            
+                
+<article class="article-card has-image">
+    <a href="/p/%E5%88%9D%E8%AF%86ue%E6%BA%90%E7%A0%81rhi%E6%B8%B2%E6%9F%93%E6%9C%BA%E5%88%B6rdg/">
+        
+        <div class="article-image-card">
+            
+                <img src="/image-20251121130145117.png" loading="lazy" data-key="" data-hash="/image-20251121130145117.png"/>
+            
+
+            
+            <div class="article-overlay">
+                <h2 class="article-title">初识UE源码（RHI、渲染机制、RDG）</h2>
+            </div>
+        </div>
+        
+    </a>
+
+    <style>
+     
+    .article-card {
+        background: rgba(255, 255, 255, 0.25);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        margin: 10px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .article-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    }
+
+    .article-card a {
+        display: flex;
+        flex-direction: column;
+        text-decoration: none;
+        color: inherit;
+        height: 100%;
+    }
+
+     
+    .article-image-card {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        overflow: hidden;
+    }
+    .article-image-card img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+    .article-image-card:hover img {
+        transform: scale(1.05);
+    }
+
+     
+    .article-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: rgba(0,0,0,0.3);  
+        padding: 10px;
+        box-sizing: border-box;
+        text-align: center;
+    }
+    .article-overlay .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #fff;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .article-card.no-image .article-details {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 15px;
+    }
+    .article-card.no-image .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #222;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .articles-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 20px;
+    }
+    </style>
+</article>
+            
+                
+<article class="article-card no-image">
+    <a href="/p/cluster-based-lighting/">
+        
+        
+        <div class="article-details">
+            <h2 class="article-title">Cluster Based Lighting</h2>
+        </div>
+        
+    </a>
+
+    <style>
+     
+    .article-card {
+        background: rgba(255, 255, 255, 0.25);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        margin: 10px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .article-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    }
+
+    .article-card a {
+        display: flex;
+        flex-direction: column;
+        text-decoration: none;
+        color: inherit;
+        height: 100%;
+    }
+
+     
+    .article-image-card {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        overflow: hidden;
+    }
+    .article-image-card img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+    .article-image-card:hover img {
+        transform: scale(1.05);
+    }
+
+     
+    .article-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: rgba(0,0,0,0.3);  
+        padding: 10px;
+        box-sizing: border-box;
+        text-align: center;
+    }
+    .article-overlay .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #fff;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .article-card.no-image .article-details {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        padding: 15px;
+    }
+    .article-card.no-image .article-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #222;
+        margin: 0;
+        line-height: 1.3;
+    }
+
+     
+    .articles-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 20px;
+    }
+    </style>
+</article>
+            
+        </div>
+    </div>
+</aside>
+
+     
+    
+        
+    <script
+    src="https://giscus.app/client.js"
+    data-repo="sdpyy1/sdpyy1.github.io"
+    data-repo-id="R_kgDOQEycpQ"
+    data-category="Announcements"
+    data-category-id="DIC_kwDOQEycpc4Cwz7v"
+    data-mapping="pathname"
+    data-strict="0"
+    data-reactions-enabled="1"
+    data-emit-metadata="0"
+    data-input-position="top"
+    data-theme="light"
+    data-lang="en"
+    data-loading=""
+    crossorigin="anonymous"
+    async
+></script>
+<script>
+    function setGiscusTheme(theme) {
+        let giscus = document.querySelector("iframe.giscus-frame");
+        if (giscus) {
+            giscus.contentWindow.postMessage(
+                {
+                    giscus: {
+                        setConfig: {
+                            theme: theme,
+                        },
+                    },
+                },
+                "https://giscus.app"
+            );
+        }
+    }
+
+    (function () {
+        addEventListener("message", (e) => {
+            if (event.origin !== "https://giscus.app") return;
+            handler();
+        });
+        window.addEventListener("onColorSchemeChange", handler);
+
+        function handler() {
+            if (document.documentElement.dataset.scheme === "light") {
+                setGiscusTheme('light');
+            } else {
+                setGiscusTheme('light');
+            }
+        }
+    })();
+</script>
+
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+            2020 - 
+        
+        2026 爱喝东方树叶
+    </section>
+    <section style="display: flex; gap: 30px; align-items: center;">
+      
+      
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+      <span>📚 文章数: 75</span>
+      <span>✍️ 总字数: 
+        
+        
+        248.99K
+      </span>
+    </section>
+
+    <section class="powerby">
+    
+    <div class="busuanzi-footer">
+        <span id="busuanzi_container_site_pv">
+          本站总访问量<span id="busuanzi_value_site_pv"></span>次
+        </span>
+        <span id="busuanzi_container_site_uv">
+          本站访客数<span id="busuanzi_value_site_uv"></span>人次
+        </span>
+      </div></section>
+
+</footer>
+
+
+    
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    
+    <div class="pswp__bg"></div>
+
+    
+    <div class="pswp__scroll-wrap">
+
+        
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                
+                
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                        <div class="pswp__preloader__cut">
+                            <div class="pswp__preloader__donut"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div>
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js"integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo="crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js"integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU="crossorigin="anonymous"
+                defer
+                >
+            </script><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css"crossorigin="anonymous"
+            ><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css"crossorigin="anonymous"
+            >
+
+            </main>
+        </div>
+        <script 
+                src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js"integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z&#43;KMkF24hUW8WePSA9HM="crossorigin="anonymous"
+                
+                >
+            </script><script type="text/javascript" src="/ts/main.1e9a3bafd846ced4c345d084b355fb8c7bae75701c338f8a1f8a82c780137826.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>
