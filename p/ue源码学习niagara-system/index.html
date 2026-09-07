@@ -3,18 +3,18 @@
     <head><meta charset='utf-8'>
 <meta name='viewport' content='width=device-width, initial-scale=1'>
 <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
-  <meta name="referrer" content="no-referrer-when-downgrade"><meta name='description' content="Niagara System UNiagaraComponent 它继承自UPrimitiveComponent，所以会进行渲染 1 2 3 4 5 6 7 8 9 10 11 12 13 14 class NIAGARA_API UNiagaraComponent : public UFXSystemComponent{ // NS的实例，控制粒子计算 TUniquePtr&lt;FNiagaraSystemInstance&gt; SystemInstance; // 在这个组件Tick时，会驱动SystemInstance计算更新 （注意：Solo的走这里，不是Solo的有一个批量的Tick） virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override; // 内部会\tcheck(SystemInstance-&gt;IsSolo()); // 组件注册时，创建渲染状态（创建FNiagaraSceneProxy，发送动态数据） virtual void CreateRenderState_Concurrent(FRegisterComponentContext* Context) override; // 创建代理 virtual FPrimitiveSceneProxy* CreateSceneProxy() override; } 代理对象\n">
+  <meta name="referrer" content="no-referrer-when-downgrade"><meta name='description' content="Niagara System UNiagaraComponent 它继承自UPrimitiveComponent，所以会进行渲染 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 class NIAGARA_API UNiagaraComponent : public UFXSystemComponent{ // NS的实例，控制粒子计算 TUniquePtr&lt;FNiagaraSystemInstance&gt; SystemInstance; // 在这个组件Tick时，会驱动SystemInstance计算更新 （注意：Solo的走这里，不是Solo的有一个批量的Tick） virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override; // 内部会\tcheck(SystemInstance-&gt;IsSolo()); // 组件注册时，创建渲染状态（创建FNiagaraSceneProxy，发送动态数据） virtual void CreateRenderState_Concurrent(FRegisterComponentContext* Context) override; // 创建代理 virtual FPrimitiveSceneProxy* CreateSceneProxy() override; // NS资产对应的一个到这个component的实例 TUniquePtr&lt;FNiagaraSystemInstance&gt; SystemInstance; } GameTick Niagara的GameTick分为两种模式，一种是Solo， 走自己的UNiagaraComponent::TickComponent，另外一种走批量，走FNiagaraWorldManager::Tick。并行处理同一个NS资产下的所有实例。 他们的tick最终都会落到FNiagaraSystemSimulation::Tick_GameThread。下面是整体架构\n">
 <title>UE源码学习（Niagara System）</title>
 
 <link rel='canonical' href='https://sdpyy1.github.io/p/ue%E6%BA%90%E7%A0%81%E5%AD%A6%E4%B9%A0niagara-system/'>
 
 <link rel="stylesheet" href="/scss/style.min.6a692fd055deae459f2a9767f57f3855ba80cafd5041317f24f7360f6ca47cdf.css"><meta property='og:title' content="UE源码学习（Niagara System）">
-<meta property='og:description' content="Niagara System UNiagaraComponent 它继承自UPrimitiveComponent，所以会进行渲染 1 2 3 4 5 6 7 8 9 10 11 12 13 14 class NIAGARA_API UNiagaraComponent : public UFXSystemComponent{ // NS的实例，控制粒子计算 TUniquePtr&lt;FNiagaraSystemInstance&gt; SystemInstance; // 在这个组件Tick时，会驱动SystemInstance计算更新 （注意：Solo的走这里，不是Solo的有一个批量的Tick） virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override; // 内部会\tcheck(SystemInstance-&gt;IsSolo()); // 组件注册时，创建渲染状态（创建FNiagaraSceneProxy，发送动态数据） virtual void CreateRenderState_Concurrent(FRegisterComponentContext* Context) override; // 创建代理 virtual FPrimitiveSceneProxy* CreateSceneProxy() override; } 代理对象\n">
+<meta property='og:description' content="Niagara System UNiagaraComponent 它继承自UPrimitiveComponent，所以会进行渲染 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 class NIAGARA_API UNiagaraComponent : public UFXSystemComponent{ // NS的实例，控制粒子计算 TUniquePtr&lt;FNiagaraSystemInstance&gt; SystemInstance; // 在这个组件Tick时，会驱动SystemInstance计算更新 （注意：Solo的走这里，不是Solo的有一个批量的Tick） virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override; // 内部会\tcheck(SystemInstance-&gt;IsSolo()); // 组件注册时，创建渲染状态（创建FNiagaraSceneProxy，发送动态数据） virtual void CreateRenderState_Concurrent(FRegisterComponentContext* Context) override; // 创建代理 virtual FPrimitiveSceneProxy* CreateSceneProxy() override; // NS资产对应的一个到这个component的实例 TUniquePtr&lt;FNiagaraSystemInstance&gt; SystemInstance; } GameTick Niagara的GameTick分为两种模式，一种是Solo， 走自己的UNiagaraComponent::TickComponent，另外一种走批量，走FNiagaraWorldManager::Tick。并行处理同一个NS资产下的所有实例。 他们的tick最终都会落到FNiagaraSystemSimulation::Tick_GameThread。下面是整体架构\n">
 <meta property='og:url' content='https://sdpyy1.github.io/p/ue%E6%BA%90%E7%A0%81%E5%AD%A6%E4%B9%A0niagara-system/'>
 <meta property='og:site_name' content='wanfeng'>
 <meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='UE源码' /><meta property='article:published_time' content='2026-06-15T18:33:45&#43;08:00'/><meta property='article:modified_time' content='2026-06-15T18:33:45&#43;08:00'/>
 <meta name="twitter:title" content="UE源码学习（Niagara System）">
-<meta name="twitter:description" content="Niagara System UNiagaraComponent 它继承自UPrimitiveComponent，所以会进行渲染 1 2 3 4 5 6 7 8 9 10 11 12 13 14 class NIAGARA_API UNiagaraComponent : public UFXSystemComponent{ // NS的实例，控制粒子计算 TUniquePtr&lt;FNiagaraSystemInstance&gt; SystemInstance; // 在这个组件Tick时，会驱动SystemInstance计算更新 （注意：Solo的走这里，不是Solo的有一个批量的Tick） virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override; // 内部会\tcheck(SystemInstance-&gt;IsSolo()); // 组件注册时，创建渲染状态（创建FNiagaraSceneProxy，发送动态数据） virtual void CreateRenderState_Concurrent(FRegisterComponentContext* Context) override; // 创建代理 virtual FPrimitiveSceneProxy* CreateSceneProxy() override; } 代理对象\n">
+<meta name="twitter:description" content="Niagara System UNiagaraComponent 它继承自UPrimitiveComponent，所以会进行渲染 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 class NIAGARA_API UNiagaraComponent : public UFXSystemComponent{ // NS的实例，控制粒子计算 TUniquePtr&lt;FNiagaraSystemInstance&gt; SystemInstance; // 在这个组件Tick时，会驱动SystemInstance计算更新 （注意：Solo的走这里，不是Solo的有一个批量的Tick） virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override; // 内部会\tcheck(SystemInstance-&gt;IsSolo()); // 组件注册时，创建渲染状态（创建FNiagaraSceneProxy，发送动态数据） virtual void CreateRenderState_Concurrent(FRegisterComponentContext* Context) override; // 创建代理 virtual FPrimitiveSceneProxy* CreateSceneProxy() override; // NS资产对应的一个到这个component的实例 TUniquePtr&lt;FNiagaraSystemInstance&gt; SystemInstance; } GameTick Niagara的GameTick分为两种模式，一种是Solo， 走自己的UNiagaraComponent::TickComponent，另外一种走批量，走FNiagaraWorldManager::Tick。并行处理同一个NS资产下的所有实例。 他们的tick最终都会落到FNiagaraSystemSimulation::Tick_GameThread。下面是整体架构\n">
     <link rel="shortcut icon" href="/favicon.ico" />
 
     </head>
@@ -289,7 +289,14 @@
     <li><a href="#niagara-system">Niagara System</a>
       <ol>
         <li><a href="#uniagaracomponent">UNiagaraComponent</a></li>
+        <li><a href="#gametick">GameTick</a></li>
+        <li><a href="#渲染">渲染</a></li>
         <li><a href="#渲染流程">渲染流程</a></li>
+        <li><a href="#niagara生命周期">Niagara生命周期</a>
+          <ol>
+            <li><a href="#activate">Activate</a></li>
+          </ol>
+        </li>
       </ol>
     </li>
   </ol>
@@ -378,7 +385,7 @@
 
 
                 <time class="article-time--reading">
-                    阅读时长: 2 分钟
+                    阅读时长: 7 分钟
                 </time>
             </div>
         
@@ -453,6 +460,10 @@
 </span><span class="lnt">12
 </span><span class="lnt">13
 </span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
 </span></code></pre></td>
 <td class="lntd">
 <pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="k">class</span> <span class="nc">NIAGARA_API</span> <span class="nl">UNiagaraComponent</span> <span class="p">:</span> <span class="k">public</span> <span class="n">UFXSystemComponent</span><span class="p">{</span>
@@ -468,13 +479,593 @@
 </span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl">    <span class="c1">// 创建代理
 </span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="k">virtual</span> <span class="n">FPrimitiveSceneProxy</span><span class="o">*</span> <span class="nf">CreateSceneProxy</span><span class="p">()</span> <span class="k">override</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">// NS资产对应的一个到这个component的实例
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="n">TUniquePtr</span><span class="o">&lt;</span><span class="n">FNiagaraSystemInstance</span><span class="o">&gt;</span> <span class="n">SystemInstance</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
 </span></span><span class="line"><span class="cl"><span class="p">}</span>
 </span></span></code></pre></td></tr></table>
 </div>
-</div><blockquote>
-<p>代理对象</p>
+</div><h2 id="gametick">GameTick
+</h2><blockquote>
+<p>Niagara的GameTick分为两种模式，一种是Solo， 走自己的UNiagaraComponent::TickComponent，另外一种走批量，走FNiagaraWorldManager::Tick。并行处理同一个NS资产下的所有实例。
+他们的tick最终都会落到FNiagaraSystemSimulation::Tick_GameThread。下面是整体架构</p>
 </blockquote>
 <div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
+</span><span class="lnt">56
+</span><span class="lnt">57
+</span><span class="lnt">58
+</span><span class="lnt">59
+</span><span class="lnt">60
+</span><span class="lnt">61
+</span><span class="lnt">62
+</span><span class="lnt">63
+</span><span class="lnt">64
+</span><span class="lnt">65
+</span><span class="lnt">66
+</span><span class="lnt">67
+</span><span class="lnt">68
+</span><span class="lnt">69
+</span><span class="lnt">70
+</span><span class="lnt">71
+</span><span class="lnt">72
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-fallback" data-lang="fallback"><span class="line"><span class="cl">flowchart TD
+</span></span><span class="line"><span class="cl">    ENGINE[&#34;引擎帧循环&lt;br/&gt;TickTaskManager 按 ETickingGroup 派发&#34;]
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    %% ---------- 路径 A：批处理模式 ----------
+</span></span><span class="line"><span class="cl">    subgraph PATHA[&#34;路径 A · 批处理模式（默认）&#34;]
+</span></span><span class="line"><span class="cl">        direction TB
+</span></span><span class="line"><span class="cl">        A1[&#34;FNiagaraWorldManagerTickFunction::ExecuteTick&#34;]
+</span></span><span class="line"><span class="cl">        A2[&#34;FNiagaraWorldManager::Tick(TickGroup)  · :752&#34;]
+</span></span><span class="line"><span class="cl">        A3[&#34;遍历 SystemSimulations[TickGroup]，逐个 Sim&#34;]
+</span></span><span class="line"><span class="cl">        A1 --&gt; A2 --&gt; A3
+</span></span><span class="line"><span class="cl">    end
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    %% ---------- 路径 B：Solo 模式 ----------
+</span></span><span class="line"><span class="cl">    subgraph PATHB[&#34;路径 B · Solo 模式&#34;]
+</span></span><span class="line"><span class="cl">        direction TB
+</span></span><span class="line"><span class="cl">        B1[&#34;UNiagaraComponent::TickComponent  · :697&#34;]
+</span></span><span class="line"><span class="cl">        B2[&#34;SystemInstance-&gt;ManualTick / 驱动 Solo Sim&#34;]
+</span></span><span class="line"><span class="cl">        B1 --&gt; B2
+</span></span><span class="line"><span class="cl">    end
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    ENGINE --&gt; A1
+</span></span><span class="line"><span class="cl">    ENGINE --&gt; B1
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    %% ================= 收敛点：Sim GT 阶段 =================
+</span></span><span class="line"><span class="cl">    SIMGT{{&#34;FNiagaraSystemSimulation::Tick_GameThread  · :1084&lt;br/&gt;★ 所有路径收敛点 · GameThread 串行 ★&#34;}}
+</span></span><span class="line"><span class="cl">    A3 --&gt;|&#34;Sim-&gt;Tick_GameThread · :876&#34;| SIMGT
+</span></span><span class="line"><span class="cl">    B2 --&gt;|&#34;Solo Sim 同一入口&#34;| SIMGT
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    subgraph GTLOOP[&#34;① GameThread 串行阶段（在 Sim::Tick_GameThread 内）&#34;]
+</span></span><span class="line"><span class="cl">        direction TB
+</span></span><span class="line"><span class="cl">        G1[&#34;for each Instance:&lt;br/&gt;Instance-&gt;Tick_GameThread()  · :1176/:1215&#34;]
+</span></span><span class="line"><span class="cl">        G2[&#34;Instance 内部 · :2110&lt;br/&gt;WaitForConcurrentTickAndFinalize&lt;br/&gt;TickInstanceParameters_GameThread&lt;br/&gt;TickDataInterfaces / Age++ / TickCount++&#34;]
+</span></span><span class="line"><span class="cl">        G3[&#34;顺带: TickGroup 迁移 &amp; PendingSpawn→Running&#34;]
+</span></span><span class="line"><span class="cl">        G1 --&gt; G2
+</span></span><span class="line"><span class="cl">        G1 --&gt; G3
+</span></span><span class="line"><span class="cl">    end
+</span></span><span class="line"><span class="cl">    SIMGT --&gt; G1
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    %% ================= 派发 Sim 并发任务 =================
+</span></span><span class="line"><span class="cl">    GTLOOP --&gt;|&#34;派发 · :1246&#34;| SIMTASK[&#34;FNiagaraSystemSimulationTickConcurrentTask&lt;br/&gt;(Worker 线程)&#34;]
+</span></span><span class="line"><span class="cl">    SIMTASK --&gt; SIMCC
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    %% ================= ② Sim 并发阶段（System 层） =================
+</span></span><span class="line"><span class="cl">    subgraph CNCLOOP[&#34;② Sim::Tick_Concurrent · :1501（Worker，System 层模拟）&#34;]
+</span></span><span class="line"><span class="cl">        direction TB
+</span></span><span class="line"><span class="cl">        SIMCC[&#34;Sim::Tick_Concurrent(Context)&#34;]
+</span></span><span class="line"><span class="cl">        C1[&#34;PrepareForSystemSimulate（ParallelFor 收集实例参数）· :1530&#34;]
+</span></span><span class="line"><span class="cl">        C2[&#34;SpawnSystemInstances（System Spawn 脚本）· :1534&#34;]
+</span></span><span class="line"><span class="cl">        C3[&#34;UpdateSystemInstances（System Update 脚本）· :1537&#34;]
+</span></span><span class="line"><span class="cl">        C4[&#34;TransferSystemSimResults（结果写回实例）· :1539&#34;]
+</span></span><span class="line"><span class="cl">        C5[&#34;for each Instance: AddSystemToTickBatch + FlushTickBatch · :1541&#34;]
+</span></span><span class="line"><span class="cl">        SIMCC --&gt; C1 --&gt; C2 --&gt; C3 --&gt; C4 --&gt; C5
+</span></span><span class="line"><span class="cl">    end
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    %% ================= ③ Instance 并发任务（Emitter 层） =================
+</span></span><span class="line"><span class="cl">    C5 --&gt;|&#34;批满即派发&#34;| INSTTASK[&#34;FNiagaraSystemInstanceTickConcurrentTask · :395&lt;br/&gt;(Worker，Instance/Emitter 层)&#34;]
+</span></span><span class="line"><span class="cl">    INSTTASK --&gt; INSTCC[&#34;for each Inst in Batch:&lt;br/&gt;Inst-&gt;Tick_Concurrent()  · :448&#34;]
+</span></span><span class="line"><span class="cl">    INSTCC --&gt; EMIT[&#34;Instance::Tick_Concurrent · :2150&lt;br/&gt;遍历 EmitterExecutionOrder&lt;br/&gt;EmitterInstance::PreTick / Tick（真正粒子模拟）&#34;]
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    %% ================= ④ Finalize 回收（GameThread） =================
+</span></span><span class="line"><span class="cl">    C5 --&gt;|&#34;派发 Finalize 任务&#34;| FINTASK[&#34;FNiagaraSystemInstanceFinalizeTask · :459&lt;br/&gt;(GameThread)&#34;]
+</span></span><span class="line"><span class="cl">    FINTASK --&gt; FINGT[&#34;Inst-&gt;FinalizeTick_GameThread()&lt;br/&gt;回读模拟结果 / 更新渲染数据 / GPU tick 入队&#34;]
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">    %% ---------- 样式 ----------
+</span></span><span class="line"><span class="cl">    classDef converge fill:#4a1d12,stroke:#ff7b52,color:#ffe0d6,stroke-width:3px;
+</span></span><span class="line"><span class="cl">    classDef gt fill:#16281c,stroke:#56d364,color:#d7ffdf;
+</span></span><span class="line"><span class="cl">    classDef cnc fill:#182130,stroke:#79c0ff,color:#d7e8ff;
+</span></span><span class="line"><span class="cl">    classDef task fill:#2a2333,stroke:#a371f7,color:#efe6ff;
+</span></span><span class="line"><span class="cl">    class SIMGT converge;
+</span></span><span class="line"><span class="cl">    class G1,G2,G3,FINGT gt;
+</span></span><span class="line"><span class="cl">    class SIMCC,C1,C2,C3,C4,C5,INSTCC,EMIT cnc;
+</span></span><span class="line"><span class="cl">    class SIMTASK,INSTTASK,FINTASK task;
+</span></span></code></pre></td></tr></table>
+</div>
+</div><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span><span class="lnt">34
+</span><span class="lnt">35
+</span><span class="lnt">36
+</span><span class="lnt">37
+</span><span class="lnt">38
+</span><span class="lnt">39
+</span><span class="lnt">40
+</span><span class="lnt">41
+</span><span class="lnt">42
+</span><span class="lnt">43
+</span><span class="lnt">44
+</span><span class="lnt">45
+</span><span class="lnt">46
+</span><span class="lnt">47
+</span><span class="lnt">48
+</span><span class="lnt">49
+</span><span class="lnt">50
+</span><span class="lnt">51
+</span><span class="lnt">52
+</span><span class="lnt">53
+</span><span class="lnt">54
+</span><span class="lnt">55
+</span><span class="lnt">56
+</span><span class="lnt">57
+</span><span class="lnt">58
+</span><span class="lnt">59
+</span><span class="lnt">60
+</span><span class="lnt">61
+</span><span class="lnt">62
+</span><span class="lnt">63
+</span><span class="lnt">64
+</span><span class="lnt">65
+</span><span class="lnt">66
+</span><span class="lnt">67
+</span><span class="lnt">68
+</span><span class="lnt">69
+</span><span class="lnt">70
+</span><span class="lnt">71
+</span><span class="lnt">72
+</span><span class="lnt">73
+</span><span class="lnt">74
+</span><span class="lnt">75
+</span><span class="lnt">76
+</span><span class="lnt">77
+</span><span class="lnt">78
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="kt">void</span> <span class="n">FNiagaraSystemSimulation</span><span class="o">::</span><span class="n">Tick_Concurrent</span><span class="p">(</span><span class="n">FNiagaraSystemSimulationTickContext</span><span class="o">&amp;</span> <span class="n">Context</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="n">SCOPE_CYCLE_COUNTER</span><span class="p">(</span><span class="n">STAT_NiagaraSystemSim_TickCNC</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="n">SCOPE_CYCLE_COUNTER</span><span class="p">(</span><span class="n">STAT_NiagaraOverview_GT_CNC</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="n">CSV_SCOPED_TIMING_STAT_EXCLUSIVE</span><span class="p">(</span><span class="n">Effects</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="n">LLM_SCOPE</span><span class="p">(</span><span class="n">ELLMTag</span><span class="o">::</span><span class="n">Niagara</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="n">FScopeCycleCounterUObject</span> <span class="nf">AdditionalScope</span><span class="p">(</span><span class="n">Context</span><span class="p">.</span><span class="n">System</span><span class="p">,</span> <span class="n">GET_STATID</span><span class="p">(</span><span class="n">STAT_NiagaraOverview_GT_CNC</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="n">FNiagaraSystemInstance</span><span class="o">*</span> <span class="n">SoloSystemInstance</span> <span class="o">=</span> <span class="n">bIsSolo</span> <span class="o">&amp;&amp;</span> <span class="n">Context</span><span class="p">.</span><span class="n">Instances</span><span class="p">.</span><span class="n">Num</span><span class="p">()</span> <span class="o">==</span> <span class="mi">1</span> <span class="o">?</span> <span class="n">Context</span><span class="p">.</span><span class="n">Instances</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">:</span> <span class="k">nullptr</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="n">FNiagaraCrashReporterScope</span> <span class="nf">CRScope</span><span class="p">(</span><span class="k">this</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="p">(</span><span class="n">bCanExecute</span> <span class="o">&amp;&amp;</span> <span class="n">Context</span><span class="p">.</span><span class="n">Instances</span><span class="p">.</span><span class="n">Num</span><span class="p">())</span>
+</span></span><span class="line"><span class="cl">	<span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="k">if</span> <span class="p">(</span><span class="n">GbDumpSystemData</span> <span class="o">||</span> <span class="n">Context</span><span class="p">.</span><span class="n">System</span><span class="o">-&gt;</span><span class="n">bDumpDebugSystemInfo</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="n">UE_LOG</span><span class="p">(</span><span class="n">LogNiagara</span><span class="p">,</span> <span class="n">Log</span><span class="p">,</span> <span class="n">TEXT</span><span class="p">(</span><span class="s">&#34;==========================================================&#34;</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">			<span class="n">UE_LOG</span><span class="p">(</span><span class="n">LogNiagara</span><span class="p">,</span> <span class="n">Log</span><span class="p">,</span> <span class="n">TEXT</span><span class="p">(</span><span class="s">&#34;Niagara System Sim Tick_Concurrent(): %s&#34;</span><span class="p">),</span> <span class="o">*</span><span class="n">Context</span><span class="p">.</span><span class="n">System</span><span class="o">-&gt;</span><span class="n">GetName</span><span class="p">());</span>
+</span></span><span class="line"><span class="cl">			<span class="n">UE_LOG</span><span class="p">(</span><span class="n">LogNiagara</span><span class="p">,</span> <span class="n">Log</span><span class="p">,</span> <span class="n">TEXT</span><span class="p">(</span><span class="s">&#34;==========================================================&#34;</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">		<span class="n">FScopeCycleCounter</span> <span class="nf">SystemStatCounter</span><span class="p">(</span><span class="n">Context</span><span class="p">.</span><span class="n">System</span><span class="o">-&gt;</span><span class="n">GetStatID</span><span class="p">(</span><span class="nb">true</span><span class="p">,</span> <span class="nb">true</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">		<span class="k">for</span> <span class="p">(</span><span class="n">FNiagaraSystemInstance</span><span class="o">*</span> <span class="nl">SystemInstance</span> <span class="p">:</span> <span class="n">Context</span><span class="p">.</span><span class="n">Instances</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="n">SystemInstance</span><span class="o">-&gt;</span><span class="n">TickInstanceParameters_Concurrent</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">		
+</span></span><span class="line"><span class="cl">		<span class="c1">// 跑System脚本
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>		<span class="n">PrepareForSystemSimulate</span><span class="p">(</span><span class="n">Context</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">		<span class="k">if</span> <span class="p">(</span><span class="n">Context</span><span class="p">.</span><span class="n">SpawnNum</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="n">SpawnSystemInstances</span><span class="p">(</span><span class="n">Context</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">		<span class="n">UpdateSystemInstances</span><span class="p">(</span><span class="n">Context</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">		<span class="n">TransferSystemSimResults</span><span class="p">(</span><span class="n">Context</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">		<span class="c1">// 整理每个Instance到TickBatch，内部每4个为一批，Flush一次
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>		<span class="k">for</span> <span class="p">(</span><span class="n">FNiagaraSystemInstance</span><span class="o">*</span> <span class="nl">Instance</span> <span class="p">:</span> <span class="n">Context</span><span class="p">.</span><span class="n">Instances</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="n">AddSystemToTickBatch</span><span class="p">(</span><span class="n">Instance</span><span class="p">,</span> <span class="n">Context</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">		<span class="n">FlushTickBatch</span><span class="p">(</span><span class="n">Context</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">		<span class="c1">// When not running async we can finalize straight away
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>		<span class="k">if</span> <span class="p">(</span> <span class="o">!</span><span class="n">Context</span><span class="p">.</span><span class="n">IsRunningAsync</span><span class="p">()</span> <span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="n">check</span><span class="p">(</span><span class="n">IsInGameThread</span><span class="p">());</span>
+</span></span><span class="line"><span class="cl">			<span class="n">int32</span> <span class="n">InstanceIndex</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">			<span class="k">while</span> <span class="p">(</span><span class="n">InstanceIndex</span> <span class="o">&lt;</span> <span class="n">Context</span><span class="p">.</span><span class="n">Instances</span><span class="p">.</span><span class="n">Num</span><span class="p">())</span>
+</span></span><span class="line"><span class="cl">			<span class="p">{</span>
+</span></span><span class="line"><span class="cl">				<span class="n">FNiagaraSystemInstance</span><span class="o">*</span> <span class="n">Instance</span> <span class="o">=</span> <span class="n">Context</span><span class="p">.</span><span class="n">Instances</span><span class="p">[</span><span class="n">InstanceIndex</span><span class="p">];</span>
+</span></span><span class="line"><span class="cl">				<span class="n">Instance</span><span class="o">-&gt;</span><span class="n">FinalizeTick_GameThread</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">				<span class="c1">// Finalize can complete the instance and potentially reactivate
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>				<span class="k">if</span> <span class="p">(</span><span class="n">Context</span><span class="p">.</span><span class="n">Instances</span><span class="p">.</span><span class="n">IsValidIndex</span><span class="p">(</span><span class="n">InstanceIndex</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="p">(</span><span class="n">Context</span><span class="p">.</span><span class="n">Instances</span><span class="p">[</span><span class="n">InstanceIndex</span><span class="p">]</span> <span class="o">==</span> <span class="n">Instance</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">				<span class="p">{</span>
+</span></span><span class="line"><span class="cl">					<span class="o">++</span><span class="n">InstanceIndex</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">				<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">				<span class="n">check</span><span class="p">(</span><span class="n">Context</span><span class="p">.</span><span class="n">DataSet</span><span class="p">.</span><span class="n">GetCurrentDataChecked</span><span class="p">().</span><span class="n">GetNumInstances</span><span class="p">()</span> <span class="o">==</span> <span class="n">Context</span><span class="p">.</span><span class="n">Instances</span><span class="p">.</span><span class="n">Num</span><span class="p">());</span>
+</span></span><span class="line"><span class="cl">			<span class="p">}</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="cp">#if WITH_EDITORONLY_DATA
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>		<span class="k">if</span> <span class="p">(</span><span class="n">SoloSystemInstance</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="n">SoloSystemInstance</span><span class="o">-&gt;</span><span class="n">FinishCapture</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="cp">#endif
+</span></span></span><span class="line"><span class="cl"><span class="cp"></span>
+</span></span><span class="line"><span class="cl">		<span class="n">INC_DWORD_STAT_BY</span><span class="p">(</span><span class="n">STAT_NiagaraNumSystems</span><span class="p">,</span> <span class="n">Context</span><span class="p">.</span><span class="n">Instances</span><span class="p">.</span><span class="n">Num</span><span class="p">());</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>在Sim跑Tick_Concurrent内部，会并发对每个Instance执行Tick_Concurrent</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">  1
+</span><span class="lnt">  2
+</span><span class="lnt">  3
+</span><span class="lnt">  4
+</span><span class="lnt">  5
+</span><span class="lnt">  6
+</span><span class="lnt">  7
+</span><span class="lnt">  8
+</span><span class="lnt">  9
+</span><span class="lnt"> 10
+</span><span class="lnt"> 11
+</span><span class="lnt"> 12
+</span><span class="lnt"> 13
+</span><span class="lnt"> 14
+</span><span class="lnt"> 15
+</span><span class="lnt"> 16
+</span><span class="lnt"> 17
+</span><span class="lnt"> 18
+</span><span class="lnt"> 19
+</span><span class="lnt"> 20
+</span><span class="lnt"> 21
+</span><span class="lnt"> 22
+</span><span class="lnt"> 23
+</span><span class="lnt"> 24
+</span><span class="lnt"> 25
+</span><span class="lnt"> 26
+</span><span class="lnt"> 27
+</span><span class="lnt"> 28
+</span><span class="lnt"> 29
+</span><span class="lnt"> 30
+</span><span class="lnt"> 31
+</span><span class="lnt"> 32
+</span><span class="lnt"> 33
+</span><span class="lnt"> 34
+</span><span class="lnt"> 35
+</span><span class="lnt"> 36
+</span><span class="lnt"> 37
+</span><span class="lnt"> 38
+</span><span class="lnt"> 39
+</span><span class="lnt"> 40
+</span><span class="lnt"> 41
+</span><span class="lnt"> 42
+</span><span class="lnt"> 43
+</span><span class="lnt"> 44
+</span><span class="lnt"> 45
+</span><span class="lnt"> 46
+</span><span class="lnt"> 47
+</span><span class="lnt"> 48
+</span><span class="lnt"> 49
+</span><span class="lnt"> 50
+</span><span class="lnt"> 51
+</span><span class="lnt"> 52
+</span><span class="lnt"> 53
+</span><span class="lnt"> 54
+</span><span class="lnt"> 55
+</span><span class="lnt"> 56
+</span><span class="lnt"> 57
+</span><span class="lnt"> 58
+</span><span class="lnt"> 59
+</span><span class="lnt"> 60
+</span><span class="lnt"> 61
+</span><span class="lnt"> 62
+</span><span class="lnt"> 63
+</span><span class="lnt"> 64
+</span><span class="lnt"> 65
+</span><span class="lnt"> 66
+</span><span class="lnt"> 67
+</span><span class="lnt"> 68
+</span><span class="lnt"> 69
+</span><span class="lnt"> 70
+</span><span class="lnt"> 71
+</span><span class="lnt"> 72
+</span><span class="lnt"> 73
+</span><span class="lnt"> 74
+</span><span class="lnt"> 75
+</span><span class="lnt"> 76
+</span><span class="lnt"> 77
+</span><span class="lnt"> 78
+</span><span class="lnt"> 79
+</span><span class="lnt"> 80
+</span><span class="lnt"> 81
+</span><span class="lnt"> 82
+</span><span class="lnt"> 83
+</span><span class="lnt"> 84
+</span><span class="lnt"> 85
+</span><span class="lnt"> 86
+</span><span class="lnt"> 87
+</span><span class="lnt"> 88
+</span><span class="lnt"> 89
+</span><span class="lnt"> 90
+</span><span class="lnt"> 91
+</span><span class="lnt"> 92
+</span><span class="lnt"> 93
+</span><span class="lnt"> 94
+</span><span class="lnt"> 95
+</span><span class="lnt"> 96
+</span><span class="lnt"> 97
+</span><span class="lnt"> 98
+</span><span class="lnt"> 99
+</span><span class="lnt">100
+</span><span class="lnt">101
+</span><span class="lnt">102
+</span><span class="lnt">103
+</span><span class="lnt">104
+</span><span class="lnt">105
+</span><span class="lnt">106
+</span><span class="lnt">107
+</span><span class="lnt">108
+</span><span class="lnt">109
+</span><span class="lnt">110
+</span><span class="lnt">111
+</span><span class="lnt">112
+</span><span class="lnt">113
+</span><span class="lnt">114
+</span><span class="lnt">115
+</span><span class="lnt">116
+</span><span class="lnt">117
+</span><span class="lnt">118
+</span><span class="lnt">119
+</span><span class="lnt">120
+</span><span class="lnt">121
+</span><span class="lnt">122
+</span><span class="lnt">123
+</span><span class="lnt">124
+</span><span class="lnt">125
+</span><span class="lnt">126
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-cpp" data-lang="cpp"><span class="line"><span class="cl"><span class="kt">void</span> <span class="n">FNiagaraSystemInstance</span><span class="o">::</span><span class="n">Tick_Concurrent</span><span class="p">(</span><span class="kt">bool</span> <span class="n">bEnqueueGPUTickIfNeeded</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl"><span class="p">{</span>
+</span></span><span class="line"><span class="cl">	<span class="n">SCOPE_CYCLE_COUNTER</span><span class="p">(</span><span class="n">STAT_NiagaraSystemInst_TickCNC</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="n">SCOPE_CYCLE_COUNTER</span><span class="p">(</span><span class="n">STAT_NiagaraOverview_GT_CNC</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="n">CSV_SCOPED_TIMING_STAT_EXCLUSIVE</span><span class="p">(</span><span class="n">Effects</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="n">LLM_SCOPE</span><span class="p">(</span><span class="n">ELLMTag</span><span class="o">::</span><span class="n">Niagara</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="n">FScopeCycleCounterUObject</span> <span class="nf">AdditionalScope</span><span class="p">(</span><span class="n">GetSystem</span><span class="p">(),</span> <span class="n">GET_STATID</span><span class="p">(</span><span class="n">STAT_NiagaraOverview_GT_CNC</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="n">FNiagaraCrashReporterScope</span> <span class="nf">CRScope</span><span class="p">(</span><span class="k">this</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">// Reset values that will be accumulated during emitter tick.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="n">TotalGPUParamSize</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="n">ActiveGPUEmitterCount</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="n">GPUParamIncludeInterpolation</span> <span class="o">=</span> <span class="nb">false</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="n">UNiagaraSystem</span><span class="o">*</span> <span class="n">System</span> <span class="o">=</span> <span class="n">GetSystem</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="p">(</span><span class="n">IsComplete</span><span class="p">()</span> <span class="o">||</span> <span class="n">System</span> <span class="o">==</span> <span class="k">nullptr</span> <span class="o">||</span> <span class="n">CachedDeltaSeconds</span> <span class="o">&lt;</span> <span class="n">SMALL_NUMBER</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="k">return</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="k">const</span> <span class="n">int32</span> <span class="n">NumEmitters</span> <span class="o">=</span> <span class="n">Emitters</span><span class="p">.</span><span class="n">Num</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">	<span class="k">const</span> <span class="n">TConstArrayView</span><span class="o">&lt;</span><span class="n">FNiagaraEmitterExecutionIndex</span><span class="o">&gt;</span> <span class="n">EmitterExecutionOrder</span> <span class="o">=</span> <span class="n">GetEmitterExecutionOrder</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">	<span class="n">checkSlow</span><span class="p">(</span><span class="n">EmitterExecutionOrder</span><span class="p">.</span><span class="n">Num</span><span class="p">()</span> <span class="o">&lt;=</span> <span class="n">NumEmitters</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">//Determine if any of our emitters should be ticking.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="n">TBitArray</span><span class="o">&lt;</span><span class="n">TInlineAllocator</span><span class="o">&lt;</span><span class="mi">8</span><span class="o">&gt;&gt;</span> <span class="n">EmittersShouldTick</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="n">EmittersShouldTick</span><span class="p">.</span><span class="n">Init</span><span class="p">(</span><span class="nb">false</span><span class="p">,</span> <span class="n">NumEmitters</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="kt">bool</span> <span class="n">bHasTickingEmitters</span> <span class="o">=</span> <span class="nb">false</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="k">for</span> <span class="p">(</span><span class="k">const</span> <span class="n">FNiagaraEmitterExecutionIndex</span><span class="o">&amp;</span> <span class="nl">EmitterExecIdx</span> <span class="p">:</span> <span class="n">EmitterExecutionOrder</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="n">FNiagaraEmitterInstance</span><span class="o">&amp;</span> <span class="n">Inst</span> <span class="o">=</span> <span class="n">Emitters</span><span class="p">[</span><span class="n">EmitterExecIdx</span><span class="p">.</span><span class="n">EmitterIndex</span><span class="p">].</span><span class="n">Get</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">		<span class="k">if</span> <span class="p">(</span><span class="n">Inst</span><span class="p">.</span><span class="n">ShouldTick</span><span class="p">())</span>
+</span></span><span class="line"><span class="cl">		<span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="n">bHasTickingEmitters</span> <span class="o">=</span> <span class="nb">true</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">			<span class="n">EmittersShouldTick</span><span class="p">.</span><span class="n">SetRange</span><span class="p">(</span><span class="n">EmitterExecIdx</span><span class="p">.</span><span class="n">EmitterIndex</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">true</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="p">(</span> <span class="o">!</span><span class="n">bHasTickingEmitters</span> <span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="k">return</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="n">FScopeCycleCounter</span> <span class="nf">SystemStat</span><span class="p">(</span><span class="n">System</span><span class="o">-&gt;</span><span class="n">GetStatID</span><span class="p">(</span><span class="nb">true</span><span class="p">,</span> <span class="nb">true</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="k">for</span> <span class="p">(</span><span class="k">const</span> <span class="n">FNiagaraEmitterExecutionIndex</span><span class="o">&amp;</span> <span class="nl">EmitterExecIdx</span> <span class="p">:</span> <span class="n">EmitterExecutionOrder</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="k">if</span> <span class="p">(</span><span class="n">EmittersShouldTick</span><span class="p">[</span><span class="n">EmitterExecIdx</span><span class="p">.</span><span class="n">EmitterIndex</span><span class="p">])</span>
+</span></span><span class="line"><span class="cl">		<span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="n">FNiagaraEmitterInstance</span><span class="o">&amp;</span> <span class="n">Inst</span> <span class="o">=</span> <span class="n">Emitters</span><span class="p">[</span><span class="n">EmitterExecIdx</span><span class="p">.</span><span class="n">EmitterIndex</span><span class="p">].</span><span class="n">Get</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">			<span class="n">Inst</span><span class="p">.</span><span class="n">PreTick</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="n">int32</span> <span class="n">TotalCombinedParamStoreSize</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">// now tick all emitters
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="k">for</span> <span class="p">(</span><span class="k">const</span> <span class="n">FNiagaraEmitterExecutionIndex</span><span class="o">&amp;</span> <span class="nl">EmitterExecIdx</span> <span class="p">:</span> <span class="n">EmitterExecutionOrder</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="n">FNiagaraEmitterInstance</span><span class="o">&amp;</span> <span class="n">Inst</span> <span class="o">=</span> <span class="n">Emitters</span><span class="p">[</span><span class="n">EmitterExecIdx</span><span class="p">.</span><span class="n">EmitterIndex</span><span class="p">].</span><span class="n">Get</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">		<span class="k">if</span> <span class="p">(</span><span class="n">EmittersShouldTick</span><span class="p">[</span><span class="n">EmitterExecIdx</span><span class="p">.</span><span class="n">EmitterIndex</span><span class="p">])</span>
+</span></span><span class="line"><span class="cl">		<span class="p">{</span>
+</span></span><span class="line"><span class="cl">        	<span class="n">Inst</span><span class="p">.</span><span class="n">Tick</span><span class="p">(</span><span class="n">CachedDeltaSeconds</span><span class="p">);</span>   <span class="c1">// ← 真正的粒子模拟！
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">		<span class="k">if</span> <span class="p">(</span><span class="n">Inst</span><span class="p">.</span><span class="n">GetCachedEmitter</span><span class="p">()</span> <span class="o">&amp;&amp;</span> <span class="n">Inst</span><span class="p">.</span><span class="n">GetCachedEmitter</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">SimTarget</span> <span class="o">==</span> <span class="n">ENiagaraSimTarget</span><span class="o">::</span><span class="n">GPUComputeSim</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="n">Inst</span><span class="p">.</span><span class="n">IsComplete</span><span class="p">())</span>
+</span></span><span class="line"><span class="cl">		<span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="c1">// Handle edge case where an emitter was set to inactive on the first frame by scalability
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>			<span class="c1">// Since it will not tick we should not execute a GPU tick for it, this test must be symeterical with FNiagaraGPUSystemTick::Init
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>			<span class="k">const</span> <span class="kt">bool</span> <span class="n">bIsInactive</span> <span class="o">=</span> <span class="p">(</span><span class="n">Inst</span><span class="p">.</span><span class="n">GetExecutionState</span><span class="p">()</span> <span class="o">==</span> <span class="n">ENiagaraExecutionState</span><span class="o">::</span><span class="n">Inactive</span><span class="p">)</span> <span class="o">||</span> <span class="p">(</span><span class="n">Inst</span><span class="p">.</span><span class="n">GetExecutionState</span><span class="p">()</span> <span class="o">==</span> <span class="n">ENiagaraExecutionState</span><span class="o">::</span><span class="n">InactiveClear</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">			<span class="k">if</span> <span class="p">(</span><span class="n">Inst</span><span class="p">.</span><span class="n">HasTicked</span><span class="p">()</span> <span class="o">||</span> <span class="o">!</span><span class="n">bIsInactive</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">			<span class="p">{</span>
+</span></span><span class="line"><span class="cl">				<span class="k">if</span> <span class="p">(</span><span class="k">const</span> <span class="n">FNiagaraComputeExecutionContext</span><span class="o">*</span> <span class="n">GPUContext</span> <span class="o">=</span> <span class="n">Inst</span><span class="p">.</span><span class="n">GetGPUContext</span><span class="p">())</span>
+</span></span><span class="line"><span class="cl">				<span class="p">{</span>
+</span></span><span class="line"><span class="cl">					<span class="n">TotalCombinedParamStoreSize</span> <span class="o">+=</span> <span class="n">GPUContext</span><span class="o">-&gt;</span><span class="n">CombinedParamStore</span><span class="p">.</span><span class="n">GetPaddedParameterSizeInBytes</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">					<span class="n">GPUParamIncludeInterpolation</span> <span class="o">=</span> <span class="n">GPUContext</span><span class="o">-&gt;</span><span class="n">HasInterpolationParameters</span> <span class="o">||</span> <span class="n">GPUParamIncludeInterpolation</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">					<span class="n">ActiveGPUEmitterCount</span><span class="o">++</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">				<span class="p">}</span>
+</span></span><span class="line"><span class="cl">			<span class="p">}</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="p">(</span><span class="n">ActiveGPUEmitterCount</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="k">const</span> <span class="n">int32</span> <span class="n">InterpFactor</span> <span class="o">=</span> <span class="n">GPUParamIncludeInterpolation</span> <span class="o">?</span> <span class="mi">2</span> <span class="o">:</span> <span class="mi">1</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">		<span class="n">TotalGPUParamSize</span> <span class="o">=</span> <span class="n">InterpFactor</span> <span class="o">*</span> <span class="p">(</span><span class="k">sizeof</span><span class="p">(</span><span class="n">FNiagaraGlobalParameters</span><span class="p">)</span> <span class="o">+</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">FNiagaraSystemParameters</span><span class="p">)</span> <span class="o">+</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">FNiagaraOwnerParameters</span><span class="p">));</span>
+</span></span><span class="line"><span class="cl">		<span class="n">TotalGPUParamSize</span> <span class="o">+=</span> <span class="n">InterpFactor</span> <span class="o">*</span> <span class="n">ActiveGPUEmitterCount</span> <span class="o">*</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">FNiagaraEmitterParameters</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">		<span class="n">TotalGPUParamSize</span> <span class="o">+=</span> <span class="n">TotalCombinedParamStoreSize</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">// Update local bounds
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="k">if</span> <span class="p">(</span> <span class="n">System</span><span class="o">-&gt;</span><span class="n">bFixedBounds</span> <span class="p">)</span>
+</span></span><span class="line"><span class="cl">	<span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="n">LocalBounds</span> <span class="o">=</span> <span class="n">System</span><span class="o">-&gt;</span><span class="n">GetFixedBounds</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="k">else</span>
+</span></span><span class="line"><span class="cl">	<span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="n">FBox</span> <span class="nf">NewLocalBounds</span><span class="p">(</span><span class="n">EForceInit</span><span class="o">::</span><span class="n">ForceInit</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">		<span class="k">for</span> <span class="p">(</span><span class="k">const</span> <span class="k">auto</span><span class="o">&amp;</span> <span class="nl">Emitter</span> <span class="p">:</span> <span class="n">Emitters</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="n">NewLocalBounds</span> <span class="o">+=</span> <span class="n">Emitter</span><span class="o">-&gt;</span><span class="n">GetBounds</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">		<span class="k">if</span> <span class="p">(</span><span class="n">NewLocalBounds</span><span class="p">.</span><span class="n">IsValid</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">		<span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="n">LocalBounds</span> <span class="o">=</span> <span class="n">NewLocalBounds</span><span class="p">.</span><span class="n">ExpandBy</span><span class="p">(</span><span class="n">NewLocalBounds</span><span class="p">.</span><span class="n">GetExtent</span><span class="p">()</span> <span class="o">*</span> <span class="n">GNiagaraBoundsExpandByPercent</span><span class="p">);</span>				
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">		<span class="k">else</span>
+</span></span><span class="line"><span class="cl">		<span class="p">{</span>
+</span></span><span class="line"><span class="cl">			<span class="n">LocalBounds</span> <span class="o">=</span> <span class="n">FBox</span><span class="p">(</span><span class="n">FVector</span><span class="o">::</span><span class="n">ZeroVector</span><span class="p">,</span> <span class="n">FVector</span><span class="o">::</span><span class="n">ZeroVector</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">		<span class="p">}</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl">
+</span></span><span class="line"><span class="cl">	<span class="c1">//Enqueue a GPU tick for this sim if we&#39;re allowed to do so from a concurrent thread.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="c1">//If we&#39;re batching our tick passing we may still need to enqueue here if not called from the regular async task. The caller will tell us with bEnqueueGPUTickIfNeeded.
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span>	<span class="n">FNiagaraSystemSimulation</span><span class="o">*</span> <span class="n">Sim</span> <span class="o">=</span> <span class="n">SystemSimulation</span><span class="p">.</span><span class="n">Get</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">	<span class="n">check</span><span class="p">(</span><span class="n">Sim</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">	<span class="n">ENiagaraGPUTickHandlingMode</span> <span class="n">Mode</span> <span class="o">=</span> <span class="n">Sim</span><span class="o">-&gt;</span><span class="n">GetGPUTickHandlingMode</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">	<span class="k">if</span> <span class="p">(</span><span class="n">Mode</span> <span class="o">==</span> <span class="n">ENiagaraGPUTickHandlingMode</span><span class="o">::</span><span class="n">Concurrent</span> <span class="o">||</span> <span class="p">(</span><span class="n">Mode</span> <span class="o">==</span> <span class="n">ENiagaraGPUTickHandlingMode</span><span class="o">::</span><span class="n">ConcurrentBatched</span> <span class="o">&amp;&amp;</span> <span class="n">bEnqueueGPUTickIfNeeded</span><span class="p">))</span>
+</span></span><span class="line"><span class="cl">	<span class="p">{</span>
+</span></span><span class="line"><span class="cl">		<span class="n">GenerateAndSubmitGPUTick</span><span class="p">();</span>
+</span></span><span class="line"><span class="cl">	<span class="p">}</span>
+</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span></code></pre></td></tr></table>
+</div>
+</div><p>之后会串行执行每个EmitterInstance的Tick
+在内部会并行tick所有粒子</p>
+<h2 id="渲染">渲染
+</h2><div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt"> 1
 </span><span class="lnt"> 2
@@ -619,6 +1210,18 @@
 </div>
 </div><p>并不是所有Renderer都走这个路径，LightRenderer走GatherSimpleLights，组件Renderer更特殊
 <img src="/1781523675138.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="alt text"
+	
+	
+></p>
+<h2 id="niagara生命周期">Niagara生命周期
+</h2><h3 id="activate">Activate
+</h3><p><img src="/1786609919757.png"
 	
 	
 	
@@ -1452,7 +2055,7 @@
       <span>✍️ 总字数: 
         
         
-        248.99K
+        251.16K
       </span>
     </section>
 
