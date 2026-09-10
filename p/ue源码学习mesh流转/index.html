@@ -3,18 +3,18 @@
     <head><meta charset='utf-8'>
 <meta name='viewport' content='width=device-width, initial-scale=1'>
 <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
-  <meta name="referrer" content="no-referrer-when-downgrade"><meta name='description' content="## 拖入Actor到场景，渲染器记录组件信息 每个继承自UPrimitiveComponent的Component都可以定义自己的Proxy，Proxy用于表示这个组件在渲染器的代表\n">
+  <meta name="referrer" content="no-referrer-when-downgrade"><meta name='description' content="各种情形 游戏线程创建Proxy，同步到渲染线程 每个继承自UPrimitiveComponent的Component都可以定义自己的Proxy，Proxy用于表示这个组件在渲染器的代表\n">
 <title>UE源码学习（Mesh流转）</title>
 
 <link rel='canonical' href='https://sdpyy1.github.io/p/ue%E6%BA%90%E7%A0%81%E5%AD%A6%E4%B9%A0mesh%E6%B5%81%E8%BD%AC/'>
 
 <link rel="stylesheet" href="/scss/style.min.6a692fd055deae459f2a9767f57f3855ba80cafd5041317f24f7360f6ca47cdf.css"><meta property='og:title' content="UE源码学习（Mesh流转）">
-<meta property='og:description' content="## 拖入Actor到场景，渲染器记录组件信息 每个继承自UPrimitiveComponent的Component都可以定义自己的Proxy，Proxy用于表示这个组件在渲染器的代表\n">
+<meta property='og:description' content="各种情形 游戏线程创建Proxy，同步到渲染线程 每个继承自UPrimitiveComponent的Component都可以定义自己的Proxy，Proxy用于表示这个组件在渲染器的代表\n">
 <meta property='og:url' content='https://sdpyy1.github.io/p/ue%E6%BA%90%E7%A0%81%E5%AD%A6%E4%B9%A0mesh%E6%B5%81%E8%BD%AC/'>
 <meta property='og:site_name' content='wanfeng'>
 <meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='UE源码' /><meta property='article:published_time' content='2026-07-19T16:36:45&#43;08:00'/><meta property='article:modified_time' content='2026-07-19T16:36:45&#43;08:00'/>
 <meta name="twitter:title" content="UE源码学习（Mesh流转）">
-<meta name="twitter:description" content="## 拖入Actor到场景，渲染器记录组件信息 每个继承自UPrimitiveComponent的Component都可以定义自己的Proxy，Proxy用于表示这个组件在渲染器的代表\n">
+<meta name="twitter:description" content="各种情形 游戏线程创建Proxy，同步到渲染线程 每个继承自UPrimitiveComponent的Component都可以定义自己的Proxy，Proxy用于表示这个组件在渲染器的代表\n">
     <link rel="shortcut icon" href="/favicon.ico" />
 
     </head>
@@ -286,13 +286,18 @@
         <div class="widget--toc">
             <nav id="TableOfContents">
   <ol>
-    <li><a href="#-拖入actor到场景渲染器记录组件信息">## 拖入Actor到场景，渲染器记录组件信息</a></li>
-    <li><a href="#每帧对primitivesceneinfo进行可见性剔除">每帧对PrimitiveSceneInfo进行可见性剔除</a>
+    <li><a href="#各种情形">各种情形</a></li>
+    <li><a href="#游戏线程创建proxy同步到渲染线程">游戏线程创建Proxy，同步到渲染线程</a></li>
+    <li><a href="#updateallprimitivesceneinfos">UpdateAllPrimitiveSceneInfos</a>
       <ol>
-        <li><a href="#对需要动态收集的primitiveinfo收集meshbatch">对需要动态收集的PrimitiveInfo，收集MeshBatch</a></li>
-        <li><a href="#每个pass的meshprocessor接收meshbatch对meshbatch生成fmeshdrawcommand">每个Pass的MeshProcessor接收MeshBatch，对MeshBatch生成FMeshDrawCommand</a></li>
+        <li><a href="#静态路径缓存">静态路径缓存</a></li>
       </ol>
     </li>
+    <li><a href="#可见性剔除">可见性剔除</a></li>
+    <li><a href="#computeandmarkrelevanceforviewparallel">ComputeAndMarkRelevanceForViewParallel</a></li>
+    <li><a href="#动态路径收集">动态路径收集</a></li>
+    <li><a href="#meshprocessor">MeshProcessor</a></li>
+    <li><a href="#排序与合批">排序与合批</a></li>
   </ol>
 </nav>
         </div>
@@ -379,7 +384,7 @@
 
 
                 <time class="article-time--reading">
-                    阅读时长: 3 分钟
+                    阅读时长: 4 分钟
                 </time>
             </div>
         
@@ -425,7 +430,18 @@
     <section class="article-content">
     
     
-    <h1 id="-拖入actor到场景渲染器记录组件信息">## 拖入Actor到场景，渲染器记录组件信息
+    <h1 id="各种情形">各种情形
+</h1><p><img src="/1789010582024.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="alt text"
+	
+	
+></p>
+<h1 id="游戏线程创建proxy同步到渲染线程">游戏线程创建Proxy，同步到渲染线程
 </h1><p><img src="/image-20260719170556149.png"
 	
 	
@@ -725,7 +741,7 @@
 </span></span><span class="line"><span class="cl"><span class="n">PrimitiveSceneProxy</span><span class="o">-&gt;</span><span class="n">PrimitiveSceneInfo</span> <span class="o">=</span> <span class="n">PrimitiveSceneInfo</span><span class="p">;</span>
 </span></span></code></pre></td></tr></table>
 </div>
-</div><p>之后会入队一个命令，用来在渲染线程传入新添加的FPrimitiveSceneInfo到FScene的PrimitiveUpdates</p>
+</div><p>之后会入队一个命令，用来在渲染线程传入新添加的FPrimitiveSceneInfo到FScene的PrimitiveUpdates （到这里渲染线程就知道这批渲染资源了）</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt"> 1
@@ -754,7 +770,10 @@
 </span></span><span class="line"><span class="cl"><span class="p">}</span>
 </span></span></code></pre></td></tr></table>
 </div>
-</div><p>在每帧开始时会用FScene::UpdateAllPrimitiveSceneInfos 处理这个update数组，放在真正的FScene::Primitives中</p>
+</div><h1 id="updateallprimitivesceneinfos">UpdateAllPrimitiveSceneInfos
+</h1><p>在每帧开始时会用FScene::UpdateAllPrimitiveSceneInfos 处理这个update数组，放在真正的FScene::Primitives中</p>
+<h2 id="静态路径缓存">静态路径缓存
+</h2><p>此时会对静态Mesh进行缓存（proxy提供自己的MeshBatch，翻译为FMeshDrawCommand并进行缓存），同时也标记好了每个StaticMeshBatch的StaticMeshRelevances</p>
 <div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
 <pre tabindex="0" class="chroma"><code><span class="lnt">1
@@ -765,50 +784,38 @@
 </span><span class="lnt">6
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="kt">void</span> <span class="n">FScene</span><span class="o">::</span><span class="n">UpdateAllPrimitiveSceneInfos</span><span class="p">(</span><span class="n">FRDGBuilder</span><span class="o">&amp;</span> <span class="n">GraphBuilder</span><span class="p">,</span> <span class="n">EUpdateAllPrimitiveSceneInfosAsyncOps</span> <span class="n">AsyncOps</span><span class="p">)</span>
-</span></span><span class="line"><span class="cl"><span class="p">{</span>
-</span></span><span class="line"><span class="cl">	<span class="n">FUpdateParameters</span> <span class="n">Parameters</span><span class="p">;</span>
-</span></span><span class="line"><span class="cl">	<span class="n">Parameters</span><span class="p">.</span><span class="n">AsyncOps</span> <span class="o">=</span> <span class="n">AsyncOps</span><span class="p">;</span>
-</span></span><span class="line"><span class="cl">	<span class="n">Update</span><span class="p">(</span><span class="n">GraphBuilder</span><span class="p">,</span> <span class="n">Parameters</span><span class="p">);</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
+<pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="n">UpdateAllPrimitiveSceneInfos</span> <span class="p">(</span><span class="n">RendererScene</span><span class="p">.</span><span class="nl">cpp</span><span class="p">:</span><span class="mi">3878</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">  <span class="err">└─</span> <span class="n">FPrimitiveSceneInfo</span><span class="o">::</span><span class="n">AddToScene</span> <span class="p">(</span><span class="n">PrimitiveSceneInfo</span><span class="p">.</span><span class="nl">cpp</span><span class="p">:</span><span class="mi">645</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">       <span class="err">├─</span> <span class="n">AddStaticMeshes</span> <span class="p">(</span><span class="mi">530</span><span class="p">)</span>
+</span></span><span class="line"><span class="cl">       <span class="err">│</span>    <span class="err">├─</span> <span class="n">Proxy</span><span class="o">-&gt;</span><span class="n">DrawStaticElements</span> <span class="p">(</span><span class="n">StaticMeshRender</span><span class="p">.</span><span class="nl">cpp</span><span class="p">:</span><span class="mi">1120</span><span class="p">)</span>  <span class="err">←</span> <span class="err">产出</span> <span class="n">FStaticMeshBatch</span>
+</span></span><span class="line"><span class="cl">       <span class="err">│</span>    <span class="err">└─</span> <span class="n">CacheMeshDrawCommands</span> <span class="p">(</span><span class="mi">224</span><span class="p">)</span>                            <span class="err">←</span> <span class="err">预翻译成</span> <span class="n">FMeshDrawCommand</span>
+</span></span><span class="line"><span class="cl">       <span class="err">└─</span> <span class="err">加入</span> <span class="n">FScene</span> <span class="err">各种加速结构（八叉树、</span><span class="n">GPUScene</span> <span class="n">primitive</span> <span class="n">buffer</span> <span class="err">等）</span>
 </span></span></code></pre></td></tr></table>
 </div>
-</div><div class="highlight"><div class="chroma">
+</div><p>在Proxy-&gt;DrawStaticElements时，就会让Proxy吐出StaticMeshBatch
+比如内部</p>
+<div class="highlight"><div class="chroma">
 <table class="lntable"><tr><td class="lntd">
-<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
-</span><span class="lnt"> 2
-</span><span class="lnt"> 3
-</span><span class="lnt"> 4
-</span><span class="lnt"> 5
-</span><span class="lnt"> 6
-</span><span class="lnt"> 7
-</span><span class="lnt"> 8
-</span><span class="lnt"> 9
-</span><span class="lnt">10
-</span><span class="lnt">11
-</span><span class="lnt">12
-</span><span class="lnt">13
-</span><span class="lnt">14
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
 </span></code></pre></td>
 <td class="lntd">
-<pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="k">for</span> <span class="p">(</span><span class="n">int32</span> <span class="n">AddIndex</span> <span class="o">=</span> <span class="n">StartIndex</span><span class="p">;</span> <span class="n">AddIndex</span> <span class="o">&lt;</span> <span class="n">AddedLocalPrimitiveSceneInfos</span><span class="p">.</span><span class="n">Num</span><span class="p">();</span> <span class="n">AddIndex</span><span class="o">++</span><span class="p">)</span>
+<pre tabindex="0" class="chroma"><code class="language-c++" data-lang="c++"><span class="line"><span class="cl"><span class="k">if</span> <span class="p">(</span><span class="n">MeshBatch</span><span class="p">.</span><span class="n">xxxx</span><span class="p">)</span>
 </span></span><span class="line"><span class="cl"><span class="p">{</span>
-</span></span><span class="line"><span class="cl">    <span class="n">FPrimitiveSceneInfo</span><span class="o">*</span> <span class="n">PrimitiveSceneInfo</span> <span class="o">=</span> <span class="n">AddedLocalPrimitiveSceneInfos</span><span class="p">[</span><span class="n">AddIndex</span><span class="p">];</span>
-</span></span><span class="line"><span class="cl">    <span class="n">Primitives</span><span class="p">.</span><span class="n">Add</span><span class="p">(</span><span class="n">PrimitiveSceneInfo</span><span class="p">);</span>              <span class="c1">// ← 你要找的
-</span></span></span><span class="line"><span class="cl"><span class="c1"></span>    <span class="k">const</span> <span class="n">FMatrix</span> <span class="n">LocalToWorld</span> <span class="o">=</span> <span class="n">PrimitiveSceneInfo</span><span class="o">-&gt;</span><span class="n">Proxy</span><span class="o">-&gt;</span><span class="n">GetLocalToWorld</span><span class="p">();</span>
-</span></span><span class="line"><span class="cl">    <span class="n">PrimitiveTransforms</span><span class="p">.</span><span class="n">Add</span><span class="p">(</span><span class="n">LocalToWorld</span><span class="p">);</span>
-</span></span><span class="line"><span class="cl">    <span class="n">PrimitiveSceneProxies</span><span class="p">.</span><span class="n">Add</span><span class="p">(</span><span class="n">PrimitiveSceneInfo</span><span class="o">-&gt;</span><span class="n">Proxy</span><span class="p">);</span>
-</span></span><span class="line"><span class="cl">    <span class="n">PrimitiveBounds</span><span class="p">.</span><span class="n">AddUninitialized</span><span class="p">();</span>
-</span></span><span class="line"><span class="cl">    <span class="n">PrimitiveFlagsCompact</span><span class="p">.</span><span class="n">AddUninitialized</span><span class="p">();</span>
-</span></span><span class="line"><span class="cl">    <span class="p">...</span>
-</span></span><span class="line"><span class="cl">    <span class="k">const</span> <span class="n">int32</span> <span class="n">SourceIndex</span> <span class="o">=</span> <span class="n">PrimitiveSceneProxies</span><span class="p">.</span><span class="n">Num</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span><span class="p">;</span>
-</span></span><span class="line"><span class="cl">    <span class="n">PrimitiveSceneInfo</span><span class="o">-&gt;</span><span class="n">PackedIndex</span> <span class="o">=</span> <span class="n">SourceIndex</span><span class="p">;</span> 
-</span></span><span class="line"><span class="cl">    <span class="n">PersistentPrimitiveIdToIndexMap</span><span class="p">[</span><span class="n">PrimitiveSceneInfo</span><span class="o">-&gt;</span><span class="n">PersistentIndex</span><span class="p">.</span><span class="n">Index</span><span class="p">]</span> <span class="o">=</span> <span class="n">SourceIndex</span><span class="p">;</span>
-</span></span><span class="line"><span class="cl"><span class="p">}</span>
+</span></span><span class="line"><span class="cl">    <span class="n">FMeshBatch</span> <span class="n">HairBlendMeshBatch</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">HairBlendMeshBatch</span><span class="p">.</span><span class="n">Clone</span><span class="p">(</span><span class="n">MeshBatch</span><span class="p">);</span>
+</span></span><span class="line"><span class="cl">    <span class="n">HairBlendMeshBatch</span><span class="p">.</span><span class="n">bSMGHairBlend</span> <span class="o">=</span> <span class="nb">true</span><span class="p">;</span>
+</span></span><span class="line"><span class="cl">    <span class="n">PDI</span><span class="o">-&gt;</span><span class="n">DrawMesh</span><span class="p">(</span><span class="n">HairBlendMeshBatch</span><span class="p">,</span> <span class="n">FLT_MAX</span><span class="p">);</span>  <span class="c1">// 每次调用都会输出一个新的MeshBatch
+</span></span></span><span class="line"><span class="cl"><span class="c1"></span><span class="p">}</span>
 </span></span></code></pre></td></tr></table>
 </div>
-</div><p>到这里渲染器记录了这个可以被渲染的组件的存在</p>
-<h1 id="每帧对primitivesceneinfo进行可见性剔除">每帧对PrimitiveSceneInfo进行可见性剔除
+</div><p>之后在PDI-&gt;DrawMesh内部会根据材质进行StaticMeshRelevances的设置（其实就是一些常用的判断存储起来）</p>
+<h1 id="可见性剔除">可见性剔除
 </h1><p><img src="/image-20260719172609562.png"
 	
 	
@@ -821,20 +828,33 @@
 ></p>
 <p>对于每个View，都会组织一个View.PrimitiveVisibilityMap，存储每个PrimitiveInfo的可见性。</p>
 <p><strong><code>PrimitiveVisibilityMap</code> 的下标就是 <code>FScene::Primitives</code> 的下标，两者一一对应</strong></p>
-<h2 id="对需要动态收集的primitiveinfo收集meshbatch">对需要动态收集的PrimitiveInfo，收集MeshBatch
-</h2><p><img src="/image-20260719173356708.png"
+<h1 id="computeandmarkrelevanceforviewparallel">ComputeAndMarkRelevanceForViewParallel
+</h1><p>对primitive根据各种情况进行分流，动态路径的收集还没开始，只是打了个标记</p>
+<h1 id="动态路径收集">动态路径收集
+</h1><p><img src="/1789027423391.png"
 	
 	
 	
 	loading="lazy"
 	
-		alt="image-20260719173356708"
+		alt="alt text"
 	
 	
 ></p>
-<p>此时每个Proxy就可以提供自己需要渲染的MeshBatch</p>
-<h2 id="每个pass的meshprocessor接收meshbatch对meshbatch生成fmeshdrawcommand">每个Pass的MeshProcessor接收MeshBatch，对MeshBatch生成FMeshDrawCommand
-</h2><p>绝大多数情况MeshBatch只有一个Element，所以只会生成一个FMeshDrawCommand</p>
+<p>此时每个Proxy就可以提供自己需要渲染的动态MeshBatch</p>
+<h1 id="meshprocessor">MeshProcessor
+</h1><p>收集后开始调用SetupMeshPass，内部会dispatch，多个Pass的MeshProcessor并行运行
+<img src="/1789027783895.png"
+	
+	
+	
+	loading="lazy"
+	
+		alt="alt text"
+	
+	
+></p>
+<p>绝大多数情况MeshBatch只有一个Element，所以只会生成一个FMeshDrawCommand</p>
 <p><img src="/image-20260719175333033.png"
 	
 	
@@ -845,7 +865,9 @@
 	
 	
 ></p>
-<p>同时还会进行排序和合批，  在各个Pass进行中直接Submit整理好的MeshDrawCommand</p>
+<h1 id="排序与合批">排序与合批
+</h1><p>发生在每个SetupPass线程的末尾
+同时还会进行排序和合批，  在各个Pass进行中直接Submit整理好的MeshDrawCommand</p>
 <p><img src="/image-20260719175703661.png"
 	
 	
@@ -855,7 +877,7 @@
 		alt="image-20260719175703661"
 	
 	
-></p>
+>  （TODO）</p>
 
 </section>
 
@@ -1680,7 +1702,7 @@
       <span>✍️ 总字数: 
         
         
-        251.16K
+        251.45K
       </span>
     </section>
 
