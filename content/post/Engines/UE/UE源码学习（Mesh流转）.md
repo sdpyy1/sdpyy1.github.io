@@ -5,8 +5,9 @@ title = 'UE源码学习（Mesh流转）'
 categories = ["虚幻引擎"]
 tags = ["UE源码"]
 +++
-
-# ## 拖入Actor到场景，渲染器记录组件信息
+# 各种情形
+![alt text](1789010582024.png)
+# 游戏线程创建Proxy，同步到渲染线程
 
 ![image-20260719170556149](image-20260719170556149.png)
 
@@ -160,7 +161,7 @@ PrimitiveSceneProxy->PrimitiveSceneInfo = PrimitiveSceneInfo;
 
 ```
 
-之后会入队一个命令，用来在渲染线程传入新添加的FPrimitiveSceneInfo到FScene的PrimitiveUpdates
+之后会入队一个命令，用来在渲染线程传入新添加的FPrimitiveSceneInfo到FScene的PrimitiveUpdates （到这里渲染线程就知道这批渲染资源了）
 
 ```c++
 void FScene::AddPrimitiveSceneInfo_RenderThread(FPrimitiveSceneInfo* PrimitiveSceneInfo, const TOptional<FTransform>& PreviousTransform)
@@ -176,37 +177,33 @@ void FScene::AddPrimitiveSceneInfo_RenderThread(FPrimitiveSceneInfo* PrimitiveSc
 }
 ```
 
+# UpdateAllPrimitiveSceneInfos
 在每帧开始时会用FScene::UpdateAllPrimitiveSceneInfos 处理这个update数组，放在真正的FScene::Primitives中
 
+## 静态路径缓存
+此时会对静态Mesh进行缓存（proxy提供自己的MeshBatch，翻译为FMeshDrawCommand并进行缓存），同时也标记好了每个StaticMeshBatch的StaticMeshRelevances
 ```c++
-void FScene::UpdateAllPrimitiveSceneInfos(FRDGBuilder& GraphBuilder, EUpdateAllPrimitiveSceneInfosAsyncOps AsyncOps)
+UpdateAllPrimitiveSceneInfos (RendererScene.cpp:3878)
+  └─ FPrimitiveSceneInfo::AddToScene (PrimitiveSceneInfo.cpp:645)
+       ├─ AddStaticMeshes (530)
+       │    ├─ Proxy->DrawStaticElements (StaticMeshRender.cpp:1120)  ← 产出 FStaticMeshBatch
+       │    └─ CacheMeshDrawCommands (224)                            ← 预翻译成 FMeshDrawCommand
+       └─ 加入 FScene 各种加速结构（八叉树、GPUScene primitive buffer 等）
+```
+在Proxy->DrawStaticElements时，就会让Proxy吐出StaticMeshBatch
+比如内部
+``` c++
+if (MeshBatch.xxxx)
 {
-	FUpdateParameters Parameters;
-	Parameters.AsyncOps = AsyncOps;
-	Update(GraphBuilder, Parameters);
+    FMeshBatch HairBlendMeshBatch;
+    HairBlendMeshBatch.Clone(MeshBatch);
+    HairBlendMeshBatch.bSMGHairBlend = true;
+    PDI->DrawMesh(HairBlendMeshBatch, FLT_MAX);  // 每次调用都会输出一个新的MeshBatch
 }
 ```
+之后在PDI->DrawMesh内部会根据材质进行StaticMeshRelevances的设置（其实就是一些常用的判断存储起来）
 
-```c++
-for (int32 AddIndex = StartIndex; AddIndex < AddedLocalPrimitiveSceneInfos.Num(); AddIndex++)
-{
-    FPrimitiveSceneInfo* PrimitiveSceneInfo = AddedLocalPrimitiveSceneInfos[AddIndex];
-    Primitives.Add(PrimitiveSceneInfo);              // ← 你要找的
-    const FMatrix LocalToWorld = PrimitiveSceneInfo->Proxy->GetLocalToWorld();
-    PrimitiveTransforms.Add(LocalToWorld);
-    PrimitiveSceneProxies.Add(PrimitiveSceneInfo->Proxy);
-    PrimitiveBounds.AddUninitialized();
-    PrimitiveFlagsCompact.AddUninitialized();
-    ...
-    const int32 SourceIndex = PrimitiveSceneProxies.Num() - 1;
-    PrimitiveSceneInfo->PackedIndex = SourceIndex; 
-    PersistentPrimitiveIdToIndexMap[PrimitiveSceneInfo->PersistentIndex.Index] = SourceIndex;
-}
-```
-
-到这里渲染器记录了这个可以被渲染的组件的存在
-
-# 每帧对PrimitiveSceneInfo进行可见性剔除
+# 可见性剔除
 
 ![image-20260719172609562](image-20260719172609562.png)
 
@@ -214,18 +211,25 @@ for (int32 AddIndex = StartIndex; AddIndex < AddedLocalPrimitiveSceneInfos.Num()
 
 **`PrimitiveVisibilityMap` 的下标就是 `FScene::Primitives` 的下标，两者一一对应**
 
-## 对需要动态收集的PrimitiveInfo，收集MeshBatch
+# ComputeAndMarkRelevanceForViewParallel
+对primitive根据各种情况进行分流，动态路径的收集还没开始，只是打了个标记
 
-![image-20260719173356708](image-20260719173356708.png)
+# 动态路径收集
 
-此时每个Proxy就可以提供自己需要渲染的MeshBatch
+![alt text](1789027423391.png)
 
-## 每个Pass的MeshProcessor接收MeshBatch，对MeshBatch生成FMeshDrawCommand
+此时每个Proxy就可以提供自己需要渲染的动态MeshBatch
+
+# MeshProcessor
+收集后开始调用SetupMeshPass，内部会dispatch，多个Pass的MeshProcessor并行运行
+![alt text](1789027783895.png)
 
 绝大多数情况MeshBatch只有一个Element，所以只会生成一个FMeshDrawCommand
 
 ![image-20260719175333033](image-20260719175333033.png)
 
+# 排序与合批
+发生在每个SetupPass线程的末尾
 同时还会进行排序和合批，  在各个Pass进行中直接Submit整理好的MeshDrawCommand
 
-![image-20260719175703661](image-20260719175703661.png)
+![image-20260719175703661](image-20260719175703661.png)  （TODO）
